@@ -1,0 +1,365 @@
+.newForm h1 {
+  margin-bottom: 20px;
+}
+.newForm .noSections {
+  background-color: #f3f3f3;
+  padding: 20px;
+  border-style: none;
+  border-radius: 10px;
+}
+.newForm .noSections button {
+  padding: 10px;
+  border-radius: 10px;
+  border-style: none;
+  background-color: #e26b09;
+  color: white;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.newForm .noSections button svg {
+  margin-left: 10px;
+}
+.newForm header {
+  display: flex;
+  margin-bottom: 20px;
+  align-items: stretch;
+}
+.newForm header label {
+  color: rgb(48, 48, 48);
+}
+.newForm header input {
+  width: 100%;
+  background-color: rgb(248, 248, 248);
+  padding: 10px;
+  border-radius: 10px;
+  border-style: none;
+  font-size: 20px;
+  font-weight: 600;
+  color: rgb(88, 88, 88);
+  border-style: solid;
+  border-color: rgb(190, 190, 190);
+}
+.newForm .formActionButtons {
+  display: flex;
+  justify-content: end;
+  margin-top: 20px;
+}
+.newForm .formActionButtons button {
+  margin-left: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border-style: none;
+  background-color: black;
+  color: white;
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.newForm .formActionButtons button svg {
+  margin-left: 10px;
+}
+.newForm .formActionButtons button:nth-child(1) {
+  background-color: #e26b09;
+}
+.newForm .newFormContent {
+  display: flex;
+  justify-content: space-between;
+}
+.newForm .newFormContent .newFormContentLeft {
+  width: 70%;
+}
+.newForm .newFormContent .newFormContentLeft .newSection {
+  background-color: rgb(250, 250, 250);
+  padding: 20px;
+  border-style: none;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgb(237, 237, 237);
+}
+.newForm .newFormContent .newFormContentLeft .newSection .sectionFieldsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.newForm .newFormContent .newFormContentLeft .newSection .singleColumnLayout > div {
+  width: 100%;
+}
+.newForm .newFormContent .newFormContentLeft .newSection .doubleCOlumnLayout > div {
+  width: 48%;
+}
+.newForm .newFormContent .newFormContentLeft .newSection h2 {
+  margin-bottom: 10px;
+  color: rgb(67, 67, 67);
+}
+.newForm .newFormContent .newFormContentLeft .newSection footer {
+  display: flex;
+  justify-content: end;
+}
+.newForm .newFormContent .newFormContentLeft .newSection footer button {
+  background-color: rgba(0, 0, 0, 0);
+  color: #e26b09;
+  border-style: none;
+  margin-left: 30px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.newForm .newFormContent .newFormContentLeft .newSection footer button:hover {
+  font-weight: 600;
+  scale: 1.05;
+}
+.newForm .newFormContent .newFormContentLeft .highlighted {
+  background-color: rgb(236, 236, 236);
+  cursor: pointer;
+  border-style: none;
+}
+.newForm .newFormContent .newFormContentRight {
+  width: 28%;
+  background-color: rgb(250, 250, 250);
+  padding: 20px;
+  border-style: none;
+  border-radius: 20px;
+}
+.newForm .newFormContent .newFormContentRight .changeSectionPositionDiv {
+  margin-top: 20px;
+}
+.newForm .newFormContent .newFormContentRight .changeFieldPositionDiv, .newForm .newFormContent .newFormContentRight .changeSectionPositionDiv {
+  display: flex;
+  background-color: white;
+  border-style: none;
+  border-radius: 10px;
+}
+.newForm .newFormContent .newFormContentRight .changeFieldPositionDiv > div, .newForm .newFormContent .newFormContentRight .changeSectionPositionDiv > div {
+  flex-grow: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+.newForm .newFormContent .newFormContentRight .changeFieldPositionDiv > div label, .newForm .newFormContent .newFormContentRight .changeSectionPositionDiv > div label {
+  font-size: 14px;
+  color: rgb(112, 112, 112);
+}
+.newForm .newFormContent .newFormContentRight .changeFieldPositionDiv > div img, .newForm .newFormContent .newFormContentRight .changeSectionPositionDiv > div img {
+  margin-right: 10px;
+}
+.newForm .newFormContent .newFormContentRight .changeFieldPositionDiv > div:hover, .newForm .newFormContent .newFormContentRight .changeSectionPositionDiv > div:hover {
+  background-color: rgb(225, 225, 225);
+  border-style: none;
+  border-radius: 10px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields > div {
+  margin-top: 20px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields > div > label {
+  font-size: 14px;
+  color: rgb(82, 82, 82);
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields > div input {
+  width: 100%;
+  padding: 10px;
+  background-color: white;
+  border-style: none;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs {
+  margin-bottom: 30px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs > label {
+  display: block;
+  cursor: pointer;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs > div {
+  margin-top: 5px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  border-color: rgb(219, 219, 219);
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .optionItem {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .optionItem label {
+  color: rgb(117, 117, 117);
+  font-size: 14px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .optionItem img {
+  margin-left: 10px;
+  cursor: pointer;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .multiSelectOptionItem {
+  display: flex;
+  justify-content: space-between;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .multiSelectOptionItem div {
+  display: flex;
+  align-items: center;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .multiSelectOptionItem div label {
+  color: rgb(117, 117, 117);
+  font-size: 14px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .multiSelectOptionItem div img {
+  margin-left: 10px;
+  cursor: pointer;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .multiSelectOptionItem div input {
+  margin: 0px;
+  margin-left: 5px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .addOptionDiv form {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .addOptionDiv form input {
+  margin: 0px;
+}
+.newForm .newFormContent .newFormContentRight .editSectionFields .editFieldDivs .addOptionDiv form button {
+  margin-left: 10px;
+  background-color: black;
+  color: white;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  cursor: pointer;
+  height: 100%;
+}
+.newForm .newFormContent .newFormContentRight .sectionLayoutSelector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+.newForm .newFormContent .newFormContentRight .sectionLayoutSelector > div {
+  width: 49%;
+  display: flex;
+  align-items: center;
+  border-style: none;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 10px;
+}
+.newForm .newFormContent .newFormContentRight .sectionLayoutSelector .inactive {
+  background-color: rgb(255, 255, 255);
+  color: black;
+}
+.newForm .newFormContent .newFormContentRight .sectionLayoutSelector .active {
+  background-color: rgb(8, 8, 8);
+  color: white !important;
+}
+.newForm .newFormContent .newFormContentRight .sectionLayoutSelector .active svg path {
+  fill: white !important;
+}
+.newForm .newFormContent .newFormContentRight .sectionLayoutSelector .active img {
+  fill: white;
+}
+.newForm .addFieldModalContainer {
+  width: 40vw;
+}
+.newForm .addFieldModalContainer .closeAddFieldModalDiv {
+  display: flex;
+  justify-content: end;
+  margin-bottom: 10px;
+}
+.newForm .addFieldModalContainer .closeAddFieldModalDiv > div {
+  cursor: pointer;
+}
+.newForm .addFieldModal {
+  background-color: white;
+  width: 100%;
+  border-style: none;
+  border-radius: 10px;
+  padding: 20px;
+}
+.newForm .addFieldModal > div h2 {
+  margin-bottom: 20px;
+}
+.newForm .addFieldModal > div > div {
+  display: grid;
+  grid-template-columns: 32.3% 32.3% 32.3%;
+  grid-template-rows: auto;
+  gap: 10px 10px;
+  box-sizing: border-box;
+}
+.newForm .addFieldModal > div > div > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgb(247, 247, 247);
+  padding: 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.newForm .addFieldModal > div > div > div:hover {
+  background-color: rgb(232, 232, 232);
+}
+.newForm .allowedFormatsContainer > div > div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.newForm .allowedFormatsContainer > div > div input {
+  margin: 0px !important;
+  width: -moz-min-content !important;
+  width: min-content !important;
+  cursor: pointer;
+}
+.newForm .allowedFormatsContainer > div > div label {
+  margin-right: 10px;
+  font-size: 14px;
+}
+.newForm .formSettingsModal {
+  background-color: white;
+  padding: 20px;
+  border-style: none;
+  border-radius: 10px;
+  width: 30%;
+}
+.newForm .formSettingsModal h3 {
+  margin-bottom: 20px;
+}
+.newForm .formSettingsModal > div > div {
+  margin-bottom: 25px;
+}
+.newForm .formSettingsModal > div label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.newForm .formSettingsModal > div input, .newForm .formSettingsModal > div textarea, .newForm .formSettingsModal > div select {
+  width: 100%;
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #d1d1d1;
+  border-radius: 10px;
+}
+.newForm .formSettingsModal .closeButton {
+  display: flex;
+  justify-content: end;
+}
+.newForm .formSettingsModal .closeButton button {
+  background-color: #e26b09;
+  color: white;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+}/*# sourceMappingURL=styles.module.css.map */

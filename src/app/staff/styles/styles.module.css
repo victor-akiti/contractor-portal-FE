@@ -1,0 +1,65 @@
+.layout {
+  min-width: 100vw;
+  min-height: 100vh;
+  background-color: white;
+}
+.layout nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #343a40 !important;
+  color: white;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.layout nav > div {
+  display: flex;
+  align-items: center;
+}
+.layout nav .left {
+  padding-top: 0.3125rem;
+  padding-bottom: 0.3125rem;
+  margin-right: 1rem;
+  font-size: 1.25rem;
+  line-height: inherit;
+  white-space: nowrap;
+}
+.layout nav .left span {
+  margin-left: 10px;
+  font-size: 1rem;
+}
+.layout nav .right span {
+  color: rgba(255, 255, 255, 0.5019607843);
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+.layout .content {
+  display: flex;
+  padding: 1.5rem;
+  padding-top: 3rem;
+}
+.layout .content .left {
+  width: 16%;
+  display: flex;
+  flex-direction: column;
+  padding-right: 20px;
+}
+.layout .content .left a {
+  padding: 0.5rem 1rem;
+  color: #e26b09;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.layout .content .left hr {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-style: none;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: rgb(224, 224, 224);
+}
+.layout .content .right {
+  width: 80%;
+}/*# sourceMappingURL=styles.module.css.map */

@@ -1,0 +1,14 @@
+.successMessage {
+    display: flex;
+    align-items: center;
+    background-color: rgb(203, 235, 203);
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+
+    p {
+        margin: 0px;
+        color: rgb(0, 133, 0);
+        font-size: 14px;
+    }
+}

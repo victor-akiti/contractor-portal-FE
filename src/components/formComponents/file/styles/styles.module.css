@@ -1,0 +1,60 @@
+.selectFile {
+  margin-bottom: 20px;
+  z-index: 20;
+  transition: 0.2s;
+}
+.selectFile > label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.selectFile > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+.selectFile > div > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-style: none;
+  border-style: dashed;
+  border-width: 2px;
+  border-color: rgb(167, 167, 167);
+  padding: 40px;
+  border-radius: 10px;
+  width: 100%;
+}
+.selectFile > div > div p {
+  font-size: 14px;
+}
+.selectFile > div > div .allowedFormatsText {
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: rgb(147, 147, 147);
+}
+.selectFile > div > div button {
+  background-color: black;
+  padding: 10px;
+  border-style: none;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.selectFile:hover {
+  background-color: rgb(225, 225, 225);
+  cursor: pointer;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+}
+
+.highlighted {
+  background-color: rgb(225, 225, 225);
+  cursor: pointer;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+}/*# sourceMappingURL=styles.module.css.map */

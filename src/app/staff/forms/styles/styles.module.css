@@ -1,0 +1,43 @@
+.forms .formsSortAndFilterDiv {
+  display: flex;
+  justify-content: space-between;
+  background-color: rgb(231, 231, 231);
+  padding: 20px;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+.forms .formsSortAndFilterDiv input, .forms .formsSortAndFilterDiv select {
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  margin-right: 10px;
+}
+.forms .formsSortAndFilterDiv button {
+  background-color: #e26b09;
+  color: white;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.forms table {
+  width: 100%;
+  margin-top: 50px;
+  border-collapse: collapse;
+}
+.forms table thead {
+  background-color: #f2f2f2;
+}
+.forms table thead td {
+  padding: 20px;
+  font-weight: bold;
+}
+.forms table tbody tr td {
+  padding: 20px;
+  font-size: 14px;
+}
+.forms table tbody tr td a {
+  margin-right: 20px;
+  cursor: pointer;
+  color: #e26b09;
+}/*# sourceMappingURL=styles.module.css.map */

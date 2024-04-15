@@ -1,0 +1,53 @@
+.formBuilder header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.formBuilder header input {
+  width: 40%;
+  background-color: rgb(248, 248, 248);
+  padding: 10px;
+  border-radius: 10px;
+  border-style: none;
+}
+.formBuilder header button {
+  background-color: #f57710;
+  color: white;
+  border-style: none;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+.formBuilder table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.formBuilder table thead tr td {
+  padding: 10px;
+  background-color: rgb(241, 241, 241);
+  font-size: 14px;
+  color: rgb(27, 27, 27);
+}
+.formBuilder table thead tr td:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.formBuilder table thead tr td:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+.formBuilder .noForms {
+  margin-top: 20px;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+}
+.formBuilder .noForms span {
+  color: #f57710;
+  cursor: pointer;
+}
+.formBuilder .noForms span:hover {
+  text-decoration: underline;
+}/*# sourceMappingURL=styles.module.css.map */

@@ -1,0 +1,35 @@
+.longText {
+  margin-bottom: 20px;
+  z-index: 20;
+  transition: 0.2s;
+}
+.longText label {
+  font-size: 14px;
+}
+.longText textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-style: none;
+  background-color: white;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgb(211, 211, 211);
+  border-radius: 10px;
+}
+
+.longText:hover {
+  background-color: rgb(225, 225, 225);
+  cursor: pointer;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+}
+
+.highlighted {
+  background-color: rgb(225, 225, 225);
+  cursor: pointer;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+}/*# sourceMappingURL=styles.module.css.map */

@@ -1,0 +1,41 @@
+.invite {
+  width: 600px;
+}
+.invite h5 {
+  color: #64676b;
+  font-size: 1.25rem;
+}
+.invite form {
+  width: 100%;
+  margin-top: 20px;
+}
+.invite form > input {
+  width: 100%;
+}
+.invite form > div {
+  display: flex;
+  justify-content: space-between;
+}
+.invite form > div input {
+  width: 48%;
+}
+.invite input {
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  border-color: rgb(205, 205, 205);
+}
+.invite button {
+  display: block;
+  background-color: #29bd25;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  color: white;
+  margin-top: 20px;
+  font-size: 16px;
+  cursor: pointer;
+}/*# sourceMappingURL=styles.module.css.map */

@@ -1,0 +1,53 @@
+.invite {
+    h5 {
+        color: #64676b;
+        font-size: 1.25rem;
+    }
+
+    width: 600px;
+
+
+    form {
+        width: 100%;
+        margin-top: 20px;
+
+        &>input {
+            width: 100%;
+        }
+
+        &>div {
+            display: flex;
+            justify-content: space-between;
+
+
+            input {
+                width: 48%;
+            }
+        }
+    }
+    input {
+        padding: 10px;
+        border-style: none;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border-color: rgb(205, 205, 205);
+    }
+
+    button {
+        display: block;
+        background-color: #29bd25;
+        padding: 10px;
+        border-style: none;
+        border-radius: 5px;
+        color: white;
+        margin-top: 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    
+
+    
+}
