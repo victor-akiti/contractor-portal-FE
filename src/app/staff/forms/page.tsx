@@ -89,7 +89,7 @@ const Forms = () => {
 
                 <tbody>
                     {
-                        forms.map((item, index) => <tr key={index}>
+                        forms.map((item: any, index) => <tr key={index}>
                             <td>{item?.form?.name}</td>
 
                             <td>{item?.formCreator?.name}</td>
