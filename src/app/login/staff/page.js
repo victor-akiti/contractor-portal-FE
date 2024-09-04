@@ -42,7 +42,7 @@ const StaffLogin = () => {
         const idToken = credential.idToken;
 
         auth.currentUser.getIdToken().then((result) => {
-          fetch('http://localhost:8080/user/ver', {
+          fetch('https://ultimate-arleen-amni-5494bb5f.koyeb.app/user/ver', {
         method: 'PUT',
         headers: {
           'token': result,

@@ -347,7 +347,7 @@ const InvoiceForms = () => {
 
                             <td className={styles.actionCell}>
                                 <a onClick={() => {
-                                    navigator.clipboard.writeText(`http://localhost:3000/invoice/${item.INVOICE_CODE}`)
+                                    navigator.clipboard.writeText(`https://amni-invoices.vercel.app/invoice/${item.INVOICE_CODE}`)
                                     addToCopiedField(index)
                                 }}>Copy Form Link</a>
 
