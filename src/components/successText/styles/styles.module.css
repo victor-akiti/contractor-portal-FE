@@ -1,0 +1,14 @@
+.errorText {
+  background-color: rgb(64, 198, 82);
+  color: white;
+  display: inline-block !important;
+  font-size: 14px;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.errorText p {
+  display: inline;
+}/*# sourceMappingURL=styles.module.css.map */

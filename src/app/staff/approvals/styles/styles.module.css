@@ -40,6 +40,12 @@
   border-radius: 0.25rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
+.approvals a {
+  color: #e26b09;
+  font-size: 0.875em;
+  font-weight: 400;
+  margin-bottom: 3px;
+}
 .approvals table {
   width: 100%;
   margin-top: 20px;
@@ -95,6 +101,122 @@
 }
 .approvals table tbody .rowDarkBackground {
   background-color: rgba(0, 0, 0, 0.0509803922);
+}
+.approvals .reminderDiv {
+  display: flex;
+  align-items: center;
+}
+.approvals .reminderDiv a {
+  margin: 0px !important;
+}
+.approvals .reminderSentText {
+  color: #047e00;
+  font-size: 14px;
+}
+.approvals .renewRequestTextDiv {
+  display: flex;
+  align-items: center;
+}
+.approvals .renewRequestTextDiv a {
+  margin: 0px !important;
+}
+
+.deleteInviteText {
+  font-size: 13px;
+  color: #dc3545;
+  text-align: right;
+  cursor: pointer;
+}
+
+.deleteInviteText:hover {
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.confirmArchiveModalDiv {
+  background-color: white;
+  padding: 20px;
+  border-style: none;
+  border-radius: 5px;
+  width: 30vw;
+}
+.confirmArchiveModalDiv .archiveStatusMessages {
+  display: block;
+}
+.confirmArchiveModalDiv div {
+  margin-top: 20px;
+  display: flex;
+  justify-content: end;
+  text-align: center;
+}
+.confirmArchiveModalDiv div div {
+  justify-content: center;
+}
+.confirmArchiveModalDiv div button {
+  margin-left: 20px;
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.confirmArchiveModalDiv div button div {
+  margin-top: 0px;
+}
+.confirmArchiveModalDiv div button > div > div {
+  display: unset;
+}
+.confirmArchiveModalDiv div button:nth-child(1) {
+  background-color: black;
+}
+.confirmArchiveModalDiv div button:nth-child(2) {
+  background-color: #e26b09;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+.loading p {
+  font-size: 14px;
+  color: #878787;
+}
+
+.inviteFilters {
+  display: flex;
+  margin-top: 20px;
+  align-items: center;
+}
+.inviteFilters div {
+  display: flex;
+}
+.inviteFilters div p {
+  margin-left: 20px;
+  background-color: #eaeaea;
+  padding: 7px;
+  font-size: 14px;
+  border-style: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.inviteFilters div .active {
+  background-color: #e26b09;
+  color: white;
+}
+.inviteFilters input {
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  border-color: rgb(236, 236, 236);
+  margin-left: 20px;
+  padding: 5px;
+  width: 350px;
 }
 
 .inProgressItem td:nth-child(1) {

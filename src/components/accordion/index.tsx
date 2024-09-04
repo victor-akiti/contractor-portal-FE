@@ -1,0 +1,41 @@
+'use client'
+import styles from "./styles/styles.module.css"
+import arrowRight from "@/assets/images/arrowRight.svg"
+import arrowDown from "@/assets/images/arrowDown.svg"
+import { useState } from "react"
+import Image from "next/image"
+
+
+const Accordion = ({children, title}) => {
+    const [accordionState, setAccordionState] = useState("open")
+
+    const toggleAccordion = () => {
+        if (accordionState === "open") {
+            setAccordionState("closed")
+        } else {
+            setAccordionState("open")
+        }
+    }
+
+    return (
+        <div className={styles.accordion}>
+            <header onClick={() => toggleAccordion()}>
+                <h5>{title}</h5>
+
+                <div>
+                    <Image src={accordionState === "open" ? arrowDown: arrowRight} alt="accordion open icon" width={100} height={100} style={{width: "30px", height: "30px"}} />
+                </div>
+            </header>
+
+            {
+                accordionState === "open" && <div className={styles.content}>
+                    {children}
+                </div>
+            }
+
+            <hr />
+        </div>
+    )
+}
+
+export default Accordion

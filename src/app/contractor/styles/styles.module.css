@@ -1,0 +1,53 @@
+.layout {
+  min-width: 100vw;
+  min-height: 100vh;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  min-width: 100vw;
+  min-height: 100vh;
+}
+.layout nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #343a40 !important;
+  color: white;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.layout nav > div {
+  display: flex;
+  align-items: center;
+}
+.layout nav .left {
+  padding-top: 0.3125rem;
+  padding-bottom: 0.3125rem;
+  margin-right: 1rem;
+  font-size: 1.25rem;
+  line-height: inherit;
+  white-space: nowrap;
+}
+.layout nav .left span {
+  margin-left: 10px;
+  font-size: 1rem;
+}
+.layout nav .right span {
+  color: rgba(255, 255, 255, 0.5019607843);
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+.layout .content {
+  width: 70vw;
+  margin-left: auto;
+  margin-right: auto;
+}
+.layout footer {
+  margin-top: auto;
+  text-align: center;
+}
+.layout footer a {
+  color: #e26b09;
+}/*# sourceMappingURL=styles.module.css.map */

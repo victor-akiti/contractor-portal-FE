@@ -7,6 +7,8 @@ import Image from "next/image"
 import {initializeApp} from "firebase/app"
 import {OAuthProvider, getAuth, signInWithPopup, getIdToken, getIdTokenResult} from "firebase/auth"
 import { useRouter } from "next/navigation"
+import { useAppDispatch } from "@/redux/hooks"
+import { setUserData } from "@/redux/reducers/user"
 
 const StaffLogin = () => {
   const firebaseConfig = {
@@ -22,6 +24,7 @@ const StaffLogin = () => {
     const app = initializeApp(firebaseConfig);
     const provider = new OAuthProvider('microsoft.com');
     const router = useRouter()
+    const dispatch = useAppDispatch()
 
     const auth = getAuth();
     const signIn = () => {
@@ -45,10 +48,18 @@ const StaffLogin = () => {
           'token': result,
         },
         credentials: 'include',
-      }).then(async (respone) => {
-        const res = await respone.json();
-        goToApprovals()
+      }).then(async (response) => {
+        const res = await response.json();
+
         console.log({ res });
+        
+
+        if (res.status === "OK") {
+          
+        dispatch(setUserData({user: res.data.user}))
+        goToApprovals()
+        }
+        
       });
 
         }).catch((error) => {
@@ -68,7 +79,7 @@ const StaffLogin = () => {
     }
 
     const goToApprovals = () => {
-      router.push("/staff/approvals")
+      router.push("/staff/invoice-forms")
     }
 
     return (

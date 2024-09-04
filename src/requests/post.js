@@ -30,3 +30,21 @@ export const postProtected = async (route, body) => {
         console.log({error});
     }
 }
+
+export const postProtectedMultipart = async (route, body) => {
+    try {
+        const request = await fetch(`http://localhost:8080/${route}`, {
+            method: "POST",
+            headers: {
+                // "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body
+        })
+
+        const response = await request.json()
+        return response
+    } catch (error) {
+        console.log({error});
+    }
+}

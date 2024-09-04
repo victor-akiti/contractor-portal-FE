@@ -4,21 +4,14 @@ import Image from "next/image"
 import styles from "./styles/styles.module.css"
 import closeIcon from "@/assets/images/remove.svg"
 import { useState, useEffect, useRef } from "react"
+import InfoText from "@/components/infoText"
+import FormErrorText from "@/components/formErrorText"
+import { on } from "events"
 
-const MultiSelectText = ({onClick, label,  placeholder, type, highlighted, preSelectedOptions}) => {
-    const [selectedOptions, setSelectedOptions] = useState([{
-        label: "Option 1", 
-        value: "Option 1",
-        required: false,
-        isPreselected: false
-    }])
+const MultiSelectText = ({onClick, label,  highlighted, preSelectedOptions, infoText, errorText, required, onChange}) => {
+    const [selectedOptions, setSelectedOptions] = useState([])
 
-    const [fixedSelectedOptions, setFixedSelectedOptions] = useState([{
-        label: "Option 1", 
-        value: "Option 1",
-        required: false,
-        isPreselected: false
-    }])
+    const [fixedSelectedOptions, setFixedSelectedOptions] = useState([])
 
     const multiselectInputTextRef = useRef(null)
 
@@ -26,7 +19,7 @@ const MultiSelectText = ({onClick, label,  placeholder, type, highlighted, preSe
         let tempSelectedOptions = [...fixedSelectedOptions]
         tempSelectedOptions = preSelectedOptions.concat(tempSelectedOptions)
         setSelectedOptions(tempSelectedOptions)
-    }, [preSelectedOptions])
+    }, [])
 
     const removeSelectedOption = option => {
         let tempSelectedOptions = [...selectedOptions]
@@ -37,9 +30,12 @@ const MultiSelectText = ({onClick, label,  placeholder, type, highlighted, preSe
         tempSelectedOptions = tempSelectedOptions.filter(item => item.value !== option.value)
         setFixedSelectedOptions(tempSelectedOptions)
 
+        onChange(tempSelectedOptions)
+
         if (option.isPreselected) {
             
         }
+
     }
 
     const addOptionToSelected = event => {
@@ -64,6 +60,8 @@ const MultiSelectText = ({onClick, label,  placeholder, type, highlighted, preSe
         setFixedSelectedOptions(tempSelectedOptions)
         multiselectInputTextRef.current.value = ""
 
+        onChange(tempSelectedOptions)
+
     }
 
     return (
@@ -71,7 +69,7 @@ const MultiSelectText = ({onClick, label,  placeholder, type, highlighted, preSe
             event.stopPropagation()
             onClick()
         }}>
-            <label>{label}</label>
+            <label>{label}{required && <label className={styles.requiredIcon}>*</label>}</label>
             
             <div className={styles.multiSelectContainer}>
                 {
@@ -81,8 +79,16 @@ const MultiSelectText = ({onClick, label,  placeholder, type, highlighted, preSe
                     </div>)
                 }
 
-                <form onSubmit={(event) => addOptionToSelected(event)}><input ref={multiselectInputTextRef} placeholder="Enter some text and press enter" /></form>
+                <form onSubmit={(event) => addOptionToSelected(event)}><input ref={multiselectInputTextRef} placeholder="Enter text and press enter" /></form>
             </div>
+
+            {
+                infoText && <InfoText text={infoText} />
+            }
+
+            {
+                errorText && <FormErrorText text={errorText} />
+            }
         </div>
     )
 }

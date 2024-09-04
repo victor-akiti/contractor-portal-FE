@@ -1,0 +1,33 @@
+.deleteFormModal > div {
+  background-color: white;
+  padding: 20px;
+  color: black;
+}
+.deleteFormModal > div h5 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #545454;
+}
+.deleteFormModal > div > div {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  margin-top: 20px;
+}
+.deleteFormModal > div > div button {
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  margin-left: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.deleteFormModal > div > div button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}
+.deleteFormModal > div > div button:nth-child(2) {
+  background-color: rgb(30, 30, 30);
+  color: white;
+}/*# sourceMappingURL=styles.module.css.map */

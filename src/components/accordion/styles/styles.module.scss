@@ -1,0 +1,27 @@
+.accordion {
+    
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #f8f8f8;
+            margin-bottom: 20px;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #64676b;
+
+        }
+        .h5, h5 {
+            font-size: 1.25rem;
+        }
+    }
+
+    .content {
+        padding: 20px;
+        padding-top: 0px;
+    }
+}

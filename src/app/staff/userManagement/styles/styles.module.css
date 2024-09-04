@@ -1,0 +1,149 @@
+.userManagement h2 {
+  margin-bottom: 50px;
+}
+.userManagement h3 {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.userManagement h1, .userManagement h2, .userManagement h3, .userManagement h4, .userManagement h5, .userManagement h6 {
+  color: #64676b;
+}
+.userManagement button {
+  cursor: pointer;
+}
+
+.manageUserModal {
+  background-color: white;
+  width: 30%;
+  padding: 20px;
+}
+.manageUserModal .closeButtonDiv {
+  display: flex;
+  justify-content: end;
+}
+.manageUserModal .closeButtonDiv button {
+  border-style: none;
+  background-color: rgba(0, 0, 0, 0);
+  color: #e26b09;
+  font-size: 18px;
+}
+.manageUserModal .disableUserButton {
+  background-color: #e26b09;
+  border-style: none;
+  border-radius: 5px;
+  color: white;
+}
+.manageUserModal hr {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  border-color: #cecece;
+  border-style: none;
+  border-top-style: solid;
+  border-top-width: 1px;
+}
+.manageUserModal .switchLabel {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.manageUserModal .switchLabel label {
+  margin-right: 10px;
+}
+.manageUserModal input, .manageUserModal select, .manageUserModal button {
+  padding: 10px;
+}
+.manageUserModal input, .manageUserModal select {
+  width: 100%;
+  margin-bottom: 20px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #d1d1d1;
+  border-radius: 5px;
+}
+.manageUserModal .splitRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.manageUserModal .splitRow input {
+  width: 48%;
+}
+.manageUserModal .actionButtonDiv {
+  display: flex;
+  justify-content: end;
+}
+.manageUserModal .actionButtonDiv button {
+  background-color: #e26b09;
+  color: white;
+  border-style: none;
+  border-radius: 5px;
+}
+
+.tab header > div {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.tab header > div div {
+  width: 70%;
+}
+.tab header > div div select {
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #cfcfcf;
+  border-radius: 5px;
+  margin-left: 20px;
+}
+.tab header > div input {
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #cfcfcf;
+  border-radius: 5px;
+  width: 40%;
+}
+.tab header > div button {
+  padding: 10px;
+  color: white;
+  border-style: none;
+  background-color: #e26b09;
+  border-radius: 5px;
+  font-size: 18px;
+}
+.tab table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tab table thead tr td {
+  padding: 10px;
+  font-weight: bold;
+  border-style: solid;
+  border-left-style: none;
+  border-right-style: none;
+  border-color: #e1e1e1;
+  border-width: 1px;
+}
+.tab table tbody tr td {
+  padding: 15px;
+  border-style: solid;
+  border-left-style: none;
+  border-right-style: none;
+  border-color: #e1e1e1;
+  border-width: 1px;
+}
+.tab table .dark {
+  background-color: rgba(0, 0, 0, 0.0509803922);
+}
+.tab table .light {
+  background-color: white;
+}
+.tab table a {
+  color: #e26b09;
+  margin-right: 20px;
+}/*# sourceMappingURL=styles.module.css.map */

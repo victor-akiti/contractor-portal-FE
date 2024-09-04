@@ -1,0 +1,103 @@
+.uploadFileModal {
+  background-color: white;
+  width: 50vw;
+  height: 40vh;
+  border-style: none;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+}
+.uploadFileModal > div {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+}
+.uploadFileModal .selectUploadFileDiv {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.uploadFileModal .selectUploadFileDiv > div {
+  display: flex;
+  flex-direction: column;
+}
+.uploadFileModal .selectUploadFileDiv > div button {
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+.uploadFileModal .selectUploadFileDiv > div label {
+  font-size: 14px;
+  color: gray;
+}
+.uploadFileModal .selectUploadFileDiv > div input {
+  display: none;
+}
+.uploadFileModal .selectUploadFileDiv .selectedFilesTable {
+  margin-top: 20px;
+}
+.uploadFileModal .selectUploadFileDiv .selectedFilesTable tbody tr td {
+  padding: 5px;
+  font-size: 14px;
+}
+.uploadFileModal .selectUploadFileDiv .selectedFilesTable tbody tr td a {
+  color: #e26b09;
+}
+.uploadFileModal footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  padding-top: 20px;
+  border-top-style: solid;
+  border-top-color: rgb(226, 226, 226);
+}
+.uploadFileModal footer button {
+  margin-left: 20px;
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+.uploadFileModal footer button > div {
+  margin: 0px;
+  margin-left: 5px;
+}
+.uploadFileModal footer button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}
+
+.selectFileDiv {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  overflow-y: scroll;
+}
+.selectFileDiv > div {
+  padding: 20px;
+  width: 20%;
+}
+.selectFileDiv > div > div {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+.selectFileDiv > div > div:hover {
+  background-color: rgb(253, 228, 219);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.selectFileDiv > div > div p {
+  margin-top: 10px;
+}
+.selectFileDiv .active {
+  background-color: rgb(248, 184, 161);
+  border-radius: 10px;
+  font-weight: 600;
+}/*# sourceMappingURL=styles.module.css.map */

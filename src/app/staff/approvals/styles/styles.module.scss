@@ -44,6 +44,13 @@
         }
     }
 
+    a {
+        color: #e26b09;
+                    font-size: .875em;
+                    font-weight: 400;
+                    margin-bottom: 3px;
+    }
+
     table {
         width: 100%;
         margin-top: 20px;
@@ -119,6 +126,146 @@
 
             
         }
+    }
+
+    .reminderDiv {
+        display: flex;
+        align-items: center;
+
+        a {
+            margin: 0px !important;
+        }
+    }
+
+    .reminderSentText {
+        color: #047e00;
+        font-size: 14px;
+    }
+
+    .renewRequestTextDiv {
+        display: flex;
+        align-items: center;
+
+        a {
+            margin: 0px !important;
+        }
+    }
+}
+
+
+.deleteInviteText {
+    font-size: 13px;
+    color: #dc3545;
+    text-align: right;
+    cursor: pointer
+    
+    
+}
+
+.deleteInviteText:hover {
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.confirmArchiveModalDiv {
+    background-color: white;
+    padding: 20px;
+    border-style: none;
+    border-radius: 5px;
+    width: 30vw;
+
+    .archiveStatusMessages {
+        display: block;
+    }
+
+    div {
+        margin-top: 20px;
+        display: flex;
+        justify-content: end;
+        text-align: center;
+
+        div {
+            justify-content: center;
+        }
+
+        button {
+            margin-left: 20px;
+            padding: 7px;
+            border-style: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            div {
+                margin-top: 0px;
+            }
+
+            &>div {
+                &>div {
+                    display: unset;
+                }
+            }
+            
+
+        }
+
+        button:nth-child(1) {
+            background-color: black;
+        }
+
+        button:nth-child(2) {
+            background-color: #e26b09;
+        }
+    }
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+
+    p {
+        font-size: 14px;
+        color: #878787;
+    }
+}
+
+.inviteFilters {
+    display: flex;
+    margin-top: 20px;
+    align-items: center;
+
+    div {
+        display: flex;
+
+        p {
+            margin-left: 20px;
+            background-color: #eaeaea;
+            padding: 7px;
+            font-size: 14px;
+            border-style: none;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .active {
+            background-color: #e26b09;
+            color: white;
+        }
+    }
+    input {
+        border-style: none;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        border-color: rgb(236, 236, 236);
+        margin-left: 20px;
+        padding: 5px;
+        width: 350px;
     }
 }
 
