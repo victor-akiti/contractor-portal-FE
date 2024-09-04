@@ -14,7 +14,7 @@ export const deletePlain = async (route, body) => {
 
 export const deleteProtected = async (route, body) => {
     try {
-        const request = await fetch(`http://localhost:8080/${route}`, {
+        const request = await fetch(`https://ultimate-arleen-amni-5494bb5f.koyeb.app/${route}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "text/json"
