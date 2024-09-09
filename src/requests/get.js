@@ -13,7 +13,7 @@ export const getPlain = async (route) => {
 
 export const getProtected = async (route) => {
     try {
-        const request = await fetch(`https://ultimate-arleen-amni-5494bb5f.koyeb.app/${route}`, {
+        const request = await fetch(`https://new-contractor-portal-backend.onrender.com/${route}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"

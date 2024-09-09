@@ -42,7 +42,7 @@ const StaffLogin = () => {
         const idToken = credential.idToken;
 
         auth.currentUser.getIdToken().then((result) => {
-          fetch('https://ultimate-arleen-amni-5494bb5f.koyeb.app/user/ver', {
+          fetch('https://new-contractor-portal-backend.onrender.com/user/ver', {
         method: 'PUT',
         headers: {
           'token': result,
