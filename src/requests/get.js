@@ -13,7 +13,7 @@ export const getPlain = async (route) => {
 
 export const getProtected = async (route) => {
     try {
-        const request = await fetch(`https://new-contractor-portal-backend.onrender.com/${route}`, {
+        const request = await fetch(`http://localhost:8080/${route}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"

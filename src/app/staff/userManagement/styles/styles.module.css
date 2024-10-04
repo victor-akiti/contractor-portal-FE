@@ -16,6 +16,18 @@
   background-color: white;
   width: 30%;
   padding: 20px;
+  max-height: 80vh;
+  overflow-y: scroll;
+}
+.manageUserModal .selectedUserName {
+  margin-bottom: 10px;
+}
+.manageUserModal h3 {
+  margin-top: 0px;
+}
+.manageUserModal .topDivider {
+  margin-top: 0px;
+  margin-bottom: 10px;
 }
 .manageUserModal .closeButtonDiv {
   display: flex;
@@ -78,8 +90,41 @@
   color: white;
   border-style: none;
   border-radius: 5px;
+  display: flex;
+  align-items: center;
 }
 
+.replaceRoleModal {
+  width: 40%;
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: scroll;
+  background-color: white;
+}
+.replaceRoleModal h2 {
+  margin-bottom: 10px;
+}
+.replaceRoleModal p {
+  margin-bottom: 20px;
+  color: #64676b;
+}
+.replaceRoleModal > div > div {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+.replaceRoleModal > div > div button {
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+}
+.replaceRoleModal > div > div button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}
 .tab header > div {
   margin-top: 20px;
   display: flex;

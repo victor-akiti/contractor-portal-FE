@@ -796,9 +796,9 @@ const PendingL2Item = ({index, companyRecord}) => {
     }
 
     return (
-        <tr className={[styles.pendingL2Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
+        <tr className={[styles.pendingL2Item, companyRecord.needsAttention ? styles.needsAttendionBackground : index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={"/"}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{companyRecord?.contractorDetails?.email}</p>
             </td>
 
@@ -807,7 +807,7 @@ const PendingL2Item = ({index, companyRecord}) => {
             </td>
 
             <td>
-                <Link href={"/"}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>
+                <Link href={`/staff/approvals/${companyRecord.vendor}`}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>
                 {
                     companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
                         <p>End User: App Dev</p>
@@ -840,20 +840,20 @@ const L3Item = ({index, companyRecord}) => {
     return (
         <tr className={[styles.l3Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={"/"}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{String(companyRecord?.contractorDetails?.email)}</p>
             </td>
 
 
 
-            <td>
+            {/* <td>
             {
                     companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
                         <p>End User: App Dev</p>
                         <p>Change end user(s)</p>
                     </>
                 }             
-            </td>
+            </td> */}
 
             <td>
                 <p>{moment(getLastUpdated()).format("LL")}</p>
@@ -896,7 +896,7 @@ const CompletedL2Item = ({index, companyRecord}) => {
     return (
         <tr className={[styles.completedL2Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={"/"}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{companyRecord?.contractorDetails?.email}</p>
             </td>
 
@@ -907,8 +907,8 @@ const CompletedL2Item = ({index, companyRecord}) => {
             <td>
                 {
                     companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
-                        <p>End User: App Dev</p>
-                        <p>Change end user(s)</p>
+                        {/* <p>End User: App Dev</p>
+                        <p>Change end user(s)</p> */}
                     </>
                 }  
                 <Link href={"/"}>REVERT TO PENDING</Link>
@@ -958,7 +958,7 @@ const ReturnedItem = ({index, companyRecord}) => {
     return (
         <tr className={[styles.returnedItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={"/"}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{companyRecord?.contractorDetails?.email}</p>
             </td>
 
@@ -967,7 +967,7 @@ const ReturnedItem = ({index, companyRecord}) => {
             </td>
 
             <td>
-                <Link href={"/"}>VIEW</Link>
+                <Link href={`/staff/vendor/${companyRecord.vendor}`}>VIEW</Link>
                 
             </td>
 

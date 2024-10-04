@@ -42,7 +42,7 @@ const StaffLogin = () => {
         const idToken = credential.idToken;
 
         auth.currentUser.getIdToken().then((result) => {
-          fetch('https://new-contractor-portal-backend.onrender.com/user/ver', {
+          fetch('http://localhost:8080/user/ver', {
         method: 'PUT',
         headers: {
           'token': result,

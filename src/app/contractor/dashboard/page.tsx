@@ -240,7 +240,7 @@ const Dashboard = () => {
                                 <Link href={`/contractor/application/view/${item.vendor}`}>VIEW</Link>
 
                                 {
-                                    !item.flags.submitted || item.flags.stage === "returned" && <Link href={`/contractor/form/${item.vendor}`}>CONTINUE & SUBMIT</Link>
+                                    (!item.flags.submitted || item.flags.stage === "returned") && <Link href={`/contractor/form/${item.vendor}`}>CONTINUE & SUBMIT</Link>
                                 }
                             </div>
                         </div>)

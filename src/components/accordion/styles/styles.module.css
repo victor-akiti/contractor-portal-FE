@@ -1,3 +1,9 @@
+.accordion hr {
+  border-style: none;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #d8d8d8;
+}
 .accordion header {
   display: flex;
   align-items: center;
@@ -5,17 +11,15 @@
   padding: 10px;
   cursor: pointer;
 }
-.accordion header:hover {
-  background-color: #f8f8f8;
-  margin-bottom: 20px;
-}
 .accordion header h1, .accordion header h2, .accordion header h3, .accordion header h4, .accordion header h5, .accordion header h6 {
   color: #64676b;
 }
 .accordion header .h5, .accordion header h5 {
   font-size: 1.25rem;
+  font-weight: 500;
 }
 .accordion .content {
   padding: 20px;
   padding-top: 0px;
+  scroll-behavior: smooth;
 }/*# sourceMappingURL=styles.module.css.map */

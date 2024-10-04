@@ -22,6 +22,21 @@
     background-color: white;
     width: 30%;
     padding: 20px;
+    max-height: 80vh;
+    overflow-y: scroll;
+
+    .selectedUserName {
+        margin-bottom: 10px;
+    }
+
+    h3 {
+        margin-top: 0px;
+    }
+
+    .topDivider {
+        margin-top: 0px;
+        margin-bottom: 10px;
+    }
 
     .closeButtonDiv {
         display: flex;
@@ -96,6 +111,54 @@
             color: white;
             border-style: none;
             border-radius: 5px;
+
+            display: flex;
+            align-items: center;
+        }
+    }
+}
+
+.replaceRoleModal {
+    width: 40%;
+    padding: 20px;
+    max-height: 80vh;
+    overflow-y: scroll;
+    background-color: white ;
+
+    h2 {
+        margin-bottom: 10px;
+    }
+
+    p {
+        margin-bottom: 20px;
+        color: #64676b;
+    }
+
+    &>div {
+        &>div {
+            display: flex;
+            justify-content: end;
+            align-items: center;
+    
+            button {
+                padding: 10px;
+                border-style: none;
+                border-radius: 10px;
+                margin-left: 20px;
+    
+                display: flex;
+                align-items: center;
+            }
+    
+            button:nth-child(1) {
+                background-color: $primaryColor;
+                color: white;
+            }
+    
+            button:nth-child(2) {
+                
+    
+            }
         }
     }
 }

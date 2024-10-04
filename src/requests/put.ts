@@ -1,6 +1,6 @@
 export const putPlain = async (route, body) => {
     try {
-        const request = await fetch(`https://new-contractor-portal-backend.onrender.com/${route}`, {
+        const request = await fetch(`http://localhost:8080/${route}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -15,7 +15,7 @@ export const putPlain = async (route, body) => {
 
 export const putProtected = async (route, body) => {
     try {
-        const request = await fetch(`https://new-contractor-portal-backend.onrender.com/${route}`, {
+        const request = await fetch(`http://localhost:8080/${route}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"

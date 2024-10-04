@@ -179,6 +179,8 @@ const EditForm = () => {
             layout: "single column",
             description: "",
             allowMultiple: false,
+            hideOnApproval: false,
+            hideOnView: false,
             fields: [
 
             ]
@@ -224,6 +226,18 @@ const EditForm = () => {
     const updateSectionAllowMultiple = (allowMultiple) => {
         let tempForm = {...newForm}
         tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["allowMultiple"] = allowMultiple
+        setNewForm(tempForm)
+    }
+
+    const updateHideOnApproval = (allowMultiple) => {
+        let tempForm = {...newForm}
+        tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["hideOnApproval"] = allowMultiple
+        setNewForm(tempForm)
+    }
+
+    const updateHideOnView = (allowMultiple) => {
+        let tempForm = {...newForm}
+        tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["hideOnView"] = allowMultiple
         setNewForm(tempForm)
     }
 
@@ -306,6 +320,7 @@ const EditForm = () => {
                     type: "shortText",
                     textType: "text",
                     label: "Short Text",
+                    approvalLabel: "Short Text",
                     required: false,
                     allowMultiple: false,
                     addFieldText: "Add another field"
@@ -321,6 +336,7 @@ const EditForm = () => {
                     maxLength: 2560,
                     type: "longText",
                     label: "Long Text",
+                    approvalLabel: "Long Text",
                     allowMultiple: false,
                     addFieldText: "Add another field"
                 })
@@ -335,6 +351,7 @@ const EditForm = () => {
                     maxLength: 2560,
                     type: "textBlock",
                     label: "Text Block",
+                    approvalLabel: "Text Block",
                     text: "",
                     allowMultiple: false,
                     addFieldText: "Add another field"
@@ -356,6 +373,7 @@ const EditForm = () => {
                     }],
                     type: "dropDown",
                     label: "Drop Down",
+                    approvalLabel: "Drop Down",
                     allowMultiple: false,
                     addFieldText: "Add another field"
                 })
@@ -369,6 +387,7 @@ const EditForm = () => {
                     enabled: true,
                     maxLength: 256,
                     label: "Checkboxes",
+                    approvalLabel: "Checkboxes",
                     type: "checkBoxes",
                     options:[{
                         value: "Select an option",
@@ -389,6 +408,7 @@ const EditForm = () => {
                     enabled: true,
                     maxLength: 256,
                     label: "Radio Buttons",
+                    approvalLabel: "Radio Buttons",
                     type: "radioButtons",
                     options:[{
                         value: "Select an option",
@@ -409,6 +429,7 @@ const EditForm = () => {
                 enabled: true,
                 maxLength: 256,
                 label: "Multi Select Text",
+                approvalLabel: "Multi Select Text",
                 type: "multiSelectText",
                 options:[{
                     value: "Select an option",
@@ -442,6 +463,7 @@ const EditForm = () => {
                     maxLength: 256,
                     type: "file",
                     label: "File Upload",
+                    approvalLabel: "File Upload",
                     allowedFormats: ["JPG"],
                     maxAllowedFiles: 1,
                     isACertificate: false,
@@ -466,6 +488,7 @@ const EditForm = () => {
                     type: "date",
                     textType: "text",
                     label: "Date",
+                    approvalLabel: "Date",
                     required: false,
                     allowMultiple: false,
                     addFieldText: "Add another field"
@@ -977,7 +1000,7 @@ const EditForm = () => {
                                 <input placeholder="Section Title" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].description} onChange={(event) => updateSectionDescription(event.target.value)}  />
 
                                 <div className={styles.editFieldDivs}>
-                                    <div style={{marginTop: "20px"}}></div>
+                                            <div style={{marginTop: "20px"}}></div>
                                                 <label>Allow vendors add more of this section</label>
                                                 <Switch
                                                 onChange={() => {
@@ -990,6 +1013,40 @@ const EditForm = () => {
                                                 checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].allowMultiple} />
                                                 <p className={styles.helperText}>Check this if you want the vendor to be able to add multiple instances of this section</p>
                                             </div>
+
+                                            <div className={styles.editFieldDivs}>
+                                            <div style={{marginTop: "20px"}}></div>
+                                                <label>Hide on approvals page</label>
+                                                <Switch
+                                                onChange={() => {
+                                                    if (newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnApproval) {
+                                                        updateHideOnApproval(false)
+                                                    } else {
+                                                        updateHideOnApproval(true)
+                                                    }
+                                                }}
+                                                checked={newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnApproval} />
+                                                <p className={styles.helperText}>Check this if you want hide this section on the approvals page</p>
+                                            </div>
+
+                                            <div className={styles.editFieldDivs}>
+                                            <div style={{marginTop: "20px"}}></div>
+                                                <label>Hide on view page</label>
+                                                <Switch
+                                                onChange={() => {
+                                                    if (newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnView) {
+                                                        updateHideOnView(false)
+                                                    } else {
+                                                        updateHideOnView(true)
+                                                    }
+                                                }}
+                                                checked={newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnView} />
+                                                <p className={styles.helperText}>Check this if you want hide this section on the application view page.</p>
+                                            </div>
+
+                                            
+
+                                            
 
                                             {
                                                 newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].allowMultiple && <div className={styles.editFieldDivs}>
@@ -1058,6 +1115,12 @@ const EditForm = () => {
                                             <div className={styles.editFieldDivs}>
                                                 <label>Field label</label>
                                                 <input placeholder="Label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "label", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                            </div>
+
+                                            <div className={styles.editFieldDivs}>
+                                                <label>Approval Label</label>
+                                                <input placeholder="Approval label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "approvalLabel", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                <p className={styles.helperText}>Use this if you want the label on the form to be different from the label used during approvals.</p>
                                             </div>
 
                                             <div className={styles.editFieldDivs}>

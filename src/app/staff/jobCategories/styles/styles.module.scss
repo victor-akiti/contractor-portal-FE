@@ -13,6 +13,126 @@
     h1, h2, h3, h4, h5, h6 {
         color: #64676b;
     }
+
+    .addJobCategoryModal {
+        background-color: white;
+        width: 30%;
+        border-style: none;
+        border-radius: 10px;
+
+        header {
+            padding: 10px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            
+            h2 {
+                margin-bottom: 0px;
+            }
+        }
+    
+        &>div {
+            padding: 10px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+
+            input {
+                width: 100%;
+                padding: .375rem .75rem;
+                display: block;
+                width: 100%;
+                height: calc(1.5em + .75rem + 2px);
+                padding: .375rem .75rem;
+                font-size: 1rem;
+                font-weight: 400;
+                line-height: 1.5;
+                color: #495057;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid $primaryColor;
+                border-radius: .25rem;
+                transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+
+            p{ 
+                font-size: 13px;
+                color: #9f9f9f;
+            }
+        }
+    
+        footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 10px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+
+            button {
+                display: inline-block;
+                font-weight: 400;
+                color: #212529;
+                text-align: center;
+                vertical-align: middle;
+                -webkit-user-select: none;
+                user-select: none;
+                background-color: initial;
+                border: 1px solid #0000;
+                padding: .375rem .75rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                border-radius: .25rem;
+                cursor: pointer;
+                transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            }
+
+            button:nth-child(1) {
+                border-style: solid;
+                border-width: 1px;
+                border-color: $primaryColor;
+                color: $primaryColor;
+            }
+
+            button:nth-child(2) {
+                color: white;
+                border-style: none;
+                margin-left: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                div {
+                    margin-left: 5x;
+                }
+            }
+
+            .disabled {
+                background-color: #ffae6c;
+            }
+
+            .enabled {
+                background-color: $primaryColor;
+            }
+
+            
+        }
+    }
+
+    .deleteCategoryWarning {
+        color: #721c24 !important;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        padding: 10px;
+        font-size: 1rem !important;
+        position: relative;
+        padding: .75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid #0000;
+        border-radius: .25rem;
+    }
+    
+    
 }
 
 .tab {
@@ -77,3 +197,4 @@
         }
     }
 }
+

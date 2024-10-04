@@ -2,11 +2,11 @@
 import styles from "./styles/styles.module.css"
 import arrowRight from "@/assets/images/arrowRight.svg"
 import arrowDown from "@/assets/images/arrowDown.svg"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 
 
-const Accordion = ({children, title}) => {
+const Accordion = ({children, title, defaultOpen}) => {
     const [accordionState, setAccordionState] = useState("open")
 
     const toggleAccordion = () => {
@@ -16,6 +16,10 @@ const Accordion = ({children, title}) => {
             setAccordionState("open")
         }
     }
+    
+    useEffect(() => {
+        setAccordionState(defaultOpen ? "open" : "closed")
+    }, [defaultOpen])
 
     return (
         <div className={styles.accordion}>

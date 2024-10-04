@@ -8,6 +8,109 @@
 .tasksPage h1, .tasksPage h2, .tasksPage h3, .tasksPage h4, .tasksPage h5, .tasksPage h6 {
   color: #64676b;
 }
+.tasksPage .addJobCategoryModal {
+  background-color: white;
+  width: 30%;
+  border-style: none;
+  border-radius: 10px;
+}
+.tasksPage .addJobCategoryModal header {
+  padding: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.tasksPage .addJobCategoryModal header h2 {
+  margin-bottom: 0px;
+}
+.tasksPage .addJobCategoryModal > div {
+  padding: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.tasksPage .addJobCategoryModal > div input {
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  display: block;
+  width: 100%;
+  height: calc(1.5em + 0.75rem + 2px);
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #e26b09;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.tasksPage .addJobCategoryModal > div p {
+  font-size: 13px;
+  color: #9f9f9f;
+}
+.tasksPage .addJobCategoryModal footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.tasksPage .addJobCategoryModal footer button {
+  display: inline-block;
+  font-weight: 400;
+  color: #212529;
+  text-align: center;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+       user-select: none;
+  background-color: initial;
+  border: 1px solid rgba(0, 0, 0, 0);
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.tasksPage .addJobCategoryModal footer button:nth-child(1) {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #e26b09;
+  color: #e26b09;
+}
+.tasksPage .addJobCategoryModal footer button:nth-child(2) {
+  color: white;
+  border-style: none;
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tasksPage .addJobCategoryModal footer button:nth-child(2) div {
+  margin-left: 5x;
+}
+.tasksPage .addJobCategoryModal footer .disabled {
+  background-color: #ffae6c;
+}
+.tasksPage .addJobCategoryModal footer .enabled {
+  background-color: #e26b09;
+}
+.tasksPage .deleteCategoryWarning {
+  color: #721c24 !important;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  padding: 10px;
+  font-size: 1rem !important;
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 0.25rem;
+}
 
 .tab header {
   display: flex;

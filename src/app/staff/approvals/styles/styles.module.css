@@ -382,4 +382,7 @@
 .returnedItem td:nth-child(3) p:nth-child(3) {
   font-weight: 500;
   text-decoration: underline;
+}
+.needsAttendionBackground {
+  background-color: #ffe0c6;
 }/*# sourceMappingURL=styles.module.css.map */

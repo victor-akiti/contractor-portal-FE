@@ -46,6 +46,9 @@ const Login = () => {
             setLoggingIn(true)
             const loginRequest = await postProtected("auth/login", {loginDetails})
 
+            console.log({loginRequest});
+            
+
             
             
 

@@ -7,6 +7,10 @@ export const deletePlain = async (route, body) => {
             },
             body: JSON.stringify(body)
         })
+
+        const result = await request.json()
+
+        return result
     } catch (error) {
         console.log({error});
     }
@@ -14,7 +18,7 @@ export const deletePlain = async (route, body) => {
 
 export const deleteProtected = async (route, body) => {
     try {
-        const request = await fetch(`https://new-contractor-portal-backend.onrender.com/${route}`, {
+        const request = await fetch(`http://localhost:8080/${route}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "text/json"
@@ -22,6 +26,10 @@ export const deleteProtected = async (route, body) => {
             credentials: "include",
             body: JSON.stringify(body)
         })
+
+        const result = await request.json()
+
+        return result
     } catch (error) {
         console.log({error});
     }

@@ -21,8 +21,13 @@ export default function Home() {
       } else {
         if (currentAuthState.data.role === "User") {
           router.push("/contractor/dashboard")
+
+          
         } else {
           router.push("/staff/approvals")
+
+          localStorage.setItem("role", "Staff")
+          localStorage.setItem("user", JSON.stringify(currentAuthState.data))
         }
       }
 

@@ -9,6 +9,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getProtected } from "@/requests/get";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { setUserData } from "@/redux/reducers/user";
 
 const Layout = ({children}) => {
     const [authenticated, setAuthenticated] = useState(false)
@@ -17,10 +19,16 @@ const Layout = ({children}) => {
       }, [])
     
       const router = useRouter()
+      const dispatch = useDispatch()
     
       const getCurrentAuthState = async () => {
         try {
           const currentAuthState = await getProtected("auth/current-auth-state")
+          dispatch(setUserData({user: currentAuthState.data}))
+          
+
+          console.log({currentAuthState});
+          
     
           if (currentAuthState.status === "Failed") {
             router.push("/login")
@@ -36,6 +44,24 @@ const Layout = ({children}) => {
           
         } catch (error) {
           console.log({error});
+        }
+      }
+
+      const approveHoldRequest = async (id) => {
+        try {
+          const approveRequest = await getProtected(`forms/approve/${id}`)
+          console.log({approveRequest})
+        } catch (error) {
+          console.log({error})
+        }
+      }
+
+      const declineHoldRequest = async (id) => {
+        try {
+          const declineRequest = await getProtected(`forms/decline/${id}`)
+          console.log({declineRequest})
+        } catch (error) {
+          console.log({error})
         }
       }
  return (
@@ -57,7 +83,7 @@ const Layout = ({children}) => {
     
             <div className={styles.content}>
                     <div className={styles.left}>
-                        {/* <Link href={"/staff/approvals"}>Registration Approvals</Link>
+                        <Link href={"/staff/approvals"}>Registration Approvals</Link>
     
                         <Link href={"/staff/invites"}>Registration Invites</Link>
                         
@@ -67,13 +93,13 @@ const Layout = ({children}) => {
     
                         <Link href={"/staff/forms"}>Forms</Link>
     
-                        <Link href={"/staff/userManagement"}>User Management</Link> */}
+                        <Link href={"/staff/userManagement"}>Roles & User Management</Link>
 
                         <Link href={"/staff/invoice-forms"}>Invoice Forms</Link>
     
                         <hr />
     
-                        {/* <Link href={"/staff/search"}>Advanced Search</Link> */}
+                        <Link href={"/staff/search"}>Advanced Search</Link>
                     </div>
     
                     <div className={styles.right}>

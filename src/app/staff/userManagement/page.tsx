@@ -2,11 +2,15 @@
 
 import styles from "./styles/styles.module.css"
 import Tabs from "@/components/tabs"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ManageEndUsers from "./manageEndUsers"
 import ManageJobCategories from "./manageJobCategories"
 import Modal from "@/components/modal"
 import Switch from "react-switch"
+import { getProtected } from "@/requests/get"
+import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import SuccessMessage from "@/components/successMessage"
+import { putProtected } from "@/requests/put"
 
 type User  = {
     firstName?: String,
@@ -16,11 +20,20 @@ type User  = {
     login?: String,
     name?: String,
     role?: String,
-    isOutOfOffice?: boolean
+    isOutOfOffice?: boolean,
+    _id?: String
 }
 
 const Tasks = () => {
     const [activeTab, setActiveTab] = useState("manage endusers")
+    const [users, setUsers] = useState([])
+    const [optionToUpdate, setOptionToUpdate] = useState("")
+    const [newRole, setNewRole] = useState("")
+    const [newDepartment, setNewDepartment] = useState("")
+    const [successMessages, setSuccessMessages] = useState<any>({})
+    const [errorMessages, setErrorMessages] = useState({})
+    const [userToReplaceRole, setUserToReplaceRole] = useState({})
+    const [fixedUsersList, setFixedUsersList] = useState([])
 
     const sampleEndUser: User = {
         firstName: "firstName",
@@ -30,8 +43,13 @@ const Tasks = () => {
         login: "firstNameL",
         name: "FirstName LastName",
         role: "End-user",
-        isOutOfOffice: false
+        isOutOfOffice: false,
+        _id: ""
     }
+
+    useEffect(() => {
+        getAllStaff()
+    }, [])
 
     const [selectedUser, setSelectedUser] = useState<User>({})
 
@@ -53,7 +71,118 @@ const Tasks = () => {
         setSelectedUser(tempSelectedUser)
     }
 
+    const getAllStaff = async () => {
+        try {
+            const getAllStaffRequest = await getProtected("users/staff/all")
+
+            if (getAllStaffRequest.status === "OK") {
+                
+                setUsers(sortUserAlphabetically(getAllStaffRequest.data))
+                setFixedUsersList(sortUserAlphabetically(getAllStaffRequest.data))
+            }
+
+            console.log({getAllStaffRequest});
+            
+        } catch (error) {
+
+        }
+    }
+
+    const sortUserAlphabetically = (users) => {
+        let sortedUsers = [...users].sort((a,b) => a.name.localeCompare(b.name))
+        return sortedUsers
+    }
+
+    const updateUserRole = async ({replace}) => {
+        try {
+            setOptionToUpdate("role")
+            if (replace) {
+                setOptionToUpdate("replace")
+            } else {
+                setOptionToUpdate("role")
+            }
+            const updateUserRoleRequest = await putProtected(`users/role/${selectedUser._id}`, {role: newRole, replace})
+
+            if (updateUserRoleRequest.status === "OK") {
+                setOptionToUpdate("")
+                getAllStaff()
+
+                if (replace === true) {
+                    setUserToReplaceRole({})
+                }
+
+                showSuccessMessages("role", "Role updated successfully")
+
+                
+            } else {
+                if (updateUserRoleRequest.error.message === "User with this role already exists") {
+                    let tempUserToReplaceRole = {...userToReplaceRole}
+                    tempUserToReplaceRole = updateUserRoleRequest.user
+                    setUserToReplaceRole(tempUserToReplaceRole)
+                }
+            }
+
+            console.log({updateUserRoleRequest});
+            
+        } catch (error) {
+            console.log({error});
+        }
+    }
+
+    const showSuccessMessages = (option, message) => {
+        let tempSuccessMessages = {...successMessages}
+        tempSuccessMessages[option] = message
+        setOptionToUpdate("")
+
+        setSuccessMessages(tempSuccessMessages)
+
+        setTimeout(() => {
+            let tempSuccessMessages = {...successMessages}
+            tempSuccessMessages[option] = ""
+
+            setSuccessMessages(tempSuccessMessages)
+        }, 3000)
+    }
+
+    const closeReplaceRoleModal = () => {
+        setUserToReplaceRole({})
+    }
+
+    const filterUsersByNameOrEmail = query => {
+        if (query) {
+            let tempUsers = [...users]
+            tempUsers = fixedUsersList.filter(user => user.name.toLowerCase().includes(query.toLowerCase()) || user.email.toLowerCase().includes(query.toLowerCase()))
+            setUsers(tempUsers)
+        } else {
+            setUsers(fixedUsersList)
+        }
+    }
+
+    const updateUserDepartment = async () => {
+        setOptionToUpdate("department")
+        try {
+            console.log("updating department");
+            
+            const updateUserDepartmentRequest = await putProtected(`users/department/${selectedUser._id}`, {department: newDepartment})
+
+            if (updateUserDepartmentRequest.status === "OK") {
+                getAllStaff()
+                
+                showSuccessMessages("department", "Department updated successfully")
+            }
+
+            console.log({updateUserDepartmentRequest});
+            
+        } catch (error) {
+            console.log({error});
+        }
+    }
+
     console.log({selectedUser});
+    console.log({newRole});
+    console.log({newDepartment});
+    
+    
     
 
     return (
@@ -62,12 +191,15 @@ const Tasks = () => {
                 Object.values(selectedUser).length > 0 && <Modal>
                 <div className={styles.manageUserModal}>
                     {
-                        selectedUser.role === "End-user" && <>
+                        <>
                         <div>
-                        <h3>Update End User</h3>
+                            <h2 className={styles.selectedUserName}>{selectedUser.name}</h2>
+
+                            <hr className={styles.topDivider} />
+                        <h3>Update Department</h3>
 
                         <div>
-                                <div className={styles.splitRow}>
+                                {/* <div className={styles.splitRow}>
                                     <input placeholder="First Name" />
                                     <input placeholder="Last Name" />
                                 </div>
@@ -75,14 +207,29 @@ const Tasks = () => {
                                 <div className={styles.splitRow}>
                                     <input placeholder="Email" />
                                     <input placeholder="Amni Login" />
-                                </div>
+                                </div> */}
 
-                                <select>
-                                    <option>Department</option>
+                                {
+                                    successMessages.department && <SuccessMessage message={successMessages.department} />
+                                }
+
+                                <select onChange={event => setNewDepartment(event.target.value)} >
+                                    <option disabled selected>Department</option>
+                                    <option value={"Contract and Procurement"}>Contracts and Procurement</option>
+                                    <option value={"Corporate Communications"}>Corporate Communications</option>
+                                    <option value={"Drilling"}>Drilling</option>
+                                    <option value={"Finance"}>Finance</option>
+                                    <option value={"Legal"}>Legal</option>
+                                    <option value={"Human Resources"}>Human Resources</option>
+                                    <option value={"Internal Control and Risk Management"}>Internal Control and Risk Management</option>
+                                    <option value={"ICT"}>ICT</option>
+                                    <option value={"Insurance"}>Insurance</option>
+                                    <option value={"Information Management"}>Information Management</option>
+                                    <option value={"Operations"}>Operations</option>
                                 </select>
 
                                 <div className={styles.actionButtonDiv}>
-                                    <button>Update</button>
+                                    <button onClick={() => updateUserDepartment()}>Update { optionToUpdate === "department" && <ButtonLoadingIcon />}</button>
                                 </div>
                         </div>
                     </div>
@@ -92,24 +239,28 @@ const Tasks = () => {
                     }
 
                     <div>
-                        <h3>Update Permissions</h3>
+                        <h3>Update Role</h3>
 
                         <div>
                                 
-
-                                <select>
-                                    <option>Vendor</option>
-                                    <option>End-user</option>
-                                    <option>CnP Staff</option>
-                                    <option>Contract Officer</option>
-                                    <option>CnP GM</option>
-                                    <option>CnP HOD</option>
-                                    <option>GMD</option>
-                                    <option>Admin</option>
+                                {
+                                    successMessages["role"] && <SuccessMessage message={successMessages.role} />
+                                }
+                                <select onChange={event => setNewRole(event.target.value)}>
+                                    <option value={"User"}>Vendor</option>
+                                    <option value={"End User"}>End-user</option>
+                                    <option value={"C and P Staff"}>C and P Staff</option>
+                                    <option value={"CO"}>Contracts Officer</option>
+                                    <option value={"GM"}>C and P General Manager</option>
+                                    <option value={"HOD"}>C and P HOD</option>
+                                    <option value={"GMD"}>GMD</option>
+                                    <option value={"Insurance Officer"}>Insurance Officer</option>
+                                    <option value={"VRM"}>VRM</option>
+                                    <option value={"Admin"}>Admin</option>
                                 </select>
 
                                 <div className={styles.actionButtonDiv}>
-                                    <button>Update</button>
+                                    <button onClick={() => updateUserRole({replace: false})}>Update {optionToUpdate === "role" && <ButtonLoadingIcon />}</button>
                                 </div>
                         </div>
                     </div>
@@ -170,6 +321,24 @@ const Tasks = () => {
             </Modal>
             }
 
+            {
+                Object.values(userToReplaceRole).length > 0 && <Modal>
+                <div className={styles.replaceRoleModal}>
+                    <h2>Replace User Role</h2>
+
+                    <p>{`${userToReplaceRole.name} currently holds the ${userToReplaceRole.role} role. Replace them as ${userToReplaceRole.role} with ${selectedUser.name}? They would automatically be moved to the C and P Staff Role.`}</p>
+
+                    <div>
+
+                        <div className={styles.actionButtonDiv}>
+                            <button onClick={() => updateUserRole({replace: true})}>Replace Current Role Holder { optionToUpdate === "replace" && <ButtonLoadingIcon />}</button>
+                            <button onClick={() => closeReplaceRoleModal()}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+            }
+
 
             <h2>User Management</h2>
 
@@ -177,15 +346,15 @@ const Tasks = () => {
             <header>
                 <h3>Manage Users</h3>
 
-                <label>Filter</label>
+                {/* <label>Filter</label> */}
 
                 
 
                 <div>
                     <div>
-                        <input placeholder="Filter by name" />
+                        <input placeholder="Filter by name" onChange={event => filterUsersByNameOrEmail(event.target.value)} />
 
-                        <select>
+                        {/* <select>
                             <option>Filter by role</option>
 
                             <option value={"user"}>Contractor</option>
@@ -196,7 +365,7 @@ const Tasks = () => {
                             <option value={"user"}>CnP HOD</option>
                             <option value={"user"}>GMD</option>
                             <option value={"user"}>Admin</option>
-                        </select>
+                        </select> */}
                     </div>
 
                     {/* <button>Add End-User</button> */}
@@ -232,25 +401,25 @@ const Tasks = () => {
 
                 <tbody>
                     {
-                        ["", "", "", "", "", "", "", "", "", ""].map((item, index) => <tr className={index%2 === 0 ? styles.dark : styles.light} key={index}>
+                        users.map((item, index) => <tr className={index%2 === 0 ? styles.dark : styles.light} key={index}>
                             <td>
-                                <p>{sampleEndUser.name}</p>
+                                <p>{ item.name}</p>
                             </td>
 
                             <td>
-                                <p>{sampleEndUser.email}</p>
+                                <p>{item.email}</p>
                             </td>
 
                             <td>
-                                <p>{sampleEndUser.department}</p>
+                                <p>{item.department}</p>
                             </td>
 
                             <td>
-                                <p>{sampleEndUser.role}</p>
+                                <p>{item.role}</p>
                             </td>
 
                             <td>
-                                <a onClick={() => setUserAsSelected(sampleEndUser)}>MANAGE</a>
+                                <a onClick={() => setUserAsSelected(item)}>MANAGE</a>
                             </td>
                         </tr>)
                     }
