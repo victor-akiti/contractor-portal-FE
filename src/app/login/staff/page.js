@@ -42,7 +42,7 @@ const StaffLogin = () => {
         const idToken = credential.idToken;
 
         auth.currentUser.getIdToken().then((result) => {
-          fetch('http://localhost:8080/user/ver', {
+          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
         method: 'PUT',
         headers: {
           'token': result,
