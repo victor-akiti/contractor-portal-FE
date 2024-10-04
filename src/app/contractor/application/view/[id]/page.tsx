@@ -171,7 +171,7 @@ const ViewPage = () => {
 
 <div className={styles.viewContent}>
     {
-        registrationForm.form.pages.map((item, index) => <Accordion key={index} title={item.pageTitle}>
+        registrationForm.form.pages.map((item, index) => <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
         <div>
             {
                 item.sections.map((section, sectionIndex) => <div key={sectionIndex}>

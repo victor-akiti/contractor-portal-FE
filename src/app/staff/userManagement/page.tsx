@@ -32,7 +32,7 @@ const Tasks = () => {
     const [newDepartment, setNewDepartment] = useState("")
     const [successMessages, setSuccessMessages] = useState<any>({})
     const [errorMessages, setErrorMessages] = useState({})
-    const [userToReplaceRole, setUserToReplaceRole] = useState({})
+    const [userToReplaceRole, setUserToReplaceRole] = useState<any>({})
     const [fixedUsersList, setFixedUsersList] = useState([])
 
     const sampleEndUser: User = {

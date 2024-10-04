@@ -19,15 +19,9 @@ import { putProtected } from "@/requests/put"
 import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 
-export function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
-    useEffect(() => {
-        const onClick = ({target}: any) => !ref?.contains(target) && onClickOut?.()
-        document.addEventListener("click", onClick);
-        return () => document.removeEventListener("click", onClick);
-    }, deps);
-}
 
-const ViewVendorPage = ({formPages}) => {
+
+const ViewVendorPage = () => {
     
     const [approvalData, setApprovalData] = useState<any>({})
     const [pages, setPages] = useState([])
@@ -111,12 +105,6 @@ const ViewVendorPage = ({formPages}) => {
 
     
 
-    useOutsideClick(categoriesListDivRef.current, () => {
-        console.log("out click");
-        
-        setShowCategoriesList(false)
-        
-    }, [showCategoriesList])
 
 
     const getCertificateTimeValidity = expiryDate => {
