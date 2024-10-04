@@ -2,7 +2,7 @@
 import Image from "next/image"
 import styles from "./styles/styles.module.css"
 import logo from "@/assets/images/logo.png"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ErrorText from "@/components/errorText"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import { postProtected } from "@/requests/post"
@@ -20,8 +20,15 @@ const Login = () => {
     const [loggingIn, setLoggingIn] = useState(false)
     const router = useRouter()
     const dispatch = useAppDispatch()
+ 
+   
+    
 
     console.log({loginDetails});
+
+    useEffect(() => {
+        console.log({env: process.env.NEXT_PUBLIC_BACKEND_URL});
+    }, [process.env])
 
     const updateLoginDetails = ({field, value} : {field: any, value: any}) => {
         console.log({field, value});

@@ -1,6 +1,6 @@
 export const postPlain = async (route, body) => {
     try {
-        const request = await fetch(`http://localhost:8080/${route}`, {
+        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -15,7 +15,7 @@ export const postPlain = async (route, body) => {
 
 export const postProtected = async (route, body) => {
     try {
-        const request = await fetch(`http://localhost:8080/${route}`, {
+        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -33,7 +33,7 @@ export const postProtected = async (route, body) => {
 
 export const postProtectedMultipart = async (route, body) => {
     try {
-        const request = await fetch(`http://localhost:8080/${route}`, {
+        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "POST",
             headers: {
                 // "Content-Type": "application/json"
