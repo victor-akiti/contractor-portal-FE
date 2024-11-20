@@ -562,6 +562,9 @@
   background-color: white;
   margin-bottom: 20px;
 }
+.holdRequestDiv button {
+  cursor: pointer;
+}
 .holdRequestDiv div {
   display: flex;
   justify-content: end;
@@ -573,6 +576,13 @@
   border-radius: 5px;
   border-style: none;
   margin-left: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.holdRequestDiv div button div {
+  margin: 0px;
+  display: block;
 }
 .holdRequestDiv div button:nth-child(1) {
   background-color: #e26b09;

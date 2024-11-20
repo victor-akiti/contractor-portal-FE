@@ -16,11 +16,11 @@ import pptx from "@/assets/images/pptx.svg"
 import pdf from "@/assets/images/pdf.svg"
 import Image from "next/image"
 
-const FileUploader = ({updateUploadedFiles, updateCode, closeUploader, maxFiles, files, label}) => {
+const FileUploader = ({updateUploadedFiles, updateCode, closeUploader, maxFiles, files, label, onlyNewFiles = false}) => {
     const uploadFileTabs = [{
         name: "Upload new file",
         label: "Upload new file"
-    }, {
+    }, !onlyNewFiles && {
         name: "Select existing file",
         label: "Select existing file"
     }]
@@ -71,7 +71,9 @@ const FileUploader = ({updateUploadedFiles, updateCode, closeUploader, maxFiles,
         
     }
 
-    const removeSelectedFile = index => {
+    const   removeSelectedFile = (index) => {
+
+        
         let tempSelectedFiles = [...selectedFiles]
         tempSelectedFiles = tempSelectedFiles.filter((fileITem, fileIndex) => index !== fileIndex)
         setSelectedFiles(tempSelectedFiles)
@@ -220,7 +222,7 @@ const FileUploader = ({updateUploadedFiles, updateCode, closeUploader, maxFiles,
                                                 selectedFiles.map((item, index) => <tr key={index}>
                                                     <td>{item.name}</td>
                                                     <td>{item.size}</td>
-                                                    <td><a onClick={() => removeSelectedFile(item._id)}>Remove</a></td>
+                                                    <td><a onClick={() => removeSelectedFile(index)}>Remove</a></td>
                                                 </tr>)
                                             }
                                         </tbody>

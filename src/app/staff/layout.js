@@ -8,12 +8,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getProtected } from "@/requests/get";
-import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { use, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "@/redux/reducers/user";
 
 const Layout = ({children}) => {
     const [authenticated, setAuthenticated] = useState(false)
+    const user = useSelector((state) => state.user.user)
+
+    console.log({theUser: user})
+    
     useEffect(() => {
         getCurrentAuthState()
       }, [])
@@ -47,23 +51,10 @@ const Layout = ({children}) => {
         }
       }
 
-      const approveHoldRequest = async (id) => {
-        try {
-          const approveRequest = await getProtected(`forms/approve/${id}`)
-          console.log({approveRequest})
-        } catch (error) {
-          console.log({error})
-        }
+      const hasAdminPermissions = (role) => {
+        return (["Admin", "HOD"].includes(role))
       }
 
-      const declineHoldRequest = async (id) => {
-        try {
-          const declineRequest = await getProtected(`forms/decline/${id}`)
-          console.log({declineRequest})
-        } catch (error) {
-          console.log({error})
-        }
-      }
  return (
     <div>
         {
@@ -91,11 +82,15 @@ const Layout = ({children}) => {
                         
                         <Link href={"/staff/events"}>Events</Link>
     
-                        <Link href={"/staff/forms"}>Forms</Link>
+                        {
+                          hasAdminPermissions(user?.role) && <Link href={"/staff/forms"}>Forms</Link>
+                        }
     
-                        <Link href={"/staff/userManagement"}>Roles & User Management</Link>
+                        {
+                          hasAdminPermissions(user?.role) && <Link href={"/staff/userManagement"}>Roles & User Management</Link>
+                        }
 
-                        <Link href={"/staff/invoice-forms"}>Invoice Forms</Link>
+                        {/* <Link href={"/staff/invoice-forms"}>Invoice Forms</Link> */}
     
                         <hr />
     

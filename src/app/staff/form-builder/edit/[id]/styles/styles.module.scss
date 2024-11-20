@@ -32,6 +32,23 @@
         }
     }
 
+    .saveFormDiv {
+        position: fixed;
+        bottom: 00px;
+        left: 0px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 10px;
+        background-color: #ececec;
+        z-index: 500;
+
+        &>div {
+            margin: 0px;
+        }
+    }
+
     header {
         display: flex;
         margin-bottom: 20px;

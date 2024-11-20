@@ -1,0 +1,87 @@
+.events {
+    h2 {
+        font-size: 1.25rem;
+        margin-bottom: .5rem;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+
+    &>div {
+        display: flex;
+
+        input {
+            padding: 10px;
+            width: 30%;
+            border-style: none;
+            display: block;
+            height: calc(1.5em + .75rem + 2px);
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+
+        button {
+            color: #fff;
+            background-color: #868e96;
+            border-color: #868e96;    display: inline-block;
+            font-weight: 400;
+            text-align: center;
+            vertical-align: middle;
+            -webkit-user-select: none;
+            user-select: none;
+            border: 1px solid #0000;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: .25rem;
+            transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    }
+
+    table {
+        width: 100%;
+        margin-top: 50px;
+        border-collapse: collapse;
+
+        thead {
+
+            color: #212529;
+
+            tr {
+                td {
+                    padding-top: 15px;
+                    padding-bottom: 15px;
+                    border-bottom: 2px solid #dee2e6;
+                    font-weight: bold;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                td {
+                    padding: .75rem;
+                    border-top: 1px solid #dee2e6;
+                    font-size: .875em;
+                    font-weight: 400;
+                    color: #212529;
+                }
+
+
+            }
+
+            .darkBackground {
+                background-color: #0000000d;
+            }
+        }
+    }
+}

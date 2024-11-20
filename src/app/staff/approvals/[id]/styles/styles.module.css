@@ -1,1 +1,70 @@
-/*# sourceMappingURL=styles.module.css.map */
+.noApprovalDiv {
+  background-color: rgb(254, 222, 222);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.noApprovalDiv h4 {
+  margin-bottom: 10px;
+}
+.noApprovalDiv p {
+  margin-bottom: 10px;
+}
+.noApprovalDiv a {
+  color: #e26b09;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.noApprovalDiv div {
+  margin-top: 10px;
+}
+
+.actionCompletedDiv {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  padding: 20px;
+  margin-top: 20px;
+}
+.actionCompletedDiv p {
+  margin-top: 10px;
+}
+
+.returnToL2Modal {
+  background-color: white;
+  padding: 20px;
+  width: 40%;
+}
+.returnToL2Modal p {
+  margin-top: 10px;
+  color: rgb(93, 93, 93);
+}
+.returnToL2Modal textarea {
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  width: 100%;
+  border-style: solid;
+  border-color: rgb(230, 230, 230);
+  border-width: 1px;
+  margin-top: 10px;
+}
+.returnToL2Modal form > div {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  margin-top: 20px;
+}
+.returnToL2Modal form > div button {
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  margin-left: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.returnToL2Modal form > div button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}/*# sourceMappingURL=styles.module.css.map */

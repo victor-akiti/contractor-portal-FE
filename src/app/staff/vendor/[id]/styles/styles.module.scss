@@ -679,6 +679,10 @@
         margin-bottom: 20px;
     }
 
+    button {
+        cursor: pointer;
+    }
+
     div {
         display: flex;
         justify-content: end;
@@ -690,6 +694,14 @@
             border-radius: 5px;
             border-style: none;
             margin-left: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            div {
+                margin: 0px;
+                display: block;
+            }
         }
 
         button:nth-child(1) {

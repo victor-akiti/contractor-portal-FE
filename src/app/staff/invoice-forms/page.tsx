@@ -188,7 +188,7 @@ const InvoiceForms = () => {
                                     <option>Contract Officer</option>
                                     <option>CnP GM</option>
                                     <option>CnP HOD</option>
-                                    <option>GMD</option>
+                                    <option>Executive Approver</option>
                                     <option>Admin</option>
                                 </select>
 

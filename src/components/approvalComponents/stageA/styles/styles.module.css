@@ -290,7 +290,7 @@
   cursor: pointer;
   display: flex;
   justify-content: center;
-  align-items: end;
+  align-items: center;
 }
 .recommendForHoldModal form > div button:nth-child(1) {
   background-color: #e7e7e7;

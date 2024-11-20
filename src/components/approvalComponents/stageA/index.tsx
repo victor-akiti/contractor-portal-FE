@@ -865,7 +865,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                                                     
     
                                                     {
-                                                        (sectionItem.comments || sectionItem.remarks) && <div className={styles.showCommentTriggerDiv}>
+                                                        ((sectionItem.comments && sectionItem.comments.length > 0) || (sectionItem.remarks && sectionItem.remarks.length > 0)) && <div className={styles.showCommentTriggerDiv}>
                                                             <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
                                                         </div>
                                                     }

@@ -26,6 +26,21 @@
 .newForm .noSections button svg {
   margin-left: 10px;
 }
+.newForm .saveFormDiv {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  background-color: #ececec;
+  z-index: 500;
+}
+.newForm .saveFormDiv > div {
+  margin: 0px;
+}
 .newForm header {
   display: flex;
   margin-bottom: 20px;

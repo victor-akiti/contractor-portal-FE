@@ -1,0 +1,70 @@
+.events h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.events > div {
+  display: flex;
+}
+.events > div input {
+  padding: 10px;
+  width: 30%;
+  border-style: none;
+  display: block;
+  height: calc(1.5em + 0.75rem + 2px);
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.events > div button {
+  color: #fff;
+  background-color: #868e96;
+  border-color: #868e96;
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+       user-select: none;
+  border: 1px solid rgba(0, 0, 0, 0);
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.events table {
+  width: 100%;
+  margin-top: 50px;
+  border-collapse: collapse;
+}
+.events table thead {
+  color: #212529;
+}
+.events table thead tr td {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: bold;
+}
+.events table tbody tr td {
+  padding: 0.75rem;
+  border-top: 1px solid #dee2e6;
+  font-size: 0.875em;
+  font-weight: 400;
+  color: #212529;
+}
+.events table tbody .darkBackground {
+  background-color: rgba(0, 0, 0, 0.0509803922);
+}/*# sourceMappingURL=styles.module.css.map */

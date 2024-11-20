@@ -935,12 +935,14 @@ const EditForm = () => {
 
                     
 
-                    <div className={styles.formActionButtons}>
-                        {
-                            newForm.pages.length > 0 && newForm.name && <button onClick={() => validateForm()}>Save Form <SaveIcon /> {savingForm && <ButtonLoadingIcon /> }</button>
-                        }
+                    <div className={styles.saveFormDiv}>
+                        <div className={[styles.formActionButtons].join(" ")}>
+                            {
+                                newForm.pages.length > 0 && newForm.name && <button onClick={() => validateForm()}>Save Form <SaveIcon /> {savingForm && <ButtonLoadingIcon /> }</button>
+                            }
 
-                        <button onClick={() => setShowSettingsModal(true)}>Form Settings <SettingsIcon /></button>
+                            <button onClick={() => setShowSettingsModal(true)}>Form Settings <SettingsIcon /></button>
+                        </div>
                     </div>
                 </div>
 

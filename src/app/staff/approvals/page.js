@@ -14,6 +14,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import SuccessMessage from "@/components/successMessage"
 import PrimaryColorSmallLoadingIcon from "@/components/primaryColorLoadingIcon"
+import FloatingProgressIndicator from "@/components/floatingProgressIndicator"
 
 const Approvals = () => {
     useEffect(() => {
@@ -44,10 +45,10 @@ const Approvals = () => {
 
     const [inviteToArchive, setInviteToArchive] = useState({})
 
-    console.log({approvals});
+
     const user= useAppSelector(state => state?.user?.user)
 
-    console.log({user});
+    
 
     const triggerInviteMigration = async () => {
         try {
@@ -127,6 +128,10 @@ const Approvals = () => {
         {
             label: "Returned To Contractor",
             name: "returned-to-contractor"
+        },
+        {
+            label: "Park Requests",
+            name: "park-requests"
         }
     ]
 
@@ -137,15 +142,20 @@ const Approvals = () => {
         l3: ["Contractor Name", "Action", "Last Contractor Update"],
         completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
         returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+        parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Action"],
     }
 
     const [activeTab, setActiveTab] = useState("invited")
     const [activeFilter, setActiveFilter] = useState("All")
     const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"]
     const approvalStages = ["A", "B", "C", "D", "E", "F"]
+    const [searchQueryResults, setSearchQueryResults] = useState([])
     const[fetchingContractors, setFetchingContractors] = useState(true)
     const [successMessage, setSuccessMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
+    const [currentSearchFilter, setCurrentSearchFilter] = useState("all")
+    const [actionProgress, setActionProgress] = useState("")
+    const [returnToL2Data, setReturnToL2Data] = useState(null)
 
     const getActiveTable = () => {
         switch (activeTab) {
@@ -159,6 +169,8 @@ const Approvals = () => {
                 return tableHeaders["l3"]
             case "completed-l2":
                 return tableHeaders["completedL2"]
+            case "park-requests":
+                return tableHeaders["parkRequests"]
             default:
                 return tableHeaders["returned"]
         }
@@ -403,20 +415,307 @@ const Approvals = () => {
         console.log({inviteID});
     }
 
+    const searchVendors = query => {
+        console.log({query});
+        let searchResults = [...searchQueryResults]
+        switch (currentSearchFilter) {
+            case "all": 
+                searchResults = filterVendorsByQuery(query, fixedApprovals.all)
+                break
+            
+            case "in progress": 
+                searchResults = filterVendorsByQuery(query, fixedApprovals.inProgress)
+                break
+            
+            case "pending": 
+                searchResults = filterVendorsByQuery(query, fixedApprovals.pendingL2)
+                break
+            
+            case "parked": 
+                searchResults = filterVendorsByQuery(query, fixedApprovals.completedL2)
+                break
+            
+            case "l3": 
+                searchResults = filterVendorsByQuery(query, fixedApprovals.l3)
+                break
+            
+            case "returned": 
+                searchResults = filterVendorsByQuery(query, fixedApprovals.returned)
+                break
+            
+            case "park requested": 
+                searchResults = filterVendorsByQuery(query, fixedApprovals.parkRequested)
+            
+        }
+
+        setSearchQueryResults(searchResults)
+
+        console.log({searchResults});
+        
+        
+    }
+
+    const filterVendorsByQuery = (query, vendorList) => {
+        console.log({query, vendorList: vendorList.length});
+        let mostRelevant = []
+        let lessRelevant = []
+
+        vendorList.forEach(element => {
+            if (String(element.companyName).toLowerCase().startsWith(String(query).toLowerCase())) {
+                mostRelevant.push(element)
+            } else if (String(element.companyName).toLowerCase().includes(String(query).toLowerCase())) {
+                lessRelevant.push(element)
+            }
+        });
+
+        mostRelevant = sortListAlphabetically(mostRelevant)
+        lessRelevant = sortListAlphabetically(lessRelevant)
+
+        console.log({mostRelevant, lessRelevant});
+        
+
+        
+        
+        return [...mostRelevant, ...lessRelevant]
+    }
+
+    const sortListAlphabetically = list => {
+        return list.sort((a, b) => {
+                
+    
+            if (a?.companyName && b?.companyName) {
+                const titleA = a?.companyName.toUpperCase(); // ignore upper and lowercase
+            const titleB = b?.companyName.toUpperCase(); // ignore upper and lowercase
+            if (titleA < titleB) {
+              return -1;
+            }
+            if (titleA > titleB) {
+              return 1;
+            }
+            } else {
+                return 0
+            }
+          
+            // names must be equal
+            return 0;
+        });
+    }
+
+    const getNextStage = (companyRecord) => {
+        console.log({companyRecord});
+        
+        if (!companyRecord?.flags?.approvals?.level) {
+            return "B"
+        } else if (companyRecord?.flags?.approvals?.level === 1) {
+            return "C"
+        } else if (companyRecord?.flags?.approvals?.level === 2) {
+            return "D"
+        } else if (companyRecord?.flags?.approvals?.level === 3) {
+            return "E"
+        } else if (companyRecord?.flags?.approvals?.level === 4) {
+            return "F"
+        } else if (companyRecord?.flags?.approvals?.level === 5) {
+            return "G"
+        } else if (companyRecord?.flags?.approvals?.level === 6) {
+            return "H"
+        }
+    }
+
+    const approveParkRequest = async (vendorID) => {
+        setActionProgress("processing")
+        try {
+          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`)
+          console.log({approveRequest})
+
+          if (approveRequest.status === "OK") {
+            setActionProgress("success")
+
+            removeFIP()
+            const tempApprovals = {...approvals}
+
+            tempApprovals.parkRequested = tempApprovals.parkRequested.filter(item => {
+                if (item.vendor !== vendorID) {
+                    return item
+                } else {
+                    tempApprovals.completedL2.unshift(item)
+                }
+            })
+
+            setApprovals(tempApprovals)
+          } else {
+            setActionProgress("error")
+          }
+        } catch (error) {
+          console.log({error})
+        }
+      }
+
+      const declineParkRequest = async (vendorID) => {
+        console.log("Decline");
+        try {
+          const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
+          console.log({declineRequest})
+        } catch (error) {
+          console.log({error})
+        }
+      }
+
+      const revertToL2 = async (vendorID, from) => {
+        console.log({vendorID, from});
+        
+        setActionProgress("processing")
+        try {
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from})
+
+            if (revertRequest.status === "OK") {
+                setActionProgress("success")
+                const tempApprovals = {...approvals}
+
+                if (from === "parked") {
+                    tempApprovals.completedL2 = tempApprovals.completedL2.filter(item => {
+                        if (item.vendor !== vendorID) {
+                            return item
+                        } else {
+                            tempApprovals.pendingL2.unshift(item)
+                        }
+                    })
+                } else if (from === "l3") {
+                    tempApprovals.l3 = tempApprovals.l3.filter(item => {
+                        if (item.vendor !== vendorID) {
+                            return item
+                        } else {
+                            tempApprovals.pendingL2.unshift(item)
+                        }
+                    })
+                } else if (from === "park requests") {
+                    tempApprovals.parkRequested = tempApprovals.parkRequested.filter(item => {
+                        if (item.vendor !== vendorID) {
+                            return item
+                        } else {
+                            tempApprovals.pendingL2.unshift(item)
+                        }
+                    })
+                }
+
+                cancelRevertToL2()
+                removeFIP()
+
+                
+                setApprovals(tempApprovals)
+            } else {
+                setActionProgress("error")
+            }
+
+            
+          } catch (error) {
+            console.log({error})
+          }
+      }
+
+      const removeFIP = () => {
+        setTimeout(() => {
+            setActionProgress("")
+        }, 4000)
+      }
+
+      const setDataForReturnToL2 = (vendorID, from) => {
+        setActionProgress("")
+        let tempReturnToL2Data = {...returnToL2Data}
+        tempReturnToL2Data = {
+            vendorID,
+            from
+        }
+        setReturnToL2Data(tempReturnToL2Data)
+      }
+
+      const cancelRevertToL2 = () => {
+        let tempReturnToL2Data = {...returnToL2Data}
+        tempReturnToL2Data = null
+        setReturnToL2Data(tempReturnToL2Data)
+      }
+
+      console.log({returnToL2Data});
+      
+
+    console.log({currentSearchFilter});
+
+    const [l3Filters, setL3Filters] = useState(["All", "With Vendor", "Yet To Be Reviewed"])
+    const [activeL3Filter, setActiveL3Filter] = useState("All")
+    
+    //This function filters companies in the L3 category by the selected filter
+    const filterL3Companies = (filter) => {
+        
+    }
+
     
 
     return (
         <div className={styles.approvals}>
+            {
+                actionProgress && <FloatingProgressIndicator status={actionProgress} />
+            }
+
+            {
+                returnToL2Data && <Modal>
+                <div className={styles.revertToL2Div}>
+                    <h3>Revert To L2</h3>
+
+                    <p>You are about to move this vendor&apos;s application back to L2. Proceed?</p>
+
+                    <div>
+                        {
+                            actionProgress !== "processing" && <button onClick={() => revertToL2(returnToL2Data.vendorID, returnToL2Data.from)}>Revert to L2</button>
+                        }
+                        
+                        <button onClick={() => cancelRevertToL2()}>Cancel</button>
+                    </div>
+
+                    
+                </div>
+            </Modal>
+            }
+
             <header>
                 <h3>C&P Officer Dashboard</h3>
 
                 <h5>Registration Approvals</h5>
                 
                 {
-                    !fetchingContractors && <>
+                    !fetchingContractors && activeTab !== "invited" && <>
                         <label>Quick Search</label>
 
-                        <input  placeholder="Type company name..."/>
+                        
+                        <div className={styles.searchFilterDiv}>
+                            <input  placeholder="Type company name..." onChange={event => searchVendors(event.target.value)}/>
+
+                            <select onChange={(event) => setCurrentSearchFilter(event.target.value)}>
+                                <option value={"all"}>All Registered Vendors</option>
+                                <option value={"in progress"}>In Progress</option>
+                                <option value={"pending"}>Pending L2</option>
+                                <option value={"parked"}>Completed L2</option>
+                                <option value={"l3"}>L3</option>
+                                <option value={"returned"}>Returned</option>
+                                <option value={"park requested"}>Park Requested</option>
+                            </select>
+
+                            {
+                                searchQueryResults.length > 0 && <div className={styles.searchResultsDiv}>
+                                {
+                                    searchQueryResults.map((item, index) =>  <div key={index} className={styles.searchResultItem}>
+                                    <div>
+                                        <p>{String(item.companyName).toLocaleUpperCase()}</p>
+                                        <p>{String(item?.flags?.status)}</p>
+                                    </div>
+
+                                    <div>
+                                        <Link href={`/staff/vendor/${item?.vendor}`}><button>VIEW</button></Link>
+                                        <Link href={`/staff/approvals/${item?.vendor}`}><button>{`Process to ${getNextStage(item)}`}</button></Link>
+                                    </div>
+                                </div>)
+                                }
+                            </div>
+                            }
+                        </div>
                     </>
                 }
             </header>
@@ -494,6 +793,19 @@ const Approvals = () => {
                         </div>
                         }
 
+                        {
+                            activeTab === "l3" && <div>
+
+                        {
+                            l3Filters.map((item, index) => <p className={item === activeL3Filter && styles.active} key={index} onClick={() => {
+                                setActiveL3Filter(item)
+                                filterL3Companies(item)
+                            }}>{`${item} ${item === activeL3Filter ? `(${approvals.l3.length})` : ``}`}</p>)
+                        }
+                    </div>
+                        }
+                        
+
                     </div>
 
                     {
@@ -521,24 +833,35 @@ const Approvals = () => {
                             }
 
                             {
-                                activeTab === "in-progress" && approvals.inProgress.map((item, index) => <InProgressItem key={index} companyRecord={item} index={index} />)
+                                activeTab === "in-progress" && approvals.inProgress.map((item, index) => <InProgressItem key={index} user={user} companyRecord={item} index={index} />)
                             }
 
 
                             {
-                                activeTab === "pending-l2" && approvals.pendingL2.map((item, index) => <PendingL2Item key={index} companyRecord={item} index={index} />)
+                                activeTab === "pending-l2" && approvals.pendingL2.map((item, index) => <PendingL2Item key={index} user={user} companyRecord={item} index={index} />)
                             }
 
                             {
-                                activeTab === "l3" && approvals.l3.map((item, index) => <L3Item key={index} companyRecord={item} index={index} />)
+                                activeTab === "l3" && approvals.l3.map((item, index) => <L3Item key={index} user={user} revertToL2={vendorID => setDataForReturnToL2(vendorID, "l3")
+                                } companyRecord={item} index={index} />)
                             }
 
                             {
-                                activeTab === "completed-l2" && approvals.completedL2.map((item, index) => <CompletedL2Item key={index} companyRecord={item} index={index} />)
+                                activeTab === "completed-l2" && approvals.completedL2.map((item, index) => <CompletedL2Item revertToL2={vendorID => setDataForReturnToL2(item.vendor, "parked")} key={index} user={user} companyRecord={item} index={index} />)
                             }
 
                             {
-                                activeTab === "returned-to-contractor" && approvals.returned.map((item, index) => <ReturnedItem key={index} companyRecord={item} index={index} />)
+                                activeTab === "returned-to-contractor" && approvals.returned.map((item, index) => <ReturnedItem key={index} user={user} companyRecord={item} index={index} />)
+                            }
+
+                            {
+                                activeTab === "park-requests" && approvals.parkRequested.map((item, index) => <ParkRequestedItem key={index} user={user} companyRecord={item} index={index} approveParkRequest={(vendorID) => {
+                                    console.log("Accept");
+                                    approveParkRequest(vendorID)
+                                }} declineParkRequest={(vendorID) => {
+                                    setDataForReturnToL2(item.vendor, "park requests")
+                                    declineParkRequest(vendorID)
+                                }} />)
                             }
                         </tbody>
                     </table>
@@ -573,6 +896,13 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
 
     }
 
+    const hasCnPPermissions = () => {
+        if (["Admin", "HOD", "VRM", "CnP Staff", "Supervisor"].includes(user.role)) {
+            return true
+        }
+    }
+
+
     const getDateFromTimestamp = timestamp => {
         const date = new Date(timestamp)
 
@@ -606,7 +936,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
     }
 
     const [sendReminderText, setSendReminderText] = useState("SEND REMINDER")
-    const [renewText, setRenewText] = useState("RENEW")
+    const [renewText, setRenewText] = useState("EXTEND EXPIRY DATE")
 
     const sendReminder = async () => {
         try {
@@ -630,7 +960,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
     const renewRequest = async () => {
         try {
             console.log("Renewing");
-            setRenewText("RENEWING INVITE...")
+            setRenewText("EXTENDING EXPIRY DATE...")
 
             const renewInviteRequest = await getProtected(`invites/renew/${inviteDetails._id}`)
 
@@ -638,11 +968,11 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
 
             if (renewInviteRequest.status === "OK") {
                 console.log("renewed");
-                setRenewText("RENEWED")
+                setRenewText("EXPIRY DATE EXTENDED")
             }
         } catch (error) {
             console.log({error});
-            setRenewText("RENEW")
+            setRenewText("EXTEND EXPIRY DATE")
         }
     }
 
@@ -657,7 +987,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
             <td className={styles.userDetails}>
                 <p>{`${inviteDetails.fname} ${inviteDetails.lname}`.toLocaleUpperCase()}</p>
 
-                <p>{inviteDetails.email}</p>
+                <p>{inviteDetails.vendorAppAdminProfile?.email ? inviteDetails.vendorAppAdminProfile?.email : inviteDetails.email}</p>
 
                 <p>{inviteDetails?.phone?.number ? inviteDetails?.phone?.number : inviteDetails?.phone}</p>
             </td>
@@ -670,19 +1000,21 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
                         <p className={styles.statusDateText}>Expired: {getDateFromDateString(inviteDetails.expiry)}</p>
                         <div className={styles.renewRequestTextDiv}>
                             {
-                                renewText !== "RENEWED" && <a className={styles.renewText} onClick={() => renewRequest()}>{renewText}</a>
+                                renewText !== "EXTENDED EXPIRY DATE" && hasCnPPermissions() && <a className={styles.renewText} onClick={() => renewRequest()}>{renewText}</a>
                             }
                             {
-                                renewText === "RENEWING INVITE..."  && <PrimaryColorSmallLoadingIcon />
+                                renewText === "EXTENDING EXPIRY DATE..."  && <PrimaryColorSmallLoadingIcon />
                             }
 
                         {
-                            renewText === "RENEWED" && <p className={styles.reminderSentText}>INVITE RENEWED</p>
+                            renewText === "EXTENDED EXPIRY DATE" && <p className={styles.reminderSentText}>EXPIRY DATE EXTENDED</p>
                         }
                         </div>
                         
                         <div></div>
-                        <Link href={`invites/${inviteDetails._id}`}>RESEND INVITE</Link>
+                        {
+                            hasCnPPermissions() && <Link href={`invites/${inviteDetails._id}`}>RESEND INVITE</Link>
+                        }
                         
                     </>
                 }
@@ -716,12 +1048,14 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
                             sendReminderText === "REMINDER SENT" && <p className={styles.reminderSentText}>REMINDER SENT</p>
                         }
                         <div></div>
-                        <Link href={`invites/${inviteDetails._id}`}>RESEND INVITE</Link>
+                        {
+                            hasCnPPermissions() && <Link href={`invites/${inviteDetails._id}`}>RESEND INVITE</Link>
+                        }
                     </>
                 }
 
                 {
-                    user.role === "Admin" && !inviteDetails.used && <p className={styles.deleteInviteText} onClick={() => setInviteToArchiveObject(inviteDetails)}>Archive Invite</p>
+                    (user.role === "Admin" || user.role === "HOD" || user.role === "VRM") && !inviteDetails.used && <p className={styles.deleteInviteText} onClick={() => setInviteToArchiveObject(inviteDetails)}>Archive Invite</p>
                 }
 
                 <p></p>
@@ -731,54 +1065,86 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
     )
 }
 
-const InProgressItem = ({index}) => {
+const InProgressItem = ({index, companyRecord}) => {
+    const getLastUpdated = () => {
+        if (companyRecord.lastApproved) {
+            const lastUpdatedDate = new Date(companyRecord.lastApproved)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.lastUpdate) {
+            const lastUpdatedDate = new Date(companyRecord.lastUpdate._seconds * 1000)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.approvalActivityHistory) {
+            const lastUpdatedDate = new Date(companyRecord.approvalActivityHistory[0].date)
+
+            return lastUpdatedDate.toISOString()
+        }
+    }
     return (
         <tr className={[styles.inProgressItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <a>Contractor Name</a>
-                <p>contractor@email.com</p>
+                <a>{companyRecord?.companyName}</a>
+                <p>{companyRecord?.contractorDetails?.email}</p>
             </td>
 
             <td>
-                <p>24 Sep 2023</p>
+                <p>{moment(getLastUpdated()).format("LL")}</p>
             </td>
         </tr>
     )
 }
 
-const PendingL2Item = ({index, companyRecord}) => {
+const PendingL2Item = ({index, companyRecord, user}) => {
+    const userCanViewActions = () => {
+        if (user.role === "Admin" || user.role === "HOD" || user.role === "Executive Approver") {
+            return true
+        } else if (user.role === "User") {
+            return false
+        } else if (user.role === "End User" && companyRecord?.flags?.level === 2 && companyRecord.currentEndUsers.includes(user._id)) {
+            return true
+        } else if (user.role === "VRM" && (!companyRecord?.flags?.level ||companyRecord?.flags?.level === 3)) {
+            return true
+        } else if (user.role === "CO" && (!companyRecord?.flags?.level || companyRecord?.flags?.level === 2)) {
+            return true
+        } else if ((user.role === "GM" || user.role === "supervisor") && (!companyRecord?.flags?.level || companyRecord?.flags?.level === 4)) {
+            return true
+        } else {
+            return false
+        }
+    }
     const getCurrentStage = () => {
-        if (!companyRecord?.flags?.approvals?.level) {
+        if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
             return "A"
-        } else if (companyRecord?.flags?.approvals?.level === 1) {
+        } else if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) {
             return "B"
-        } else if (companyRecord?.flags?.approvals?.level === 2) {
+        } else if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
             return "C"
-        } else if (companyRecord?.flags?.approvals?.level === 3) {
+        } else if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3) {
             return "D"
-        } else if (companyRecord?.flags?.approvals?.level === 4) {
+        } else if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4) {
             return "E"
-        } else if (companyRecord?.flags?.approvals?.level === 5) {
+        } else if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5) {
             return "F"
-        } else if (companyRecord?.flags?.approvals?.level === 6) {
+        } else if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6) {
             return "G"
         }
     }
 
     const getNextStage = () => {
-        if (!companyRecord?.flags?.approvals?.level) {
+        if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
             return "B"
-        } else if (companyRecord?.flags?.approvals?.level === 1) {
+        } else if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) {
             return "C"
-        } else if (companyRecord?.flags?.approvals?.level === 2) {
+        } else if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
             return "D"
-        } else if (companyRecord?.flags?.approvals?.level === 3) {
+        } else if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3) {
             return "E"
-        } else if (companyRecord?.flags?.approvals?.level === 4) {
+        } else if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4) {
             return "F"
-        } else if (companyRecord?.flags?.approvals?.level === 5) {
+        } else if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5) {
             return "G"
-        } else if (companyRecord?.flags?.approvals?.level === 6) {
+        } else if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6) {
             return "H"
         }
     }
@@ -799,7 +1165,7 @@ const PendingL2Item = ({index, companyRecord}) => {
         <tr className={[styles.pendingL2Item, companyRecord.needsAttention ? styles.needsAttendionBackground : index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
                 <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
-                <p>{companyRecord?.contractorDetails?.email}</p>
+                <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
             </td>
 
             <td>
@@ -807,13 +1173,15 @@ const PendingL2Item = ({index, companyRecord}) => {
             </td>
 
             <td>
-                <Link href={`/staff/approvals/${companyRecord.vendor}`}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>
                 {
+                    userCanViewActions() && <Link href={`/staff/approvals/${companyRecord.vendor}`}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>
+                }
+                {/* {
                     companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
                         <p>End User: App Dev</p>
                         <p>Change end user(s)</p>
                     </>
-                }
+                } */}
             </td>
 
             <td>
@@ -824,7 +1192,7 @@ const PendingL2Item = ({index, companyRecord}) => {
 }
 
 
-const L3Item = ({index, companyRecord}) => {
+const L3Item = ({index, companyRecord, revertToL2, user}) => {
     const getLastUpdated = () => {
         if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
@@ -837,23 +1205,28 @@ const L3Item = ({index, companyRecord}) => {
         }
     }
 
+    const hasAdminPermissions = (role) => {
+        return (["Admin", "HOD"].includes(role))
+    }
+
     return (
         <tr className={[styles.l3Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
                 <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
-                <p>{String(companyRecord?.contractorDetails?.email)}</p>
+                <p>{String(companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email)}</p>
             </td>
 
 
 
-            {/* <td>
-            {
-                    companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
-                        <p>End User: App Dev</p>
-                        <p>Change end user(s)</p>
-                    </>
-                }             
-            </td> */}
+            <td> 
+                {
+                    hasAdminPermissions(user.role) && <a onClick={() => {
+                        console.log("clicked");
+                        revertToL2(companyRecord.vendor)
+                        
+                    }}>MOVE TO L2</a>  
+                }   
+            </td>
 
             <td>
                 <p>{moment(getLastUpdated()).format("LL")}</p>
@@ -862,7 +1235,7 @@ const L3Item = ({index, companyRecord}) => {
     )
 }
 
-const CompletedL2Item = ({index, companyRecord}) => {
+const CompletedL2Item = ({index, companyRecord, revertToL2, user}) => {
     const getLastUpdated = () => {
         if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
@@ -873,6 +1246,10 @@ const CompletedL2Item = ({index, companyRecord}) => {
 
             return lastUpdatedDate.toISOString()
         }
+    }
+
+    const hasAdminPermissions = (role) => {
+        return (["Admin", "HOD"].includes(role))
     }
 
     const getCurrentStage = () => {
@@ -897,7 +1274,7 @@ const CompletedL2Item = ({index, companyRecord}) => {
         <tr className={[styles.completedL2Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
                 <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
-                <p>{companyRecord?.contractorDetails?.email}</p>
+                <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
             </td>
 
             <td>
@@ -911,15 +1288,90 @@ const CompletedL2Item = ({index, companyRecord}) => {
                         <p>Change end user(s)</p> */}
                     </>
                 }  
-                <Link href={"/"}>REVERT TO PENDING</Link>
-                <br />
-                <Link href={"/"}>APPROVE L2</Link>
+                {
+                    hasAdminPermissions() && <a onClick={() => revertToL2(companyRecord.vendor)}>REVERT TO PENDING</a>
+                }
+
                 
             </td>
 
             <td>
                 <p>{moment(getLastUpdated()).format("LL")}</p>
             </td>
+        </tr>
+    )
+}
+
+const ParkRequestedItem = ({index, companyRecord, approveParkRequest, declineParkRequest}) => {
+    const getLastUpdated = () => {
+        if (companyRecord.lastApproved) {
+            const lastUpdatedDate = new Date(companyRecord.lastApproved)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.approvalActivityHistory) {
+            const lastUpdatedDate = new Date(companyRecord.approvalActivityHistory[0].date)
+
+            return lastUpdatedDate.toISOString()
+        }
+    }
+
+    const getCurrentStage = () => {
+        if (!companyRecord?.flags?.approvals?.level) {
+            return "A"
+        } else if (companyRecord?.flags?.approvals?.level === 1) {
+            return "B"
+        } else if (companyRecord?.flags?.approvals?.level === 2) {
+            return "C"
+        } else if (companyRecord?.flags?.approvals?.level === 3) {
+            return "D"
+        } else if (companyRecord?.flags?.approvals?.level === 4) {
+            return "E"
+        } else if (companyRecord?.flags?.approvals?.level === 5) {
+            return "F"
+        } else if (companyRecord?.flags?.approvals?.level === 6) {
+            return "G"
+        }
+    }
+
+    const hasAdminPermissions = (role) => {
+        return (["Admin", "HOD"].includes(role))
+    }
+
+    return (
+        <tr className={[styles.parkRequestedItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
+            <td>
+                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
+            </td>
+
+            <td>
+                <p>{`Stage ${getCurrentStage()}`}</p>
+            </td>
+
+            <td>
+                <p>{companyRecord?.flags?.hold?.requestedBy?.name}</p>
+            </td>
+
+            <td>
+                {
+                    companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
+                        {/* <p>End User: App Dev</p>
+                        <p>Change end user(s)</p> */}
+                    </>
+                }  
+                {
+                    hasAdminPermissions() && <>
+                        <a  onClick={() => approveParkRequest(companyRecord.vendor)}>APPROVE PARK REQUEST</a>
+
+                        <br />
+
+                        <a  onClick={() => declineParkRequest(companyRecord.vendor)}>REJECT PARK REQUEST</a>
+                            </>
+                        }
+                
+            </td>
+
+            
         </tr>
     )
 }
@@ -959,7 +1411,7 @@ const ReturnedItem = ({index, companyRecord}) => {
         <tr className={[styles.returnedItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
                 <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
-                <p>{companyRecord?.contractorDetails?.email}</p>
+                <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
             </td>
 
             <td>

@@ -18,6 +18,8 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import { putProtected } from "@/requests/put"
 import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
+import SuccessMessage from "@/components/successMessage"
+import ErrorText from "@/components/errorText"
 
 
 
@@ -43,6 +45,10 @@ const ViewVendorPage = () => {
     console.log({pages});
     const user = useSelector((state:any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
+    const [updateStatus, setUpdateStatus] = useState({
+        status: "",
+        message: ""
+    })
     const router = useRouter()
     
     console.log({user});
@@ -405,22 +411,74 @@ const ViewVendorPage = () => {
 
     console.log({currentVendorCategories});
 
-    const approveHoldRequest = async () => {
+    const approveParkRequest = async () => {
         try {
+            updateUpdateStatus("approving")
           const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`)
-          console.log({approveRequest})
+          
+          if (approveRequest.status === "OK") {
+            updateUpdateStatus("park action success", "Vendor application parked")
+
+            let tempApprovalData = {...approvalData}
+            tempApprovalData.flags.status = "parked"
+            setApprovalData(tempApprovalData)
+          } else {
+            updateUpdateStatus("park action error", approveRequest.error.message)
+          }
         } catch (error) {
           console.log({error})
         }
       }
 
-      const declineHoldRequest = async () => {
+      const rejectParkRequestAndRevertToL2 = async (from) => {
+
         try {
-          const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
-          console.log({declineRequest})
-        } catch (error) {
-          console.log({error})
-        }
+            updateUpdateStatus("rejecting")
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from})
+
+            if (revertRequest.status === "OK") {
+                updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
+
+                let tempApprovalData = {...approvalData}
+                tempApprovalData.flags.status = "pending"
+                setApprovalData(tempApprovalData)
+            } else {
+                updateUpdateStatus("park action error", revertRequest.error.message)
+            }
+
+            
+          } catch (error) {
+            console.log({error})
+          }
+      }
+
+    //   const declineParkRequest = async () => {
+    //     try {
+    //         updateUpdateStatus("rejecting")
+    //       const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
+
+    //       console.log({declineParkRequest});
+          
+          
+    //       if (declineRequest.status === "OK") {
+    //         updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
+
+    //         let tempApprovalData = {...approvalData}
+    //         tempApprovalData.flags.status = "pending"
+    //         setApprovalData(tempApprovalData)
+    //       } else {
+    //         updateUpdateStatus("park action error", declineRequest.error.message)
+    //       }
+    //     } catch (error) {
+    //       console.log({error})
+    //     }
+    //   }
+
+      const updateUpdateStatus = (status, message = "") => {
+        let tempUpdateStatus = {...updateStatus}
+        tempUpdateStatus.status = status
+        tempUpdateStatus.message = message
+        setUpdateStatus(tempUpdateStatus)
       }
     
 
@@ -442,17 +500,25 @@ const ViewVendorPage = () => {
 
             {/* <h3 className={styles.subTitle}>Carry out Stage B</h3> */}
             {
-                approvalData?.flags?.stage === "recommended for hold" && <div className={styles.holdRequestDiv}>
+                approvalData?.flags?.status === "park requested" && <div className={styles.holdRequestDiv}>
                 <h5>Hold Requested</h5>
                 <p>{`${approvalData?.flags?.hold?.requestedBy?.name} has recommended that this vendor application should be put on hold`}</p>
                 <p className={styles.holdRequestReasonLabel}>Reason:</p>
                 <p className={styles.holdRequestReason}>{approvalData?.flags?.hold?.reason}</p>
 
                 <div>
-                    <button onClick={() => approveHoldRequest()}>Approve hold and park at L2</button>
-                    <button onClick={() => declineHoldRequest()}>Cancel hold request</button>
+                    <button onClick={() => approveParkRequest()}>Approve hold and park at L2 {updateStatus.status === "approving" && <ButtonLoadingIcon />}</button>
+                    <button onClick={() => rejectParkRequestAndRevertToL2("park requests")}>Cancel hold request {updateStatus.status === "rejecting" && <ButtonLoadingIconPrimary />}</button>
                 </div>
             </div>
+            }
+
+            {
+                updateStatus.status === "park action success" && <SuccessMessage message={updateStatus.message} />
+            }
+
+            {
+                updateStatus.status === "park action error" && <ErrorText text={updateStatus.message} />
             }
             
 
@@ -472,7 +538,7 @@ const ViewVendorPage = () => {
                         }
                     </div>
 
-                    {/* <a><p>Notify contractor</p></a> */}
+                    <a><p>Notify vendor</p></a>
                 </div>
                 }
 
@@ -490,7 +556,7 @@ const ViewVendorPage = () => {
                         }
                     </div>
 
-                    {/* <a><p>Ask contractor to update</p></a> */}
+                    <a><p>Notify vendor</p></a>
                 </div>
                 }
             </div>

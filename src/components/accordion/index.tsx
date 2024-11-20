@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 
 
-const Accordion = ({children, title, defaultOpen}) => {
+const Accordion = ({children, title, defaultOpen, noHeader = false}) => {
     const [accordionState, setAccordionState] = useState("open")
 
     const toggleAccordion = () => {
@@ -23,13 +23,21 @@ const Accordion = ({children, title, defaultOpen}) => {
 
     return (
         <div className={styles.accordion}>
-            <header onClick={() => toggleAccordion()}>
+            {
+                !noHeader && <header onClick={() => toggleAccordion()}>
                 <h5>{title}</h5>
 
                 <div>
                     <Image src={accordionState === "open" ? arrowDown: arrowRight} alt="accordion open icon" width={100} height={100} style={{width: "30px", height: "30px"}} />
                 </div>
             </header>
+            }
+
+            {
+                noHeader && <div className={styles.headingSpace}>
+
+                </div>
+            }
 
             {
                 accordionState === "open" && <div className={styles.content}>

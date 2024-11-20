@@ -75,7 +75,15 @@ const Tasks = () => {
         try {
             const getAllStaffRequest = await getProtected("users/staff/all")
 
+            console.log({getAllStaffRequest});
+            
+
             if (getAllStaffRequest.status === "OK") {
+                console.log("fetched");
+                
+
+                console.log(sortUserAlphabetically(getAllStaffRequest.data));
+                
                 
                 setUsers(sortUserAlphabetically(getAllStaffRequest.data))
                 setFixedUsersList(sortUserAlphabetically(getAllStaffRequest.data))
@@ -89,8 +97,12 @@ const Tasks = () => {
     }
 
     const sortUserAlphabetically = (users) => {
-        let sortedUsers = [...users].sort((a,b) => a.name.localeCompare(b.name))
-        return sortedUsers
+        console.log({theUsers: users});
+        
+        // let sortedUsers = [...users].sort((a,b) => a.name.localeCompare(b.name))
+        // console.log({sortedUsers});
+        
+        return users
     }
 
     const updateUserRole = async ({replace}) => {
@@ -178,7 +190,7 @@ const Tasks = () => {
         }
     }
 
-    console.log({selectedUser});
+    console.log({users});
     console.log({newRole});
     console.log({newDepartment});
     
@@ -193,7 +205,7 @@ const Tasks = () => {
                     {
                         <>
                         <div>
-                            <h2 className={styles.selectedUserName}>{selectedUser.name}</h2>
+                            <h2 className={styles.selectedUserName}>{`Manage ${selectedUser.name}`}</h2>
 
                             <hr className={styles.topDivider} />
                         <h3>Update Department</h3>
@@ -247,15 +259,15 @@ const Tasks = () => {
                                     successMessages["role"] && <SuccessMessage message={successMessages.role} />
                                 }
                                 <select onChange={event => setNewRole(event.target.value)}>
-                                    <option value={"User"}>Vendor</option>
                                     <option value={"End User"}>End-user</option>
                                     <option value={"C and P Staff"}>C and P Staff</option>
                                     <option value={"CO"}>Contracts Officer</option>
                                     <option value={"GM"}>C and P General Manager</option>
                                     <option value={"HOD"}>C and P HOD</option>
-                                    <option value={"GMD"}>GMD</option>
+                                    <option value={"Executive Approver"}>Executive Approver</option>
                                     <option value={"Insurance Officer"}>Insurance Officer</option>
                                     <option value={"VRM"}>VRM</option>
+                                    <option value={"C&P Admin"}>C & P Administrator</option>
                                     <option value={"Admin"}>Admin</option>
                                 </select>
 
@@ -268,7 +280,7 @@ const Tasks = () => {
                     <hr />
 
 
-                    <div>
+                    {/* <div>
                         <h3>Out Of Office</h3>
 
                         <div>
@@ -297,9 +309,9 @@ const Tasks = () => {
                                     <button>Save</button>
                                 </div>
                         </div>
-                    </div>
-
-                    <hr />
+                    </div> */}
+{/* 
+                    <hr /> */}
 
 
                     <div>

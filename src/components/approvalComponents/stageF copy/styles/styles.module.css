@@ -1,0 +1,715 @@
+.stageF {
+  width: 70%;
+}
+.stageF h1 {
+  font-weight: 500;
+  font-size: 1.75rem;
+}
+.stageF h3 {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  font-size: 1.25rem;
+  margin-bottom: 3rem;
+}
+.stageF .executiveApproverMainDiv {
+  display: flex;
+  justify-content: space-between;
+}
+.stageF .executiveApproverMainDiv div:nth-child(1) {
+  padding-right: 50px;
+  font-weight: 500;
+}
+.stageF .executiveApproverMainDiv div:nth-child(2) {
+  width: 70%;
+}
+.stageF .executiveApproverMainDiv div:nth-child(2) select {
+  width: 100%;
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #e4e4e4;
+  border-radius: 5px;
+}
+.stageF .approveDecisionDiv {
+  display: flex;
+  justify-content: end;
+  margin-top: 20px;
+}
+.stageF .approveDecisionDiv button {
+  background-color: #e26b09;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  padding-left: 30px;
+  padding-right: 30px;
+  color: white;
+}
+.stageF .completeL2DecisionDiv {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+.stageF .completeL2DecisionDiv div:nth-child(1) {
+  padding-right: 50px;
+  font-weight: 500;
+}
+.stageF .completeL2DecisionDiv div:nth-child(2) {
+  width: 70%;
+}
+.stageF .completeL2DecisionDiv div:nth-child(2) textarea {
+  width: 100%;
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #e4e4e4;
+  border-radius: 5px;
+}
+.stageF .completeL2DecisionDiv div:nth-child(2) div {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+}
+.stageF .completeL2DecisionDiv div:nth-child(2) div button {
+  background-color: #e26b09;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  padding-left: 30px;
+  padding-right: 30px;
+  color: white;
+  margin-top: 20px;
+}
+.stageF .returnDecisionDiv {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+.stageF .returnDecisionDiv div:nth-child(1) {
+  padding-right: 50px;
+  font-weight: 500;
+}
+.stageF .returnDecisionDiv div:nth-child(2) {
+  width: 70%;
+}
+.stageF .returnDecisionDiv div:nth-child(2) textarea {
+  width: 100%;
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #e4e4e4;
+  border-radius: 5px;
+}
+.stageF .returnDecisionDiv div:nth-child(2) div {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+}
+.stageF .returnDecisionDiv div:nth-child(2) div button {
+  background-color: #e26b09;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  padding-left: 30px;
+  padding-right: 30px;
+  color: white;
+  margin-top: 20px;
+}
+
+.addRemarkModal {
+  background-color: white;
+  max-height: 70vh;
+  overflow-y: scroll;
+}
+.addRemarkModal > div {
+  padding: 20px;
+}
+.addRemarkModal header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.addRemarkModal h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #64676b;
+}
+.addRemarkModal h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #64676b;
+  font-size: 1.25rem;
+}
+.addRemarkModal .runnerText {
+  font-size: 0.875em;
+  font-weight: 400;
+  color: #212529;
+}
+.addRemarkModal hr {
+  border-style: none;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #d1d1d1;
+}
+.addRemarkModal .addRemarkMidsection {
+  color: #212529;
+}
+.addRemarkModal .remarkItem {
+  background-color: #f3f3f3;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+}
+.addRemarkModal .remarkTitle {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: left;
+  margin-bottom: 5px;
+}
+.addRemarkModal .remarkMeta {
+  font-size: 0.875em;
+  font-weight: 400;
+  display: flex;
+}
+.addRemarkModal .remarkMeta p {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+.addRemarkModal .remarkTextArea {
+  width: 100%;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #e6e6e6;
+  border-radius: 10px;
+  padding: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 16px;
+}
+.addRemarkModal .submitButtonDiv {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+}
+.addRemarkModal .submitButtonDiv button {
+  padding: 10px;
+}
+.addRemarkModal .submitButtonDiv .inactive {
+  color: #a1a1a1;
+  background-color: #d8d8d8;
+  border-style: none;
+  border-radius: 10px;
+}
+.addRemarkModal .submitButtonDiv .active {
+  border-style: none;
+  border-style: solid;
+  border-radius: 10px;
+  border-width: 1px;
+  border-color: #e26b09;
+  color: #e26b09;
+  background-color: rgba(0, 0, 0, 0);
+}
+.addRemarkModal .submitButtonDiv .active:hover {
+  border-width: 2px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.approvalContent {
+  border-style: none;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  margin-top: 40px;
+}
+.approvalContent a {
+  color: #e26b09;
+}
+.approvalContent h6 {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  font-size: 1rem;
+  color: #64676b;
+}
+.approvalContent .expiryDateText {
+  font-size: 14px;
+  color: #ababab;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.approvalContent .certificateExpiredText {
+  color: #dc3545;
+  font-size: 14px;
+}
+.approvalContent .certificateToExpireText {
+  color: #c5b500;
+  font-size: 14px;
+}
+.approvalContent .multiSelectTextValues {
+  display: flex;
+}
+.approvalContent .multiSelectTextValues p {
+  margin-right: 20px;
+}
+.approvalContent .sectionItem {
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+.approvalContent .sectionItem .sectionHeader {
+  display: flex;
+  justify-content: space-between;
+}
+.approvalContent .sectionItem > div:nth-child(1) {
+  flex-grow: 1;
+  margin-bottom: 40px;
+}
+.approvalContent .sectionItem .sectionFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #e26b09;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+.approvalContent .sectionItem .fieldItem {
+  margin-bottom: 1rem;
+}
+.approvalContent .sectionItem .fieldItem .fieldData {
+  display: flex;
+  align-items: center;
+}
+.approvalContent .sectionItem .fieldItem .fieldData label {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #212529;
+}
+.approvalContent .sectionItem .fieldItem .fieldData p {
+  margin-left: 20px;
+}
+.approvalContent .sectionItem .fieldItem .approvalInfoText {
+  font-size: 14px;
+  color: #dc3545;
+}
+
+.approvalActionsDiv {
+  margin-top: 50px;
+}
+.approvalActionsDiv > div {
+  margin-top: 20px;
+  padding: 20px;
+  border-style: none;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.approvalActionsDiv p {
+  margin-bottom: 20px;
+}
+.approvalActionsDiv h4 {
+  color: #64676b;
+  line-height: 1.2;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+.approvalActionsDiv .notApprovedDiv {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+.approvalActionsDiv .notApprovedDiv .companyName {
+  font-weight: bold;
+}
+.approvalActionsDiv .notApprovedDiv .actionText span {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+.approvalActionsDiv .notApprovedDiv .actionText button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  border-style: none;
+  color: #e26b09;
+  display: inline-flex;
+}
+.approvalActionsDiv .unapprovedSectionsDiv {
+  background-color: rgb(255, 208, 208);
+}
+.approvalActionsDiv .allApprovedDiv {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+.approvalActionsDiv .allApprovedDiv button {
+  border-style: none;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: rgb(2, 160, 2);
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.approvalActionsDiv .actionLink {
+  color: #e26b09;
+  cursor: pointer;
+}
+
+.recommendForHoldModal {
+  background-color: white;
+  padding: 20px;
+  border-style: none;
+  width: 50%;
+}
+.recommendForHoldModal h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #64676b;
+}
+.recommendForHoldModal p {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.recommendForHoldModal textarea {
+  width: 100%;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: rgb(237, 237, 237);
+  margin-top: 10px;
+  margin-bottom: 10px;
+  resize: none;
+}
+.recommendForHoldModal form > div {
+  display: flex;
+  justify-content: end;
+}
+.recommendForHoldModal form > div button {
+  margin-left: 20px;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+}
+.recommendForHoldModal form > div button:nth-child(1) {
+  background-color: #e7e7e7;
+}
+.recommendForHoldModal form > div button:nth-child(2) {
+  background-color: #e26b09;
+  color: white;
+}
+
+.finishButtonDiv {
+  display: flex;
+  justify-content: end;
+  margin-top: 20px;
+}
+.finishButtonDiv button {
+  padding: 10px;
+  background-color: #f1f1f1;
+  border-style: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.subTitle {
+  margin-bottom: 20px;
+}
+
+.expiringCertificatesDiv {
+  background-color: #fffee9;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.expiringCertificatesDiv > div {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.expiringCertificatesDiv a {
+  color: #e26b09;
+  cursor: pointer;
+}
+.expiringCertificatesDiv h3 {
+  margin-bottom: 10px;
+}
+
+.expiredCertificatesDiv {
+  background-color: #ffdbdf;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.expiredCertificatesDiv > div {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.expiredCertificatesDiv a {
+  color: #e26b09;
+  cursor: pointer;
+}
+.expiredCertificatesDiv h3 {
+  margin-bottom: 10px;
+}
+
+.remarksContent {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+  padding: 20px;
+  border-style: none;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.remarksContent > p:nth-child(1) {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+.remarksContent .remarksItem {
+  margin-bottom: 20px;
+}
+.remarksContent .remarksItem p:nth-child(2) {
+  display: flex;
+  font-size: 13px;
+  margin-top: 5px;
+  align-items: center;
+}
+.remarksContent .remarksItem p:nth-child(2) p {
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 0px;
+}
+
+.commentsContent {
+  color: #156213;
+  background-color: #d4f2d3;
+  border-color: #c3edc2;
+  padding: 20px;
+  border-style: none;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.commentsContent > p:nth-child(1) {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+.commentsContent .remarksItem {
+  margin-bottom: 20px;
+}
+.commentsContent .remarksItem p:nth-child(2) {
+  display: flex;
+  font-size: 13px;
+  margin-top: 5px;
+  align-items: center;
+}
+.commentsContent .remarksItem p:nth-child(2) p {
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 0px;
+}
+
+.showCommentTriggerDiv {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  color: #e26b09;
+  cursor: pointer;
+}
+
+.approvalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.approvalHeader a {
+  color: #e26b09;
+  cursor: pointer;
+}
+.approvalHeader div {
+  display: flex;
+  flex-direction: column;
+}
+.approvalHeader div a {
+  display: block;
+}
+
+.contractorCategorizationDiv p:nth-child(1) {
+  color: #e26b09;
+  margin-bottom: 20px;
+}
+.contractorCategorizationDiv p:nth-child(2) {
+  margin-bottom: 20px;
+}
+.contractorCategorizationDiv .saveCategoriesButton {
+  background-color: #e26b09;
+  color: white;
+  border-style: none;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.contractorCategorizationDiv .currentCategoriesList {
+  width: 60%;
+  margin-top: 20px;
+}
+.contractorCategorizationDiv .currentCategoriesList tbody tr {
+  font-size: 14px;
+}
+.contractorCategorizationDiv .currentCategoriesList tbody tr td:nth-child(2) {
+  color: #e26b09;
+}
+.contractorCategorizationDiv .currentCategoriesList tbody tr td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.contractorCategorizationDiv .selectedCategoriesList {
+  display: flex;
+}
+.contractorCategorizationDiv .selectedCategoriesList > div {
+  display: flex;
+  align-items: center;
+}
+.contractorCategorizationDiv .selectedCategoriesList > div p {
+  margin: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 14px;
+}
+.contractorCategorizationDiv .selectedCategoriesList .selectedCategoriesItem {
+  background-color: #ebf5ff;
+  margin-right: 10px;
+  padding: 0px;
+}
+.contractorCategorizationDiv .selectedCategoriesList .selectedCategoriesItem div {
+  padding: 5px;
+  border-right-style: solid;
+  border-right-color: #c3def9;
+  border-right-width: 1px;
+}
+.contractorCategorizationDiv > div {
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #b1b1b1;
+  border-radius: 10px;
+  position: relative;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+.contractorCategorizationDiv > div input {
+  font-size: 1rem;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  flex-grow: 1;
+}
+.contractorCategorizationDiv > div .jobCategoryList {
+  position: absolute;
+  top: 100%;
+  left: 0px;
+  width: 100%;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #d8d8d8;
+  background-color: white;
+  max-height: 150px;
+  overflow-y: scroll;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.contractorCategorizationDiv > div .jobCategoryList p {
+  color: #212529;
+  padding: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  cursor: pointer;
+  margin: 0px;
+}
+.contractorCategorizationDiv > div .jobCategoryList p:hover {
+  background-color: #f5f5f5;
+}
+
+.holdRequestDiv {
+  padding: 20px;
+  background-color: #f4f4f4;
+  margin-bottom: 20px;
+}
+.holdRequestDiv h5 {
+  font-size: 1.5rem;
+  color: #64676b;
+}
+.holdRequestDiv p {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.holdRequestDiv .holdRequestReasonLabel {
+  font-weight: bold;
+}
+.holdRequestDiv .holdRequestReason {
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  background-color: white;
+  margin-bottom: 20px;
+}
+.holdRequestDiv button {
+  cursor: pointer;
+}
+.holdRequestDiv div {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  margin-top: 10px;
+}
+.holdRequestDiv div button {
+  padding: 10px;
+  border-radius: 5px;
+  border-style: none;
+  margin-left: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.holdRequestDiv div button div {
+  margin: 0px;
+  display: block;
+}
+.holdRequestDiv div button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}
+.holdRequestDiv div button:nth-child(2) {
+  background-color: white;
+  color: #e26b09;
+}/*# sourceMappingURL=styles.module.css.map */
