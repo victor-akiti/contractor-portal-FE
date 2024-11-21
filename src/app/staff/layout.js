@@ -90,6 +90,8 @@ const Layout = ({children}) => {
                           hasAdminPermissions(user?.role) && <Link href={"/staff/userManagement"}>Roles & User Management</Link>
                         }
 
+                        <Link href={"/staff/settings"}>Account Settings</Link>
+
                         {/* <Link href={"/staff/invoice-forms"}>Invoice Forms</Link> */}
     
                         <hr />

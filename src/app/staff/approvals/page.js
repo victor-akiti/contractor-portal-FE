@@ -639,7 +639,7 @@ const Approvals = () => {
 
     console.log({currentSearchFilter});
 
-    const [l3Filters, setL3Filters] = useState(["All", "With Vendor", "Yet To Be Reviewed"])
+    const [l3Filters, setL3Filters] = useState(["All", "Healthy", "With Vendor", "Yet To Be Reviewed"])
     const [activeL3Filter, setActiveL3Filter] = useState("All")
     
     //This function filters companies in the L3 category by the selected filter
