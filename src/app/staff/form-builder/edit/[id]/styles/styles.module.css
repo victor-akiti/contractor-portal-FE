@@ -30,15 +30,29 @@
   position: fixed;
   bottom: 0px;
   left: 0px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   width: 100%;
-  padding: 10px;
-  background-color: #ececec;
   z-index: 500;
 }
+.newForm .saveFormDiv .saveFormDivContent {
+  padding: 10px;
+  background-color: #ececec;
+}
+.newForm .saveFormDiv .error {
+  background-color: rgb(167, 0, 0);
+  color: white;
+  padding: 5px;
+}
+.newForm .saveFormDiv .success {
+  background-color: rgba(0, 175, 20, 0.628);
+  color: white;
+  padding: 5px;
+}
 .newForm .saveFormDiv > div {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.newForm .saveFormDiv > div > div {
   margin: 0px;
 }
 .newForm header {
@@ -396,6 +410,29 @@
 .newForm .allowedFormatsContainer > div > div label {
   margin-right: 10px;
   font-size: 14px;
+}
+.newForm .filePreviewSelectorDiv .previewImageDiv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.newForm .filePreviewSelectorDiv a {
+  color: #e26b09;
+  font-size: 14px;
+}
+.newForm .filePreviewSelectorDiv .infoText {
+  font-size: 14px;
+  margin-top: 10px;
+}
+.newForm .filePreviewSelectorDiv button {
+  padding: 7px;
+  width: 100%;
+  border-style: none;
+  background-color: #e1e1e1;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 .newForm .formSettingsModal {
   background-color: white;

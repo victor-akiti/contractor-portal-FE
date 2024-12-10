@@ -1,6 +1,11 @@
 .newForm h1 {
   margin-bottom: 20px;
 }
+.newForm .helperText {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #9c9c9c;
+}
 .newForm .noSections {
   background-color: #f3f3f3;
   padding: 20px;
@@ -20,6 +25,35 @@
 }
 .newForm .noSections button svg {
   margin-left: 10px;
+}
+.newForm .saveFormDiv {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: 500;
+}
+.newForm .saveFormDiv .saveFormDivContent {
+  padding: 10px;
+  background-color: #ececec;
+}
+.newForm .saveFormDiv .error {
+  background-color: rgb(167, 0, 0);
+  color: white;
+  padding: 5px;
+}
+.newForm .saveFormDiv .success {
+  background-color: rgba(0, 175, 20, 0.628);
+  color: white;
+  padding: 5px;
+}
+.newForm .saveFormDiv > div {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.newForm .saveFormDiv > div > div {
+  margin: 0px;
 }
 .newForm header {
   display: flex;

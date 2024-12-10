@@ -1,0 +1,89 @@
+.settings {
+  padding-top: 50px;
+}
+.settings hr {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.settings h3 {
+  margin-bottom: 10px;
+}
+.settings table td {
+  padding-right: 20px;
+}
+.settings table td:nth-child(1) {
+  font-weight: 600;
+}
+.settings .actionButtonsDiv {
+  display: flex;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+.settings .actionButtonsDiv button {
+  background-color: #e26b09;
+  color: white;
+  border-style: none;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 20px;
+  padding: 7px;
+}
+.settings .actionButtonsDiv button:nth-child(2) {
+  background-color: white;
+  color: #e26b09;
+}
+.settings .changePortalAdministratorModal {
+  background-color: white;
+  padding: 20px;
+  border-style: none;
+  border-radius: 5px;
+  width: 40%;
+}
+.settings .changePortalAdministratorModal form input {
+  width: 100%;
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  border-style: solid;
+  border-color: #c7c7c7;
+  border-width: 1px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.settings .changePortalAdministratorModal div input {
+  width: 100%;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  border-style: solid;
+  border-color: #c7c7c7;
+  border-width: 1px;
+  margin-top: 20px;
+}
+.settings .changePortalAdministratorModal .modalActionButtons {
+  display: flex;
+  justify-content: end;
+  margin-top: 20px;
+}
+.settings .changePortalAdministratorModal .modalActionButtons button {
+  margin-left: 20px;
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.settings .changePortalAdministratorModal .modalActionButtons button:nth-child(1) {
+  background-color: #d7d7d7;
+}
+.settings .changePortalAdministratorModal .modalActionButtons button:nth-child(2) {
+  background-color: #e26b09 !important;
+}/*# sourceMappingURL=styles.module.css.map */

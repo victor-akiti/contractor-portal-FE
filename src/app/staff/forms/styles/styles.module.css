@@ -91,4 +91,10 @@
   margin-right: 20px;
   cursor: pointer;
   color: #e26b09;
+  display: inline-flex;
+  align-items: center;
+}
+.forms table tbody tr td span span {
+  display: inline-flex;
+  align-items: center;
 }/*# sourceMappingURL=styles.module.css.map */

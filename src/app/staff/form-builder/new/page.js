@@ -1,12 +1,13 @@
 'use client'
 import {useState, useRef, useEffect} from "react"
 import styles from "./styles/styles.module.css"
-import Modal from "../../../../components/modal"
+
 import shortTextIcon from "../../../../assets/images/shorttext.svg"
 import longTextIcon from "../../../../assets/images/longtext.svg"
 import dropDownIcon from "../../../../assets/images/dropdown.svg"
 import radioButtonIcon from "../../../../assets/images/radio.svg"
 import checkBoxIcon from "../../../../assets/images/checkbox.svg"
+import parapgraphIcon from "../../../../assets/images/paragraph.svg"
 import fileIcon from "../../../../assets/images/file.svg"
 import dateIcon from "../../../../assets/images/date.svg"
 import removeIcon from "../../../../assets/images/remove.svg"
@@ -29,11 +30,22 @@ import DateSelect from "../../../../components/formComponents/date"
 import FileSelect from "../../../../components/formComponents/file"
 import MultiSelectText from "../../../../components/formComponents/multiSelectText"
 import {postPlain, postProtected} from "@/requests/post"
+import {putProtected} from "@/requests/put"
 import { getProtected } from "@/requests/get"
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css'; // Import Quill styles
+
+
+const QuillEditor = dynamic(() => import('react-quill'), { ssr: false });
 
 import Switch from "react-switch"
 import randomString from "randomstring"
+import { useParams, useRouter } from "next/navigation"
+import Loading from "@/components/loading"
+import SuccessMessage from "@/components/successMessage"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import TextBlock from "@/components/formComponents/textBlock"
+import Modal from "@/components/modal"
 
 const NewForm = () => {
     const [newForm, setNewForm] = useState({
@@ -67,7 +79,8 @@ const NewForm = () => {
             exclusionList: [],
             created: "",
             lastModified: "",
-            modificationHistory: []
+            modificationHistory: [],
+            isContractorApplicationForm: false
         }
     })
     const [showSettingsModal, setShowSettingsModal] = useState(false)
@@ -75,24 +88,82 @@ const NewForm = () => {
     const [allUsers, setAllUsers] = useState([])
     const [savingForm, setSavingForm] = useState(false)
     const addOptionRef = useRef(null)
+    const [updateSuccessMessage, setUpdateSuccessMessage] = useState("")
+    const [updateErrorMessage, setUpdateErrorMessage] = useState("")
+    
+      const [content, setContent] = useState('');
+
+
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'],
+      [{ align: [] }],
+      [{ color: [] }],
+      ['code-block'],
+      ['clean'],
+    ],
+  };
+
+
+  const quillFormats = [
+    'header',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'blockquote',
+    'list',
+    'bullet',
+    'link',
+    'image',
+    'align',
+    'color',
+    'code-block',
+  ];
+
+
+  const handleEditorChange = (newContent) => {
+    setContent(newContent);
+    updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "text", value: newContent, pageIndex: propertyToEdit.page})
+  };
+
+    const param = useParams()
+    const [loadingMessage, setLoadingMessage] = useState("Fetching form....")
+    const [fetchedForm, setFetchedForm] = useState(false)
+    const [successMessage, setSuccessMessage] = useState("")
+
+    console.log({param});
 
     useEffect(() => {
-        fetchAllUsers()
-        fetchAllEndUsers()
-    }, [])
+        // fetchAllUsers()
+        // fetchAllEndUsers()
+        fetchForm()
+    }, [param])
 
-    const fetchAllUsers = async () => {
+    const fetchForm = async () => {
         try {
-            const fetchAllUsersRequest = await getProtected("users/all")
+           let {id} = param
+           
+           if (id) {
+            const fetchFormRequest = await getProtected(`forms/form/${id}`)
+
+            if (fetchFormRequest.status === "OK") {
+                let tempForm = {...newForm}
+                tempForm = fetchFormRequest.data.form
+                setNewForm(tempForm)
+                setLoadingMessage("")
+                setFetchedForm(true)
+            }
+
+            console.log({fetchFormRequest});
+           }
         } catch (error) {
             console.log({error});
         }
     }
-
-    const fetchAllEndUsers = () => {
-
-    }
-
 
     const allAllowedFileFormats = ["PDF", "JPG", "PNG", "SVG", "GIF", "DOC", "DOCX", "XLS", "XLSX", "PPT", "PPTM"]
 
@@ -110,6 +181,9 @@ const NewForm = () => {
             title: "New Section",
             layout: "single column",
             description: "",
+            allowMultiple: false,
+            hideOnApproval: false,
+            hideOnView: false,
             fields: [
 
             ]
@@ -146,9 +220,39 @@ const NewForm = () => {
         setNewForm(tempForm)
     }
 
-    const updateSectionDescription= newDescription => {
+    const updateSectionDescription = newDescription => {
         let tempForm = {...newForm}
         tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index].description = newDescription
+        setNewForm(tempForm)
+    }
+
+    const updateSectionAllowMultiple = (allowMultiple) => {
+        let tempForm = {...newForm}
+        tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["allowMultiple"] = allowMultiple
+        setNewForm(tempForm)
+    }
+
+    const updateHideOnApproval = (allowMultiple) => {
+        let tempForm = {...newForm}
+        tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["hideOnApproval"] = allowMultiple
+        setNewForm(tempForm)
+    }
+
+    const updateHideOnView = (allowMultiple) => {
+        let tempForm = {...newForm}
+        tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["hideOnView"] = allowMultiple
+        setNewForm(tempForm)
+    }
+
+    const updateSectionAddSectionText = addSectionText => {
+        let tempForm = {...newForm}
+        tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["addSectionText"] = addSectionText
+        setNewForm(tempForm)
+    }
+
+    const updateAddedSectionLabel = addSectionText => {
+        let tempForm = {...newForm}
+        tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index]["addedSectionLabel"] = addSectionText
         setNewForm(tempForm)
     }
 
@@ -219,7 +323,10 @@ const NewForm = () => {
                     type: "shortText",
                     textType: "text",
                     label: "Short Text",
-                    required: false
+                    approvalLabel: "Short Text",
+                    required: false,
+                    allowMultiple: false,
+                    addFieldText: "Add another field"
                 })
                 break;
             case "longText":
@@ -231,7 +338,26 @@ const NewForm = () => {
                     enabled: true,
                     maxLength: 2560,
                     type: "longText",
-                    label: "Long Text"
+                    label: "Long Text",
+                    approvalLabel: "Long Text",
+                    allowMultiple: false,
+                    addFieldText: "Add another field"
+                })
+                break;
+                case "textBlock":
+                tempNewForm.pages[addFieldModalSettings.page].sections[addFieldModalSettings.sectionToAddFieldTo].fields.push({
+                    value: "",
+                    defaultValue: "",
+                    infoText: "",
+                    placeholder: "",
+                    enabled: true,
+                    maxLength: 2560,
+                    type: "textBlock",
+                    label: "Text Block",
+                    approvalLabel: "Text Block",
+                    text: "",
+                    allowMultiple: false,
+                    addFieldText: "Add another field"
                 })
                 break;
             case "dropDown":
@@ -249,7 +375,10 @@ const NewForm = () => {
                         label: "Option 1"
                     }],
                     type: "dropDown",
-                    label: "Drop Down"
+                    label: "Drop Down",
+                    approvalLabel: "Drop Down",
+                    allowMultiple: false,
+                    addFieldText: "Add another field"
                 })
                 break;
             case "checkBoxes":
@@ -261,6 +390,7 @@ const NewForm = () => {
                     enabled: true,
                     maxLength: 256,
                     label: "Checkboxes",
+                    approvalLabel: "Checkboxes",
                     type: "checkBoxes",
                     options:[{
                         value: "Select an option",
@@ -268,6 +398,8 @@ const NewForm = () => {
                         selected: true,
                         label: "Option 1"
                     }],
+                    allowMultiple: false,
+                    addFieldText: "Add another field"
                 })
                 break;
             case "radioButtons":
@@ -279,6 +411,7 @@ const NewForm = () => {
                     enabled: true,
                     maxLength: 256,
                     label: "Radio Buttons",
+                    approvalLabel: "Radio Buttons",
                     type: "radioButtons",
                     options:[{
                         value: "Select an option",
@@ -286,6 +419,8 @@ const NewForm = () => {
                         selected: true,
                         label: "Option 1"
                     }],
+                    allowMultiple: false,
+                    addFieldText: "Add another field"
                 })
                 break;
             case "multiSelectText":
@@ -297,6 +432,7 @@ const NewForm = () => {
                 enabled: true,
                 maxLength: 256,
                 label: "Multi Select Text",
+                approvalLabel: "Multi Select Text",
                 type: "multiSelectText",
                 options:[{
                     value: "Select an option",
@@ -315,7 +451,9 @@ const NewForm = () => {
                         label: "Preselected Option 2",
                         required: true
                     },
-                ]
+                ],
+                allowMultiple: false,
+                    addFieldText: "Add another field"
             })
             break;
             case "file":
@@ -328,9 +466,18 @@ const NewForm = () => {
                     maxLength: 256,
                     type: "file",
                     label: "File Upload",
+                    approvalLabel: "File Upload",
                     allowedFormats: ["JPG"],
                     maxAllowedFiles: 1,
-                    allowSelectPreviouslyUploadedFile: true
+                    isACertificate: false,
+                    hasExpiryDate: false,
+                    allowSelectPreviouslyUploadedFile: true,
+                    allowMultiple: false,
+                    addFieldText: "Add another field",
+                    updateCode: randomString.generate({
+                        length: 12,
+                        charset: "alpanumeric"
+                      })
                 })
                 break;
             case "date":
@@ -344,7 +491,10 @@ const NewForm = () => {
                     type: "date",
                     textType: "text",
                     label: "Date",
-                    required: false
+                    approvalLabel: "Date",
+                    required: false,
+                    allowMultiple: false,
+                    addFieldText: "Add another field"
                 })
                 break;
             // case "shortText":
@@ -468,7 +618,21 @@ const NewForm = () => {
                 preSelectedOptions={newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].preSelectedOptions}
                 onClick={(event) => setFieldToEdit("multiSelectText", fieldIndex, sectionIndex, event, pageIndex)} 
             />
-            }      
+            }
+            
+            case "textBlock": {
+                return <TextBlock options={newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].options} highlighted={propertyToEdit.index === sectionIndex && propertyToEdit.fieldIndex === fieldIndex} 
+                type={field.textType} 
+                label={field.label} 
+                infoText={field.infoText}
+                errorText={field.errorText}
+                text={field.text}
+                placeholder={field.placeholder} 
+                name={randomString.generate()}
+                preSelectedOptions={newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].preSelectedOptions}
+                onClick={(event) => setFieldToEdit("textBlock", fieldIndex, sectionIndex, event, pageIndex)} 
+            />
+            }
         }
     }
 
@@ -488,12 +652,20 @@ const NewForm = () => {
 
     const addOptionToField = ({sectionIndex, fieldIndex, propertyToEdit, value, pageIndex}) => {
         let tempForm = {...newForm}
-        tempForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].options.push({
-            value,
-            disabled: true,
-            selected: true,
-            label: value
-        })
+        const optionsList = String(value).split(",")
+        console.log({optionsList});
+        for (let index = 0; index < optionsList.length; index++) {
+            const element = optionsList[index];
+            console.log({element});
+            tempForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].options.push({
+                value: String(element).trim(),
+                disabled: true,
+                selected: true,
+                label: element
+            })
+            
+        }
+        
         setNewForm(tempForm)
 
         addOptionRef.current.value = ""
@@ -604,6 +776,14 @@ const NewForm = () => {
     }
 
     const removeField =  (sectionIndex, fieldIndex, pageIndex) => {
+        console.log({fieldIndex, fieldsLength: newForm.pages[pageIndex].sections[sectionIndex].fields.length - 1});
+        if (newForm.pages[pageIndex].sections[sectionIndex].fields.length === 1) {
+            setSectionToEdit(pageIndex, sectionIndex)
+        } else if (fieldIndex === newForm.pages[pageIndex].sections[sectionIndex].fields.length - 1) {
+            console.log("Setting field");
+            console.log(newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex - 1].type, fieldIndex - 1, sectionIndex);
+            setFieldToEdit(newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex - 1].type, fieldIndex - 1, sectionIndex, {}, pageIndex)
+        }
         let tempNewForm = {...newForm}
         tempNewForm.pages[pageIndex].sections[sectionIndex].fields = tempNewForm.pages[pageIndex].sections[sectionIndex].fields.filter((item, index) => index !== fieldIndex)
         setNewForm(tempNewForm)
@@ -632,10 +812,28 @@ const NewForm = () => {
 
             setSavingForm(false)
 
-            console.log({createNewFormRequest});
+            if (createNewFormRequest.status === "OK") {
+                setUpdateSuccessMessage("Form Created Successfully. Redirecting to forms list.")
+            } else {
+                setUpdateErrorMessage(createNewFormRequest?.error?.message)
+            }
+
+            hideUpdateMessages()
         } catch (error) {
             console.log({error});
         }
+    }
+
+    const router = useRouter()
+
+    const hideUpdateMessages = () => {
+        setTimeout(() => {
+            setUpdateSuccessMessage(null)
+            setUpdateErrorMessage(null)
+
+            router.push("/staff/forms")
+            
+        }, 5000)
     }
 
     
@@ -652,7 +850,7 @@ const NewForm = () => {
             <div className={styles.newFormContent}>
                 <div className={styles.newFormContentLeft}>
                     <header className={styles.formTitle}>
-                        <input placeholder="Form Title" onChange={event => updateFormName(event.target.value)} />
+                        <input defaultValue={newForm.name} placeholder="Form Title" onChange={event => updateFormName(event.target.value)} />
                     </header>
                     {/* {
                         newForm.sections.length === 0 && <div className={styles.noSections}>
@@ -734,12 +932,28 @@ const NewForm = () => {
 
                     
 
-                    <div className={styles.formActionButtons}>
+                    <div className={styles.saveFormDiv}>
                         {
-                            newForm.pages.length > 0 && newForm.name && <button onClick={() => validateForm()}>Save Form <SaveIcon /> {savingForm && <ButtonLoadingIcon /> }</button>
+                            updateSuccessMessage && <div className={styles.success}>
+                                <p>{updateSuccessMessage}</p>
+                            </div>
                         }
 
-                        <button onClick={() => setShowSettingsModal(true)}>Form Settings <SettingsIcon /></button>
+                        {
+                            updateErrorMessage && <div className={styles.error}>
+                                <p>{updateErrorMessage}</p>
+                            </div>
+                        }
+
+                        <div className={styles.saveFormDivContent}>
+                            <div className={[styles.formActionButtons].join(" ")}>
+                                {
+                                    newForm.pages.length > 0 && newForm.name && !updateSuccessMessage && <button onClick={() => validateForm()}>Save Form <SaveIcon /> {savingForm && <ButtonLoadingIcon /> }</button>
+                                }
+
+                                <button onClick={() => setShowSettingsModal(true)}>Form Settings <SettingsIcon /></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -798,6 +1012,69 @@ const NewForm = () => {
                                 <p className={styles.sectionLabels}>Section Description</p>
                                 <input placeholder="Section Title" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].description} onChange={(event) => updateSectionDescription(event.target.value)}  />
 
+                                <div className={styles.editFieldDivs}>
+                                            <div style={{marginTop: "20px"}}></div>
+                                                <label>Allow vendors add more of this section</label>
+                                                <Switch
+                                                onChange={() => {
+                                                    if (newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].allowMultiple) {
+                                                        updateSectionAllowMultiple(false)
+                                                    } else {
+                                                        updateSectionAllowMultiple(true)
+                                                    }
+                                                }}
+                                                checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].allowMultiple} />
+                                                <p className={styles.helperText}>Check this if you want the vendor to be able to add multiple instances of this section</p>
+                                            </div>
+
+                                            <div className={styles.editFieldDivs}>
+                                            <div style={{marginTop: "20px"}}></div>
+                                                <label>Hide on approvals page</label>
+                                                <Switch
+                                                onChange={() => {
+                                                    if (newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnApproval) {
+                                                        updateHideOnApproval(false)
+                                                    } else {
+                                                        updateHideOnApproval(true)
+                                                    }
+                                                }}
+                                                checked={newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnApproval} />
+                                                <p className={styles.helperText}>Check this if you want hide this section on the approvals page</p>
+                                            </div>
+
+                                            <div className={styles.editFieldDivs}>
+                                            <div style={{marginTop: "20px"}}></div>
+                                                <label>Hide on view page</label>
+                                                <Switch
+                                                onChange={() => {
+                                                    if (newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnView) {
+                                                        updateHideOnView(false)
+                                                    } else {
+                                                        updateHideOnView(true)
+                                                    }
+                                                }}
+                                                checked={newForm.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.hideOnView} />
+                                                <p className={styles.helperText}>Check this if you want hide this section on the application view page.</p>
+                                            </div>
+
+                                            
+
+                                            
+
+                                            {
+                                                newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].allowMultiple && <div className={styles.editFieldDivs}>
+                                                    <label>Add section text</label>
+                                                    <input placeholder="Add another field" defaultValue={newForm?.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.addSectionText} onChange={(event) => updateSectionAddSectionText(event.target.value)}  />
+                                                </div>
+                                            }
+
+                                            {
+                                                newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].allowMultiple && <div className={styles.editFieldDivs}>
+                                                    <label>Added section label</label>
+                                                    <input placeholder="Added section label" defaultValue={newForm?.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.addedSectionLabel} onChange={(event) => updateAddedSectionLabel(event.target.value)}  />
+                                                </div>
+                                            }
+
                                 <div className={styles.sectionLayoutSelector}>
                                     <div className={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].layout === "single column" ? styles.active : styles.inactive} onClick={() => setSectionLayoutStyle("single column")}>
                                         {/* <Image src={singleColumnIcon} alt="Single column" style={{width: "30px", height: "30px"}} /> */}
@@ -854,6 +1131,12 @@ const NewForm = () => {
                                             </div>
 
                                             <div className={styles.editFieldDivs}>
+                                                <label>Approval Label</label>
+                                                <input placeholder="Approval label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "approvalLabel", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                <p className={styles.helperText}>Use this if you want the label on the form to be different from the label used during approvals.</p>
+                                            </div>
+
+                                            <div className={styles.editFieldDivs}>
                                                 <label>Default value</label>
                                                 <input placeholder="Default value" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "defaultValue", value: event.target.value, pageIndex: propertyToEdit.page})}  />
                                             </div>
@@ -885,6 +1168,34 @@ const NewForm = () => {
                                             </div>
 
                                             <div className={styles.editFieldDivs}>
+                                                <label>Allow vendors add more fields</label>
+                                                <Switch
+                                                onChange={() => {
+                                                    if (newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].allowMultiple) {
+                                                        updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "allowMultiple", value: false, pageIndex: propertyToEdit.page})
+                                                    } else {
+                                                        updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "allowMultiple", value: true, pageIndex: propertyToEdit.page})
+                                                    }
+                                                }}
+                                                checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].allowMultiple} />
+                                                <p className={styles.helperText}>Check this if you want the vendor to be able to add multiple instances of this field</p>
+                                            </div>
+
+                                            {
+                                                newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].allowMultiple && <div className={styles.editFieldDivs}>
+                                                    <label>Add field text</label>
+                                                    <input placeholder="Add another field" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].addFieldText} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "addFieldText", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                </div>
+                                            }
+
+                                            {
+                                                newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].allowMultiple && <div className={styles.editFieldDivs}>
+                                                    <label>Added field label</label>
+                                                    <input placeholder="Added field label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].addedFieldLabel} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "addedFieldLabel", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                </div>
+                                            }
+
+                                            <div className={styles.editFieldDivs}>
                                                 <label>Required</label>
                                                 <Switch 
                                                 onChange={() => {
@@ -897,11 +1208,28 @@ const NewForm = () => {
                                                  checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].required} />
                                             </div>
 
+                                                {
+                                                    (propertyToEdit.fieldType === "textBlock") && <div className={styles.editFieldDivs}>
+                                                    <label>Text</label>
+                                                    <QuillEditor
+                                                        value={content}
+                                                        onChange={handleEditorChange}
+                                                        
+                                                        modules={quillModules}
+                                                        formats={quillFormats}
+                                                        className="w-full h-[70%] mt-10 bg-white"
+                                                    />
+                                                </div>
+                                                }
+
+                                                
+
+
                                             {
                                                 (propertyToEdit.fieldType === "shortText" || propertyToEdit.fieldType === "longText") && 
                                                 <div className={styles.editFieldDivs}>
                                                     <label>Max Length</label>
-                                                    <input type="number" placeholder="Max length" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].maxLength} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "placeholder", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                    <input type="number" placeholder="Max length" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].maxLength} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "maxLength", value: Number(event.target.value), pageIndex: propertyToEdit.page})}  />
                                                 </div>
                                             }
 
@@ -909,7 +1237,7 @@ const NewForm = () => {
                                                 (propertyToEdit.fieldType === "file") && 
                                                 <div className={styles.editFieldDivs}>
                                                     <label>Max Files Allowed</label>
-                                                    <input type="number" placeholder="Maximum number of files" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].maxAllowedFiles} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "placeholder", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                    <input type="number" placeholder="Maximum number of files" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].maxAllowedFiles} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "maxAllowedFiles", value: Number(event.target.value), pageIndex: propertyToEdit.page})}  />
                                                 </div>
                                             }
 
@@ -927,6 +1255,40 @@ const NewForm = () => {
                                                     checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].allowSelectPreviouslyUploadedFile} />
                                                 </div>
                                             }
+
+                                            {
+                                                ( propertyToEdit.fieldType === "file") && <div className={styles.editFieldDivs}>
+                                                    <label>Is a certificate/permit</label>
+                                                    <Switch
+                                                    onChange={() => {
+                                                        if (newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].isACertificate) {
+                                                            updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "isACertificate", value: false, pageIndex: propertyToEdit.page})
+                                                        } else {
+                                                            updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "isACertificate", value: true, pageIndex: propertyToEdit.page})
+                                                        }
+                                                    }}
+                                                    checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].isACertificate} />
+                                                </div>
+                                            }
+
+                                            {
+                                                ( propertyToEdit.fieldType === "file" && newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].isACertificate) && <div className={styles.editFieldDivs}>
+                                                    <label>Has expiry date</label>
+                                                    <Switch
+                                                    onChange={() => {
+                                                        if (newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].hasExpiryDate) {
+                                                            updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "hasExpiryDate", value: false, pageIndex: propertyToEdit.page})
+                                                        } else {
+                                                            updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "hasExpiryDate", value: true, pageIndex: propertyToEdit.page})
+                                                        }
+                                                    }}
+                                                    checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].hasExpiryDate} />
+                                                </div>
+                                            }
+
+                                            
+
+                                            
 
                                             
 
@@ -1151,6 +1513,11 @@ const NewForm = () => {
                                     <Image src={multiSelectTextIcon} alt="date field" style={{width: "100px", height: "50px", marginBottom: "20px"}} />
                                     <label>Multi-select Text</label>
                                 </div>
+
+                                <div onClick={() => addFieldToSection("textBlock")}>
+                                    <Image src={parapgraphIcon} alt="text block icon  " style={{width: "100px", height: "50px", marginBottom: "20px"}} />
+                                    <label>Text Block</label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1186,6 +1553,21 @@ const NewForm = () => {
                                     }
                                 }}
                                 checked={newForm.settings.enabled} 
+                            />
+                        </div>
+
+                        <div>
+                            <label>Is Contractor Application Form</label>
+
+                            <Switch
+                                onChange={() => {
+                                    if (newForm.settings.isContractorApplicationForm) {
+                                        updateFormSettings("isContractorApplicationForm", false)
+                                    } else {
+                                        updateFormSettings("isContractorApplicationForm", true)
+                                    }
+                                }}
+                                checked={newForm.settings.isContractorApplicationForm} 
                             />
                         </div>
 

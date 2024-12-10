@@ -238,18 +238,18 @@ const StageB = ({approvalData, formPages, vendorID}) => {
                     {
                         field.isACertificate && <>
                             {
-                                field.value[0].expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
+                                field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field?.value[0]?.expiryDate}`}</p>
                             }
 
                             {
-                                field.value && field.value[0].expiryDate && <>
+                                field.value && field?.value[0]?.expiryDate && <>
                                 
                                         {
-                                            getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
+                                            getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
                                         }
 
                                         {
-                                            getCertificateTimeValidity(field.value[0].expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
+                                            getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
                                         }
 
                                         
@@ -340,10 +340,10 @@ const StageB = ({approvalData, formPages, vendorID}) => {
 
                         if (field.value) {
 
-                            if (getCertificateTimeValidity(field.value[0].expiryDate) === "expiring") {
+                            if (getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expiring") {
                                 tempExpiringCertificates.push(field)
                             }
-                            if (getCertificateTimeValidity(field.value[0].expiryDate) === "expired") {
+                            if (getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expired") {
                                 tempExpiredCertificates.push(field)
                             }
                         }
@@ -1098,7 +1098,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
 
                                 <p>Please take either of the following actions:</p>
 
-                                <p>1. Select the Amni end user that should be notified about this company's registration. <a onClick={() => setCurrentApprovalStatus("select endusers")}>PROCEED</a></p>
+                                <p>1. Select the Amni end user that should be notified about this company&#39;s registration. <a onClick={() => setCurrentApprovalStatus("select endusers")}>PROCEED</a></p>
 
                                 <p>2. Complete this application at L2. <a onClick={() => setShowSetReasonForHoldModal(true)}>PROCEED</a></p>
                             </>
@@ -1110,7 +1110,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
 
                             <div>
                                 {
-                                    selectedEndUsers.map((item, index) => <div>
+                                    selectedEndUsers.map((item, index) => <div key={index}>
                                         <label>{item.name}</label>
                                         <Image onClick={() => removeEndUser(item._id)} src={closeIconWhite} alt="remove end user icon" width={10} height={10} style={{cursor: "pointer", marginLeft: "10px"}} />
                                     </div>)

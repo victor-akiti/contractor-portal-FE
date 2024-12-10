@@ -13,6 +13,10 @@
 }
 .settingsPage .settingsSection .outOfOffice {
   background-color: red;
+  font-size: 12px;
+  color: white;
+  padding: 3px;
+  border-radius: 2px;
 }
 .settingsPage .settingsSection .setOOButton {
   background-color: #e26b09;
@@ -35,6 +39,26 @@
   border-top-style: solid;
   border-width: 1px;
   border-color: #e7e7e7;
+}
+.settingsPage table {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 30%;
+}
+.settingsPage table thead {
+  background-color: rgb(87, 87, 87);
+  color: white;
+}
+.settingsPage table thead tr td {
+  padding-left: 10px;
+  color: white;
+}
+.settingsPage table tr td {
+  padding: 10px;
+  font-size: 14px;
+  color: #4e4e4e;
+  padding-left: 0px;
+  padding-right: 20px;
 }
 .settingsPage .setOutOfOfficeDiv {
   margin-top: 20px;
@@ -91,6 +115,68 @@
   align-items: center;
 }
 .settingsPage .setOutOfOfficeDiv .actionButtonsDiv button:nth-child(2):hover {
+  background-color: #d35f00;
+  opacity: 0.8;
+}
+.settingsPage .setOutInOfficeDiv {
+  margin-top: 20px;
+  background-color: white;
+  padding: 20px;
+  border-style: none;
+  border-radius: 5px;
+  width: 30%;
+}
+.settingsPage .setOutInOfficeDiv p {
+  margin-bottom: 20px;
+}
+.settingsPage .setOutInOfficeDiv h3 {
+  margin-bottom: 10px;
+}
+.settingsPage .setOutInOfficeDiv h4 {
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+.settingsPage .setOutInOfficeDiv > div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.settingsPage .setOutInOfficeDiv input, .settingsPage .setOutInOfficeDiv select {
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  border-color: rgb(205, 205, 205);
+  margin-left: 10px;
+}
+.settingsPage .setOutInOfficeDiv select {
+  margin-left: 0px;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.settingsPage .setOutInOfficeDiv .actionButtonsDiv {
+  display: flex;
+  justify-content: end;
+}
+.settingsPage .setOutInOfficeDiv .actionButtonsDiv button {
+  margin-left: 20px;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+.settingsPage .setOutInOfficeDiv .actionButtonsDiv button:nth-child(2) {
+  background-color: #e26b09;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.settingsPage .setOutInOfficeDiv .actionButtonsDiv button:nth-child(2):hover {
   background-color: #d35f00;
   opacity: 0.8;
 }/*# sourceMappingURL=styles.module.css.map */

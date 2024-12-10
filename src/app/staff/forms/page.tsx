@@ -10,6 +10,10 @@ import ConfirmationModal from "@/components/confirmationDialog"
 import ConfirmationDialog from "@/components/confirmationDialog"
 import { deleteProtected } from "@/requests/delete"
 import Loading from "@/components/loading"
+import { postProtected } from "@/requests/post"
+import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
+import SuccessMessage from "@/components/successMessage"
+import ErrorText from "@/components/errorText"
 
 type FormToDelete = {
     _id ? : String
@@ -18,6 +22,7 @@ type FormToDelete = {
 const Forms = () => {
     const [forms, setForms] = useState([])
     const [fetchingForms, setFetchingForms] = useState(true)
+    const [formToDuplicate, setFormToDuplicate] = useState("")
 
     useEffect(() => {
         fetchAllForms()
@@ -56,6 +61,9 @@ const Forms = () => {
         headerText: "Delete form?",
         bodyText: "You are about to delete this form. This action cannot be reversed. Continue?"
     })
+    const [successMessage, setSuccessMessage] = useState("")
+    const [errorMessage, setErrorMessage] = useState("")
+    const [processing, setProcessing] = useState(false)
 
     const selectFormForDeletion = form => {
         let tempFormToDelete = {...formToDelete}
@@ -65,11 +73,7 @@ const Forms = () => {
 
     const deleteForm = async () => {
         try {
-            let tempConfirmationDialogSettings = {...confirmationDialogSettings}
-            tempConfirmationDialogSettings.processing = true
-            console.log({tempConfirmationDialogSettings});
-            
-            setConfirmationDialogSettings(tempConfirmationDialogSettings)
+            setProcessing(true)
 
             const deleteFormRequest:any = await deleteProtected(`forms/form/${formToDelete._id}`, {})
 
@@ -77,16 +81,51 @@ const Forms = () => {
             
 
             if (deleteFormRequest.status === "OK") {
-                tempConfirmationDialogSettings.successMessage = "Form deleted successfully."
-            } else {
-                tempConfirmationDialogSettings.errorMessage = deleteFormRequest.error.message
-            }
-            tempConfirmationDialogSettings.processing = false
+                console.log("Form deleted");
+                
+                setSuccessMessage("Form deleted successfully.")
 
-            setConfirmationDialogSettings(tempConfirmationDialogSettings)
+                let tempForms = [...forms]
+                tempForms = deleteFormRequest.data
+                setForms(tempForms)
+            } else {
+                setErrorMessage(deleteFormRequest.error.message)
+            }
+
+            setProcessing(false)
+            
         } catch (error) {
             console.log({error});
         }
+    }
+
+
+
+    
+
+    const duplicateForm = async formID => {
+        try {
+            setFormToDuplicate(formID)
+            const duplicateFormRequest = await postProtected(`forms/duplicate/${formID}`, {}) 
+            setFormToDuplicate("")
+
+            if (duplicateFormRequest.status === "OK") {
+                let tempForms = [...forms]
+                tempForms = duplicateFormRequest.data
+                setForms(tempForms)
+            }
+        } catch (error) {
+           console.log({error});
+        }
+        
+        
+    }
+
+    const closeDeleteFormModal = () => {
+        setShowDeleteFormModal(false)
+        setFormToDelete({})
+        setErrorMessage("")
+        setSuccessMessage("")
     }
 
     
@@ -98,22 +137,29 @@ const Forms = () => {
             {
                 Object.entries(formToDelete).length > 0 && 
                     <Modal >
-                        <ConfirmationDialog
-                        processing={confirmationDialogSettings.processing}
-                        errorMessage={confirmationDialogSettings.errorMessage}
-                        successMessage={confirmationDialogSettings.successMessage}
-                        cancelText={confirmationDialogSettings.cancelText}
-                        confirmText={confirmationDialogSettings.confirmText}
-                        headerText={confirmationDialogSettings.headerText}
-                        bodyText={confirmationDialogSettings.bodyText}
-                        confirmAction={() => deleteForm()}
-                        cancelAction={() => {
-                            let tempFormToDelete = {...formToDelete}
-                            tempFormToDelete = {}
-                            setFormToDelete(tempFormToDelete)
-                        }}
+                        <div className={styles.deleteFormModal}>
+                    <div>
+                        <h5>Delete Form</h5>
 
-                        />
+                        {
+                            !successMessage && <p>{"You are about to delete this form. Continue?"}</p>
+                        }
+
+                        {
+                            successMessage && <SuccessMessage message={successMessage} />
+                        }
+
+                        {
+                            errorMessage && <ErrorText text={errorMessage} />
+                        }
+                        
+                        <div>
+                            {!successMessage && <button onClick={() => deleteForm()}>Confirm {processing && <ButtonLoadingIcon />}</button>}
+
+                            <button onClick={() => closeDeleteFormModal()}>{!successMessage ? "Cancel and Close" : "Close"}</button>
+                        </div>
+                    </div>
+                </div>
                     </Modal>
             }
 
@@ -179,9 +225,9 @@ const Forms = () => {
                             Last Modified
                         </td>
 
-                        <td>
+                        {/* <td>
                             Responses Count
-                        </td>
+                        </td> */}
 
                         <td>
                             Action
@@ -200,10 +246,12 @@ const Forms = () => {
 
                             <td>{moment(item?.item?.updatedAt).format('Do MMMM  YYYY, h:mm:ss a')}</td>
 
-                            <td>0</td>
+                            {/* <td>0</td> */}
 
                             <td>
-                                <Link href={item?.form?.settings?.isContractorApplicationForm ? "/staff/approvals" : `/staff/forms/responses/${item._id}`}>View Responses</Link>
+                                {/* <Link href={item?.form?.settings?.isContractorApplicationForm ? "/staff/approvals" : `/staff/forms/responses/${item._id}`}>View Responses</Link> */}
+
+                                <span><span><a onClick={() => duplicateForm(item._id)}>Duplicate {formToDuplicate === item._id && <ButtonLoadingIconPrimary />}</a></span></span>
 
                                 <Link href={`/staff/form-builder/edit/${item._id}`}>Edit</Link>
 

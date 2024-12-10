@@ -36,17 +36,39 @@
         position: fixed;
         bottom: 00px;
         left: 0px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         width: 100%;
-        padding: 10px;
-        background-color: #ececec;
+        // display: flex;
+        // justify-content: center;
+        // align-items: center;
+        // width: 100%;
+        
         z-index: 500;
+        .saveFormDivContent {
+            padding: 10px;
+            background-color: #ececec;
+        }
+        .error {
+            background-color: rgb(167, 0, 0);
+            color: white;
+            padding: 5px;
+        }
+
+        .success {
+            background-color: rgba(0, 175, 20, 0.628);
+            color: white;
+            padding: 5px;
+        }
 
         &>div {
-            margin: 0px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            &>div {
+                margin: 0px;
+            }
         }
+
+        
     }
 
     header {
@@ -502,6 +524,33 @@
                     font-size: 14px;
                 }
             }
+        }
+    }
+
+    .filePreviewSelectorDiv {
+        .previewImageDiv {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        a {
+            color: #e26b09;
+            font-size: 14px;
+        }
+        .infoText {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 7px;
+            width: 100%;
+            border-style: none;
+            background-color: #e1e1e1;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            margin-top: 10px;
         }
     }
 

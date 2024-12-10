@@ -236,9 +236,12 @@ const ViewVendorPage = () => {
                     <div>
                         <div className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
-                            <div>
+                            {
+                                field?.value[0]?.url && <div>
                                 <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
                             </div>
+                            }
+                            
 
                             <a style={{marginLeft: "20px"}}>Certificate History</a>
                         </div>
@@ -251,11 +254,11 @@ const ViewVendorPage = () => {
                     {
                         field.isACertificate && <>
                             {
-                                field.value[0].expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
+                                field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
                             }
 
                             {
-                                field.value && field.value[0].expiryDate && <>
+                                field.value && field?.value[0]?.expiryDate && <>
                                 
                                         {
                                             getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>

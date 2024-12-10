@@ -14,6 +14,8 @@ const ConfirmationDialog = ({
     confirmAction,
     cancelAction
 }) => {
+    console.log({successMessage});
+    
     return (
         <div className={styles.deleteFormModal}>
                     <div>

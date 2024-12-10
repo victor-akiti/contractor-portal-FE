@@ -76,6 +76,7 @@
   border-style: none;
   margin-top: 10px;
   border-radius: 10px;
+  cursor: pointer;
 }
 .dashboard > hr {
   border-style: none;

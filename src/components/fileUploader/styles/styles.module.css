@@ -28,6 +28,7 @@
   border-style: none;
   border-radius: 5px;
   margin-bottom: 10px;
+  cursor: pointer;
 }
 .uploadFileModal .selectUploadFileDiv > div label {
   font-size: 14px;

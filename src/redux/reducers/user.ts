@@ -6,8 +6,8 @@ const userSlice = createSlice({
         user: {}
     },
     reducers: {
-        setUserData: (state, payload: any) => {
-            console.log(payload.payload.user);
+        setUserData: (state: any, payload: any) => {
+            console.log({payload: payload.payload.user});
             
             state.user = payload?.payload?.user   
         },

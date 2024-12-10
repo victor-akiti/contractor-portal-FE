@@ -2,6 +2,7 @@
 import {useState, useRef, useEffect} from "react"
 import styles from "./styles/styles.module.css"
 import Modal from "../../../../../components/modal/index"
+import closeIcon from "../../../../../assets/images/closeGrey.svg"
 import shortTextIcon from "../../../../../assets/images/shorttext.svg"
 import longTextIcon from "../../../../../assets/images/longtext.svg"
 import dropDownIcon from "../../../../../assets/images/dropdown.svg"
@@ -45,6 +46,9 @@ import Loading from "@/components/loading"
 import SuccessMessage from "@/components/successMessage"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import TextBlock from "@/components/formComponents/textBlock"
+import FileUploader from "@/components/fileUploader"
+import Link from "next/link"
+
 
 const EditForm = () => {
     const [newForm, setNewForm] = useState({
@@ -87,6 +91,10 @@ const EditForm = () => {
     const [allUsers, setAllUsers] = useState([])
     const [savingForm, setSavingForm] = useState(false)
     const addOptionRef = useRef(null)
+    const [updateSuccessMessage, setUpdateSuccessMessage] = useState("")
+    const [updateErrorMessage, setUpdateErrorMessage] = useState("")
+    const [showUploadPreviewImageModal, setShowUploadPreviewImageModal] = useState(false)
+
     
       const [content, setContent] = useState('');
 
@@ -832,6 +840,11 @@ const EditForm = () => {
                 setLoadingMessage("")
                 setFetchedForm(true)
                 setSuccessMessage("Form updated successfully")
+                setUpdateSuccessMessage("Form updated successfully")
+
+                hideUpdateMessages()
+            } else {
+                setUpdateErrorMessage(updateForm.error.message)
             }
 
 
@@ -839,6 +852,15 @@ const EditForm = () => {
             console.log({error});
         }
     }
+
+    const hideUpdateMessages = () => {
+        setTimeout(() => {
+            setUpdateSuccessMessage(null)
+            setUpdateErrorMessage(null)
+            
+        }, 5000)
+    }
+
     
 
     console.log({newForm});
@@ -935,13 +957,27 @@ const EditForm = () => {
 
                     
 
-                    <div className={styles.saveFormDiv}>
-                        <div className={[styles.formActionButtons].join(" ")}>
-                            {
-                                newForm.pages.length > 0 && newForm.name && <button onClick={() => validateForm()}>Save Form <SaveIcon /> {savingForm && <ButtonLoadingIcon /> }</button>
-                            }
+                <div className={styles.saveFormDiv}>
+                        {
+                            updateSuccessMessage && <div className={styles.success}>
+                                <p>{updateSuccessMessage}</p>
+                            </div>
+                        }
 
-                            <button onClick={() => setShowSettingsModal(true)}>Form Settings <SettingsIcon /></button>
+                        {
+                            updateErrorMessage && <div className={styles.error}>
+                                <p>{updateErrorMessage}</p>
+                            </div>
+                        }
+
+                        <div className={styles.saveFormDivContent}>
+                            <div className={[styles.formActionButtons].join(" ")}>
+                                {
+                                    newForm.pages.length > 0 && newForm.name && !updateSuccessMessage && <button onClick={() => validateForm()}>Save Form <SaveIcon /> {savingForm && <ButtonLoadingIcon /> }</button>
+                                }
+
+                                <button onClick={() => setShowSettingsModal(true)}>Form Settings <SettingsIcon /></button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1308,6 +1344,31 @@ const EditForm = () => {
                                                 </div>
                                             }
 
+
+{
+                                               ( propertyToEdit.fieldType === "file") &&
+                                                <div className={[styles.editFieldDivs, styles.filePreviewSelectorDiv].join(" ")}>
+                                                    <label>Upload Sample</label>
+
+                                                    <p className={styles.infoText}>Select a picture to use as a sample for this file</p>
+
+                                                    <button onClick={() => {setShowUploadPreviewImageModal(true)}}>Select File</button>
+
+                                                    {
+                                                        newForm?.pages[propertyToEdit.page]?.sections[propertyToEdit.index]?.fields[propertyToEdit.fieldIndex]?.fieldSample && <div className={styles.previewImageDiv}>
+                                                        <Link href={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].fieldSample[0].url} target="_blank"><p>{newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].fieldSample[0].name}</p></Link>
+
+                                                        <Image src={closeIcon} alt="remove preview image" width={15} height={15} onClick={() => {
+                                                            updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "fieldSample", value: null, pageIndex: propertyToEdit.page})
+                                                        }} />
+                                                    </div>
+                                                    }
+
+                                                    
+                                                    
+                                                </div>
+                                            }
+
                                             
 
                                             
@@ -1446,6 +1507,24 @@ const EditForm = () => {
                 <label></label>
                 <input placeholder="" />
             </div> */}
+            {
+                showUploadPreviewImageModal && <Modal>
+                <FileUploader
+                    closeUploader={() => {setShowUploadPreviewImageModal(false)}}
+                    files={[]}
+                    label={"Upload file"}
+                    maxFiles={1}
+                    updateCode={""}
+                    updateUploadedFiles={(result) => {
+                        console.log({result});
+                        
+                        updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "fieldSample", value: result, pageIndex: propertyToEdit.page})
+                        setShowUploadPreviewImageModal(false)
+                    }}
+                    onlyNewFiles={true}
+                 />
+            </Modal>
+            }
 
             
 

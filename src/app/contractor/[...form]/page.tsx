@@ -21,6 +21,8 @@ import { putProtected } from "@/requests/put"
 import { useParams } from "next/navigation"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import Link from "next/link"
+import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
+import Image from "next/image"
 
 type RegistrationForm = {
     _id? : String,
@@ -97,14 +99,16 @@ const NewCompanyRegistration = () => {
     const [currentFieldToUploadFor, setCurrentFieldToUploadFor] = useState<FieldToUploadFor>({})
     const location = useParams()
     const [submitting, setSubmitting] = useState(false)
+    const [savingForm, setSavingForm] = useState(false)
+    const [vendorID, setVendorID] = useState<String>("")
     console.log({location});
     
 
     useEffect(() => {
-        const vendorID = location?.form[1]
+        const vendorId = location?.form[1]
 
-        if (vendorID) {
-            getVendorForm(vendorID)
+        if (vendorId) {
+            getVendorForm(vendorId)
         } else {
             getRegistrationForm()
         }
@@ -151,11 +155,12 @@ const NewCompanyRegistration = () => {
         }
     }
 
-    const getVendorForm = async (vendorID: String) => {
+    const getVendorForm = async (vendorId: String) => {
         try {
-            console.log({vendorID});
+            console.log({vendorId});
+            setVendorID(vendorId)
             
-            const getVendorRegistrationFormRequest = await getProtected(`companies/register/form/${vendorID}`)
+            const getVendorRegistrationFormRequest = await getProtected(`companies/register/form/${vendorId}`)
 
             if (getVendorRegistrationFormRequest.status === "OK") {
                 let generalRegistrationForm = getVendorRegistrationFormRequest.data.generalRegistrationForm
@@ -258,11 +263,13 @@ const NewCompanyRegistration = () => {
 
     const createNewVendor = async () => {
         try {
+            setSavingForm(true)
             const saveCurrentPageRequest = await postProtected("companies/vendor/create", {registrationForm, certificates})
 
             console.log({saveCurrentPageRequest});
 
             if (saveCurrentPageRequest.status === "OK") {
+                setSavingForm(false)
                 let tempRegistrationForm = {...registrationForm}
                 tempRegistrationForm = {...tempRegistrationForm, ...saveCurrentPageRequest.data}
                 setRegistrationForm(tempRegistrationForm)
@@ -279,12 +286,14 @@ const NewCompanyRegistration = () => {
 
 
     const saveCurrentVendor = async () => {
+        setSavingForm(true)
         try {
             const saveCurrentPageRequest = await putProtected("companies/vendor/update", {registrationForm, certificates})
 
             console.log({saveCurrentPageRequest});
 
             if (saveCurrentPageRequest.status === "OK") {
+                setSavingForm(false)
                 let tempRegistrationForm = {...registrationForm}
                 tempRegistrationForm = {...tempRegistrationForm, ...saveCurrentPageRequest.data}
                 setRegistrationForm(tempRegistrationForm)
@@ -312,6 +321,17 @@ const NewCompanyRegistration = () => {
                     if (String(field.value) === "" && field.required) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is cannot be left empty")
+                    } else if (String(field.value).length > field.maxLength) {
+                        isValidated = false
+                        setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
+                    } else {
+                        isValidated = true
+                        setFieldValid(pageIndex, sectionIndex, fieldIndex)
+                    }
+                } else if (field.type === "radioButtons") {
+                    if (String(field.value) === "" && field.required) {
+                        isValidated = false
+                        setFieldError(pageIndex, sectionIndex, fieldIndex, "You have to select a value for this field.")
                     } else if (String(field.value).length > field.maxLength) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
@@ -361,31 +381,65 @@ const NewCompanyRegistration = () => {
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "file") {
-                    if (field.required && field.value.length === 0) {
+                    
+                    
+                    if (field.label === "Upload CAC/BN Form 1") {
+                        
+                        //@ts-ignore
+                        if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration" && field.value.length === 0) {
+                            isValidated = false
+                            setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
+                        } else {
+                            isValidated = true  
+                            setFieldValid(pageIndex, sectionIndex, fieldIndex)
+                            setFieldError(pageIndex, sectionIndex, fieldIndex, "")
+                        }
+                    } else if (field.label === "Upload CAC Form 2A" || field.label === "Upload CAC Form 7") {
+                        //@ts-ignore
+                        if (registrationForm.form.pages[0].sections[0].fields[1].value === "Company Registration" && field.value.length === 0) {
+                            isValidated = false
+                            setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
+                        } else {
+                            isValidated = true  
+                            setFieldValid(pageIndex, sectionIndex, fieldIndex)
+                            setFieldError(pageIndex, sectionIndex, fieldIndex, "")
+                        }
+                    } else if (field.required && field.value.length === 0) {
+                        console.log("Error: " ,field.label, field.value.length);
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                     } else if (field.isACertificate) {
                         let certificateIsNotValid = false
 
-                        for (let index = 0; index < field.value.length; index++) {
-                            const element = field.value[index];
-                            
-                            if (field.isACertificate && field.hasExpiryDate && !element.expiryDate) {
-                                console.log("Invalid certificate");
+                        if (field.hasExpiryDate) {
+                            for (let index = 0; index < field.value.length; index++) {
+                                const element = field.value[index];
                                 
-                                setFieldError(pageIndex, sectionIndex, fieldIndex, `Set an expiry date for ${element.label}`)
-                                certificateIsNotValid = true
+                                if (field.isACertificate && field.hasExpiryDate && !element.expiryDate) {
+                                    console.log("Invalid certificate");
+                                    
+                                    setFieldError(pageIndex, sectionIndex, fieldIndex, `Set an expiry date for ${element.label}`)
+                                    certificateIsNotValid = true
+                                }
+                                
                             }
-                            
+    
+                            if (certificateIsNotValid) {
+                                isValidated = false
+                            }
+                        } else {
+                            isValidated = true
+                            setFieldValid(pageIndex, sectionIndex, fieldIndex)
+                            setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
 
-                        if (certificateIsNotValid) {
-                            isValidated = false
-                        }
+                        
                     } else {
+                        console.log(field.label, field.value.length);
                         isValidated = true
-                        setFieldError(pageIndex, sectionIndex, fieldIndex, "")
+                        
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
+                        setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                     }
 
                     
@@ -656,6 +710,7 @@ const NewCompanyRegistration = () => {
             submitting={submitting}
             submitForm={() => submitForm()}
             showFinish={showFinish}
+            vendorID={vendorID}
             showSuccess={showSuccess}
             addSectionToPage={(section, pageIndex, sectionIndex, index) => addSectionToPage(section, pageIndex, sectionIndex)}
             removeSectionFromPage={(section, pageIndex, sectionIndex) => removeSectionFromPage(section, pageIndex, sectionIndex)}
@@ -665,22 +720,185 @@ const NewCompanyRegistration = () => {
             setFieldToUploadFor={(pageIndex, sectionIndex, fieldIndex, maxFiles) => setFieldToUploadFor(pageIndex, sectionIndex, fieldIndex, maxFiles)}
             removeCertificate={(certificateID) => removeCertificate(certificateID)}
             removeFileFromFileList={(pageIndex, sectionIndex, fieldIndex, fileID) => removeFileFromFileList(pageIndex, sectionIndex, fieldIndex, fileID)}
+            savingForm={savingForm}
         />
     )
 }
 
 
-const RegistrationFormBody = ({registrationForm, showFinish, submitForm, submitting, showSuccess, currentFieldToUploadFor, updateField, addCertificates, closeUploadModal, errorMessage, activePage, goToPreviousPage, saveBeforeProgress, isComplete, tabs, setActivePage, addFieldToSection, removeFieldFromSection, setFieldToUploadFor, removeCertificate, removeFileFromFileList, addSectionToPage, removeSectionFromPage}) => {
+const RegistrationFormBody = ({registrationForm, 
+    showFinish, 
+    submitForm, 
+    submitting, 
+    showSuccess, 
+    currentFieldToUploadFor, 
+    savingForm,
+    vendorID,
+    updateField, addCertificates, closeUploadModal, errorMessage, activePage, goToPreviousPage, saveBeforeProgress, isComplete, tabs, setActivePage, addFieldToSection, removeFieldFromSection, setFieldToUploadFor, removeCertificate, removeFileFromFileList, addSectionToPage, removeSectionFromPage}) => {
 
     
     console.log({registrationForm});
+
+    const getFieldPlaceholder = (field) => {
+        if (field.type === "shortText" && field.label === "Registered Number") {
+            if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration") {
+                return "e.g. 12345678"
+            } else if (registrationForm.form.pages[0].sections[0].fields[1].value === "Company Registration") {
+                return "e.g. RC 12345678"
+            } else {
+                return "Please select a CAC registration type first"
+            }
+        } else {
+            return field.placeholder
+        }
+    }
+
+    console.log({fieldValue: registrationForm?.form?.pages[7]?.sections[0]?.fields[0]?.value});
+
+    const [fileSampleURL, setFileSampleURL] = useState("")
     
+
+
+    const getFileVisibility = (fieldIndex, fieldItem, sectionIndex) => {
+        console.log({sectionIndex});
+        
+        if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration" && (fieldItem.label === "Upload CAC Form 7" || fieldItem.label === "Upload CAC Form 2A")) {
+            return <span></span>
+        } else if (registrationForm.form.pages[0].sections[0].fields[1].value !== "Business Name Registration" && fieldItem.label === "Upload CAC/BN Form 1") {
+            return <span></span>
+        } else {
+            return <div key={fieldIndex} className={styles.fieldComponent}>
+                <div className={styles.fileSelectorDiv}>
+                    <FileSelector key={fieldIndex} required={fieldItem.required}  errorText={fieldItem.errorText} highlighted={""} infoText={fieldItem.infoText} label={fieldItem.label} onClick={() => {
+                    setFieldToUploadFor(activePage.index, sectionIndex, fieldIndex, fieldItem.maxAllowedFiles)
+                    }} allowedFormats={[fieldItem.allowedFormats]} value={fieldItem.value} isACertificate={fieldItem.isACertificate} 
+                    hasExpiryDate={fieldItem.hasExpiryDate} 
+                    clearValues={() => updateField(activePage.index, sectionIndex, fieldIndex, "value", "")}
+                    updateIssueDate={(newValues) => updateField(activePage.index, sectionIndex, fieldIndex, "issueDate", "")}
+                    setErrorText={errorText =>  updateField(activePage.index, sectionIndex, fieldIndex, "errorText", "")}
+                    updateExpiryDate={(newValues) => updateField(activePage.index, sectionIndex, fieldIndex, "ExpiryDate", "")}
+                    removeFile={fileID => {
+                        removeFileFromFileList(activePage.index, sectionIndex, fieldIndex, fileID)
+                    }}
+                    removeCertificate={certificateID => removeCertificate(certificateID)
+                    }
+                    />
+
+                    {
+                        fieldItem?.fieldSample && <div className={styles.uploadSampleDiv}>
+                        <Image src={fieldItem?.fieldSample[0]?.url} width={100} height={100}  alt="Upload Sample"  />
+                        <button onClick={() => setFileSampleURL(fieldItem?.fieldSample[0]?.url)}>Show Sample</button>
+                    </div>
+                    }
+
+                    
+                </div>
+                {
+                    <div className={styles.addFieldText}>
+                        {
+                            fieldItem.allowMultiple && <div>
+                                <a onClick={() => addFieldToSection(fieldItem, activePage.index, sectionIndex, fieldIndex+1)}>{fieldItem.addFieldText}</a>
+                            </div>
+                        }
+
+                        {
+                            fieldItem.isDuplicate && <div>
+                                <a onClick={() => removeFieldFromSection(fieldItem, activePage.index, sectionIndex, fieldIndex)}>{"Remove"}</a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+
+    const getShortTextVisibility = (fieldIndex, fieldItem, sectionIndex) => {
+        
+        if (registrationForm?.form?.pages[7]?.sections[0]?.fields[0]?.value === "Company/Corporate Body" && (fieldItem.label === "First Name" || fieldItem.label === "Surname" || fieldItem.label === "Other Names")) {
+            return <span></span>
+        } else if (registrationForm?.form?.pages[7]?.sections[0]?.fields[sectionIndex]?.value !== "Company/Corporate Body" && (fieldItem.label === "Company Name" || fieldItem.label === "Registration Number")) { 
+            return <span></span>
+        } else {
+            return <div key={fieldIndex} className={styles.fieldComponent}>
+                <ShortText defaultValue={fieldItem.value} 
+                    key={fieldIndex} 
+                    errorText={fieldItem.errorText} 
+                    required={fieldItem.required} 
+                    infoText={""} 
+                    value={fieldItem.value}
+                    type={fieldItem.textType} 
+                    label={fieldItem.label} 
+                    onChange={(value) => {
+                        updateField(activePage.index, sectionIndex, fieldIndex, "value", value)
+                    }} 
+                    onClick={() => {}} 
+                    placeholder={getFieldPlaceholder(fieldItem)} 
+                    highlighted={""} 
+                />
+                {
+                    <div className={styles.addFieldText}>
+                        {
+                            fieldItem.allowMultiple && <div>
+                                <a onClick={() => addFieldToSection(fieldItem, activePage.index, sectionIndex, fieldIndex+1)}>{fieldItem.addFieldText}</a>
+                            </div>
+                        }
+
+                        {
+                            fieldItem.isDuplicate && <div>
+                                <a onClick={() => removeFieldFromSection(fieldItem, activePage.index, sectionIndex, fieldIndex)}>{"Remove"}</a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+
+    const getDropDownVisibility = (fieldIndex, fieldItem, sectionIndex) => {
+        if (registrationForm?.form?.pages[7]?.sections[0]?.fields[0]?.value === "Company/Corporate Body" && (fieldItem.label === "Title")) {
+            return <span></span>
+        } else {
+            return <div key={fieldIndex} className={styles.fieldComponent}>
+            <DropDown key={fieldIndex} value={fieldItem.value} required={fieldItem.required} errorText={fieldItem.errorText} onSelect={value => updateField(activePage.index, sectionIndex, fieldIndex, "value", value)} infoText={fieldItem.infoText} highlighted={""} label={fieldItem.label} onClick={() => {}} options={fieldItem.options} />
+
+            {
+                <div className={styles.addFieldText}>
+                    {
+                        fieldItem.allowMultiple && <div>
+                            <a onClick={() => addFieldToSection(fieldItem, activePage.index, sectionIndex, fieldIndex+1)}>{fieldItem.addFieldText}</a>
+                        </div>
+                    }
+
+                    {
+                        fieldItem.isDuplicate && <div>
+                            <a onClick={() => removeFieldFromSection(fieldItem, activePage.index, sectionIndex, fieldIndex)}>{"Remove"}</a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        }
+    }
+    
+
     
     
 
     return (
         <div className={styles.newRegistration}>
-            <h1>New Registration</h1>
+            <h1>{vendorID ? "Update/Complete Registration" : "New Registration"}</h1>
+
+            {
+                fileSampleURL && <Modal>
+                    <div className={styles.fileSampleModal}>
+                        <Image src={fileSampleURL} width={1000} height={1000} objectFit="cover" alt="File Sample" style={{maxWidth: "100%", maxHeight: "100%", objectFit: "cover"}} />
+
+                        <div className={styles.closePreviewButtonDiv}>
+                            <button onClick={() => setFileSampleURL(null)}>Close Preview</button>
+                        </div>
+                    </div>
+                </Modal>
+            }
             
             {
                 Object.values(currentFieldToUploadFor).length > 0  && <Modal>
@@ -712,7 +930,7 @@ const RegistrationFormBody = ({registrationForm, showFinish, submitForm, submitt
                         }
 
                         {
-                            activePage.index <= registrationForm.form.pages.length - 1 && !showFinish && !showSuccess && <button onClick={() => saveBeforeProgress()}>Next</button>
+                            activePage.index <= registrationForm.form.pages.length - 1 && !showFinish && !showSuccess && <button onClick={() => saveBeforeProgress()}>Next {savingForm && <ButtonLoadingIconPrimary />}</button>
                         }
 
                         {isComplete && <button>Submit</button>}
@@ -745,38 +963,7 @@ const RegistrationFormBody = ({registrationForm, showFinish, submitForm, submitt
                                     {
                                         sectionItem.fields.map((fieldItem, fieldIndex) => {
                                             if (fieldItem.type === "shortText") {
-                                                return <div key={fieldIndex} className={styles.fieldComponent}>
-                                                    <ShortText defaultValue={fieldItem.value} 
-                                                        key={fieldIndex} 
-                                                        errorText={fieldItem.errorText} 
-                                                        required={fieldItem.required} 
-                                                        infoText={""} 
-                                                        value={fieldItem.value}
-                                                        type={fieldItem.textType} 
-                                                        label={fieldItem.label} 
-                                                        onChange={(value) => {
-                                                            updateField(activePage.index, sectionIndex, fieldIndex, "value", value)
-                                                        }} 
-                                                        onClick={() => {}} 
-                                                        placeholder={fieldItem.placeholder} 
-                                                        highlighted={""} 
-                                                    />
-                                                    {
-                                                        <div className={styles.addFieldText}>
-                                                            {
-                                                                fieldItem.allowMultiple && <div>
-                                                                    <a onClick={() => addFieldToSection(fieldItem, activePage.index, sectionIndex, fieldIndex+1)}>{fieldItem.addFieldText}</a>
-                                                                </div>
-                                                            }
-
-                                                            {
-                                                                fieldItem.isDuplicate && <div>
-                                                                    <a onClick={() => removeFieldFromSection(fieldItem, activePage.index, sectionIndex, fieldIndex)}>{"Remove"}</a>
-                                                                </div>
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
+                                                return getShortTextVisibility(fieldIndex, fieldItem, sectionIndex)
                                             }
 
                                             if (fieldItem.type === "longText") {
@@ -810,25 +997,7 @@ const RegistrationFormBody = ({registrationForm, showFinish, submitForm, submitt
                                             }
 
                                             if (fieldItem.type === "dropDown") {
-                                                return <div key={fieldIndex} className={styles.fieldComponent}>
-                                                    <DropDown key={fieldIndex} value={fieldItem.value} required={fieldItem.required} errorText={fieldItem.errorText} onSelect={value => updateField(activePage.index, sectionIndex, fieldIndex, "value", value)} infoText={fieldItem.infoText} highlighted={""} label={fieldItem.label} onClick={() => {}} options={fieldItem.options} />
-
-                                                    {
-                                                        <div className={styles.addFieldText}>
-                                                            {
-                                                                fieldItem.allowMultiple && <div>
-                                                                    <a onClick={() => addFieldToSection(fieldItem, activePage.index, sectionIndex, fieldIndex+1)}>{fieldItem.addFieldText}</a>
-                                                                </div>
-                                                            }
-
-                                                            {
-                                                                fieldItem.isDuplicate && <div>
-                                                                    <a onClick={() => removeFieldFromSection(fieldItem, activePage.index, sectionIndex, fieldIndex)}>{"Remove"}</a>
-                                                                </div>
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
+                                                return getDropDownVisibility(fieldIndex, fieldItem, sectionIndex)
                                             }
 
                                             if (fieldItem.type === "checkBoxes") {
@@ -899,37 +1068,7 @@ const RegistrationFormBody = ({registrationForm, showFinish, submitForm, submitt
                                             }
 
                                             if (fieldItem.type === "file") {
-                                                return <div key={fieldIndex} className={styles.fieldComponent}>
-                                                    <FileSelector key={fieldIndex} required={fieldItem.required}  errorText={fieldItem.errorText} highlighted={""} infoText={fieldItem.infoText} label={fieldItem.label} onClick={() => {
-                                                    setFieldToUploadFor(activePage.index, sectionIndex, fieldIndex, fieldItem.maxAllowedFiles)
-                                                    }} allowedFormats={[fieldItem.allowedFormats]} value={fieldItem.value} isACertificate={fieldItem.isACertificate} 
-                                                    hasExpiryDate={fieldItem.hasExpiryDate} 
-                                                    clearValues={() => updateField(activePage.index, sectionIndex, fieldIndex, "value", "")}
-                                                    updateIssueDate={(newValues) => updateField(activePage.index, sectionIndex, fieldIndex, "issueDate", "")}
-                                                    setErrorText={errorText =>  updateField(activePage.index, sectionIndex, fieldIndex, "errorText", "")}
-                                                    updateExpiryDate={(newValues) => updateField(activePage.index, sectionIndex, fieldIndex, "ExpiryDate", "")}
-                                                    removeFile={fileID => {
-                                                        removeFileFromFileList(activePage.index, sectionIndex, fieldIndex, fileID)
-                                                    }}
-                                                    removeCertificate={certificateID => removeCertificate(certificateID)
-                                                    }
-                                                    />
-                                                    {
-                                                        <div className={styles.addFieldText}>
-                                                            {
-                                                                fieldItem.allowMultiple && <div>
-                                                                    <a onClick={() => addFieldToSection(fieldItem, activePage.index, sectionIndex, fieldIndex+1)}>{fieldItem.addFieldText}</a>
-                                                                </div>
-                                                            }
-
-                                                            {
-                                                                fieldItem.isDuplicate && <div>
-                                                                    <a onClick={() => removeFieldFromSection(fieldItem, activePage.index, sectionIndex, fieldIndex)}>{"Remove"}</a>
-                                                                </div>
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
+                                                return getFileVisibility(fieldIndex, fieldItem, sectionIndex)
                                             }
 
                                             if (fieldItem.type === "multiSelectText") {

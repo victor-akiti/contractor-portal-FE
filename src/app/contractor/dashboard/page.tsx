@@ -121,6 +121,15 @@ const Dashboard = () => {
         delete tempSelectedCertificate.newCertificate
         setSelectedCertificate(tempSelectedCertificate)
     }
+
+    const makeMigrationRequest = async () => {
+        try {
+            let makeMigrationRequestReq  = getProtected("migrations/companies")
+        } catch (error) {
+            console.log({error});
+            
+        }
+    }
     
     
 
@@ -226,6 +235,8 @@ const Dashboard = () => {
                 }
             
                 <h5>Your Company Registration</h5>
+                
+                {/* <button onClick={() => makeMigrationRequest()}>Make request</button> */}
 
                 {
                     dashboardData.companies.length > 0 && <div>
@@ -238,6 +249,8 @@ const Dashboard = () => {
         
                             <div className={styles.actionItems}>
                                 <Link href={`/contractor/application/view/${item.vendor}`}>VIEW</Link>
+
+                                <Link href={`/contractor/settings/${item.vendor}`}>SETTINGS</Link>
 
                                 {
                                     (!item.flags.submitted || item.flags.stage === "returned") && <Link href={`/contractor/form/${item.vendor}`}>CONTINUE & SUBMIT</Link>

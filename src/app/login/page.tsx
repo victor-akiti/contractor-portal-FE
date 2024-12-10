@@ -53,21 +53,22 @@ const Login = () => {
             setLoggingIn(true)
             const loginRequest = await postProtected("auth/login", {loginDetails})
 
-            console.log({loginRequest});
+            
             
 
             
             
 
             if (loginRequest.status === "OK") {
-                dispatch(setUserData(loginRequest.data.user))
+                console.log({loginRequestUser: loginRequest.data.user});
+                //@ts-ignore
+                dispatch(setUserData({ user: loginRequest.data.user }));
                 router.push("contractor/dashboard")
             } else {
                 setErrorText(loginRequest.error.message)
                 setLoggingIn(false)
             }
 
-            console.log({loginRequest});
         } catch (error) {
             console.log({error});
         }

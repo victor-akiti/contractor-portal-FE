@@ -7,20 +7,34 @@ import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
+import ErrorText from "@/components/errorText"
+import SuccessMessage from "@/components/successMessage"
+import SuccessText from "@/components/successText"
 
 const AccountSettings = () => {
     const [showSetOutOfOfficeModal, setShowSetOutOfOfficeModal] = useState(false)
+    const [showInOfficeModal, setShowInOfficeModal] = useState(false)
     const [settingBeingUpdated, setSettingBeingUpdated] = useState("")
     const [availableStaff, setAvailableStaff] = useState([])
     const user = useSelector((state: any) => state.user.user)
+    const [outOfOfficeActionSuccessMessage, setOutOfOfficeActionSuccessMessage] = useState("")
     const [ooData, setOOData] = useState({
         startDate: new Date().toISOString().split('T')[0],
         endDate: "",
         substitute: null
     })
+    const [errorMessages, setErrorMessages] = useState({
+        outOfOffice: ""
+    })
+    const [userOutOfOfficeStatus, setUserOutOfOfficeStatus] = useState(null)
 
     useEffect(() => {
         getAllAvailableStaff()
+
+        let tempUserOutOfOfficeStatus = {...userOutOfOfficeStatus}
+        tempUserOutOfOfficeStatus = user.outOfOffice
+        setUserOutOfOfficeStatus(tempUserOutOfOfficeStatus)
+
     }, [])
 
     const getAllAvailableStaff = async () => {
@@ -88,12 +102,78 @@ const AccountSettings = () => {
     
     const setOutOfOffice = async () => {
         try {
+            clearAllErrorMessages()
+            setSettingBeingUpdated("out of office")
             const setOutOfOfficeRequest = await postProtected (`user/outOfOffice/set`, ooData)
+
+            setSettingBeingUpdated("")
+
+            if (setOutOfOfficeRequest.status === "OK") {
+                console.log({setOutOfOfficeRequest});
+                handleOutOfOfficeActionSuccess(setOutOfOfficeRequest.data.outOfOffice, "You have been set as out of office and tasks assigned to you will be routed to your selected substitute.")
+
+                setShowSetOutOfOfficeModal(false)            
+            } else {
+                
+                let tempErrorMessages = {...errorMessages}
+                tempErrorMessages.outOfOffice = setOutOfOfficeRequest.error.message
+                setErrorMessages(tempErrorMessages)
+            }
         } catch (error) {
             console.log({error});
             
         }
     }
+
+    const handleOutOfOfficeActionSuccess = (outOfOfficeNewData, message) => {
+        setOutOfOfficeActionSuccessMessage(message)
+
+        let tempUserOutOfOfficeStatus = {...userOutOfOfficeStatus}
+        tempUserOutOfOfficeStatus = outOfOfficeNewData
+        setUserOutOfOfficeStatus(tempUserOutOfOfficeStatus)
+        setSettingBeingUpdated("")
+
+        setTimeout(() => {
+            setOutOfOfficeActionSuccessMessage("")
+        }, 5000)
+    }
+
+    const setInOffice = async () => {
+        try {
+            clearAllErrorMessages()
+            setSettingBeingUpdated("in office")
+
+            const setInOfficeRequest = await postProtected (`user/outOfOffice/unset`)
+
+            setSettingBeingUpdated("")  
+
+            if (setInOfficeRequest.status === "OK") {
+                console.log({setInOfficeRequest});
+
+                handleOutOfOfficeActionSuccess(setInOfficeRequest.data , "You have successfully been set to in office.")
+                setShowInOfficeModal(false)
+                
+                
+            } else {
+                
+                let tempErrorMessages = {...errorMessages}
+                tempErrorMessages.outOfOffice = setInOfficeRequest.error.message
+                setErrorMessages(tempErrorMessages)
+            }
+        } catch (error) {
+            console.log({error});
+            
+        }
+    }
+
+    const clearAllErrorMessages = () =>{
+        let tempErrorMessages = {...errorMessages}
+        tempErrorMessages.outOfOffice = ""
+        setErrorMessages(tempErrorMessages)
+    }
+
+    console.log({userOutOfOfficeStatus});
+    
     
 
     
@@ -130,6 +210,10 @@ const AccountSettings = () => {
                         }
                     </select>
 
+                    {
+                        errorMessages.outOfOffice && <ErrorText text={errorMessages.outOfOffice} />
+                    }
+
                     <div className={styles.actionButtonsDiv}>
                         <button onClick={() => setShowSetOutOfOfficeModal(false)}>Cancel</button>
 
@@ -138,18 +222,69 @@ const AccountSettings = () => {
                 </div>
             </Modal>
             }
+
+            {
+                showInOfficeModal && <Modal>
+                    <div className={styles.setOutInOfficeDiv}>
+                        <h3>Set as in office</h3>
+                        <p>Are you sure you want to set yourself as in office? You will no longer be seen as being out of office and would be available for task assignments.</p>
+
+                        <div className={styles.actionButtonsDiv}>
+                            <button onClick={() => setShowInOfficeModal(false)}>Cancel</button>
+
+                            <button onClick={() => setInOffice()}>Set as in office { settingBeingUpdated === "in office" && <ButtonLoadingIcon />}</button>
+                        </div>
+                    </div>
+                </Modal>
+            }
+
             <h2>Account Settings</h2>
 
             <div className={styles.settingsSection}>
                 <h3>Out Of Office Settings</h3>
-                <p>Current status: <span className={styles.inOffice}>In Office</span></p>
 
                 {
-                    !user.substitute && <button className={styles.setOOButton} onClick={() => setShowSetOutOfOfficeModal(true)}>Set out of office</button>
+                    outOfOfficeActionSuccessMessage && <SuccessText text={outOfOfficeActionSuccessMessage} />
+                }
+                <p>Current status: <span className={userOutOfOfficeStatus?.substitute ? styles.outOfOffice : styles.inOffice}>{userOutOfOfficeStatus?.substitute ? "Out of office" : "In office"}</span></p>
+
+                
+
+                {
+                    userOutOfOfficeStatus?.substitute && <table>
+                    <thead>
+                        <tr>
+                            <td>Start Date</td>
+
+                            <td>End Date</td>
+
+                            <td>Substitute</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {userOutOfOfficeStatus?.startDate}
+                            </td>
+
+                            <td>
+                                {userOutOfOfficeStatus?.endDate}
+                            </td>
+
+                            <td>
+                                {userOutOfOfficeStatus?.substitute?.name}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 }
 
                 {
-                    user.substitute && <button className={styles.setInOfficeButton} onClick={() => setShowSetOutOfOfficeModal(true)}>Set as in office</button>
+                    !userOutOfOfficeStatus?.substitute && <button className={styles.setOOButton} onClick={() => setShowSetOutOfOfficeModal(true)}>Set as out of office</button>
+                }
+
+                {
+                    userOutOfOfficeStatus?.substitute && <button className={styles.setInOfficeButton} onClick={() => setShowInOfficeModal(true)}>Set as in office</button>
                 }
 
                 

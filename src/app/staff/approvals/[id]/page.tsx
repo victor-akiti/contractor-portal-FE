@@ -272,7 +272,7 @@ const Approval = () => {
                         <Link href={"/staff/approvals"}>Return to vendors list</Link>
 
                         <div>
-                            <Link href={`/staff/vendor/${vendorID}`}>View vendor applciation</Link>
+                            <Link href={`/staff/vendor/${vendorID}`}>View vendor application</Link>
                         </div>
                     </div>
                 }
