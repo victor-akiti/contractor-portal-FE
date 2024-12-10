@@ -1,0 +1,16 @@
+.errorText {
+    background-color: rgb(205, 99, 99);
+    color: white;
+    display: inline-block !important;
+    font-size: 14px;
+    padding: 10px;
+    border-style: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+
+    p {
+        display: inline;
+    }
+}

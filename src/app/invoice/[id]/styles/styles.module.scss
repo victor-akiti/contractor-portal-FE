@@ -1,0 +1,351 @@
+.invoiceForm {
+    background-color: rgb(255, 128, 64);
+    padding: 50px;
+    min-height: 100vh;
+
+    .invoiceFormErrorDiv {
+        p {
+            background-color: rgb(255, 190, 190);
+            padding: 10px;
+            color: rgb(203, 0, 0);
+            font-size: 14px;
+        }
+    }
+
+    .invoiceRadioButtons {
+        input {
+            display: inline !important;
+            width: fit-content !important;
+            margin-top: 0px !important;
+            margin-right: 10px;
+        }
+        
+        &>div {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .invoiceSubmitted {
+        p {
+            font-weight: 700;
+            text-align: center;
+        }
+    }
+
+    .invoiceSubmitErrorMessage {
+        background-color: rgb(255, 190, 190);
+            padding: 10px;
+            color: rgb(203, 0, 0);
+            font-size: 14px;
+            margin-bottom: 20px;
+    }
+
+    .selectedFileItem {
+        display: flex;
+        margin-left: 0px !important;
+        margin-top: 10px;
+        justify-content: space-between;
+
+
+
+        div {
+            display: flex;
+            align-items: center;
+
+            img {
+                margin-left: 5px;
+                cursor: pointer;
+            }
+        }
+
+        label {
+            font-weight: 400 !important;
+        }
+    }
+
+    .formErrorMesage {
+        font-size: 13px;
+        margin-top: 5px;
+        color: rgb(231, 0, 0);
+    }
+
+    .fileUploadInput {
+        display: none;
+    }
+
+    &>div {
+        background-color: white;
+        padding: 50px;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        h1 {
+            font-family: Tahoma,Arial,Helvetica,sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #353535;
+            background-color: #fff;
+            font-size: 2em;
+        }
+
+        h5 {
+            font-size: 14px;
+            font-weight: 700;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        &>div {
+            width: 100%;
+        }
+
+        .mainContent {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+
+            &>div {
+                width: 48%;
+                margin-bottom: 20px;
+
+                label {
+                    font-weight: 700;
+                    min-height: 18px;
+                    font-size: 14px;
+                }
+
+
+                input, select {
+                    display: block;
+                    width: 100%;
+                    padding: 5px;
+                    margin-top: 5px;
+
+                    -webkit-box-sizing: border-box;
+                    -moz-box-sizing: border-box;
+                    box-sizing: border-box;
+                    padding: 0 5px;
+                    color: #353535;
+                    height: 32px;
+                    border: 1px solid #c8ced1;
+                    background: #eef1f2;
+                    -webkit-transition: border .1s ease-out;
+                    -moz-transition: border .1s ease-out;
+                    -o-transition: border .1s ease-out;
+                    transition: border .1s ease-out;
+                }
+            }
+        }
+
+        .uploads {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+
+            .uploadItem {
+                &>div {
+                    border-style: dashed;
+                    border-width: 1px;
+                    border-color: #a8a8a8;
+                    padding: 20px;
+                    margin-top: 10px;
+                    height: 200px;
+
+                    .uploadItemBody {
+                        display: flex;
+
+                        div {
+                            margin-left: 10px;
+
+                            p:nth-child(1) {
+                                font-weight: bold;
+                            }
+
+                            p:nth-child(2) {
+                                font-size: 14px;
+                            }
+                        }
+
+                        &>div {
+                            flex-grow: 1;
+                        }
+                    }
+                }
+            }
+
+            &>div {
+                width: 48%;
+                margin-bottom: 20px;
+
+                label {
+                    font-weight: 700;
+                    min-height: 18px;
+                    font-size: 14px;
+                }
+
+
+                input {
+                    display: block;
+                    width: 100%;
+                    padding: 5px;
+                    margin-top: 5px;
+
+                    -webkit-box-sizing: border-box;
+                    -moz-box-sizing: border-box;
+                    box-sizing: border-box;
+                    padding: 0 5px;
+                    color: #353535;
+                    height: 32px;
+                    border: 1px solid #c8ced1;
+                    background: #eef1f2;
+                    -webkit-transition: border .1s ease-out;
+                    -moz-transition: border .1s ease-out;
+                    -o-transition: border .1s ease-out;
+                    transition: border .1s ease-out;
+                }
+            }
+        }
+
+        .confirmationDiv {
+            margin-bottom: 20px;
+
+            label {
+                font-weight: 700;
+                min-height: 18px;
+                font-size: 14px;
+            }
+
+            select {
+                width: 48%;
+                margin-top: 5px;
+
+                display: block;
+                    width: 100%;
+                    padding: 5px;
+                    margin-top: 5px;
+
+                    -webkit-box-sizing: border-box;
+                    -moz-box-sizing: border-box;
+                    box-sizing: border-box;
+                    padding: 0 5px;
+                    color: #353535;
+                    height: 32px;
+                    border: 1px solid #c8ced1;
+                    background: #eef1f2;
+                    -webkit-transition: border .1s ease-out;
+                    -moz-transition: border .1s ease-out;
+                    -o-transition: border .1s ease-out;
+                    transition: border .1s ease-out;
+
+            }
+
+            p {
+                font-size: 12px;
+                font-style: italic;
+                margin-top: 5px;
+            }
+
+
+
+        }
+
+        .note {
+            color: rgb(255, 0, 0);
+            font-weight: bold;
+            font-style: italic;
+            margin-bottom: 50px;
+            font-size: 14px;
+        }
+
+        .submitDiv {
+            button {
+                border-style: none;
+                background-color: #c8ced1;
+                padding: 7px;
+                border-radius: 3px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                
+                &>div {
+                    margin-left: 5px;
+                }
+            }
+
+            .disabled {
+                border-style: solid;
+                border-width: 1px;
+                border-color: #e3e3e3;
+                color: #a8a8a8;
+                background-color: white;
+            }
+
+            .enabled {
+                background-color: #f57710;
+                color: white;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #ff7300;
+                }
+            }
+        }
+    }
+}
+
+.fileUploadInput {
+    display: none !important;
+}
+
+// X-Small devices (portrait phones, less than 576px)
+// No media query for `xs` since this is the default in Bootstrap
+
+// Small devices (landscape phones, 576px and up)
+@media (max-width: 576px) { 
+    .invoiceForm {
+        &>div {
+            width: 90%;
+        }
+    }
+ }
+
+// Medium devices (tablets, 768px and up)
+@media (min-width: 577px) and (max-width: 768px) { 
+    .invoiceForm {
+        &>div {
+            width: 90%;
+        }
+    }
+ }
+
+// Large devices (desktops, 992px and up)
+@media (min-width: 769px) and (max-width: 992px) { 
+    .invoiceForm {
+        &>div {
+            width: 80%;
+        }
+    }
+ }
+
+// X-Large devices (large desktops, 1200px and up)
+@media (min-width: 993px) and (max-width: 1200px) { 
+    .invoiceForm {
+        &>div {
+            width: 75%;
+        }
+    }
+ }
+
+// XX-Large devices (larger desktops, 1400px and up)
+@media (min-width: 1201px) { 
+    .invoiceForm {
+        &>div {
+            width: 50%;
+        }
+    }
+ }

@@ -1,0 +1,178 @@
+.dashboard {
+  padding-top: 50px;
+}
+.dashboard .updateCertificateModal {
+  background-color: white;
+  width: 30%;
+  padding: 20px;
+}
+.dashboard .updateCertificateModal h3 {
+  margin: 0px;
+  margin-bottom: 20px;
+}
+.dashboard .updateCertificateModal .updateCertificateSuccessDiv {
+  justify-content: flex-start;
+}
+.dashboard .updateCertificateModal table tbody tr td {
+  padding: 10px;
+}
+.dashboard .updateCertificateModal table tbody tr td input {
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-radius: 5px;
+  border-color: #d1d1d1;
+  border-width: 1px;
+}
+.dashboard .updateCertificateModal table tbody tr td:nth-child(1) {
+  font-weight: bold;
+}
+.dashboard .updateCertificateModal table tbody tr td:nth-child(2) {
+  color: #64676b;
+}
+.dashboard .updateCertificateModal > div {
+  display: flex;
+  justify-content: flex-end;
+}
+.dashboard .updateCertificateModal > div button {
+  margin-left: 20px;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  border-style: none;
+}
+.dashboard .updateCertificateModal > div button:nth-child(3) {
+  background-color: #e26b09;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dashboard h3 {
+  color: #64676b;
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 0;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+}
+.dashboard .noCertificates {
+  padding: 10px;
+  background-color: #f3f3f3;
+  border-style: none;
+  border-radius: 10px;
+}
+.dashboard .noRegisteredCompaniesDiv {
+  padding: 10px;
+  background-color: #f3f3f3;
+}
+.dashboard .noRegisteredCompaniesDiv button {
+  color: #e26b09;
+  background-color: rgba(0, 0, 0, 0);
+  border-style: none;
+  margin-top: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.dashboard > hr {
+  border-style: none;
+  border-top-style: solid;
+  border-top-color: #e0e0e0;
+  border-top-width: 1px;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+.dashboard .certificatesDiv table {
+  width: 100%;
+  margin-top: 10px;
+}
+.dashboard .certificatesDiv table thead {
+  background-color: #212529;
+  color: white;
+}
+.dashboard .certificatesDiv table thead td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+}
+.dashboard .certificatesDiv table tbody button {
+  border-style: none;
+  padding: 5px;
+  margin-right: 10px;
+  color: #e26b09;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+}
+.dashboard .certificatesDiv table tbody td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.dashboard .certificatesDiv table tbody tr td:nth-child(1), .dashboard .certificatesDiv table tbody tr td:nth-child(2) {
+  color: #64676b;
+  font-size: 15px;
+}
+.dashboard > div {
+  margin-top: 24px;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.dashboard > div h5 {
+  margin-bottom: 1.5rem !important;
+  color: #64676b;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.dashboard > div .companyApplicationDiv {
+  display: flex;
+  justify-content: space-between;
+  border-style: none;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.dashboard > div .companyApplicationDiv a {
+  color: #e26b09;
+  cursor: pointer;
+}
+.dashboard > div .companyApplicationDiv a:hover {
+  text-decoration: underline;
+}
+.dashboard > div .companyApplicationDiv div p:nth-child(1) {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: left;
+}
+.dashboard > div .companyApplicationDiv div p:nth-child(2) {
+  font-size: 0.875em;
+  font-weight: 400;
+  color: #212529;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.actionItems a {
+  margin-left: 20px;
+}/*# sourceMappingURL=styles.module.css.map */

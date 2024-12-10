@@ -1,0 +1,42 @@
+@import "../../../assets//style//colors.scss";
+
+.deleteFormModal {
+    &>div {
+        background-color: white;
+        padding: 20px;
+        color: black;
+
+        h5 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: $headingColor;
+        }
+
+        &>div {
+            display: flex;
+            align-items: center;
+            justify-content: end;
+            margin-top: 20px;
+
+            button {
+                padding: 7px;
+                border-style: none;
+                border-radius: 5px;
+                margin-left: 20px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+            }
+
+            button:nth-child(1) {
+                background-color: $primaryColor;
+                color: white;
+            }
+
+            button:nth-child(2) {
+                background-color: $darkButtonBackground;
+                color: white;
+            }
+        }
+    }
+}

@@ -20,6 +20,57 @@
   border-radius: 10px;
   cursor: pointer;
 }
+.forms .deleteFormModal > div {
+  background-color: white;
+  padding: 20px;
+  color: black;
+}
+.forms .deleteFormModal > div h5 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #545454;
+}
+.forms .deleteFormModal > div > div {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  margin-top: 20px;
+}
+.forms .deleteFormModal > div > div button {
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  margin-left: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.forms .deleteFormModal > div > div button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}
+.forms .deleteFormModal > div > div button:nth-child(2) {
+  background-color: rgb(30, 30, 30);
+  color: white;
+}
+.forms .noFormsDiv div {
+  background-color: rgb(239, 239, 239);
+  padding: 20px;
+  border-style: none;
+  border-radius: 5px;
+  display: inline-block;
+  margin-top: 20px;
+}
+.forms .noFormsDiv div button {
+  width: 100%;
+  margin-top: 10px;
+  background-color: #e26b09;
+  border-style: none;
+  padding: 7px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
 .forms table {
   width: 100%;
   margin-top: 50px;
@@ -40,4 +91,10 @@
   margin-right: 20px;
   cursor: pointer;
   color: #e26b09;
+  display: inline-flex;
+  align-items: center;
+}
+.forms table tbody tr td span span {
+  display: inline-flex;
+  align-items: center;
 }/*# sourceMappingURL=styles.module.css.map */

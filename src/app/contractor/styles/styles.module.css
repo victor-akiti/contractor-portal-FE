@@ -1,0 +1,116 @@
+.layout {
+  min-width: 100vw;
+  min-height: 100vh;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  min-width: 100vw;
+  min-height: 100vh;
+}
+.layout .floatingUserMenu {
+  position: absolute;
+  top: 100%;
+  right: 20px;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  align-items: start;
+  box-shadow: 0px 8px 8px 3px rgba(216, 216, 216, 0.75);
+  -webkit-box-shadow: 0px 8px 8px 3px rgba(216, 216, 216, 0.75);
+  -moz-box-shadow: 0px 8px 8px 3px rgba(216, 216, 216, 0.75);
+  z-index: 500;
+  font-size: 14px;
+  border-radius: 5px;
+  width: 150px;
+}
+.layout .floatingUserMenu hr {
+  width: 100%;
+}
+.layout .floatingUserMenu .officeStatusDiv {
+  width: 100%;
+}
+.layout .floatingUserMenu .officeStatusDiv p {
+  padding: 20px;
+  cursor: pointer;
+  padding: 10px;
+  padding-left: 20px;
+  margin: 0px;
+}
+.layout .floatingUserMenu .officeStatusDiv p:hover {
+  background-color: #d0d0d0;
+}
+.layout .floatingUserMenu .loggedInStatusDiv {
+  padding: 20px;
+}
+.layout .floatingUserMenu .loggedInStatusDiv p {
+  margin-bottom: 10px;
+}
+.layout .floatingUserMenu .loggedInStatusDiv span {
+  font-weight: bold;
+  color: #5b5b5b;
+}
+.layout .floatingUserMenu .logoutActionDiv {
+  flex-grow: 1;
+  width: 100%;
+}
+.layout .floatingUserMenu .logoutActionDiv p {
+  cursor: pointer;
+  padding: 10px;
+  padding-left: 20px;
+  margin: 0px;
+}
+.layout .floatingUserMenu .logoutActionDiv p:hover {
+  background-color: #d0d0d0;
+}
+.layout nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #343a40 !important;
+  color: white;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  position: relative;
+}
+.layout nav > div {
+  display: flex;
+  align-items: center;
+}
+.layout nav .left span {
+  margin-left: 10px;
+  font-size: 1rem;
+}
+.layout nav .left a div {
+  padding-top: 0.3125rem;
+  padding-bottom: 0.3125rem;
+  margin-right: 1rem;
+  font-size: 1.25rem;
+  line-height: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.layout nav .right {
+  cursor: pointer;
+}
+.layout nav .right span {
+  color: rgba(255, 255, 255, 0.5019607843);
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+.layout .content {
+  width: 70vw;
+  margin-left: auto;
+  margin-right: auto;
+}
+.layout footer {
+  margin-top: auto;
+  text-align: center;
+}
+.layout footer a {
+  color: #e26b09;
+}/*# sourceMappingURL=styles.module.css.map */

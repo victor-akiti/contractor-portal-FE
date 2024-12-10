@@ -1,3 +1,5 @@
+@import "../../../../assets//style/colors.scss";
+
 .selectFile {
     margin-bottom: 20px;
     z-index: 20;
@@ -65,4 +67,61 @@
     padding: 10px;
     border-style: none;
     border-radius: 10px;
+}
+
+.uploadedFilesList {
+    padding-top: 10px;
+    &>div {
+        
+        margin-bottom: 20px;
+
+        label:nth-child(1) {
+            padding-top: 10px;
+        }
+        a {
+            margin-left: 20px;
+            color: $primaryColor;
+        }
+
+        &>div:nth-child(1) {
+            margin-top: 10px;
+        }
+
+        div {
+            div {
+                margin-top: 10px;
+
+                input {
+                    margin-left: 10px;
+                }
+            }
+        }
+    }
+
+    &>div:nth-child(1) {
+        margin-top: 10px;
+    }
+
+    &>p {
+
+        font-size: 14px;
+        color: gray;
+    }
+
+    margin-bottom: 20px;
+}
+
+.fieldLabel {
+    font-weight: 600;
+}
+
+.requiredIcon {
+    color: red;
+}
+
+.removeFile {
+    color: red;
+    margin-top: 5px;
+    font-size: 14px;
+    cursor: pointer;
 }
