@@ -1,0 +1,61 @@
+.view {
+  padding-top: 100px;
+  width: 50vw;
+}
+.view .multiSelectItemsDiv {
+  display: flex;
+  margin-left: 20px;
+}
+.view .multiSelectItemsDiv p {
+  margin-right: 20px;
+}
+.view h1 {
+  margin-bottom: 50px;
+}
+.view .viewContent {
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgb(207, 207, 207);
+  border-radius: 5px;
+}
+.view h6 {
+  color: #64676b;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+.view hr {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  color: #f0f0f0;
+  border-style: none;
+  border-top-style: solid;
+  border-top-width: 1px;
+}
+.view .fieldItem {
+  display: flex;
+  margin-bottom: 20px;
+}
+.view .fieldItem label {
+  font-weight: 600;
+}
+.view .fieldItem .fileName {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+.view .fieldItem a {
+  color: #e26b09;
+}
+.view .fieldItem .fileDetailsDiv {
+  margin-left: 20px;
+}
+.view .fieldItem .expiryDateDiv {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.view .fieldItem .fieldLabel {
+  width: 200px;
+}
+.view .fieldItem .fieldValue {
+  margin-left: 20px;
+}/*# sourceMappingURL=styles.module.css.map */

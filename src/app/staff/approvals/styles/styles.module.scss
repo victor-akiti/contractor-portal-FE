@@ -1,5 +1,32 @@
+@import "../../../../assets//style/colors.scss";
+
 .approvals {
     width: 100%;
+
+    .revertToL2Div {
+        background-color: white;
+        padding: 20px;
+        
+        div {
+            margin-top: 20px;
+            display: flex;
+            justify-content: end;
+
+            button {
+                padding: 10px;
+                border-style: none;
+                border-radius: 5px;
+                margin-left: 10px;
+                cursor: pointer;
+            }
+
+            button:nth-child(1) {
+                background-color: $primaryColor;
+                color: white;
+            }
+        }
+    }
+
     header {
         width: 50%;
         margin-bottom: 2rem;
@@ -27,6 +54,77 @@
             font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
         }
 
+        .searchFilterDiv {
+            display: flex;
+            position: relative;
+
+            .searchResultsDiv {
+                position: absolute;
+                left: 0;
+                top: 100%;
+                width: 100%;
+                background-color: white;
+                z-index: 200;
+                max-height: 250px;
+                overflow-y: scroll;
+                box-shadow: 1px 2px 18px 2px rgba(131,131,131,0.75);
+-webkit-box-shadow: 1px 2px 18px 2px rgba(131,131,131,0.75);
+-moz-box-shadow: 1px 2px 18px 2px rgba(131,131,131,0.75);
+
+                &>div {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .searchResultItem {
+                    padding: 15px;
+                    padding-left: 20px;
+                    padding-right: 20px;
+                    cursor: pointer;
+                    button {
+                        padding: 10px;
+                        background-color: $primaryColor;
+                        border-style: none;
+                        border-radius: 5px;
+                        margin-left: 10px;
+                        color: white;
+                    }
+
+                    &:hover {
+                        background-color: $primaryColor;
+                        color: white;
+
+                        button {
+                            background-color: white;
+                            color: $primaryColor;
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+
+            input, select {
+                display: block;
+                width: 100%;
+                height: calc(1.5em + .75rem + 2px);
+                padding: .375rem .75rem;
+                font-size: 1rem;
+                font-weight: 400;
+                line-height: 1.5;
+                color: #495057;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid #ced4da;
+                border-radius: .25rem;
+                transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            }
+
+            select {
+                margin-left: 10px;
+            }
+        }
+
         input {
             display: block;
             width: 100%;
@@ -42,6 +140,13 @@
             border-radius: .25rem;
             transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
         }
+    }
+
+    a {
+        color: #e26b09;
+                    font-size: .875em;
+                    font-weight: 400;
+                    margin-bottom: 3px;
     }
 
     table {
@@ -118,7 +223,149 @@
             }
 
             
+
+            
         }
+    }
+
+    .reminderDiv {
+        display: flex;
+        align-items: center;
+
+        a {
+            margin: 0px !important;
+        }
+    }
+
+    .reminderSentText {
+        color: #047e00;
+        font-size: 14px;
+    }
+
+    .renewRequestTextDiv {
+        display: flex;
+        align-items: center;
+
+        a {
+            margin: 0px !important;
+        }
+    }
+}
+
+
+.deleteInviteText {
+    font-size: 13px;
+    color: #dc3545;
+    text-align: right;
+    cursor: pointer
+    
+    
+}
+
+.deleteInviteText:hover {
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.confirmArchiveModalDiv {
+    background-color: white;
+    padding: 20px;
+    border-style: none;
+    border-radius: 5px;
+    width: 30vw;
+
+    .archiveStatusMessages {
+        display: block;
+    }
+
+    div {
+        margin-top: 20px;
+        display: flex;
+        justify-content: end;
+        text-align: center;
+
+        div {
+            justify-content: center;
+        }
+
+        button {
+            margin-left: 20px;
+            padding: 7px;
+            border-style: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            div {
+                margin-top: 0px;
+            }
+
+            &>div {
+                &>div {
+                    display: unset;
+                }
+            }
+            
+
+        }
+
+        button:nth-child(1) {
+            background-color: black;
+        }
+
+        button:nth-child(2) {
+            background-color: #e26b09;
+        }
+    }
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+
+    p {
+        font-size: 14px;
+        color: #878787;
+    }
+}
+
+.inviteFilters {
+    display: flex;
+    margin-top: 20px;
+    align-items: center;
+
+    div {
+        display: flex;
+
+        p {
+            margin-left: 20px;
+            background-color: #eaeaea;
+            padding: 7px;
+            font-size: 14px;
+            border-style: none;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .active {
+            background-color: #e26b09;
+            color: white;
+        }
+    }
+    input {
+        border-style: none;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        border-color: rgb(236, 236, 236);
+        margin-left: 20px;
+        padding: 5px;
+        width: 350px;
     }
 }
 
@@ -308,6 +555,64 @@
     }
 }
 
+.parkRequestedItem {
+    td:nth-child(1) {
+        a {
+            color: #e26b09;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        p {
+            color: #212529;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+    }
+
+    td:nth-child(2) {
+        font-size: 1rem;
+    }
+
+
+
+    td:nth-child(3) {
+        font-size: 1rem;
+        a {
+            color: #e26b09;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        p {
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+        p:nth-child(3) {
+            font-weight: 500;
+            text-decoration: underline;
+        }
+    }
+
+    td:nth-child(4) {
+
+    }
+}
+
 .returnedItem {
     td:nth-child(1) {
         width: 40%;
@@ -362,4 +667,8 @@
     td:nth-child(4) {
 
     }
+}
+
+.needsAttendionBackground {
+    background-color: #ffe0c6;
 }

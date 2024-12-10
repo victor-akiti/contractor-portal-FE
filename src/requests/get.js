@@ -13,7 +13,7 @@ export const getPlain = async (route) => {
 
 export const getProtected = async (route) => {
     try {
-        const request = await fetch(`http://localhost:8080/${route}`, {
+        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"

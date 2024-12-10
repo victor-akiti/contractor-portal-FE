@@ -1,0 +1,254 @@
+.invoiceForm {
+  background-color: rgb(255, 128, 64);
+  padding: 50px;
+  min-height: 100vh;
+}
+.invoiceForm .invoiceFormErrorDiv p {
+  background-color: rgb(255, 190, 190);
+  padding: 10px;
+  color: rgb(203, 0, 0);
+  font-size: 14px;
+}
+.invoiceForm .invoiceRadioButtons input {
+  display: inline !important;
+  width: -moz-fit-content !important;
+  width: fit-content !important;
+  margin-top: 0px !important;
+  margin-right: 10px;
+}
+.invoiceForm .invoiceRadioButtons > div {
+  display: flex;
+  align-items: center;
+}
+.invoiceForm .invoiceSubmitted p {
+  font-weight: 700;
+  text-align: center;
+}
+.invoiceForm .invoiceSubmitErrorMessage {
+  background-color: rgb(255, 190, 190);
+  padding: 10px;
+  color: rgb(203, 0, 0);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+.invoiceForm .selectedFileItem {
+  display: flex;
+  margin-left: 0px !important;
+  margin-top: 10px;
+  justify-content: space-between;
+}
+.invoiceForm .selectedFileItem div {
+  display: flex;
+  align-items: center;
+}
+.invoiceForm .selectedFileItem div img {
+  margin-left: 5px;
+  cursor: pointer;
+}
+.invoiceForm .selectedFileItem label {
+  font-weight: 400 !important;
+}
+.invoiceForm .formErrorMesage {
+  font-size: 13px;
+  margin-top: 5px;
+  color: rgb(231, 0, 0);
+}
+.invoiceForm .fileUploadInput {
+  display: none;
+}
+.invoiceForm > div {
+  background-color: white;
+  padding: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.invoiceForm > div h1 {
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #353535;
+  background-color: #fff;
+  font-size: 2em;
+}
+.invoiceForm > div h5 {
+  font-size: 14px;
+  font-weight: 700;
+  font-style: italic;
+  margin-bottom: 25px;
+}
+.invoiceForm > div > div {
+  width: 100%;
+}
+.invoiceForm > div .mainContent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.invoiceForm > div .mainContent > div {
+  width: 48%;
+  margin-bottom: 20px;
+}
+.invoiceForm > div .mainContent > div label {
+  font-weight: 700;
+  min-height: 18px;
+  font-size: 14px;
+}
+.invoiceForm > div .mainContent > div input, .invoiceForm > div .mainContent > div select {
+  display: block;
+  width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  color: #353535;
+  height: 32px;
+  border: 1px solid #c8ced1;
+  background: #eef1f2;
+  transition: border 0.1s ease-out;
+}
+.invoiceForm > div .uploads {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.invoiceForm > div .uploads .uploadItem > div {
+  border-style: dashed;
+  border-width: 1px;
+  border-color: #a8a8a8;
+  padding: 20px;
+  margin-top: 10px;
+  height: 200px;
+}
+.invoiceForm > div .uploads .uploadItem > div .uploadItemBody {
+  display: flex;
+}
+.invoiceForm > div .uploads .uploadItem > div .uploadItemBody div {
+  margin-left: 10px;
+}
+.invoiceForm > div .uploads .uploadItem > div .uploadItemBody div p:nth-child(1) {
+  font-weight: bold;
+}
+.invoiceForm > div .uploads .uploadItem > div .uploadItemBody div p:nth-child(2) {
+  font-size: 14px;
+}
+.invoiceForm > div .uploads .uploadItem > div .uploadItemBody > div {
+  flex-grow: 1;
+}
+.invoiceForm > div .uploads > div {
+  width: 48%;
+  margin-bottom: 20px;
+}
+.invoiceForm > div .uploads > div label {
+  font-weight: 700;
+  min-height: 18px;
+  font-size: 14px;
+}
+.invoiceForm > div .uploads > div input {
+  display: block;
+  width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  color: #353535;
+  height: 32px;
+  border: 1px solid #c8ced1;
+  background: #eef1f2;
+  transition: border 0.1s ease-out;
+}
+.invoiceForm > div .confirmationDiv {
+  margin-bottom: 20px;
+}
+.invoiceForm > div .confirmationDiv label {
+  font-weight: 700;
+  min-height: 18px;
+  font-size: 14px;
+}
+.invoiceForm > div .confirmationDiv select {
+  width: 48%;
+  margin-top: 5px;
+  display: block;
+  width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  color: #353535;
+  height: 32px;
+  border: 1px solid #c8ced1;
+  background: #eef1f2;
+  transition: border 0.1s ease-out;
+}
+.invoiceForm > div .confirmationDiv p {
+  font-size: 12px;
+  font-style: italic;
+  margin-top: 5px;
+}
+.invoiceForm > div .note {
+  color: rgb(255, 0, 0);
+  font-weight: bold;
+  font-style: italic;
+  margin-bottom: 50px;
+  font-size: 14px;
+}
+.invoiceForm > div .submitDiv button {
+  border-style: none;
+  background-color: #c8ced1;
+  padding: 7px;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.invoiceForm > div .submitDiv button > div {
+  margin-left: 5px;
+}
+.invoiceForm > div .submitDiv .disabled {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #e3e3e3;
+  color: #a8a8a8;
+  background-color: white;
+}
+.invoiceForm > div .submitDiv .enabled {
+  background-color: #f57710;
+  color: white;
+  cursor: pointer;
+}
+.invoiceForm > div .submitDiv .enabled:hover {
+  background-color: #ff7300;
+}
+
+.fileUploadInput {
+  display: none !important;
+}
+
+@media (max-width: 576px) {
+  .invoiceForm > div {
+    width: 90%;
+  }
+}
+@media (min-width: 577px) and (max-width: 768px) {
+  .invoiceForm > div {
+    width: 90%;
+  }
+}
+@media (min-width: 769px) and (max-width: 992px) {
+  .invoiceForm > div {
+    width: 80%;
+  }
+}
+@media (min-width: 993px) and (max-width: 1200px) {
+  .invoiceForm > div {
+    width: 75%;
+  }
+}
+@media (min-width: 1201px) {
+  .invoiceForm > div {
+    width: 50%;
+  }
+}/*# sourceMappingURL=styles.module.css.map */

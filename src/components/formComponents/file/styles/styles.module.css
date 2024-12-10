@@ -57,4 +57,50 @@
   padding: 10px;
   border-style: none;
   border-radius: 10px;
+}
+
+.uploadedFilesList {
+  padding-top: 10px;
+  margin-bottom: 20px;
+}
+.uploadedFilesList > div {
+  margin-bottom: 20px;
+}
+.uploadedFilesList > div label:nth-child(1) {
+  padding-top: 10px;
+}
+.uploadedFilesList > div a {
+  margin-left: 20px;
+  color: #e26b09;
+}
+.uploadedFilesList > div > div:nth-child(1) {
+  margin-top: 10px;
+}
+.uploadedFilesList > div div div {
+  margin-top: 10px;
+}
+.uploadedFilesList > div div div input {
+  margin-left: 10px;
+}
+.uploadedFilesList > div:nth-child(1) {
+  margin-top: 10px;
+}
+.uploadedFilesList > p {
+  font-size: 14px;
+  color: gray;
+}
+
+.fieldLabel {
+  font-weight: 600;
+}
+
+.requiredIcon {
+  color: red;
+}
+
+.removeFile {
+  color: red;
+  margin-top: 5px;
+  font-size: 14px;
+  cursor: pointer;
 }/*# sourceMappingURL=styles.module.css.map */

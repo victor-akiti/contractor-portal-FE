@@ -36,6 +36,7 @@
         padding: 1.5rem;
         margin-top: 1rem;
         align-items: center;
+        width: 30vw;
 
         h3 {
             color: #64676b;
@@ -45,37 +46,42 @@
             font-weight: 500;
         }
 
-        &>input {
-            display: block;
+        form {
             width: 100%;
-            height: calc(1.5em + .75rem + 2px);
-            padding: .375rem .75rem;
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #495057;
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid #ced4da;
-            border-radius: .25rem;
-            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-            margin-bottom: .5rem;
-        }
-
-        &>div {
-            display: block;
-            width: 100%;
-            margin-bottom: 1rem;
-
-            display: flex;
-            align-items: center;
-
-            label {
-                font-weight: 500;
-                margin-left: 10px;
-                color: black;
+            &>input {
+                display: block;
+                width: 100%;
+                height: calc(1.5em + .75rem + 2px);
+                padding: .375rem .75rem;
+                font-size: 1rem;
+                font-weight: 400;
+                line-height: 1.5;
+                color: #495057;
+                background-color: #fff;
+                background-clip: padding-box;
+                border: 1px solid #ced4da;
+                border-radius: .25rem;
+                transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+                margin-bottom: .5rem;
+            }
+    
+            &>div {
+                display: block;
+                width: 100%;
+                margin-bottom: 1rem;
+    
+                display: flex;
+                align-items: center;
+    
+                label {
+                    font-weight: 500;
+                    margin-left: 10px;
+                    color: black;
+                }
             }
         }
+
+        
 
         button {
             display: inline-block;
@@ -97,6 +103,10 @@
             border-color: #29bd25;
             width: 100%;
             margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
         }
 
         footer {

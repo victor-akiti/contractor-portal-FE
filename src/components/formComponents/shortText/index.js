@@ -1,13 +1,23 @@
+import InfoText from "@/components/infoText"
 import styles from "./styles/styles.module.css"
+import FormErrorText from "@/components/formErrorText"
 
-const ShortText = ({onClick, label,  placeholder, type, highlighted}) => {
+const ShortText = ({onClick, label,  placeholder, type, highlighted, infoText, errorText, defaultValue, onChange, required, value}) => {
     return (
-        <div className={[styles.shortText, highlighted && styles.highlighted].join(" ")} onClick={(event) => {
+        <div key={"shortText"} className={[styles.shortText, highlighted && styles.highlighted].join(" ")} onClick={(event) => {
             event.stopPropagation()
             onClick()
         }}>
-            <label>{label}</label>
-            <input placeholder={placeholder}  type={type} />
+            <label>{label}{required && <label className={styles.requiredIcon}>*</label>}</label>
+            <input placeholder={placeholder} type={type} value={value} onChange={event => onChange(event.target.value)} />
+
+            {
+                infoText && <InfoText text={infoText} />
+            }
+
+            {
+                errorText && <FormErrorText text={errorText} />
+            }
         </div>
     )
 }
