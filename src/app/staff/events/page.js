@@ -1,7 +1,85 @@
+'use client'
+import { useEffect, useState } from "react"
+import styles from "./styles/styles.module.css"
+import { getProtected } from "@/requests/get"
+import moment from "moment"
+
 const Events = () => {
+    const [events, setEvents] = useState([])
+
+    useEffect(() => {
+        fetchAllEvents()
+    }, [])
+
+    const fetchAllEvents= async () => {
+        try {
+            const fetchAllEventsRequest = await getProtected("events/all")
+
+            console.log({fetchAllEventsRequest});
+
+            if (fetchAllEventsRequest.status === "OK") {
+                setEvents(fetchAllEventsRequest.data)
+            }
+            
+        } catch (error) {
+            console.log({error});
+        }
+    }
+
+
     return (
-        <div>
-            <p>Events</p>
+        <div className={styles.events}>
+            <h2>Events</h2>
+
+            <div>
+                <input placeholder="Search event logs" />
+
+                <button>Search</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <td>
+                            Company Name
+                        </td>
+
+                        <td>
+                            Event
+                        </td>
+
+                        <td>
+                            User
+                        </td>
+
+                        <td>
+                            Time
+                        </td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {
+                        events.map((event, index) => <tr key={index} className={index%2 === 0 && styles.darkBackground}>
+                            <td>
+                                {event.vendorName}
+                            </td>
+
+                            <td>
+                                {event.eventDescription ? event.eventDescription : event.eventName}
+                            </td>
+
+                            <td>
+                                {event.userName}
+                            </td>
+
+                            <td>
+                                {moment(event.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
+                            </td>
+                        </tr>)
+                    }
+                </tbody>
+            </table>
         </div>
     )
 }

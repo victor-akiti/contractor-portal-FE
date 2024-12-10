@@ -34,6 +34,7 @@
   padding: 1.5rem;
   margin-top: 1rem;
   align-items: center;
+  width: 30vw;
 }
 .login .content h3 {
   color: #64676b;
@@ -42,7 +43,10 @@
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   font-weight: 500;
 }
-.login .content > input {
+.login .content form {
+  width: 100%;
+}
+.login .content form > input {
   display: block;
   width: 100%;
   height: calc(1.5em + 0.75rem + 2px);
@@ -58,14 +62,14 @@
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   margin-bottom: 0.5rem;
 }
-.login .content > div {
+.login .content form > div {
   display: block;
   width: 100%;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
 }
-.login .content > div label {
+.login .content form > div label {
   font-weight: 500;
   margin-left: 10px;
   color: black;
@@ -91,6 +95,10 @@
   border-color: #29bd25;
   width: 100%;
   margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 .login .content footer {
   width: 100%;

@@ -1,0 +1,79 @@
+@import "../../../../../../assets//style//colors.scss";
+
+.view {
+    padding-top: 100px;
+    width: 50vw;
+
+    .multiSelectItemsDiv {
+        display: flex;
+        margin-left: 20px;
+
+        p {
+            margin-right: 20px;
+        }
+    }
+
+    h1 {
+        margin-bottom: 50px;
+    }
+
+    .viewContent {
+        
+        border-style: none;
+        border-style: solid;
+        border-width: 1px;
+        border-color: rgb(207, 207, 207);
+        border-radius: 5px;
+    }
+
+    h6 {
+        color: #64676b;
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    hr {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        color: #f0f0f0;
+        border-style: none;
+        border-top-style: solid;
+        border-top-width: 1px;
+    }
+
+    .fieldItem {
+        display: flex;
+        margin-bottom: 20px;
+
+        label {
+            font-weight: 600;
+            
+        }
+
+        .fileName {
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        a {
+            color: $primaryColor;
+        }
+
+        .fileDetailsDiv {
+            margin-left: 20px;
+        }
+
+        .expiryDateDiv {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .fieldLabel {
+            width: 200px;
+        }
+
+        .fieldValue {
+            margin-left: 20px;
+        }
+    }
+}

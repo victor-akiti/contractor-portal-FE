@@ -32,4 +32,8 @@
   padding: 10px;
   border-style: none;
   border-radius: 10px;
+}
+
+.requiredIcon {
+  color: red;
 }/*# sourceMappingURL=styles.module.css.map */

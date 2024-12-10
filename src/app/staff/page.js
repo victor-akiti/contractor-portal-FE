@@ -3,6 +3,7 @@ const Staff = (children) => {
     return (
         <div>
             {}
+            <p>Hello world</p>
         </div>
     )
 }
