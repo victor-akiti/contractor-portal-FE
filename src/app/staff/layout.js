@@ -174,7 +174,7 @@ const Layout = ({children}) => {
     
                         <hr />
     
-                        <Link href={"/staff/search"}>Advanced Search</Link>
+                        {/* <Link href={"/staff/search"}>Advanced Search</Link> */}
                     </div>
     
                     <div className={styles.right}>
