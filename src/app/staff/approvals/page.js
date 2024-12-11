@@ -3,7 +3,7 @@
 import Link from "next/link"
 import styles from "./styles/styles.module.css"
 import Tabs from "@/components/tabs/index"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { getProtected } from "@/requests/get"
 import moment from "moment"
 import { useAppSelector } from "@/redux/hooks"
@@ -15,6 +15,17 @@ import ErrorText from "@/components/errorText"
 import SuccessMessage from "@/components/successMessage"
 import PrimaryColorSmallLoadingIcon from "@/components/primaryColorLoadingIcon"
 import FloatingProgressIndicator from "@/components/floatingProgressIndicator"
+import { all } from "underscore"
+
+export function useOutsideClick(ref, onClickOut, deps = []){
+    useEffect(() => {
+        const onClick = ({target}) => !ref?.contains(target) && onClickOut?.()
+        document.addEventListener("click", onClick);
+        return () => document.removeEventListener("click", onClick);
+    }, deps);
+}
+
+
 
 const Approvals = () => {
     useEffect(() => {
@@ -22,6 +33,10 @@ const Approvals = () => {
 
         // triggerInviteMigration()
     }, [])
+    const searchResultRef = useRef(null)
+
+    
+    
 
     
 
@@ -42,6 +57,37 @@ const Approvals = () => {
         pendingL2: [],
         returned: []
     })
+
+    const [approvalsTabs, setApprovalsTabs] = useState([
+        {
+            label: "Invited",
+            name: "invited"
+        },
+        {
+            label: "In Progress",
+            name: "in-progress"
+        },
+        {
+            label: "Pending L2",
+            name: "pending-l2"
+        },
+        {
+            label: "L3",
+            name: "l3"
+        },
+        {
+            label: "Completed L2",
+            name: "completed-l2"
+        },
+        {
+            label: "Returned To Contractor",
+            name: "returned-to-contractor"
+        },
+        // {
+        //     label: "Park Requests",
+        //     name: "park-requests"
+        // }
+    ])
 
     const [inviteToArchive, setInviteToArchive] = useState({})
 
@@ -91,6 +137,8 @@ const Approvals = () => {
             setFetchingContractors(false)
 
             if (fetchAllApprovalsDataRequest.status === "OK") {
+                console.log({allApprovalsData: fetchAllApprovalsDataRequest.data});
+                
                 let tempApprovals = {...approvals}
                 tempApprovals = fetchAllApprovalsDataRequest.data
                 setApprovals(tempApprovals)
@@ -98,42 +146,22 @@ const Approvals = () => {
                 tempApprovals = {...fixedApprovals}
                 tempApprovals = fetchAllApprovalsDataRequest.data
                 setFixedApprovals(tempApprovals)
+
+                if (allApprovalsData?.parkRequested?.length > 0 && (user.role === "Admin" || user.role === "HOD")) {
+                    let tempApprovalsTabs = [...approvalsTabs]
+                    tempApprovalsTabs.push({
+                        label: "Park Requests",
+                        name: "park-requests"
+                    })
+                    setApprovalsTabs(tempApprovalsTabs)
+                }
             }
         } catch (error) {
             console.log({error});
         }
     }
 
-    const approvalsTabs = [
-        {
-            label: "Invited",
-            name: "invited"
-        },
-        {
-            label: "In Progress",
-            name: "in-progress"
-        },
-        {
-            label: "Pending L2",
-            name: "pending-l2"
-        },
-        {
-            label: "L3",
-            name: "l3"
-        },
-        {
-            label: "Completed L2",
-            name: "completed-l2"
-        },
-        {
-            label: "Returned To Contractor",
-            name: "returned-to-contractor"
-        },
-        {
-            label: "Park Requests",
-            name: "park-requests"
-        }
-    ]
+
 
     const tableHeaders = {
         invited: ["Company Name", "User Details", "Status"],
@@ -192,6 +220,15 @@ const Approvals = () => {
                 return tableHeaders["returned"]
         }
     }
+
+    useOutsideClick(searchResultRef.current, () => {
+        console.log("out click");
+
+        let tempSearchQueryResults = [...searchQueryResults]
+        tempSearchQueryResults = []
+        setSearchQueryResults(tempSearchQueryResults)
+        
+    }, [searchQueryResults])
 
 
 
@@ -455,6 +492,10 @@ const Approvals = () => {
         
     }
 
+    const capitalizeWord = word => {
+        return word.charAt(0).toUpperCase() + word.slice(1)
+    }
+
     const filterVendorsByQuery = (query, vendorList) => {
         console.log({query, vendorList: vendorList.length});
         let mostRelevant = []
@@ -502,7 +543,6 @@ const Approvals = () => {
     }
 
     const getNextStage = (companyRecord) => {
-        console.log({companyRecord});
         
         if (!companyRecord?.flags?.approvals?.level) {
             return "B"
@@ -699,12 +739,12 @@ const Approvals = () => {
                             </select>
 
                             {
-                                searchQueryResults.length > 0 && <div className={styles.searchResultsDiv}>
+                                searchQueryResults.length > 0 && <div className={styles.searchResultsDiv} ref={searchResultRef}>
                                 {
                                     searchQueryResults.map((item, index) =>  <div key={index} className={styles.searchResultItem}>
                                     <div>
                                         <p>{String(item.companyName).toLocaleUpperCase()}</p>
-                                        <p>{String(item?.flags?.status)}</p>
+                                        <p>{capitalizeWord(String(item?.flags?.status))}</p>
                                     </div>
 
                                     <div>
@@ -1164,7 +1204,7 @@ const PendingL2Item = ({index, companyRecord, user}) => {
     return (
         <tr className={[styles.pendingL2Item, companyRecord.needsAttention ? styles.needsAttendionBackground : index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
             </td>
 
@@ -1174,7 +1214,7 @@ const PendingL2Item = ({index, companyRecord, user}) => {
 
             <td>
                 {
-                    userCanViewActions() && <Link href={`/staff/approvals/${companyRecord.vendor}`}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>
+                    userCanViewActions() && <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>
                 }
                 {/* {
                     companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
@@ -1212,7 +1252,7 @@ const L3Item = ({index, companyRecord, revertToL2, user}) => {
     return (
         <tr className={[styles.l3Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{String(companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email)}</p>
             </td>
 
@@ -1273,7 +1313,7 @@ const CompletedL2Item = ({index, companyRecord, revertToL2, user}) => {
     return (
         <tr className={[styles.completedL2Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
             </td>
 
@@ -1340,7 +1380,7 @@ const ParkRequestedItem = ({index, companyRecord, approveParkRequest, declinePar
     return (
         <tr className={[styles.parkRequestedItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
             </td>
 
@@ -1410,7 +1450,7 @@ const ReturnedItem = ({index, companyRecord}) => {
     return (
         <tr className={[styles.returnedItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <Link href={`/staff/vendor/${companyRecord.vendor}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
+                <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
                 <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p>
             </td>
 
@@ -1419,7 +1459,7 @@ const ReturnedItem = ({index, companyRecord}) => {
             </td>
 
             <td>
-                <Link href={`/staff/vendor/${companyRecord.vendor}`}>VIEW</Link>
+                <Link href={`/staff/vendor/${companyRecord._id}`}>VIEW</Link>
                 
             </td>
 
