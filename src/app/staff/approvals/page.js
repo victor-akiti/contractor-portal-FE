@@ -17,7 +17,7 @@ import PrimaryColorSmallLoadingIcon from "@/components/primaryColorLoadingIcon"
 import FloatingProgressIndicator from "@/components/floatingProgressIndicator"
 import { all } from "underscore"
 
-export function useOutsideClick(ref, onClickOut, deps = []){
+function useOutsideClick(ref, onClickOut, deps = []){
     useEffect(() => {
         const onClick = ({target}) => !ref?.contains(target) && onClickOut?.()
         document.addEventListener("click", onClick);
