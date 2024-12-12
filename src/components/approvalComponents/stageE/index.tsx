@@ -21,7 +21,7 @@ import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import errorIcon from "@/assets/images/red_alert_circle.svg"
 
 
-export function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
+function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
     useEffect(() => {
         const onClick = ({target}: any) => !ref?.contains(target) && onClickOut?.()
         document.addEventListener("click", onClick);
