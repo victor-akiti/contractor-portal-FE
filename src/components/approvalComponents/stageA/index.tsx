@@ -19,7 +19,7 @@ import { putProtected } from "@/requests/put"
 import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 
-export function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
+function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
     useEffect(() => {
         const onClick = ({target}: any) => !ref?.contains(target) && onClickOut?.()
         document.addEventListener("click", onClick);
