@@ -29,7 +29,7 @@ const Layout = ({children}) => {
           if (currentAuthState.status === "Failed") {
             router.push("/login")
           } else {
-            if (currentAuthState.data.role !== "User") {
+            if (currentAuthState.data.role !== "Vendor") {
               router.push("/staff/approvals")
             } else {
               //@ts-ignore

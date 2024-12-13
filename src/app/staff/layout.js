@@ -42,7 +42,7 @@ const Layout = ({children}) => {
           if (currentAuthState.status === "Failed") {
             router.push("/login")
           } else {
-            if (currentAuthState.data.role === "User") {
+            if (currentAuthState.data.role === "Vendor") {
               router.push("/contractor/dashboard")
             } else {
               setAuthenticated(true)
