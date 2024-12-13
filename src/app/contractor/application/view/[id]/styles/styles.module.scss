@@ -17,63 +17,98 @@
         margin-bottom: 50px;
     }
 
-    .viewContent {
-        
-        border-style: none;
-        border-style: solid;
-        border-width: 1px;
-        border-color: rgb(207, 207, 207);
-        border-radius: 5px;
+
+
+}
+
+.approvalContent {
+    border-style: none;
+    border: 1px solid rgba(0,0,0,.125);
+    margin-top: 40px;
+
+    a {
+        color: $primaryColor;
     }
 
+    
     h6 {
-        color: #64676b;
+        margin-bottom: .5rem;
+        font-weight: 500;
+        line-height: 1.2;
         font-size: 1rem;
-        margin-bottom: 10px;
+        color: #64676b;
     }
 
-    hr {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        color: #f0f0f0;
-        border-style: none;
-        border-top-style: solid;
-        border-top-width: 1px;
+    .expiryDateText {
+        font-size: 14px;
+        color: #ababab;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
 
-    .fieldItem {
+    .certificateExpiredText {
+        color: #dc3545;
+        font-size: 14px;
+    }
+
+    .certificateToExpireText {
+        color: #c5b500;
+        font-size: 14px;
+    }
+
+    .multiSelectTextValues {
         display: flex;
-        margin-bottom: 20px;
 
-        label {
-            font-weight: 600;
-            
-        }
-
-        .fileName {
-            margin-left: 20px;
+        p {
             margin-right: 20px;
         }
+    }
 
-        a {
+    .sectionItem {
+        display: flex;
+        justify-content: space-between;
+        flex-grow: 1;
+
+        .sectionHeader {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        &>div:nth-child(1) {
+            flex-grow: 1;
+            margin-bottom: 40px;
+        }
+
+        .sectionFooter{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             color: $primaryColor;
+            margin-bottom: 20px;
+            margin-top: 20px;
         }
 
-        .fileDetailsDiv {
-            margin-left: 20px;
-        }
+        .fieldItem {
+            margin-bottom: 1rem;
+            .fieldData {
+                display: flex;
+                align-items: center;
 
-        .expiryDateDiv {
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
+                label {
 
-        .fieldLabel {
-            width: 200px;
-        }
+                    font-size: 1rem;
+                    line-height: 1.5;
+                    color: #212529;
+                }
 
-        .fieldValue {
-            margin-left: 20px;
+                p {
+                    margin-left: 20px;
+                }
+            }
+            .approvalInfoText {
+                font-size: 14px;
+                color: #dc3545;
+            }
         }
     }
 }
