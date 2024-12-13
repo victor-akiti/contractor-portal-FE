@@ -16,6 +16,10 @@ import SuccessMessage from "@/components/successMessage"
 import PrimaryColorSmallLoadingIcon from "@/components/primaryColorLoadingIcon"
 import FloatingProgressIndicator from "@/components/floatingProgressIndicator"
 import { all } from "underscore"
+import upIconBlack from "@/assets/images/upIconBlack.svg"
+import downIconBlack from "@/assets/images/downIconBlack.svg"
+import Image from "next/image"
+
 
 function useOutsideClick(ref, onClickOut, deps = []){
     useEffect(() => {
@@ -681,11 +685,81 @@ const Approvals = () => {
 
     const [l3Filters, setL3Filters] = useState(["All", "Healthy", "With Vendor", "Yet To Be Reviewed"])
     const [activeL3Filter, setActiveL3Filter] = useState("All")
+    const [nameSortAscending, setNameSortAscending] = useState(true)
+    const [dateSortAscending, setDateSortAscending] = useState(true)
     
     //This function filters companies in the L3 category by the selected filter
     const filterL3Companies = (filter) => {
-        
+
     }
+
+    const showSortIcons = (index) => {
+        if (activeTab === "invited") {
+            return false
+        } else{
+            if (activeTab === "in-progress") {
+                return true
+            } else if (activeTab === "pending-l2" || activeTab === "completed-l2" || activeTab === "returned-to-contractor" ||  activeTab === "parkRequests") {
+                if (index === 0 || index === 3) {
+                    return true
+                } else {
+                    return false
+                }
+            } else if (activeTab === "l3") {
+                if (index === 0 || index === 2) {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        }
+    }
+
+    const getSortToPerform = index => {
+        if (index === 0) {
+            toggleNameSort()
+        } else {
+            toggleDateSort()
+        }
+    }
+    const toggleNameSort = () => {  
+        const tempApprovals = {...approvals}
+        if (activeTab === "pending-l2") {
+            tempApprovals.pendingL2 = tempApprovals.pendingL2.reverse()
+        } else if (activeTab === "completed-l2") {
+            tempApprovals.completedL2 = tempApprovals.completedL2.reverse()
+        } else if (activeTab === "in-progress") {
+            tempApprovals.inProgress = tempApprovals.inProgress.reverse()
+        } else if (activeTab === "l3") {
+            tempApprovals.l3 = tempApprovals.l3.reverse()
+        } else if (activeTab === "returned-to-contractor") {
+            tempApprovals.returned = tempApprovals.returned.reverse()
+        } 
+        setApprovals(tempApprovals)
+        setNameSortAscending(!nameSortAscending)
+    }
+
+    const toggleDateSort = () => {
+        setDateSortAscending(!dateSortAscending)
+    }
+
+    const getIconToDisplay = (index) => {
+        if (index === 0) {
+            if (nameSortAscending) {
+                return upIconBlack 
+            } else {
+                return downIconBlack
+            }
+        } else {
+            if (dateSortAscending) {
+                return upIconBlack 
+            } else {
+                return downIconBlack
+            }
+        }
+    }
+
+    
 
     
 
@@ -858,7 +932,14 @@ const Approvals = () => {
 
                     <table>
                         <thead>
-                            { getActiveTable().map((item, index) => <td key={index}>{item}</td>)}
+                            { getActiveTable().map((item, index) => <td key={index}>
+                                <div className={styles.tableHeading} onClick={() => getSortToPerform(index)}>
+                                    {
+                                        showSortIcons(index) && <Image src={getIconToDisplay(index)} alt="sort icon" width={15} height={15}  />
+                                    }
+                                    <p>{item}</p>
+                                </div>
+                            </td>)}
                         </thead>
 
                         <tbody>

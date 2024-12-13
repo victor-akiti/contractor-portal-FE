@@ -3,6 +3,15 @@
 .approvals {
     width: 100%;
 
+    .tableHeading {
+        display: flex;
+        align-items: center;
+
+        img {
+            margin-right: 10px;
+        }
+    }
+
     .revertToL2Div {
         background-color: white;
         padding: 20px;

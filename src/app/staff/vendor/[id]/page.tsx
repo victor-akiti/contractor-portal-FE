@@ -70,7 +70,7 @@ const ViewVendorPage = () => {
     const fetchVendorData = async (vendorID) => {
         setVendorID(vendorID)
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`)
+            const fetchVendorDataRequest = await getProtected(`companies/approval-data/${vendorID}`)
 
             console.log({fetchVendorDataRequest});
 
