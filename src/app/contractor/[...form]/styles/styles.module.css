@@ -32,6 +32,9 @@
   display: flex;
   align-items: center;
 }
+.newRegistration .fileSelectorDiv div:nth-child(1) {
+  flex-grow: 1;
+}
 .newRegistration .fileSelectorDiv .uploadSampleDiv {
   display: flex;
   flex-direction: column;

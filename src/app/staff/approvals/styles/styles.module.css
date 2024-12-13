@@ -1,6 +1,13 @@
 .approvals {
   width: 100%;
 }
+.approvals .tableHeading {
+  display: flex;
+  align-items: center;
+}
+.approvals .tableHeading img {
+  margin-right: 10px;
+}
 .approvals .revertToL2Div {
   background-color: white;
   padding: 20px;

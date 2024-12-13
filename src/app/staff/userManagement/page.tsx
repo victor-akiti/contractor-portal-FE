@@ -227,7 +227,7 @@ const Tasks = () => {
 
                                 <select onChange={event => setNewDepartment(event.target.value)} >
                                     <option disabled selected>Department</option>
-                                    <option value={"Contract and Procurement"}>Contracts and Procurement</option>
+                                    <option value={"Contracts and Procurement"}>Contracts and Procurement</option>
                                     <option value={"Corporate Communications"}>Corporate Communications</option>
                                     <option value={"Drilling"}>Drilling</option>
                                     <option value={"Finance"}>Finance</option>
@@ -259,10 +259,9 @@ const Tasks = () => {
                                     successMessages["role"] && <SuccessMessage message={successMessages.role} />
                                 }
                                 <select onChange={event => setNewRole(event.target.value)}>
-                                    <option value={"End User"}>End-user</option>
+                                    <option value={"Amni Staff"}>Amni Staff</option>
                                     <option value={"C and P Staff"}>C and P Staff</option>
-                                    <option value={"CO"}>Contracts Officer</option>
-                                    <option value={"GM"}>C and P General Manager</option>
+                                    <option value={"Supervisor"}>C and P Supervisor</option>
                                     <option value={"HOD"}>C and P HOD</option>
                                     <option value={"Executive Approver"}>Executive Approver</option>
                                     <option value={"Insurance Officer"}>Insurance Officer</option>

@@ -320,7 +320,7 @@ const NewCompanyRegistration = () => {
                 if (field.type === "shortText") {
                     if (String(field.value) === "" && field.required) {
                         isValidated = false
-                        setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is cannot be left empty")
+                        setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
                     } else if (String(field.value).length > field.maxLength) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
@@ -342,7 +342,7 @@ const NewCompanyRegistration = () => {
                 } else if (field.type === "longText") {
                     if (String(field.value) === "" && field.required) {
                         isValidated = false
-                        setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is cannot be left empty")
+                        setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
                     } else if (String(field.value).length > field.maxLength) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
@@ -357,7 +357,7 @@ const NewCompanyRegistration = () => {
                     
                     if (String(field.value) === "" && field.required) {
                         isValidated = false
-                        setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is cannot be left empty")
+                        setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
                     } else if (String(field.value).length > field.maxLength) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
@@ -473,7 +473,7 @@ const NewCompanyRegistration = () => {
 
         if (field.type === "shortText") {
             if (String(value) === "" && field.required) {
-                setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is cannot be left empty")
+                setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
             } else if (String(value).length > field.maxLength) {
                 setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
             } else {
@@ -481,7 +481,7 @@ const NewCompanyRegistration = () => {
             }
         } else if (field.type === "longText") {
             if (String(value) === "" && field.required) {
-                setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is cannot be left empty")
+                setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
             } else if (String(value).length > field.maxLength) {
                 setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
             } else {
@@ -493,7 +493,7 @@ const NewCompanyRegistration = () => {
             console.log({date: date.toISOString()});
             
             if (String(value) === "" && field.required) {
-                setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is cannot be left empty")
+                setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
             } else if (String(value).length > field.maxLength) {
                 setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
             }  else {
@@ -930,7 +930,7 @@ const RegistrationFormBody = ({registrationForm,
                         }
 
                         {
-                            activePage.index <= registrationForm.form.pages.length - 1 && !showFinish && !showSuccess && <button onClick={() => saveBeforeProgress()}>Next {savingForm && <ButtonLoadingIconPrimary />}</button>
+                            activePage.index <= registrationForm.form.pages.length - 1 && !showFinish && !showSuccess && <button onClick={() => saveBeforeProgress()}>Save & go to next page {savingForm && <ButtonLoadingIconPrimary />}</button>
                         }
 
                         {isComplete && <button>Submit</button>}
@@ -938,10 +938,10 @@ const RegistrationFormBody = ({registrationForm,
 
                     {
                         !showSuccess && <Tabs activeTab={activePage.label} tabs={tabs} updateActiveTab={(label, index) => {
-                            let tempActivePage = {...activePage}
-                            tempActivePage.label = label
-                            tempActivePage.index = index
-                            setActivePage(tempActivePage)
+                            // let tempActivePage = {...activePage}
+                            // tempActivePage.label = label
+                            // tempActivePage.index = index
+                            // setActivePage(tempActivePage)
                         }
                         } />
                     }
@@ -1130,7 +1130,7 @@ const RegistrationFormBody = ({registrationForm,
                         })
                     }
 
-                    <footer className={styles.actionButtonsFooter}>
+                    {/* <footer className={styles.actionButtonsFooter}>
                     {
                             activePage.index > 0 && <button>Previous</button>
                         }
@@ -1141,7 +1141,7 @@ const RegistrationFormBody = ({registrationForm,
                         {
                             isComplete && <button>Submit</button>
                         }
-                    </footer>
+                    </footer> */}
                 </div>
             }
 

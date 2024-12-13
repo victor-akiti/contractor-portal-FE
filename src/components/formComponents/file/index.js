@@ -47,7 +47,8 @@ const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG"
 
     console.log({value});
     return (
-        <>
+        <div>
+            <>
         
         {
             (!value || (Array.isArray(value) && value.length === 0)) && <div className={[styles.selectFile, highlighted && styles.highlighted].join(" ")} onClick={(event) => {
@@ -80,7 +81,10 @@ const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG"
                     value.map((item, index) => <div key={index}>
                     <div>
                         <label>{item.name}</label>
-                        <Link href={item.url} target="_blank">View</Link>
+                        {
+                            item.url && <Link href={item.url} target="_blank">View</Link>
+                        }
+                        
                     </div>
 
                     {
@@ -106,7 +110,7 @@ const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG"
             </div>
         }
 
-{
+                {
                     infoText && <InfoText text={infoText} />
                 }
     
@@ -115,6 +119,7 @@ const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG"
                 }
         
         </>
+        </div>
     )
 }
 

@@ -17,14 +17,24 @@ export default function Home() {
     try {
       const currentAuthState = await getProtected("auth/current-auth-state")
 
+      console.log("Getting current auth state");
+      
+
+      console.log({theCurrentAuthState: currentAuthState});
+      
+
       if (currentAuthState.status === "Failed") {
         router.push("/login")
       } else {
-        if (currentAuthState.data.role === "User") {
+
+        
+        if (currentAuthState.data.role === "Vendor") {
           router.push("/contractor/dashboard")
 
           
         } else {
+
+          
           router.push("/staff/approvals")
 
           localStorage.setItem("role", "Staff")

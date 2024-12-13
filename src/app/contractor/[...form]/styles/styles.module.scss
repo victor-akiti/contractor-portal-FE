@@ -37,6 +37,10 @@
         display: flex;
         align-items: center;
 
+        div:nth-child(1) {
+            flex-grow: 1;
+        }
+
         .uploadSampleDiv {
             display: flex;
             flex-direction: column;
