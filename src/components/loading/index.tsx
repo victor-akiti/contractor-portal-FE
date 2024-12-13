@@ -1,6 +1,6 @@
 import styles from "./styles/styles.module.css";
 
-const Loading = ({message}) => {
+const Loading = ({message}: {message: string}) => {
   return (
     <div className={styles.loading}>
       <div className={styles.loadingiospinnergear2by998twmg8}>

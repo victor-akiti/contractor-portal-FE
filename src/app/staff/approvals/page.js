@@ -20,6 +20,7 @@ import upIconBlack from "@/assets/images/upIconBlack.svg"
 import downIconBlack from "@/assets/images/downIconBlack.svg"
 import Image from "next/image"
 
+
 function useOutsideClick(ref, onClickOut, deps = []){
     useEffect(() => {
         const onClick = ({target}) => !ref?.contains(target) && onClickOut?.()
