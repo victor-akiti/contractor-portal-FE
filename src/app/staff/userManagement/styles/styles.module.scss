@@ -24,6 +24,9 @@
     padding: 20px;
     max-height: 80vh;
     overflow-y: scroll;
+    border-style: none;
+    border-radius: 5px;
+    scrollbar-width: thin;
 
     .selectedUserName {
         margin-bottom: 10px;
@@ -47,6 +50,7 @@
             background-color: rgba(0,0,0,0);
             color: $primaryColor;
             font-size: 18px;
+            font-size: 14px;
         }
     }
 
@@ -163,6 +167,21 @@
     }
 }
 
+.tabs {
+    div {
+        width: unset !important;
+    }
+
+    &>div {
+        width: 100% !important;
+    }
+}
+
+.filterSortDiv {
+    display: flex;
+    align-items: center ;
+}
+
 .tab {
     header {
         &>div {
@@ -234,6 +253,10 @@
                     border-right-style: none;
                     border-color: #e1e1e1;
                     border-width: 1px;
+
+                    a {
+                        cursor: pointer;
+                    }
                 }
             }
         }

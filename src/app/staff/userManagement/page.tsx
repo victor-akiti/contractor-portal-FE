@@ -2,7 +2,7 @@
 
 import styles from "./styles/styles.module.css"
 import Tabs from "@/components/tabs"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import ManageEndUsers from "./manageEndUsers"
 import ManageJobCategories from "./manageJobCategories"
 import Modal from "@/components/modal"
@@ -24,8 +24,17 @@ type User  = {
     _id?: String
 }
 
+function useOutsideClick(ref, onClickOut, deps = []){
+    useEffect(() => {
+        const onClick = ({target}) => !ref?.contains(target) && onClickOut?.()
+        document.addEventListener("click", onClick);
+        return () => document.removeEventListener("click", onClick);
+    }, deps);
+}
+
 const Tasks = () => {
-    const [activeTab, setActiveTab] = useState("manage endusers")
+    const [activeTab, setActiveTab] = useState("amni-staff")
+    const [fixedUsers, setFixedUsers] = useState([])
     const [users, setUsers] = useState([])
     const [optionToUpdate, setOptionToUpdate] = useState("")
     const [newRole, setNewRole] = useState("")
@@ -33,7 +42,9 @@ const Tasks = () => {
     const [successMessages, setSuccessMessages] = useState<any>({})
     const [errorMessages, setErrorMessages] = useState({})
     const [userToReplaceRole, setUserToReplaceRole] = useState<any>({})
-    const [fixedUsersList, setFixedUsersList] = useState([])
+    const [fixedUsersList, setFixedUsersList] = useState<any>([])
+    const [selectedUser, setSelectedUser] = useState<User>({})
+    const manageUserModalRef = useRef(null)
 
     const sampleEndUser: User = {
         firstName: "firstName",
@@ -51,7 +62,16 @@ const Tasks = () => {
         getAllStaff()
     }, [])
 
-    const [selectedUser, setSelectedUser] = useState<User>({})
+    useOutsideClick(manageUserModalRef.current, () => {
+        console.log("out click");
+
+        let tempSelectedUser = {...selectedUser}
+        tempSelectedUser = {}
+        setSelectedUser(tempSelectedUser)
+        
+    }, [selectedUser])
+
+    
 
     const setUserAsSelected = user => {
         console.log({user});
@@ -73,7 +93,7 @@ const Tasks = () => {
 
     const getAllStaff = async () => {
         try {
-            const getAllStaffRequest = await getProtected("users/staff/all")
+            const getAllStaffRequest = await getProtected("users/all")
 
             console.log({getAllStaffRequest});
             
@@ -85,8 +105,8 @@ const Tasks = () => {
                 console.log(sortUserAlphabetically(getAllStaffRequest.data));
                 
                 
-                setUsers(sortUserAlphabetically(getAllStaffRequest.data))
-                setFixedUsersList(sortUserAlphabetically(getAllStaffRequest.data))
+                setUsers(sortUserAlphabetically(getAllStaffRequest.data.allStaff))
+                setFixedUsersList(getAllStaffRequest.data)
             }
 
             console.log({getAllStaffRequest});
@@ -160,13 +180,26 @@ const Tasks = () => {
         setUserToReplaceRole({})
     }
 
+    console.log({users});
+    
+
     const filterUsersByNameOrEmail = query => {
+        console.log({query});
+        
         if (query) {
             let tempUsers = [...users]
-            tempUsers = fixedUsersList.filter(user => user.name.toLowerCase().includes(query.toLowerCase()) || user.email.toLowerCase().includes(query.toLowerCase()))
+            console.log(fixedUsersList[activeTab === "amni-staff" ? "allStaff" : "allVendors"]);
+            
+            tempUsers = fixedUsersList[activeTab === "amni-staff" ? "allStaff" : "allVendors"].filter(user => {
+                if (user.name && user.email) {
+                    if (user?.name?.toLowerCase().includes(query.toLowerCase()) || user?.email?.toLowerCase().includes(query.toLowerCase())) {
+                        return user
+                    }
+                }
+            })
             setUsers(tempUsers)
         } else {
-            setUsers(fixedUsersList)
+            setUsers(fixedUsersList[activeTab === "amni-staff" ? "allStaff" : "allVendors"])
         }
     }
 
@@ -190,9 +223,42 @@ const Tasks = () => {
         }
     }
 
-    console.log({users});
+    console.log({activeTab});
     console.log({newRole});
     console.log({newDepartment});
+    const tabs = [
+        {
+            name: "amni-staff",
+            label: "Amni Staff"
+        },
+        {
+            name: "vendors",
+            label: "Vendors"
+        }
+    ]
+
+    const handleTabChange = newTab => {
+        let tempUsers = [...users]
+        if (newTab === "amni-staff") {
+            tempUsers = fixedUsersList.allStaff
+        } else {
+            tempUsers = fixedUsersList.allVendors
+        }
+        setUsers(tempUsers)
+        setActiveTab(newTab)
+    }
+
+    const filterUsersByRole = role => {
+        let tempUsers = [...users]
+        tempUsers = fixedUsersList["allStaff"].filter(user => user.role === role)
+        setUsers(tempUsers)
+    }
+
+    const filterUsersByDepartment = department => {
+        let tempUsers = [...users]
+        tempUsers = fixedUsersList["allStaff"].filter(user => user.department === department)
+        setUsers(tempUsers)
+    }
     
     
     
@@ -201,56 +267,59 @@ const Tasks = () => {
         <div className={styles.userManagement}>
             {
                 Object.values(selectedUser).length > 0 && <Modal>
-                <div className={styles.manageUserModal}>
+                <div className={styles.manageUserModal} ref={manageUserModalRef}>
+
+                <h2 className={styles.selectedUserName}>{`Manage ${selectedUser.name ? selectedUser.name : "User"}`}</h2>
                     {
-                        <>
+                        selectedUser.role !== "Vendor" && <>
                         <div>
-                            <h2 className={styles.selectedUserName}>{`Manage ${selectedUser.name}`}</h2>
+                            
 
                             <hr className={styles.topDivider} />
-                        <h3>Update Department</h3>
+                            <h3>Update Department</h3>
 
-                        <div>
-                                {/* <div className={styles.splitRow}>
-                                    <input placeholder="First Name" />
-                                    <input placeholder="Last Name" />
-                                </div>
+                            <div>
+                                    {/* <div className={styles.splitRow}>
+                                        <input placeholder="First Name" />
+                                        <input placeholder="Last Name" />
+                                    </div>
 
-                                <div className={styles.splitRow}>
-                                    <input placeholder="Email" />
-                                    <input placeholder="Amni Login" />
-                                </div> */}
+                                    <div className={styles.splitRow}>
+                                        <input placeholder="Email" />
+                                        <input placeholder="Amni Login" />
+                                    </div> */}
 
-                                {
-                                    successMessages.department && <SuccessMessage message={successMessages.department} />
-                                }
+                                    {
+                                        successMessages.department && <SuccessMessage message={successMessages.department} />
+                                    }
 
-                                <select onChange={event => setNewDepartment(event.target.value)} >
-                                    <option disabled selected>Department</option>
-                                    <option value={"Contracts and Procurement"}>Contracts and Procurement</option>
-                                    <option value={"Corporate Communications"}>Corporate Communications</option>
-                                    <option value={"Drilling"}>Drilling</option>
-                                    <option value={"Finance"}>Finance</option>
-                                    <option value={"Legal"}>Legal</option>
-                                    <option value={"Human Resources"}>Human Resources</option>
-                                    <option value={"Internal Control and Risk Management"}>Internal Control and Risk Management</option>
-                                    <option value={"ICT"}>ICT</option>
-                                    <option value={"Insurance"}>Insurance</option>
-                                    <option value={"Information Management"}>Information Management</option>
-                                    <option value={"Operations"}>Operations</option>
-                                </select>
+                                    <select onChange={event => setNewDepartment(event.target.value)} >
+                                        <option disabled selected>Department</option>
+                                        <option value={"Contracts and Procurement"}>Contracts and Procurement</option>
+                                        <option value={"Corporate Communications"}>Corporate Communications</option>
+                                        <option value={"Drilling"}>Drilling</option>
+                                        <option value={"Finance"}>Finance</option>
+                                        <option value={"Legal"}>Legal</option>
+                                        <option value={"Human Resources"}>Human Resources</option>
+                                        <option value={"Internal Control and Risk Management"}>Internal Control and Risk Management</option>
+                                        <option value={"ICT"}>ICT</option>
+                                        <option value={"Insurance"}>Insurance</option>
+                                        <option value={"Information Management"}>Information Management</option>
+                                        <option value={"Operations"}>Operations</option>
+                                    </select>
 
-                                <div className={styles.actionButtonDiv}>
-                                    <button onClick={() => updateUserDepartment()}>Update { optionToUpdate === "department" && <ButtonLoadingIcon />}</button>
-                                </div>
+                                    <div className={styles.actionButtonDiv}>
+                                        <button onClick={() => updateUserDepartment()}>Update { optionToUpdate === "department" && <ButtonLoadingIcon />}</button>
+                                    </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <hr />
-</>
+                        <hr />
+                        </>
                     }
 
-                    <div>
+                    {
+                        selectedUser.role !== "Vendor" && <div>
                         <h3>Update Role</h3>
 
                         <div>
@@ -275,6 +344,7 @@ const Tasks = () => {
                                 </div>
                         </div>
                     </div>
+                    }
 
                     <hr />
 
@@ -325,6 +395,18 @@ const Tasks = () => {
 
                     <hr />
 
+                    <div>
+                        <h3>Remove user</h3>
+
+                        <div>
+                                
+
+                                <button className={styles.disableUserButton}>Remove user account</button>
+                        </div>
+                    </div>
+
+                    <hr />
+
                     <div className={styles.closeButtonDiv}>
                         <button onClick={() => closeManageUserModal()}>Close</button>
                     </div>
@@ -359,24 +441,52 @@ const Tasks = () => {
 
                 {/* <label>Filter</label> */}
 
+                <div className={styles.tabs}>
+                    <Tabs activeTab={activeTab} tabs={tabs} updateActiveTab={(newTab) => {handleTabChange(newTab)
+                    }}  />
+                </div>
+
                 
 
                 <div>
-                    <div>
+                    <div className={styles.filterSortDiv}>
                         <input placeholder="Filter by name" onChange={event => filterUsersByNameOrEmail(event.target.value)} />
 
-                        {/* <select>
+                        {
+                            activeTab === "amni-staff" && <>
+                                            <select onChange={event => filterUsersByRole(event.target.value)}>
                             <option>Filter by role</option>
 
-                            <option value={"user"}>Contractor</option>
-                            <option value={"user"}>End User</option>
-                            <option value={"user"}>CnP Staff</option>
-                            <option value={"user"}>Contracts Officer</option>
-                            <option value={"user"}>CnP GM</option>
-                            <option value={"user"}>CnP HOD</option>
-                            <option value={"user"}>GMD</option>
-                            <option value={"user"}>Admin</option>
-                        </select> */}
+
+                            <option value={"Amni Staff"}>Amni Staff</option>
+                            <option value={"C and P Staff"}>C and P Staff</option>
+                            <option value={"Supervisor"}>C and P Supervisor</option>
+                            <option value={"HOD"}>C and P HOD</option>
+                            <option value={"Executive Approver"}>Executive Approver</option>
+                            <option value={"Insurance Officer"}>Insurance Officer</option>
+                            <option value={"VRM"}>VRM</option>
+                            <option value={"C&P Admin"}>C & P Administrator</option>
+                            <option value={"Admin"}>Admin</option>
+                        </select>
+
+                        <select onChange={event => filterUsersByDepartment(event.target.value)}>
+                            <option>Filter by department</option>
+
+                            <option value={"Contracts and Procurement"}>Contracts and Procurement</option>
+                            <option value={"Corporate Communications"}>Corporate Communications</option>
+                            <option value={"Drilling"}>Drilling</option>
+                            <option value={"Finance"}>Finance</option>
+                            <option value={"Legal"}>Legal</option>
+                            <option value={"Human Resources"}>Human Resources</option>
+                            <option value={"Internal Control and Risk Management"}>Internal Control and Risk Management</option>
+                            <option value={"ICT"}>ICT</option>
+                            <option value={"Insurance"}>Insurance</option>
+                            <option value={"Information Management"}>Information Management</option>
+                            <option value={"Operations"}>Operations</option>
+                        </select>
+                            </>
+                        }
+                        
                     </div>
 
                     {/* <button>Add End-User</button> */}
@@ -396,13 +506,17 @@ const Tasks = () => {
                             <p>Email</p>
                         </td>
 
-                        <td>
+                        {
+                            activeTab === "amni-staff" && <td>
                             <p>Department</p>
                         </td>
+                        }
 
-                        <td>
+                        {
+                            activeTab === "amni-staff" && <td>
                             Role
                         </td>
+                        }
 
                         <td>
                             <p>Action</p>
@@ -421,13 +535,17 @@ const Tasks = () => {
                                 <p>{item.email}</p>
                             </td>
 
-                            <td>
+                            {
+                                activeTab === "amni-staff" && <td>
                                 <p>{item.department}</p>
                             </td>
+                            }
 
-                            <td>
+                            {
+                                activeTab === "amni-staff" && <td>
                                 <p>{item.role}</p>
                             </td>
+                            }
 
                             <td>
                                 <a onClick={() => setUserAsSelected(item)}>MANAGE</a>
