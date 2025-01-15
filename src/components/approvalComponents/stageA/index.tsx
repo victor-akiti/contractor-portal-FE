@@ -977,7 +977,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                                                 currentVendorCategories.map((item, index) => <tr key={index}>
                                                     <td>{item.category}</td>
                                                     <td onClick={() => deleteCategoryFromCategoriesList(item)}>Delete</td>
-                                                    <td>{`Added by: ${item.addedBy.name}`}</td>
+                                                    <td>{`Added by: ${item?.addedBy?.name}`}</td>
                                                 </tr>)
                                             }
                                         </tbody>

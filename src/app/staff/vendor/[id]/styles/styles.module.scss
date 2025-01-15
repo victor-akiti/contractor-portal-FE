@@ -715,3 +715,59 @@
         }
     }
 }
+
+.vendorPageActions {
+    a {
+        margin-bottom: 10px;
+    }
+}
+
+.makeInactiveModal {
+    background-color: white;
+    padding: 10px;
+    border-style: none;
+    border-radius: 5px;
+    width: 50%;
+
+    p {
+        margin-bottom: 20px;
+        margin-top: 10px;
+    }
+
+    div {
+        &>div {
+            // padding: 10px;
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+        }
+
+        &>p {
+            margin: 0px;
+            text-align: start;
+        }
+    }
+
+    .actionButtons {
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+
+        button {
+            margin-left: 10px;
+            padding: 10px;
+            border-style: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:nth-child(2) {
+            background-color: $primaryColor;
+            color: white;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+}

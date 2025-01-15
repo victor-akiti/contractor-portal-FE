@@ -177,7 +177,7 @@ const Approvals = () => {
         parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Action"],
     }
 
-    const [activeTab, setActiveTab] = useState("invited")
+    const [activeTab, setActiveTab] = useState("pending-l2")
     const [activeFilter, setActiveFilter] = useState("All")
     const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"]
     const approvalStages = ["A", "B", "C", "D", "E", "F"]
@@ -715,6 +715,8 @@ const Approvals = () => {
         }
     }
 
+    const [currentSort, setCurrentSort] = useState("alphabetical")
+
     const getSortToPerform = index => {
         if (index === 0) {
             toggleNameSort()
@@ -723,7 +725,14 @@ const Approvals = () => {
         }
     }
     const toggleNameSort = () => {  
-        const tempApprovals = {...approvals}
+        let tempApprovals = {}
+
+        if (currentSort === "alphabetical") {
+            tempApprovals = {...approvals}
+        } else {
+            tempApprovals = {...fixedApprovals}
+        }
+
         if (activeTab === "pending-l2") {
             tempApprovals.pendingL2 = tempApprovals.pendingL2.reverse()
         } else if (activeTab === "completed-l2") {
@@ -736,11 +745,134 @@ const Approvals = () => {
             tempApprovals.returned = tempApprovals.returned.reverse()
         } 
         setApprovals(tempApprovals)
+        setCurrentSort("alphabetical")
         setNameSortAscending(!nameSortAscending)
     }
 
     const toggleDateSort = () => {
+        console.log("Toggle date sort");
+        
+        let tempApprovals = {}
+
+        if (currentSort === "numerical") {
+            tempApprovals = {...approvals}
+        } else {
+            tempApprovals = {...fixedApprovals}
+        }
+        if (activeTab === "pending-l2") {
+            tempApprovals.pendingL2 = sortArrayNumericallyDescending(tempApprovals.pendingL2)
+        } else if (activeTab === "completed-l2") {
+            tempApprovals.completedL2 = sortArrayNumerically(tempApprovals.completedL2)
+        } else if (activeTab === "in-progress") {
+            tempApprovals.inProgress = sortArrayNumerically(tempApprovals.inProgress)
+        } else if (activeTab === "l3") {
+            tempApprovals.l3 = sortArrayNumerically(tempApprovals.l3)
+        } else if (activeTab === "returned-to-contractor") {
+            tempApprovals.returned = sortArrayNumerically(tempApprovals.returned)
+        } 
+        setCurrentSort("numerical")
+        setApprovals(tempApprovals)
         setDateSortAscending(!dateSortAscending)
+    }
+
+    console.log({currentSort});
+    
+
+
+    const sortArrayNumerically = array => {
+        console.log("Sorting", array.length);
+        
+        const sortedArray =  array.sort((a, b) => {
+            let aDate = null
+            let bDate = null
+
+            console.log({a});
+            
+
+            if (a.lastUpdate) {
+                aDate = new Date(a.lastUpdate._seconds * 1000)
+
+            } else if (a.lastApproved) {
+                aDate = new Date(a.lastApproved)
+
+            } else if (a.approvalActivityHistory) {
+                aDate = new Date(a.approvalActivityHistory[0].date)
+            } else {
+                aDate = new Date()
+            }
+
+            aDate = aDate.getTime()
+
+            if (b.lastUpdate) {
+                bDate = new Date(b.lastUpdate._seconds * 1000)
+            } else if (b.lastApproved) {
+                bDate = new Date(b.lastApproved)
+            } else if (b.approvalActivityHistory) {
+                bDate = new Date(b.approvalActivityHistory[0].date)
+            } else {
+                bDate= new Date()
+            }
+
+            bDate = bDate.getTime()
+            console.log({aDate, bDate});
+            
+
+
+          return aDate - bDate;
+        });
+
+        console.log({sortedArray});
+
+        return sortedArray
+        
+    }
+
+    const sortArrayNumericallyDescending = array => {
+        console.log("Sorting", array.length);
+        
+        const sortedArray =  array.sort((a, b) => {
+            let aDate = null
+            let bDate = null
+
+            console.log({a});
+            
+
+            if (a.lastUpdate) {
+                aDate = new Date(a.lastUpdate._seconds * 1000)
+
+            } else if (a.lastApproved) {
+                aDate = new Date(a.lastApproved)
+
+            } else if (a.approvalActivityHistory) {
+                aDate = new Date(a.approvalActivityHistory[0].date)
+            } else {
+                aDate = new Date()
+            }
+
+            aDate = aDate.getTime()
+
+            if (b.lastUpdate) {
+                bDate = new Date(b.lastUpdate._seconds * 1000)
+            } else if (b.lastApproved) {
+                bDate = new Date(b.lastApproved)
+            } else if (b.approvalActivityHistory) {
+                bDate = new Date(b.approvalActivityHistory[0].date)
+            } else {
+                bDate= new Date()
+            }
+
+            bDate = bDate.getTime()
+
+            
+
+
+          return bDate - aDate;
+        });
+
+        console.log({sortedArray});
+
+        return sortedArray
+        
     }
 
     const getIconToDisplay = (index) => {
@@ -1188,7 +1320,11 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
 
 const InProgressItem = ({index, companyRecord}) => {
     const getLastUpdated = () => {
-        if (companyRecord.lastApproved) {
+        if (companyRecord.lastUpdate) {
+            const lastUpdatedDate = new Date(companyRecord.lastUpdate._seconds * 1000)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
 
             return lastUpdatedDate.toISOString()
@@ -1271,7 +1407,11 @@ const PendingL2Item = ({index, companyRecord, user}) => {
     }
 
     const getLastUpdated = () => {
-        if (companyRecord.lastApproved) {
+        if (companyRecord.lastUpdate) {
+            const lastUpdatedDate = new Date(companyRecord.lastUpdate._seconds * 1000)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
 
             return lastUpdatedDate.toISOString()
@@ -1315,7 +1455,11 @@ const PendingL2Item = ({index, companyRecord, user}) => {
 
 const L3Item = ({index, companyRecord, revertToL2, user}) => {
     const getLastUpdated = () => {
-        if (companyRecord.lastApproved) {
+        if (companyRecord.lastUpdate) {
+            const lastUpdatedDate = new Date(companyRecord.lastUpdate._seconds * 1000)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
 
             return lastUpdatedDate.toISOString()
@@ -1358,7 +1502,12 @@ const L3Item = ({index, companyRecord, revertToL2, user}) => {
 
 const CompletedL2Item = ({index, companyRecord, revertToL2, user}) => {
     const getLastUpdated = () => {
-        if (companyRecord.lastApproved) {
+        if (companyRecord.lastUpdate) {
+            const lastUpdatedDate = new Date(companyRecord.lastUpdate._seconds * 1000)
+            
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
 
             return lastUpdatedDate.toISOString()
@@ -1499,7 +1648,11 @@ const ParkRequestedItem = ({index, companyRecord, approveParkRequest, declinePar
 
 const ReturnedItem = ({index, companyRecord}) => {
     const getLastUpdated = () => {
-        if (companyRecord.lastApproved) {
+        if (companyRecord.lastUpdate) {
+            const lastUpdatedDate = new Date(companyRecord.lastUpdate._seconds * 1000)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
 
             return lastUpdatedDate.toISOString()
