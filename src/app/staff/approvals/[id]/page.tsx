@@ -25,7 +25,10 @@ type ApprovalData = {
         level?: number,
         status?: string,
         stage?: string,
-        approved?: boolean
+        approved?: boolean,
+        approvals?: {
+            level?: number
+        }
     }
 }   
 
@@ -55,6 +58,24 @@ const Approval = () => {
     
 
     console.log({pathname: params.id});
+
+    const getCurrentStage = (companyRecord = vendorData?.approvalData) => {
+        if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
+            return "A"
+        } else if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) {
+            return "B"
+        } else if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
+            return "C"
+        } else if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3) {
+            return "D"
+        } else if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4) {
+            return "E"
+        } else if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5) {
+            return "F"
+        } else if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6) {
+            return "G"
+        }
+    }
     
     useEffect(() => {
         if (params.id) {
@@ -333,27 +354,27 @@ const Approval = () => {
         {
             (fetchedVendorData && userHasApprovalPermissions() && !vendorIsParked() && !vendorApplicationIsReturned()) && <div>
             {
-                !vendorData?.approvalData?.flags?.level && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                getCurrentStage() === "A" && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
             }
 
             {
-                vendorData?.approvalData?.flags?.level === 1 && <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                getCurrentStage() === "B" && <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
             }
 
             {
-                vendorData?.approvalData?.flags?.level === 2 && <StageC />
+                getCurrentStage() === "C" && <StageC />
             }
 
             {
-                vendorData?.approvalData?.flags?.level === 3 && <StageD approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                getCurrentStage() === "D" && <StageD approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
             }
 
             {
-                vendorData?.approvalData?.flags?.level === 4 && <StageE approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                getCurrentStage() === "E" && <StageE approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
             }
 
             {
-                vendorData?.approvalData?.flags?.level === 5 && <StageF />
+                getCurrentStage() === "F" && <StageF />
             }
 
             {/* <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} /> */}

@@ -31,7 +31,7 @@ const RegisterNewPortalAdmin = () => {
     const [errorMessage, setErrorMessage] = useState("")
     const [creatingAccount, setCreatingAccount] = useState(false)
     const [createdAccount, setCreatedAccount] = useState(false)
-    const passwordRegex = /^(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,}$/
+    const passwordRegex = /^(?=.*\d)(?=.*[#$@!%&*?_])[A-Za-z\d#$@!%&*?_]{8,}$/
     const [showAcceptNDPRModal, setShowAcceptNDPRModal] = useState(false)
     const reduxState = useAppSelector(state => state)
 

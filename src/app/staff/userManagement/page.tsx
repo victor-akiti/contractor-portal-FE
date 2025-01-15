@@ -62,14 +62,14 @@ const Tasks = () => {
         getAllStaff()
     }, [])
 
-    useOutsideClick(manageUserModalRef.current, () => {
-        console.log("out click");
+    // useOutsideClick(manageUserModalRef.current, () => {
+    //     console.log("out click");
 
-        let tempSelectedUser = {...selectedUser}
-        tempSelectedUser = {}
-        setSelectedUser(tempSelectedUser)
+    //     let tempSelectedUser = {...selectedUser}
+    //     tempSelectedUser = {}
+    //     setSelectedUser(tempSelectedUser)
         
-    }, [selectedUser])
+    // }, [selectedUser])
 
     
 
@@ -267,7 +267,7 @@ const Tasks = () => {
         <div className={styles.userManagement}>
             {
                 Object.values(selectedUser).length > 0 && <Modal>
-                <div className={styles.manageUserModal} ref={manageUserModalRef}>
+                <div className={styles.manageUserModal} >
 
                 <h2 className={styles.selectedUserName}>{`Manage ${selectedUser.name ? selectedUser.name : "User"}`}</h2>
                     {
@@ -319,7 +319,7 @@ const Tasks = () => {
                     }
 
                     {
-                        selectedUser.role !== "Vendor" && <div>
+                        <div>
                         <h3>Update Role</h3>
 
                         <div>

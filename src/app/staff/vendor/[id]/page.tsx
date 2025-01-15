@@ -42,7 +42,6 @@ const ViewVendorPage = () => {
     const [showAddCategory, setShowAddCategory] = useState(false)
     const categoriesListDivRef = useRef(null)
     const [applicationProcessed, setApplicationProcessed] = useState(false)
-    console.log({pages});
     const user = useSelector((state:any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
     const [updateStatus, setUpdateStatus] = useState({
@@ -57,6 +56,9 @@ const ViewVendorPage = () => {
         approvalData:{},
         pages: []
     })
+
+    console.log({pages});
+    
     
 
     console.log({pathname: params.id});
@@ -86,12 +88,12 @@ const ViewVendorPage = () => {
 
                 if (fetchVendorDataRequest.data.approvalData.jobCategories) {
                     let tempSelectedCategories  = [...selectedCategories]
-                tempSelectedCategories = fetchVendorDataRequest.data.approvalData.jobCategories
-                setSelectedCategories(tempSelectedCategories)
+                    tempSelectedCategories = fetchVendorDataRequest.data.approvalData.jobCategories
+                    setSelectedCategories(tempSelectedCategories)
 
-                let tempCurrentCategories = [...currentVendorCategories]
-                tempCurrentCategories = fetchVendorDataRequest.data.approvalData.jobCategories
-                setCurrentVendorCategories(tempCurrentCategories)
+                    let tempCurrentCategories = [...currentVendorCategories]
+                    tempCurrentCategories = fetchVendorDataRequest.data.approvalData.jobCategories
+                    setCurrentVendorCategories(tempCurrentCategories)
                 }
 
                 let tempApprovalData = {...approvalData}
@@ -483,6 +485,43 @@ const ViewVendorPage = () => {
         tempUpdateStatus.message = message
         setUpdateStatus(tempUpdateStatus)
       }
+
+      const [showSetAccountInactiveModal, setShowSetAccountInactiveModal] = useState(false)
+
+      const [accountInactiveStatus, setAccountInactiveStatus] = useState({
+        status: "active",
+        responseType: "",
+        message: ""
+      })
+
+      const toggleShowSetAccountInactiveModal = () => {
+        if (showSetAccountInactiveModal) {
+            setShowSetAccountInactiveModal(false)
+            setAccountInactiveStatus({...accountInactiveStatus, responseType: "", message: ""})
+        } else {
+            setShowSetAccountInactiveModal(true)
+        }
+      }
+
+      const makeVendorInactive = async () => {
+        try {
+            setAccountInactiveStatus({...accountInactiveStatus, status: "making inactive"})
+
+            const makeVendorInactiveRequest = await getProtected(`companies/vendor/make-inactive/${vendorID}`)
+
+            if (makeVendorInactiveRequest.status === "OK") {
+                setAccountInactiveStatus({...accountInactiveStatus, responseType: "success", message: "Vendor has been marked as inactive and has been removed from the vendors list."})
+
+                setTimeout(() => {
+                    router.push("/staff/approvals")
+                }, 4000)
+            } else {
+                setAccountInactiveStatus({...accountInactiveStatus, responseType: "error", message: makeVendorInactiveRequest.error.message})
+            }
+        } catch (error) {
+            console.log({error})
+        }
+    }
     
 
     
@@ -493,10 +532,41 @@ const ViewVendorPage = () => {
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>
 
-                <div>
+                <div className={styles.vendorPageActions}>
                     <Link href={`/staff/approvals/${vendorID}`} target="_blank">OPEN IN APPROVAL VIEW</Link>
                     <a onClick={() => hideAllRemarks()}>HIDE COMMENTS</a>
+
+                    {
+                        (user?.user?.role === "Admin" || user?.user?.role === "C&P Admin" || user?.user?.role === "HOD" || user?.user?.tempRole === "HOD") && <a onClick={() => toggleShowSetAccountInactiveModal()}>MAKE INACTIVE</a>
+                    }
                 </div>
+
+                {
+                    showSetAccountInactiveModal && <Modal>
+                    <div className={styles.makeInactiveModal}>
+                        <h2>Make Vendor Inactive</h2>
+
+                        <p>You are about to make this vendor account inactive. Their user account will be deleted and their vendor records archived. Continue?</p>
+
+                        <div>
+                            {
+                                accountInactiveStatus.responseType === "success" && <SuccessMessage message={"Vendor has been marked as inactive and has been removed from the vendors list. Returning to vendors list..."} />
+                            }
+
+                            {
+                                accountInactiveStatus.responseType === "error" && <ErrorText text={accountInactiveStatus.message} />
+                            }
+                        </div>
+
+                        {
+                            accountInactiveStatus.responseType !== "success" && <div className={styles.actionButtons}>
+                            <button onClick={() => toggleShowSetAccountInactiveModal()}>Cancel</button>
+                            <button onClick={() => makeVendorInactive()}>Confirm {accountInactiveStatus.status === "making inactive" && <ButtonLoadingIcon />}</button>
+                        </div>
+                        }
+                    </div>
+                </Modal>
+                }
 
                 
             </div>
@@ -695,7 +765,7 @@ const ViewVendorPage = () => {
                                                 currentVendorCategories.map((item, index) => <tr key={index}>
                                                     <td>{item.category}</td>
                                                     <td onClick={() => deleteCategoryFromCategoriesList(item)}>Delete</td>
-                                                    <td>{`Added by: ${item.addedBy.name}`}</td>
+                                                    <td>{`Added by: ${item?.addedBy?.name}`}</td>
                                                 </tr>)
                                             }
                                         </tbody>

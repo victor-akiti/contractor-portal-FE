@@ -223,9 +223,12 @@ const StageB = ({approvalData, formPages, vendorID}) => {
                     <div>
                         <div className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
-                            <div>
-                                <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
-                            </div>
+                            {
+                                field?.value[0]?.url && <div>
+                                    <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                </div>
+                            }
+                            
 
                             <a style={{marginLeft: "20px"}}>Certificate History</a>
                         </div>
@@ -1043,7 +1046,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
                                                 currentVendorCategories.map((item, index) => <tr key={index}>
                                                     <td>{item.category}</td>
                                                     <td onClick={() => deleteCategoryFromCategoriesList(item)}>Delete</td>
-                                                    <td>{`Added by: ${item.addedBy.name}`}</td>
+                                                    <td>{`Added by: ${item?.addedBy?.name}`}</td>
                                                 </tr>)
                                             }
                                         </tbody>
