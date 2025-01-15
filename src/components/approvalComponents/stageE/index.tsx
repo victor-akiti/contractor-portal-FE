@@ -206,8 +206,12 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                     <div>
                         <div className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
+
+                            {
+                                field?.value[0]?.url && <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                            }
                             <div>
-                                <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                
                             </div>
 
                             <a style={{marginLeft: "20px"}}>Certificate History</a>
@@ -221,18 +225,18 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                     {
                         field.isACertificate && <>
                             {
-                                field.value[0].expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
+                                field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field?.value[0]?.expiryDate}`}</p>
                             }
 
                             {
-                                field.value && field.value[0].expiryDate && <>
+                                field.value && field?.value[0]?.expiryDate && <>
                                 
                                         {
-                                            getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
+                                            getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
                                         }
 
                                         {
-                                            getCertificateTimeValidity(field.value[0].expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
+                                            getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
                                         }
 
                                         
@@ -322,10 +326,10 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
                         if (field.value) {
 
-                            if (getCertificateTimeValidity(field.value[0].expiryDate) === "expiring") {
+                            if (getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expiring") {
                                 tempExpiringCertificates.push(field)
                             }
-                            if (getCertificateTimeValidity(field.value[0].expiryDate) === "expired") {
+                            if (getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expired") {
                                 tempExpiredCertificates.push(field)
                             }
                         }
@@ -890,7 +894,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                                     currentVendorCategories.map((item, index) => <tr key={index}>
                                                         <td>{item.category}</td>
                                                         <td onClick={() => deleteCategoryFromCategoriesList(item)}>Delete</td>
-                                                        <td>{`Added by: ${item.addedBy.name}`}</td>
+                                                        <td>{`Added by: ${item?.addedBy?.name}`}</td>
                                                     </tr>)
                                                 }
                                             </tbody>
@@ -903,17 +907,29 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                 <div className={styles.dueDiligenceView}>
                                     <div className={styles.ddCheckDiv}>
                                         <h5>Company Registration</h5>
-                                        <Link href={approvalData.dueDiligence.registrationCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+
+                                        {
+                                            approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        }
+                                        
                                     </div>
 
                                     <div className={styles.ddCheckDiv}>
                                         <h5>Internet Check</h5>
-                                        <Link href={approvalData.dueDiligence.internetCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+
+                                        {
+                                            approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.internetCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        }
+                                        
                                     </div>
 
                                     <div className={styles.ddCheckDiv}>
                                         <h5>Reference Check</h5>
-                                        <Link href={approvalData.dueDiligence.referenceCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+
+                                        {
+                                            approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        }
+                                        
                                     </div>
 
                                     <div className={styles.directorsAndShareholdersDiv}>
@@ -946,7 +962,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
                                             <tbody>
                                                 {
-                                                    approvalData.dueDiligence.exposedPersons.map((item, index) => <tr className={index/2 == 0 && styles.darkBackground}  key={index}>
+                                                    approvalData.dueDiligence.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <tr className={index/2 == 0 && styles.darkBackground}  key={index}>
                                                     <td>
                                                         {item.entityType === "individual" ? "Individual" : "Company"}
                                                     </td>
@@ -967,7 +983,10 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                                     </td>
 
                                                     <td>
-                                                        <Link href={item.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                                        {
+                                                            item.finding[0].url && <Link href={item.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                                        }
+                                                        
                                                     </td>
                                                 </tr>)
                                                 }
@@ -986,7 +1005,11 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                     <div>
                                         <h5>Contractor’s CAC registration check</h5>
 
-                                        <Link href={approvalData.dueDiligence.registrationCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                        {
+                                            approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        }
+
+                                        
                                     </div>
 
                                     <Image src={dueDiligenceApprovals.registrationCheck  ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("registrationCheck")} />
@@ -998,7 +1021,11 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                     <div>
                                         <h5>Internet search on the Contractor</h5>
 
-                                        <Link href={approvalData.dueDiligence.internetCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                        {
+                                            approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData.dueDiligence.internetCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                        }
+
+                                        
                                     </div>
                                     <Image src={dueDiligenceApprovals.internetCheck ?   checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("internetCheck")} />
                                 </div>
@@ -1010,7 +1037,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                         <h5>Search on current (and any former) Directors and Shareholders</h5>
 
                                         {
-                                            approvalData.dueDiligence.exposedPersons.map((item, index) => <div key={index}>
+                                            approvalData?.dueDiligence?.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <div key={index}>
                                                 <p>{`Person ${index+1} : ${item.companyName ? item.companyName : item.firstName + " " + item.lastName} - ${item.role === "Both" ? "Director & Shareholder" : item.role}`}</p>
                                                 <Link href={approvalData.dueDiligence.exposedPersons[index].finding[0].url} target="_blank">VIEW FINDINGS</Link>
                                             </div>)
@@ -1025,7 +1052,11 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                     <div>
                                         <h5>Reference check</h5>
 
-                                        <Link href={approvalData.dueDiligence.referenceCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                        {
+                                            approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData.dueDiligence.referenceCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                        }
+
+                                        
                                     </div>
                                     <Image src={dueDiligenceApprovals.referenceCheck ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("referenceCheck")} />
                                 </div>
