@@ -727,26 +727,75 @@ const Approvals = () => {
     const toggleNameSort = () => {  
         let tempApprovals = {}
 
+        console.log({currentSort});
+        
+
         if (currentSort === "alphabetical") {
             tempApprovals = {...approvals}
         } else {
             tempApprovals = {...fixedApprovals}
         }
 
-        if (activeTab === "pending-l2") {
-            tempApprovals.pendingL2 = tempApprovals.pendingL2.reverse()
-        } else if (activeTab === "completed-l2") {
-            tempApprovals.completedL2 = tempApprovals.completedL2.reverse()
-        } else if (activeTab === "in-progress") {
-            tempApprovals.inProgress = tempApprovals.inProgress.reverse()
-        } else if (activeTab === "l3") {
-            tempApprovals.l3 = tempApprovals.l3.reverse()
-        } else if (activeTab === "returned-to-contractor") {
-            tempApprovals.returned = tempApprovals.returned.reverse()
-        } 
+        console.log({nameSortAscending});
+        
+
+        if (nameSortAscending) {
+            
+            if (activeTab === "pending-l2") {
+                tempApprovals.pendingL2 = sortArrayByNameDescending(tempApprovals.pendingL2)
+            } else if (activeTab === "completed-l2") {
+                tempApprovals.completedL2 = sortArrayByNameDescending(tempApprovals.completedL2)
+            } else if (activeTab === "in-progress") {
+                tempApprovals.inProgress = sortArrayByNameDescending(tempApprovals.inProgress)
+            } else if (activeTab === "l3") {
+                tempApprovals.l3 = sortArrayByNameDescending(tempApprovals.l3)
+            } else if (activeTab === "returned-to-contractor") {
+                tempApprovals.returned = sortArrayByNameDescending(tempApprovals.returned)
+            } 
+        } else {
+
+            
+            if (activeTab === "pending-l2") {
+                tempApprovals.pendingL2 = sortArrayByName(tempApprovals.pendingL2)
+            } else if (activeTab === "completed-l2") {
+                tempApprovals.completedL2 = sortArrayByName(tempApprovals.completedL2)
+            } else if (activeTab === "in-progress") {
+                tempApprovals.inProgress = sortArrayByName(tempApprovals.inProgress)
+            } else if (activeTab === "l3") {
+                tempApprovals.l3 = sortArrayByName(tempApprovals.l3)
+            } else if (activeTab === "returned-to-contractor") {
+                tempApprovals.returned = sortArrayByName(tempApprovals.returned)
+            } 
+        }
+
+        
         setApprovals(tempApprovals)
         setCurrentSort("alphabetical")
         setNameSortAscending(!nameSortAscending)
+    }
+
+    const sortArrayByName = (array) => {
+        console.log("Sorting ascending");
+        
+        return array.sort((a, b) => {
+            if (String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase()) {
+                return 1
+            } else {
+                return -1
+            }
+        })
+    }
+
+    const sortArrayByNameDescending = (array) => {
+        console.log("Sorting descending");
+        
+        return array.sort((a, b) => {
+            if (String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase()) {
+                return -1
+            } else {
+                return 1
+            }
+        })
     }
 
     const toggleDateSort = () => {
@@ -759,21 +808,38 @@ const Approvals = () => {
         } else {
             tempApprovals = {...fixedApprovals}
         }
-        if (activeTab === "pending-l2") {
-            tempApprovals.pendingL2 = sortArrayNumericallyDescending(tempApprovals.pendingL2)
-        } else if (activeTab === "completed-l2") {
-            tempApprovals.completedL2 = sortArrayNumerically(tempApprovals.completedL2)
-        } else if (activeTab === "in-progress") {
-            tempApprovals.inProgress = sortArrayNumerically(tempApprovals.inProgress)
-        } else if (activeTab === "l3") {
-            tempApprovals.l3 = sortArrayNumerically(tempApprovals.l3)
-        } else if (activeTab === "returned-to-contractor") {
-            tempApprovals.returned = sortArrayNumerically(tempApprovals.returned)
-        } 
+
+        if (dateSortAscending) {
+            if (activeTab === "pending-l2") {
+                tempApprovals.pendingL2 = sortArrayNumericallyDescending(tempApprovals.pendingL2)
+            } else if (activeTab === "completed-l2") {
+                tempApprovals.completedL2 = sortArrayNumericallyDescending(tempApprovals.completedL2)
+            } else if (activeTab === "in-progress") {
+                tempApprovals.inProgress = sortArrayNumericallyDescending(tempApprovals.inProgress)
+            } else if (activeTab === "l3") {
+                tempApprovals.l3 = sortArrayNumericallyDescending(tempApprovals.l3)
+            } else if (activeTab === "returned-to-contractor") {
+                tempApprovals.returned = sortArrayNumericallyDescending(tempApprovals.returned)
+            } 
+        } else {
+            if (activeTab === "pending-l2") {
+                tempApprovals.pendingL2 = sortArrayNumerically(tempApprovals.pendingL2)
+            } else if (activeTab === "completed-l2") {
+                tempApprovals.completedL2 = sortArrayNumerically(tempApprovals.completedL2)
+            } else if (activeTab === "in-progress") {
+                tempApprovals.inProgress = sortArrayNumerically(tempApprovals.inProgress)
+            } else if (activeTab === "l3") {
+                tempApprovals.l3 = sortArrayNumerically(tempApprovals.l3)
+            } else if (activeTab === "returned-to-contractor") {
+                tempApprovals.returned = sortArrayNumerically(tempApprovals.returned)
+            } 
+        }
+        
         setCurrentSort("numerical")
         setApprovals(tempApprovals)
         setDateSortAscending(!dateSortAscending)
     }
+    
 
     console.log({currentSort});
     
