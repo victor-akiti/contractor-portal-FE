@@ -1013,14 +1013,14 @@ const Approvals = () => {
                                 searchQueryResults.length > 0 && <div className={styles.searchResultsDiv} ref={searchResultRef}>
                                 {
                                     searchQueryResults.map((item, index) =>  <div key={index} className={styles.searchResultItem}>
-                                    <div>
+                                    <div className={styles.searchResultMetaData}>
                                         <p>{String(item.companyName).toLocaleUpperCase()}</p>
                                         <p>{capitalizeWord(String(item?.flags?.status))}</p>
                                     </div>
 
-                                    <div>
-                                        <Link href={`/staff/vendor/${item?.vendor}`}><button>VIEW</button></Link>
-                                        <Link href={`/staff/approvals/${item?.vendor}`}><button>{`Process to ${getNextStage(item)}`}</button></Link>
+                                    <div className={styles.searchResultsActionButtons}>
+                                        <Link href={`/staff/vendor/${item?._id}`}><button>VIEW</button></Link>
+                                        <Link href={`/staff/approvals/${item?._id}`}><button>{`Process to ${getNextStage(item)}`}</button></Link>
                                     </div>
                                 </div>)
                                 }

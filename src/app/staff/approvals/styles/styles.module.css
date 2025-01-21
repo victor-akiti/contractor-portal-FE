@@ -74,6 +74,25 @@
   align-items: center;
   justify-content: space-between;
 }
+.approvals header .searchFilterDiv .searchResultsDiv .searchResultsActionButtons {
+  display: flex;
+  align-items: center;
+}
+.approvals header .searchFilterDiv .searchResultsDiv .searchResultsActionButtons button {
+  word-wrap: normal;
+  white-space: nowrap;
+}
+.approvals header .searchFilterDiv .searchResultsDiv .searchResultMetaData p:nth-child(2) {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #64676b;
+}
+.approvals header .searchFilterDiv .searchResultsDiv .searchResultMetaData p:nth-child(2):hover {
+  color: white;
+}
+.approvals header .searchFilterDiv .searchResultsDiv .searchResultMetaData:hover p:nth-child(2) {
+  color: white;
+}
 .approvals header .searchFilterDiv .searchResultsDiv .searchResultItem {
   padding: 15px;
   padding-left: 20px;
