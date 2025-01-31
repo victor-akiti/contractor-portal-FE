@@ -44,9 +44,15 @@
 }
 .approvalContent .multiSelectTextValues {
   display: flex;
+  flex-wrap: wrap;
 }
 .approvalContent .multiSelectTextValues p {
   margin-right: 20px;
+  margin-bottom: 10px;
+  background-color: rgb(235, 235, 235);
+  padding: 5px;
+  border-style: none;
+  border-radius: 5px;
 }
 .approvalContent .sectionItem {
   display: flex;
