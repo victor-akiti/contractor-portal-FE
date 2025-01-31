@@ -1014,7 +1014,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
 
                 {
                     (!approvedAll && unaprovedSectionsWithNoRemarks.length === 0 && !applicationProcessed) && <div className={styles.notApprovedDiv}>
-                        <p>You have NOT approved all the items in the list for <span className={styles.companyName}>Bankai Test Company 25</span>. Do not forget to comment on the items you have NOT approved.</p>
+                        <p>You have NOT approved all the items in the list for <span className={styles.companyName}>{approvalData?.companyName}</span>. Do not forget to comment on the items you have NOT approved.</p>
 
                         <p>To proceed. please take either of the following actions:</p>
 
@@ -1028,7 +1028,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                     approvedAll && !applicationProcessed && <div className={styles.allApprovedDiv}>
                         <p>You have approved all the items in the list.</p>
 
-                        <p>Please confirm Stage B Approval for Bankai Test Company 25 :</p>
+                        <p>Please confirm Stage B Approval for {approvalData?.companyName} :</p>
 
                         <button onClick={() => processToStageB()}>CONFIRM STAGE B APPROVAL {itemBeingUpdated === "approve" && <ButtonLoadingIcon />}</button>
                     </div>
