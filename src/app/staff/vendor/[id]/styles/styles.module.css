@@ -136,9 +136,15 @@
 }
 .approvalContent .multiSelectTextValues {
   display: flex;
+  flex-wrap: wrap;
 }
 .approvalContent .multiSelectTextValues p {
   margin-right: 20px;
+  margin-bottom: 10px;
+  background-color: rgb(235, 235, 235);
+  padding: 5px;
+  border-style: none;
+  border-radius: 5px;
 }
 .approvalContent .sectionItem {
   display: flex;
@@ -221,6 +227,7 @@
   border-style: none;
   color: #e26b09;
   display: inline-flex;
+  cursor: pointer;
 }
 .approvalActionsDiv .unapprovedSectionsDiv {
   background-color: rgb(255, 208, 208);
