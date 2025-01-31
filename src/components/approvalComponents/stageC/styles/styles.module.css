@@ -357,6 +357,7 @@
   border-style: none;
   color: #e26b09;
   display: inline-flex;
+  cursor: pointer;
 }
 .approvalActionsDiv .unapprovedSectionsDiv {
   background-color: rgb(255, 208, 208);
