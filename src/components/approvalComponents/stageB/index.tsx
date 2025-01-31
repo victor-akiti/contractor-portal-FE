@@ -1083,7 +1083,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
 
                 {
                     (!approvedAll && unaprovedSectionsWithNoRemarks.length === 0 && !applicationProcessed) && <div className={styles.notApprovedDiv}>
-                        <p>You have NOT approved all the items in the list for <span className={styles.companyName}>Bankai Test Company 25</span>. Do not forget to comment on the items you have NOT approved.</p>
+                        <p>You have NOT approved all the items in the list for <span className={styles.companyName}>{approvalData?.companyName}</span>. Do not forget to comment on the items you have NOT approved.</p>
 
                         <p>To proceed. please take either of the following actions:</p>
 
