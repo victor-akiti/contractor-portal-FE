@@ -170,7 +170,6 @@ const Layout = ({children}) => {
 
                         <Link href={"/staff/settings"}>Account Settings</Link>
 
-                        {/* <Link href={"/staff/invoice-forms"}>Invoice Forms</Link> */}
     
                         <hr />
     
