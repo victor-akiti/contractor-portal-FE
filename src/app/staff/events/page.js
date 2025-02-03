@@ -70,7 +70,7 @@ const Events = () => {
                             </td>
 
                             <td>
-                                {event.userName}
+                                {event.userName ? event.userName : event?.userID?.name ? event.userID.name : "Name Unavailable"}
                             </td>
 
                             <td>
