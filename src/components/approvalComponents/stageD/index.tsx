@@ -508,9 +508,13 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                         vendorDueDiligenceData.registrationCheck.finding && <div className={styles.actionButtons}>
                         <button onClick={() => {setFieldToUploadFor("registrationCheck", 0)}}>Change</button>
                         <button className={styles.clearButton} onClick={() => clearUploadedField("registrationCheck", currentUpload.index)}>Clear</button>
-                        <Link href={vendorDueDiligenceData.registrationCheck.finding[0].url} target="_blank"><button>View</button></Link>
+                        
 
-                        <label>{vendorDueDiligenceData.registrationCheck.finding[0].name}</label>
+                        {
+                            vendorDueDiligenceData?.registrationCheck?.finding[0]?.url && <Link href={vendorDueDiligenceData?.registrationCheck?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                        }
+
+                        <label>{vendorDueDiligenceData?.registrationCheck?.finding[0]?.name}</label>
                     </div>
                     }
                 </div>
@@ -562,9 +566,13 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                         vendorDueDiligenceData.internetCheck.finding && <div className={styles.actionButtons}>
                         <button onClick={() => {setFieldToUploadFor("internetCheck", 0)}}>Change</button>
                         <button className={styles.clearButton} onClick={() => clearUploadedField("internetCheck", currentUpload.index)}>Clear</button>
-                        <Link href={vendorDueDiligenceData.internetCheck.finding[0].url} target="_blank"><button>View</button></Link>
+                        
 
-                        <label>{vendorDueDiligenceData.internetCheck.finding[0].name}</label>
+                        {
+                            vendorDueDiligenceData?.internetCheck?.finding[0]?.url && <Link href={vendorDueDiligenceData?.internetCheck?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                        }
+
+                        <label>{vendorDueDiligenceData?.internetCheck?.finding[0]?.name}</label>
                     </div>
                     }
                 </div>
@@ -695,9 +703,13 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                             vendorDueDiligenceData.exposedPersons[index].finding && <div className={styles.actionButtons}>
                                 <button onClick={() => {setFieldToUploadFor("exposedPersons", index)}}>Change</button>
                                 <button className={styles.clearButton} onClick={() => clearUploadedField("exposedPersons", currentUpload.index)}>Clear</button>
-                                <Link href={vendorDueDiligenceData.exposedPersons[index].finding[0].url} target="_blank"><button>View</button></Link>
+                                
 
-                                <label>{vendorDueDiligenceData.exposedPersons[index].finding[0].name}</label>
+                                {
+                                    vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url && <Link href={vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                                }
+
+                                <label>{vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.name}</label>
                             </div>
                         }
                                 
@@ -769,9 +781,12 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                         vendorDueDiligenceData.referenceCheck.finding && <div className={styles.actionButtons}>
                         <button onClick={() => {setFieldToUploadFor("referenceCheck", 0)}}>Change</button>
                         <button className={styles.clearButton} onClick={() => clearUploadedField("referenceCheck", currentUpload.index)}>Clear</button>
-                        <Link href={vendorDueDiligenceData.referenceCheck.finding[0].url} target="_blank"><button>View</button></Link>
+                        
+                        {
+                            vendorDueDiligenceData?.referenceCheck?.finding[0]?.url && <Link href={vendorDueDiligenceData?.referenceCheck?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                        }
 
-                        <label>{vendorDueDiligenceData.referenceCheck.finding[0].name}</label>
+                        <label>{vendorDueDiligenceData?.referenceCheck?.finding[0]?.name}</label>
                     </div>
                     }
                 </div>
