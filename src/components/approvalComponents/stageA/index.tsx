@@ -18,6 +18,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import { putProtected } from "@/requests/put"
 import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
+import ErrorText from "@/components/errorText"
 
 function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
     useEffect(() => {
@@ -613,8 +614,11 @@ const StageA = ({approvalData, formPages, vendorID}) => {
         }
     }
 
+    const [noApprovalErrorMessage, setNoApprovalErrorMessage] = useState("")
+
     const returnToContractor = async () =>  {
         setItemBeingUpdated("return")
+        setNoApprovalErrorMessage("")
         try {
             const returnToContractorRequest:any = await postProtected(`approvals/return/${vendorID}`, {
                 pages,
@@ -625,6 +629,8 @@ const StageA = ({approvalData, formPages, vendorID}) => {
 
             if (returnToContractorRequest.status === "OK") {
                 actionCompleted()
+            } else {
+                showNoApprovalErrorMessage(returnToContractorRequest.error.message)
             }
             
         } catch (error) {
@@ -645,6 +651,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
     const recommendForHold = async (reason) => {
         console.log({reason});
         setItemBeingUpdated("hold")
+        setNoApprovalErrorMessage("")
         
         try {
             const recommendForHoldRequest = await postProtected(`approvals/hold/recommend/${vendorID}`, {
@@ -657,6 +664,9 @@ const StageA = ({approvalData, formPages, vendorID}) => {
             if (recommendForHoldRequest.status === "OK") {
                 setShowSetReasonForHoldModal(false)
                 actionCompleted()
+            } else {
+                
+                showNoApprovalErrorMessage(recommendForHoldRequest.error.message)
             }
 
             console.log({recommendForHoldRequest});
@@ -664,6 +674,11 @@ const StageA = ({approvalData, formPages, vendorID}) => {
         } catch (error) {
             
         }
+    }
+
+    const showNoApprovalErrorMessage = errorMessage => {
+        setItemBeingUpdated("")
+        setNoApprovalErrorMessage(errorMessage)
     }
 
     console.log({currentVendorCategories});
@@ -911,10 +926,10 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                                                 </div>
     
                                                 <div className={styles.sectionFooter}>
-                                                    <p onClick={() => openAddCommentModal(index, sectionIndex)}>ADD INTERNAL COMMENT</p>
+                                                    <p className={styles.commentsAndRemarksText} onClick={() => openAddCommentModal(index, sectionIndex)}>ADD INTERNAL COMMENT</p>
     
                                                     {
-                                                        !sectionItem.approved && <p onClick={() => openAddRemarkModal(index, sectionIndex)}>ADD REMARKS</p>
+                                                        !sectionItem.approved && <p className={styles.commentsAndRemarksText} onClick={() => openAddRemarkModal(index, sectionIndex)}>ADD REMARKS</p>
                                                     }
                                                 </div>
     
@@ -999,6 +1014,10 @@ const StageA = ({approvalData, formPages, vendorID}) => {
             {
                 showApprovalActions && <div className={styles.approvalActionsDiv}>
                 <h4>Approval Actions</h4>
+
+                {
+                    noApprovalErrorMessage && <ErrorText text={noApprovalErrorMessage} />
+                }
 
                 {
                     (unaprovedSectionsWithNoRemarks.length > 0 && !applicationProcessed) && <div className={styles.unapprovedSectionsDiv}>
