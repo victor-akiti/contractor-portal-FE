@@ -198,7 +198,7 @@ const ViewVendorPage = () => {
                 <div>
                     <p className={styles.fieldData}>
                         <label>{`${field.label}:`}</label>
-                        <p>{field.value}</p>
+                        <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
                     </p>
                 </div>
 
