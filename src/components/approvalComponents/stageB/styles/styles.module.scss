@@ -203,6 +203,14 @@
             color: $primaryColor;
             margin-bottom: 20px;
             margin-top: 20px;
+
+            .commentsAndRemarksText {
+                cursor: pointer;
+
+                &:hover {
+                    font-weight: 500;
+                }
+            }
         }
 
         .fieldItem {

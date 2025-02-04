@@ -167,6 +167,12 @@
   margin-bottom: 20px;
   margin-top: 20px;
 }
+.approvalContent .sectionItem .sectionFooter .commentsAndRemarksText {
+  cursor: pointer;
+}
+.approvalContent .sectionItem .sectionFooter .commentsAndRemarksText:hover {
+  font-weight: 500;
+}
 .approvalContent .sectionItem .fieldItem {
   margin-bottom: 1rem;
 }
