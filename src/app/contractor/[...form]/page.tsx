@@ -891,7 +891,7 @@ const RegistrationFormBody = ({registrationForm,
             {
                 fileSampleURL && <Modal>
                     <div className={styles.fileSampleModal}>
-                        <Image src={fileSampleURL} width={1000} height={1000} objectFit="cover" alt="File Sample" style={{maxWidth: "100%", maxHeight: "100%", objectFit: "cover"}} />
+                        <Image src={fileSampleURL} width={1000} height={1000} objectFit="cover" alt="File Sample" style={{ maxHeight: "100%", objectFit: "contain"}} />
 
                         <div className={styles.closePreviewButtonDiv}>
                             <button onClick={() => setFileSampleURL(null)}>Close Preview</button>
