@@ -144,6 +144,11 @@
             line-height: inherit;
             white-space: nowrap;
 
+            a {
+                display: flex;
+                align-items: center;
+            }
+
             span {
                 margin-left: 10px;
                 font-size: 1rem;

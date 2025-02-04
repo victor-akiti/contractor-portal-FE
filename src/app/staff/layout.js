@@ -113,8 +113,10 @@ const Layout = ({children}) => {
               }
             <nav>
                 <div className={styles.left}>
-                    <Image src={logo} width={30} height={30} style={{width:"35px", height:"45px"}} alt="logo" />
-                    <span>Contractor Portal</span>
+                    <Link href={"/staff/approvals"}>
+                      <Image src={logo} width={30} height={30} style={{width:"35px", height:"45px"}} alt="logo" />
+                      <span>Contractor Portal</span>
+                    </Link>
                 </div>
     
                 <div className={styles.right} onClick={() => toggleShowFloatingUserMenu()}>
