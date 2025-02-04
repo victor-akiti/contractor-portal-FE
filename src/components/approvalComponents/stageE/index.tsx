@@ -1039,7 +1039,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                         {
                                             approvalData?.dueDiligence?.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <div key={index}>
                                                 <p>{`Person ${index+1} : ${item.companyName ? item.companyName : item.firstName + " " + item.lastName} - ${item.role === "Both" ? "Director & Shareholder" : item.role}`}</p>
-                                                <Link href={approvalData.dueDiligence.exposedPersons[index].finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                                <Link href={approvalData?.dueDiligence?.exposedPersons[index]?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
                                             </div>)
                                         }
                                     </div>
@@ -1053,7 +1053,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                         <h5>Reference check</h5>
 
                                         {
-                                            approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData.dueDiligence.referenceCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                            approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
                                         }
 
                                         
