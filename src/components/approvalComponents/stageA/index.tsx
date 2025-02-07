@@ -262,7 +262,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
 
     const fetchJobCategories = async () => {
         try {
-            const jobCategoriesRequest = await getProtected("jobCategories")
+            const jobCategoriesRequest = await getProtected("jobCategories", user.role)
             console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
@@ -517,7 +517,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
         try {
             const updateVendorCategoriesRequest = await putProtected(`companies/job-categories/${vendorID}`, {
                 categories: updateCategories ? updateCategories : selectedCategories
-            })
+            }, user.role)
 
             setUpdatingVendorCategories(false)
 
@@ -604,7 +604,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
             setItemBeingUpdated("approve")
             const processToStageBRequest = await postProtected(`approvals/process/${vendorID}`, {
                 pages,
-            })
+            }, user.role)
 
             if (processToStageBRequest.status === "OK") {
                 actionCompleted()
@@ -623,7 +623,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
             const returnToContractorRequest:any = await postProtected(`approvals/return/${vendorID}`, {
                 pages,
                 newRemarks
-            })
+            }, user.role)
 
             console.log({returnToContractorRequest});
 
@@ -659,7 +659,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                 newRemarks,
                 stage: 0,
                 reason
-            })
+            }, user.role)
 
             if (recommendForHoldRequest.status === "OK") {
                 setShowSetReasonForHoldModal(false)

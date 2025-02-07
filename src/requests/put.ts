@@ -13,7 +13,7 @@ export const putPlain = async (route, body) => {
     }
 }
 
-export const putProtected = async (route, body) => {
+export const putProtected = async (route, body, role) => {
     try {
         const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "PUT",
@@ -24,8 +24,17 @@ export const putProtected = async (route, body) => {
             body: JSON.stringify(body)
         })
 
-        const response = await request.json()
-        return response
+        if (request.status === 401) {
+            if (!role || role === "Vendor" || role === "User") {
+                window.location.href = "/login"
+            } else {
+                window.location.href = "/login/staff"
+            }
+        } else {
+            const result = await request.json()
+
+            return result
+        }
     } catch (error) {
         console.log({error});
     }
