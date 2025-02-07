@@ -51,7 +51,7 @@ const Login = () => {
     const logUserInWithEmailAndPassword = async () => {
         try {
             setLoggingIn(true)
-            const loginRequest = await postProtected("auth/login", {loginDetails})
+            const loginRequest = await postProtected("auth/login", {loginDetails}, null)
 
             if (loginRequest.status === "OK") {
                 console.log({loginRequestUser: loginRequest.data.user});

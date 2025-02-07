@@ -41,7 +41,7 @@ const ForgotPassword = () => {
     const sendPasswordResetLink = async () => {
         try {
             setSendingResetLink(true)
-            const sendPasswordResetLinkRequest = await postProtected("auth/password/reset", {email})
+            const sendPasswordResetLinkRequest = await postProtected("auth/password/reset", {email}, null)
 
             setSendingResetLink(false)
 

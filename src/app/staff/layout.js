@@ -63,7 +63,7 @@ const Layout = ({children}) => {
       const unsetOutOfOffice = async () => {
         setUpdatingOutOfOffice(true)
         try {
-          const unsetOutOfOfficeRequest = await postProtected (`user/outOfOffice/unset`, {})
+          const unsetOutOfOfficeRequest = await postProtected (`user/outOfOffice/unset`, {}, user.role)
           if (unsetOutOfOfficeRequest.status === "OK") {
             getCurrentAuthState()
           }    

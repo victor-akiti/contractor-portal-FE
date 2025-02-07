@@ -69,7 +69,7 @@ const StageX = () => {
     const fetchVendorData = async (vendorID) => {
         setVendorID(vendorID)
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`)
+            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
 
             console.log({fetchVendorDataRequest});
 
@@ -296,7 +296,7 @@ const StageX = () => {
 
     const fetchJobCategories = async () => {
         try {
-            const jobCategoriesRequest = await getProtected("jobCategories")
+            const jobCategoriesRequest = await getProtected("jobCategories", user.role)
             console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
@@ -383,7 +383,7 @@ const StageX = () => {
         try {
             const updateVendorCategoriesRequest = await putProtected(`companies/job-categories/${vendorID}`, {
                 categories: updateCategories ? updateCategories : selectedCategories
-            })
+            }, user.role)
 
             setUpdatingVendorCategories(false)
 
@@ -412,7 +412,7 @@ const StageX = () => {
     const approveParkRequest = async () => {
         try {
             updateUpdateStatus("approving")
-          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`)
+          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
           
           if (approveRequest.status === "OK") {
             updateUpdateStatus("park action success", "Vendor application parked")
@@ -432,7 +432,7 @@ const StageX = () => {
 
         try {
             updateUpdateStatus("rejecting")
-            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from})
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from}, user.role)
 
             if (revertRequest.status === "OK") {
                 updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
