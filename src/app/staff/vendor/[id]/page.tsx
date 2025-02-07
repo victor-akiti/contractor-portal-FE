@@ -72,7 +72,7 @@ const ViewVendorPage = () => {
     const fetchVendorData = async (vendorID) => {
         setVendorID(vendorID)
         try {
-            const fetchVendorDataRequest = await getProtected(`companies/approval-data/${vendorID}`)
+            const fetchVendorDataRequest = await getProtected(`companies/approval-data/${vendorID}`, user.role)
 
             console.log({fetchVendorDataRequest});
 
@@ -302,7 +302,7 @@ const ViewVendorPage = () => {
 
     const fetchJobCategories = async () => {
         try {
-            const jobCategoriesRequest = await getProtected("jobCategories")
+            const jobCategoriesRequest = await getProtected("jobCategories", user.role)
             console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
@@ -390,7 +390,7 @@ const ViewVendorPage = () => {
         try {
             const updateVendorCategoriesRequest = await putProtected(`companies/job-categories/${vendorID}`, {
                 categories: updateCategories ? updateCategories : selectedCategories
-            })
+            }, user.role)
 
             setUpdatingVendorCategories(false)
 
@@ -419,7 +419,7 @@ const ViewVendorPage = () => {
     const approveParkRequest = async () => {
         try {
             updateUpdateStatus("approving")
-          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`)
+          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
           
           if (approveRequest.status === "OK") {
             updateUpdateStatus("park action success", "Vendor application parked")
@@ -439,7 +439,7 @@ const ViewVendorPage = () => {
 
         try {
             updateUpdateStatus("rejecting")
-            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from})
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from}, user.role)
 
             if (revertRequest.status === "OK") {
                 updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
@@ -507,7 +507,7 @@ const ViewVendorPage = () => {
         try {
             setAccountInactiveStatus({...accountInactiveStatus, status: "making inactive"})
 
-            const makeVendorInactiveRequest = await getProtected(`companies/vendor/make-inactive/${vendorID}`)
+            const makeVendorInactiveRequest = await getProtected(`companies/vendor/make-inactive/${vendorID}`, user.role)
 
             if (makeVendorInactiveRequest.status === "OK") {
                 setAccountInactiveStatus({...accountInactiveStatus, responseType: "success", message: "Vendor has been marked as inactive and has been removed from the vendors list."})
