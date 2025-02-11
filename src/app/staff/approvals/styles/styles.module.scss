@@ -3,6 +3,10 @@
 .approvals {
     width: 100%;
 
+    a {
+        cursor: pointer;
+    }
+
     .tableHeading {
         display: flex;
         align-items: center;

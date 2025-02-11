@@ -122,16 +122,16 @@ const Approval = () => {
     }
 
     const vendorIsParked = () => {
-        return (vendorData?.approvalData?.flags?.status === "parked" || vendorData?.approvalData?.flags?.stage === "parked")
+        return (vendorData?.approvalData?.flags?.status === "parked")
     }
 
     const vendorApplicationIsReturned = () => {
-        return (vendorData?.approvalData?.flags?.status === "returned" || vendorData?.approvalData?.flags?.stage === "returned")
+        return (vendorData?.approvalData?.flags?.status === "returned" )
     }
 
     const fetchVendorData = async (vendorID) => {
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`)
+            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
 
             setVendorID(vendorID)
 
@@ -154,7 +154,7 @@ const Approval = () => {
         if (!updatingApplication) {
             try {
                 setUpdatingApplication(true)
-                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from: "parked", reason})
+                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from: "parked", reason}, user.role)
 
                 setUpdatingApplication(false)
                 setShowReturnToL2Modal(false)
@@ -191,7 +191,7 @@ const Approval = () => {
     const retrieveApplicationFromVendor = async (reason) => {
         try {
             setUpdatingApplication(true)
-            const retrieveApplicationFromVendorRequest = await postProtected(`approvals/retrieve/${vendorID}`, {reason})
+            const retrieveApplicationFromVendorRequest = await postProtected(`approvals/retrieve/${vendorID}`, {reason}, user.role)
 
             setUpdatingApplication(false)
 

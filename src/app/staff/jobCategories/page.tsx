@@ -29,6 +29,7 @@ const Tasks = () => {
     const [categoryToUpdate, setCategoryToUpdate] = useState<Category>({})
     const [categoryToDelete, setCategoryToDelete] = useState<Category>({})
     const user = useSelector((state:any) => state.user)
+    
 
     const validateNewCategoryLabel = () => {
         if (!newCategoryLabel) {
@@ -53,7 +54,7 @@ const Tasks = () => {
     console.log({jobCategories});
     const getAllJobCategories = async () => {
         try {
-            const getAllJobCategoriesRequest = await getProtected("jobCategories")
+            const getAllJobCategoriesRequest = await getProtected("jobCategories", user.role)
 
             if (getAllJobCategoriesRequest.status === "OK") {
                 
@@ -83,7 +84,7 @@ const Tasks = () => {
                 date: new Date()
             }
 
-            const addNewJobCategoryRequest = await postProtected("jobCategories", newJobCategory)
+            const addNewJobCategoryRequest = await postProtected("jobCategories", newJobCategory, user.role)
 
             if (addNewJobCategoryRequest.status === "OK") {
                 setUpdatingCategories(false)
@@ -104,7 +105,7 @@ const Tasks = () => {
     const updateExistingCategory = async () => {
         setUpdatingCategories(true)
         try {
-            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, {category: newCategoryLabel})
+            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, {category: newCategoryLabel}, user.role)
 
             if (updateExistingJobCategoryRequest.status === "OK") {
                 setUpdatingCategories(false)
@@ -144,7 +145,7 @@ const Tasks = () => {
     const deleteJobCategory = async () => {
         try {
             setDeletingCategory(true)
-            const deleteJobCategoryRequest = await deleteProtected(`jobCategories/${categoryToDelete._id}`, {deleted: true})
+            const deleteJobCategoryRequest = await deleteProtected(`jobCategories/${categoryToDelete._id}`, {deleted: true}, user.role)
 
             if (deleteJobCategoryRequest.status === "OK") {
                 let tempJobCategories = [...jobCategories]

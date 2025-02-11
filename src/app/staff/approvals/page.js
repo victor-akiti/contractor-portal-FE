@@ -98,15 +98,7 @@ const Approvals = () => {
 
     const user= useAppSelector(state => state?.user?.user)
 
-    
 
-    const triggerInviteMigration = async () => {
-        try {
-            const triggerMigration = await getProtected("migrations/newRequests")
-        } catch (error) {
-            console.log({error});
-        }
-    }
 
     const setInviteToArchiveObject = invite => {
         let tempInviteToArchive = {...inviteToArchive}
@@ -128,14 +120,11 @@ const Approvals = () => {
         setArchivingInvite(false)
     }
 
-    const triggerMigration = async () => {
-        const migrate = await getProtected("migrations/newRequests")
-    }
 
     const fetchAllApprovalsData = async () => {
         console.log("Fetching approvals data");
         try {
-            const fetchAllApprovalsDataRequest = await getProtected("companies/approvals/all")
+            const fetchAllApprovalsDataRequest = await getProtected("companies/approvals/all", user.role)
 
             console.log({fetchAllApprovalsDataRequest});
             setFetchingContractors(false)
@@ -151,7 +140,9 @@ const Approvals = () => {
                 tempApprovals = fetchAllApprovalsDataRequest.data
                 setFixedApprovals(tempApprovals)
 
-                if (allApprovalsData?.parkRequested?.length > 0 && (user.role === "Admin" || user.role === "HOD")) {
+                if (fetchAllApprovalsDataRequest?.data?.parkRequested && fetchAllApprovalsDataRequest?.data?.parkRequested?.length > 0 && (user.role === "Admin" || user.role === "HOD" || user.role === "Supervisor" || user.role === "C&P Admin" || user.role === "IT Admin")) {
+                    console.log("Park requests are available");
+                    
                     let tempApprovalsTabs = [...approvalsTabs]
                     tempApprovalsTabs.push({
                         label: "Park Requests",
@@ -159,6 +150,7 @@ const Approvals = () => {
                     })
                     setApprovalsTabs(tempApprovalsTabs)
                 }
+
             }
         } catch (error) {
             console.log({error});
@@ -431,7 +423,7 @@ const Approvals = () => {
     const archiveInvite = async () => {
         try {
             setArchivingInvite(true)
-            const archiveInviteRequest = await postProtected("invites/archive", inviteToArchive)
+            const archiveInviteRequest = await postProtected("invites/archive", inviteToArchive, user.role)
 
             setArchivingInvite(false)
 
@@ -568,7 +560,7 @@ const Approvals = () => {
     const approveParkRequest = async (vendorID) => {
         setActionProgress("processing")
         try {
-          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`)
+          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
           console.log({approveRequest})
 
           if (approveRequest.status === "OK") {
@@ -597,7 +589,7 @@ const Approvals = () => {
       const declineParkRequest = async (vendorID) => {
         console.log("Decline");
         try {
-          const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
+          const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`, user.role)
           console.log({declineRequest})
         } catch (error) {
           console.log({error})
@@ -609,7 +601,7 @@ const Approvals = () => {
         
         setActionProgress("processing")
         try {
-            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from})
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from}, user.role)
 
             if (revertRequest.status === "OK") {
                 setActionProgress("success")
@@ -957,6 +949,9 @@ const Approvals = () => {
         }
     }
 
+    console.log({returnToL2Data});
+    
+
     
 
     
@@ -1166,7 +1161,7 @@ const Approvals = () => {
                             }
 
                             {
-                                activeTab === "completed-l2" && approvals.completedL2.map((item, index) => <CompletedL2Item revertToL2={vendorID => setDataForReturnToL2(item.vendor, "parked")} key={index} user={user} companyRecord={item} index={index} />)
+                                activeTab === "completed-l2" && approvals.completedL2.map((item, index) => <CompletedL2Item revertToL2={vendorID => setDataForReturnToL2(item._id, "parked")} key={index} user={user} companyRecord={item} index={index} />)
                             }
 
                             {
@@ -1176,10 +1171,12 @@ const Approvals = () => {
                             {
                                 activeTab === "park-requests" && approvals.parkRequested.map((item, index) => <ParkRequestedItem key={index} user={user} companyRecord={item} index={index} approveParkRequest={(vendorID) => {
                                     console.log("Accept");
-                                    approveParkRequest(vendorID)
+                                    approveParkRequest(item._id)
                                 }} declineParkRequest={(vendorID) => {
-                                    setDataForReturnToL2(item.vendor, "park requests")
-                                    declineParkRequest(vendorID)
+                                    console.log({item});
+                                    
+                                    setDataForReturnToL2(item._id, "park requests")
+                                    // declineParkRequest(item._id)
                                 }} />)
                             }
                         </tbody>
@@ -1260,7 +1257,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
     const sendReminder = async () => {
         try {
             setSendReminderText("SENDING REMINDER")
-            const sendReminderRequest = await getProtected(`invites/remind/${inviteDetails._id}`)
+            const sendReminderRequest = await getProtected(`invites/remind/${inviteDetails._id}`, user.role)
 
             if (sendReminderRequest.status === "OK") {
                 setSendReminderText("REMINDER SENT")
@@ -1281,7 +1278,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
             console.log("Renewing");
             setRenewText("EXTENDING EXPIRY DATE...")
 
-            const renewInviteRequest = await getProtected(`invites/renew/${inviteDetails._id}`)
+            const renewInviteRequest = await getProtected(`invites/renew/${inviteDetails._id}`, user.role)
 
             console.log({renewInviteRequest});
 
@@ -1625,7 +1622,7 @@ const CompletedL2Item = ({index, companyRecord, revertToL2, user}) => {
                     </>
                 }  
                 {
-                    hasAdminPermissions() && <a onClick={() => revertToL2(companyRecord.vendor)}>REVERT TO PENDING</a>
+                    hasAdminPermissions(user.role) && <a onClick={() => revertToL2(companyRecord.vendor)}>REVERT TO PENDING L2</a>
                 }
 
                 
@@ -1638,7 +1635,7 @@ const CompletedL2Item = ({index, companyRecord, revertToL2, user}) => {
     )
 }
 
-const ParkRequestedItem = ({index, companyRecord, approveParkRequest, declineParkRequest}) => {
+const ParkRequestedItem = ({index, companyRecord, approveParkRequest, declineParkRequest, user}) => {
     const getLastUpdated = () => {
         if (companyRecord.lastApproved) {
             const lastUpdatedDate = new Date(companyRecord.lastApproved)
@@ -1696,12 +1693,12 @@ const ParkRequestedItem = ({index, companyRecord, approveParkRequest, declinePar
                     </>
                 }  
                 {
-                    hasAdminPermissions() && <>
-                        <a  onClick={() => approveParkRequest(companyRecord.vendor)}>APPROVE PARK REQUEST</a>
+                    hasAdminPermissions(user.role) && <>
+                        <a  onClick={() => approveParkRequest(companyRecord._id)}>APPROVE PARK REQUEST</a>
 
                         <br />
 
-                        <a  onClick={() => declineParkRequest(companyRecord.vendor)}>REJECT PARK REQUEST</a>
+                        <a  onClick={() => declineParkRequest(companyRecord._id)}>REJECT PARK REQUEST</a>
                             </>
                         }
                 

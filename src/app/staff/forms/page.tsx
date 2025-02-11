@@ -14,6 +14,7 @@ import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import SuccessMessage from "@/components/successMessage"
 import ErrorText from "@/components/errorText"
+import { useSelector } from "react-redux"
 
 type FormToDelete = {
     _id ? : String
@@ -30,7 +31,7 @@ const Forms = () => {
 
     const fetchAllForms = async () => {
         try {
-            const getAllFormsRequest = await getProtected("forms/all")
+            const getAllFormsRequest = await getProtected("forms/all", user.role)
 
             if (getAllFormsRequest.status === "OK") {
                 let tempForms = [...forms]
@@ -64,6 +65,7 @@ const Forms = () => {
     const [successMessage, setSuccessMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
     const [processing, setProcessing] = useState(false)
+    const user = useSelector((state: any) => state.user.user)
 
     const selectFormForDeletion = form => {
         let tempFormToDelete = {...formToDelete}
@@ -75,7 +77,7 @@ const Forms = () => {
         try {
             setProcessing(true)
 
-            const deleteFormRequest:any = await deleteProtected(`forms/form/${formToDelete._id}`, {})
+            const deleteFormRequest:any = await deleteProtected(`forms/form/${formToDelete._id}`, {}, user.role)
 
             console.log({deleteFormRequest});
             
@@ -106,7 +108,7 @@ const Forms = () => {
     const duplicateForm = async formID => {
         try {
             setFormToDuplicate(formID)
-            const duplicateFormRequest = await postProtected(`forms/duplicate/${formID}`, {}) 
+            const duplicateFormRequest = await postProtected(`forms/duplicate/${formID}`, {}, user.role) 
             setFormToDuplicate("")
 
             if (duplicateFormRequest.status === "OK") {
