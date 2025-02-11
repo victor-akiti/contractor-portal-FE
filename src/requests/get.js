@@ -11,7 +11,9 @@ export const getPlain = async (route) => {
     }
 }
 
-export const getProtected = async (route) => {
+export const getProtected = async (route, role) => {
+    console.log({route, role});
+    
     try {
         const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "GET",
@@ -21,9 +23,22 @@ export const getProtected = async (route) => {
             credentials: "include",
         })
 
-        const result = await request.json()
+        console.log({request: request.status});
 
-        return result
+        if (request.status === 401) {
+            if (!role || role === "Vendor" || role === "User") {
+                window.location.href = "/login"
+            } else {
+                window.location.href = "/login/staff"
+            }
+        } else {
+            const result = await request.json()
+
+            return result
+        }
+        
+
+        
     } catch (error) {
         console.log({error});
     }

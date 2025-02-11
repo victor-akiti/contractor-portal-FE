@@ -81,7 +81,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
     const fetchAllEndUsers = async () => {
 
         try {
-            const fetchAllEndUsersRequest = await getProtected("users/staff/all")
+            const fetchAllEndUsersRequest = await getProtected("users/staff/all", user.role)
 
             if (fetchAllEndUsersRequest.status === "OK") {
                 let tempEndUsers = [...endUsers]
@@ -231,7 +231,9 @@ const StageB = ({approvalData, formPages, vendorID}) => {
                             }
                             
 
-                            <a style={{marginLeft: "20px"}}>Certificate History</a>
+                            {
+                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
+                            }
                         </div>
                     </div>
 
@@ -290,7 +292,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
 
     const fetchJobCategories = async () => {
         try {
-            const jobCategoriesRequest = await getProtected("jobCategories")
+            const jobCategoriesRequest = await getProtected("jobCategories", user.role)
             console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
@@ -541,7 +543,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
         try {
             const updateVendorCategoriesRequest = await putProtected(`companies/job-categories/${vendorID}`, {
                 categories: updateCategories ? updateCategories : selectedCategories
-            })
+            }, user.role)
 
             setUpdatingVendorCategories(false)
 
@@ -629,7 +631,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
             const processToStageCRequest = await postProtected(`approvals/process/${vendorID}`, {
                 pages,
                 selectedEndUsers
-            })
+            }, user.role)
 
             if (processToStageCRequest.status === "OK") {
                 actionCompleted()
@@ -653,7 +655,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
             const returnToContractorRequest:any = await postProtected(`approvals/return/${vendorID}`, {
                 pages,
                 newRemarks
-            })
+            }, user.role)
 
             console.log({returnToContractorRequest});
 
@@ -689,7 +691,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
                 newRemarks,
                 stage: 0,
                 reason
-            })
+            }, user.role)
 
             if (recommendForHoldRequest.status === "OK") {
                 setShowSetReasonForHoldModal(false)

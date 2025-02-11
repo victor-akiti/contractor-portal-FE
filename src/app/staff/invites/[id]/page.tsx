@@ -10,6 +10,7 @@ import SuccessText from "@/components/successText"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import { useParams } from "next/navigation"
 import Loading from "@/components/loading"
+import { useSelector } from "react-redux"
 
 type InvitedCompany = {
     fname: string,
@@ -55,6 +56,7 @@ const ResendInvite = () => {
         fetchingRelatedCompanies: false,
         fetchedRelatedCompanies: false
     })
+    const user = useSelector((state: any) => state.user.user)
     const params = useParams()
 
     useEffect(() => {
@@ -70,7 +72,7 @@ const ResendInvite = () => {
         console.log({params});
         const {id} = params
         if (id) {
-            const fetchInviteRequest = await getProtected(`invites/invite/${id}`)
+            const fetchInviteRequest = await getProtected(`invites/invite/${id}`, user.role)
 
             if (fetchInviteRequest.status === "OK") {
                 let tempInvitee = {...newInvitee}
@@ -107,7 +109,7 @@ const ResendInvite = () => {
         try {
             console.log({queryString});
             
-            const findCompanyRequest = await postProtected("invites/find", {queryString})
+            const findCompanyRequest = await postProtected("invites/find", {queryString}, user.role)
 
             if (findCompanyRequest.status === "OK") {
                 console.log({findCompanyRequest});
@@ -168,7 +170,7 @@ const ResendInvite = () => {
 
     const getCompanyRegistrationStatus = async () => {
         try {
-            const getRegistrationStatusRequest = await postProtected("companies/registrationstatus/get", {email: newInvitee.email, companyName: newInvitee.companyName, type: "resend", inviteID: params.id})
+            const getRegistrationStatusRequest = await postProtected("companies/registrationstatus/get", {email: newInvitee.email, companyName: newInvitee.companyName, type: "resend", inviteID: params.id}, user.role)
             if (getRegistrationStatusRequest.status === "OK") {
                 let tempRegistrationStatus = {...registrationStatus}
                 if (getRegistrationStatusRequest.data.inviteStatus === 2 || getRegistrationStatusRequest.data.inviteStatus === 2 ) {
@@ -200,7 +202,7 @@ const ResendInvite = () => {
                 setSubmitting(true)
                 setSuccessMessage("")
                 setErrorMessage("")
-                const sendNewInviteRequest = await postProtected("invites/resend", {...newInvitee, inviteID: params.id})
+                const sendNewInviteRequest = await postProtected("invites/resend", {...newInvitee, inviteID: params.id}, user.role)
 
                 console.log({sendNewInviteRequest});
                 

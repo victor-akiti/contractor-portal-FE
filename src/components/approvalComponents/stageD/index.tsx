@@ -12,8 +12,8 @@ import { postProtected } from "@/requests/post"
 import ErrorText from "@/components/errorText"
 import closeIcon from "@/assets/images/closeGrey.svg"
 import successGreen from "@/assets/images/success_green.svg"
-import { deleteProtected } from "@/requests/delete"
 import { useRouter } from "next/navigation"
+import { useSelector } from "react-redux"
 
 type Finding = {
     url?: string,
@@ -100,6 +100,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
     const [showFinishSection, setShowFinishSection] = useState(false)
     const [approvalStatus, setApprovalStatus] = useState("")
     const router = useRouter()
+    const user = useSelector((state: any) => state.user.user)
 
     useEffect(() => {
         if (approvalData.dueDiligence) {
@@ -262,7 +263,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
         }
 
         try {
-            const saveExposedPersonRequest = await postProtected(`approvals/exposed-person/save/${vendorID}`, {exposedPerson})
+            const saveExposedPersonRequest = await postProtected(`approvals/exposed-person/save/${vendorID}`, {exposedPerson}, user.role)
 
             if (saveExposedPersonRequest.status === "OK") {
                 if (saveExposedPersonRequest.data._id) {
@@ -299,7 +300,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
 
         try {
             if (exposedPerson._id) {
-                const removeExposedPersonRequest = await postProtected(`approvals/exposed-person/remove/${vendorID}`, {exposedPersonID: exposedPerson._id})
+                const removeExposedPersonRequest = await postProtected(`approvals/exposed-person/remove/${vendorID}`, {exposedPersonID: exposedPerson._id}, user.role)
 
                 console.log({removeExposedPersonRequest});
                 
@@ -420,7 +421,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
         try {
             const processToStageERequest = await postProtected(`approvals/process/${vendorID}`, {
                 dueDiligence: vendorDueDiligenceData
-            })
+            }, user.role)
 
             if (processToStageERequest.status === "OK") {
                 // actionCompleted()
