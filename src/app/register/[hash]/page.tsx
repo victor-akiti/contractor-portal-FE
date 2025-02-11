@@ -99,7 +99,7 @@ const Register = () => {
     const createNewAccount = async () => {
         try {
             setCreatingAccount(true)
-            const createNewAccountRequest = await postProtected("auth/register", registrationDetails, null)
+            const createNewAccountRequest = await postProtected("auth/register", registrationDetails)
 
             console.log({createNewAccountRequest});
             

@@ -101,7 +101,7 @@ const RegisterNewPortalAdmin = () => {
         
         try {
             setCreatingAccount(true)
-            const createNewAccountRequest = await postProtected("auth/newPortalAdmin/register", registrationDetails, null)
+            const createNewAccountRequest = await postProtected("auth/newPortalAdmin/register", registrationDetails)
 
             console.log({createNewAccountRequest});
             

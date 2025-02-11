@@ -9,7 +9,6 @@ import ErrorText from "@/components/errorText"
 import { putProtected } from "@/requests/put"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import SuccessMessage from "@/components/successMessage"
-import { useSelector } from "react-redux"
 
 const Dashboard = () => {
     const [dashboardData, setDashboardData] = useState({
@@ -24,7 +23,6 @@ const Dashboard = () => {
     const [updateCertificateError, setUpdateCertificateError] = useState("")
     const [updatingCertificate, setUpdatingCertificate] = useState(false)
     const [updateCertificateSuccess, setUpdateCertificateSuccess] = useState("")
-    const user = useSelector((state: any) => state.user.user)
 
     useEffect(() => {
         fetchDashboardData()
@@ -34,7 +32,7 @@ const Dashboard = () => {
         try {
             setFetchingDashboardData(true)
             setFetchedDashboardData(false)
-            const fetchDashboardDataRequest = await getProtected("companies/dashboard/data", user.role)
+            const fetchDashboardDataRequest = await getProtected("companies/dashboard/data")
 
             console.log({fetchDashboardDataRequest});
             if (fetchDashboardDataRequest.status === "OK") {
@@ -83,7 +81,7 @@ const Dashboard = () => {
     const updateCertificate = async () => {
         try {
             setUpdatingCertificate(true)
-            const updateCertificateRequest = await putProtected(`companies/certificates/${selectedCertificate._id}`, selectedCertificate, user.role)
+            const updateCertificateRequest = await putProtected(`companies/certificates/${selectedCertificate._id}`, selectedCertificate)
             setUpdatingCertificate(false)
             if (updateCertificateRequest.status === "OK") {
                 setUpdateCertificateSuccess("Certificate updated successfully!")
@@ -126,7 +124,7 @@ const Dashboard = () => {
 
     const makeMigrationRequest = async () => {
         try {
-            let makeMigrationRequestReq  = getProtected("migrations/companies", user.role)
+            let makeMigrationRequestReq  = getProtected("migrations/companies")
         } catch (error) {
             console.log({error});
             

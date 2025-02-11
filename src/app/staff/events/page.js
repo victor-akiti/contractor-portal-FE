@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 import styles from "./styles/styles.module.css"
 import { getProtected } from "@/requests/get"
 import moment from "moment"
-import { useSelector } from "react-redux"
 
 const Events = () => {
     const [events, setEvents] = useState([])
@@ -12,11 +11,9 @@ const Events = () => {
         fetchAllEvents()
     }, [])
 
-    const user = useSelector((state) => state.user.user)
-
     const fetchAllEvents= async () => {
         try {
-            const fetchAllEventsRequest = await getProtected("events/all", user.role)
+            const fetchAllEventsRequest = await getProtected("events/all")
 
             console.log({fetchAllEventsRequest});
 

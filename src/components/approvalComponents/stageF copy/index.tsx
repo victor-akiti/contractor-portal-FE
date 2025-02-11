@@ -69,7 +69,7 @@ const StageX = () => {
     const fetchVendorData = async (vendorID) => {
         setVendorID(vendorID)
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
+            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`)
 
             console.log({fetchVendorDataRequest});
 
@@ -239,9 +239,7 @@ const StageX = () => {
                                 <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
                             </div>
 
-                            {
-                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
-                            }
+                            <a style={{marginLeft: "20px"}}>Certificate History</a>
                         </div>
                     </div>
 
@@ -298,7 +296,7 @@ const StageX = () => {
 
     const fetchJobCategories = async () => {
         try {
-            const jobCategoriesRequest = await getProtected("jobCategories", user.role)
+            const jobCategoriesRequest = await getProtected("jobCategories")
             console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
@@ -385,7 +383,7 @@ const StageX = () => {
         try {
             const updateVendorCategoriesRequest = await putProtected(`companies/job-categories/${vendorID}`, {
                 categories: updateCategories ? updateCategories : selectedCategories
-            }, user.role)
+            })
 
             setUpdatingVendorCategories(false)
 
@@ -414,7 +412,7 @@ const StageX = () => {
     const approveParkRequest = async () => {
         try {
             updateUpdateStatus("approving")
-          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
+          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`)
           
           if (approveRequest.status === "OK") {
             updateUpdateStatus("park action success", "Vendor application parked")
@@ -434,7 +432,7 @@ const StageX = () => {
 
         try {
             updateUpdateStatus("rejecting")
-            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from}, user.role)
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from})
 
             if (revertRequest.status === "OK") {
                 updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")

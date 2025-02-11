@@ -1,4 +1,4 @@
-export const postPlain = async (route, body, role) => {
+export const postPlain = async (route, body) => {
     try {
         const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "POST",
@@ -13,7 +13,7 @@ export const postPlain = async (route, body, role) => {
     }
 }
 
-export const postProtected = async (route, body, role) => {
+export const postProtected = async (route, body) => {
     try {
         const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "POST",
@@ -24,23 +24,14 @@ export const postProtected = async (route, body, role) => {
             body: JSON.stringify(body)
         })
 
-        if (request.status === 401) {
-            if (!role || role === "Vendor" || role === "User") {
-                window.location.href = "/login"
-            } else {
-                window.location.href = "/login/staff"
-            }
-        } else {
-            const result = await request.json()
-
-            return result
-        }
+        const response = await request.json()
+        return response
     } catch (error) {
         console.log({error});
     }
 }
 
-export const postProtectedMultipart = async (route, body, role) => {
+export const postProtectedMultipart = async (route, body) => {
     try {
         const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "POST",
@@ -51,17 +42,8 @@ export const postProtectedMultipart = async (route, body, role) => {
             body
         })
 
-        if (request.status === 401) {
-            if (!role || role === "Vendor" || role === "User") {
-                window.location.href = "/login"
-            } else {
-                window.location.href = "/login/staff"
-            }
-        } else {
-            const result = await request.json()
-
-            return result
-        }
+        const response = await request.json()
+        return response
     } catch (error) {
         console.log({error});
     }

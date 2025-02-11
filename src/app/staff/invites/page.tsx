@@ -8,7 +8,6 @@ import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessText from "@/components/successText"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { useSelector } from "react-redux"
 
 type InvitedCompany = {
     fname: string,
@@ -48,7 +47,6 @@ const Invites = () => {
         reminderModalText: "",
         reminderModalButtonText: ""
     })
-    const user = useSelector((state: any) => state.user.user)
 
 
     useEffect(() => {
@@ -73,7 +71,7 @@ const Invites = () => {
         try {
             console.log({queryString});
             
-            const findCompanyRequest = await postProtected("invites/find", {queryString}, user.role)
+            const findCompanyRequest = await postProtected("invites/find", {queryString})
 
             if (findCompanyRequest.status === "OK") {
                 console.log({findCompanyRequest});
@@ -134,7 +132,7 @@ const Invites = () => {
 
     const getCompanyRegistrationStatus = async () => {
         try {
-            const getRegistrationStatusRequest = await postProtected("companies/registrationstatus/get", {email: newInvitee.email, companyName: newInvitee.companyName}, user.role)
+            const getRegistrationStatusRequest = await postProtected("companies/registrationstatus/get", {email: newInvitee.email, companyName: newInvitee.companyName})
             if (getRegistrationStatusRequest.status === "OK") {
                 let tempRegistrationStatus = {...registrationStatus}
                 if (getRegistrationStatusRequest.data.inviteStatus === 2 || getRegistrationStatusRequest.data.inviteStatus === 2 ) {
@@ -166,7 +164,7 @@ const Invites = () => {
                 setErrorMessage("")
                 setSuccessMessage("")
                 setSubmitting(true)
-                const sendNewInviteRequest = await postProtected("invites/new", newInvitee, user.role)
+                const sendNewInviteRequest = await postProtected("invites/new", newInvitee)
 
                 console.log({sendNewInviteRequest});
                 

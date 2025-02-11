@@ -29,7 +29,6 @@ const Tasks = () => {
     const [categoryToUpdate, setCategoryToUpdate] = useState<Category>({})
     const [categoryToDelete, setCategoryToDelete] = useState<Category>({})
     const user = useSelector((state:any) => state.user)
-    
 
     const validateNewCategoryLabel = () => {
         if (!newCategoryLabel) {
@@ -54,7 +53,7 @@ const Tasks = () => {
     console.log({jobCategories});
     const getAllJobCategories = async () => {
         try {
-            const getAllJobCategoriesRequest = await getProtected("jobCategories", user.role)
+            const getAllJobCategoriesRequest = await getProtected("jobCategories")
 
             if (getAllJobCategoriesRequest.status === "OK") {
                 
@@ -84,7 +83,7 @@ const Tasks = () => {
                 date: new Date()
             }
 
-            const addNewJobCategoryRequest = await postProtected("jobCategories", newJobCategory, user.role)
+            const addNewJobCategoryRequest = await postProtected("jobCategories", newJobCategory)
 
             if (addNewJobCategoryRequest.status === "OK") {
                 setUpdatingCategories(false)
@@ -105,7 +104,7 @@ const Tasks = () => {
     const updateExistingCategory = async () => {
         setUpdatingCategories(true)
         try {
-            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, {category: newCategoryLabel}, user.role)
+            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, {category: newCategoryLabel})
 
             if (updateExistingJobCategoryRequest.status === "OK") {
                 setUpdatingCategories(false)
@@ -145,7 +144,7 @@ const Tasks = () => {
     const deleteJobCategory = async () => {
         try {
             setDeletingCategory(true)
-            const deleteJobCategoryRequest = await deleteProtected(`jobCategories/${categoryToDelete._id}`, {deleted: true}, user.role)
+            const deleteJobCategoryRequest = await deleteProtected(`jobCategories/${categoryToDelete._id}`, {deleted: true})
 
             if (deleteJobCategoryRequest.status === "OK") {
                 let tempJobCategories = [...jobCategories]

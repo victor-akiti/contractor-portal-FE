@@ -15,7 +15,6 @@ import ppt from "@/assets/images/ppt.svg"
 import pptx from "@/assets/images/pptx.svg"
 import pdf from "@/assets/images/pdf.svg"
 import Image from "next/image"
-import { useSelector } from "react-redux"
 
 const FileUploader = ({updateUploadedFiles, updateCode, closeUploader, maxFiles, files, label, onlyNewFiles = false}) => {
     const uploadFileTabs = [{
@@ -33,7 +32,6 @@ const FileUploader = ({updateUploadedFiles, updateCode, closeUploader, maxFiles,
     const [selectedFiles, setSelectedFiles] = useState([])
     const [errorMessage, setErrorMessage] = useState("")
     const [selectedUploadedFiles, setSelectedUploadedFiles] = useState([])
-    const user = useSelector((state: any) => state.user.user)
     
 
     console.log({files});
@@ -93,7 +91,7 @@ const FileUploader = ({updateUploadedFiles, updateCode, closeUploader, maxFiles,
         formData.append("updateCode", updateCode)
         setUploading(true)
 
-        const uploadFiles = await postProtectedMultipart("files/upload", formData, user.role)
+        const uploadFiles = await postProtectedMultipart("files/upload", formData)
         
         setUploading(false)
 

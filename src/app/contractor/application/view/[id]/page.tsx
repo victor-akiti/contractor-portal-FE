@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import Accordion from "@/components/accordion";
 import Link from "next/link";
 import moment from "moment";
-import { useSelector } from "react-redux";
 
 type RegistrationForm = {
   _id?: String;
@@ -59,7 +58,6 @@ const ViewPage = () => {
     {}
   );
   const location = useParams();
-  const user = useSelector((state: any) => state.user.user)
 
   useEffect(() => {
     console.log({ location });
@@ -76,7 +74,7 @@ const ViewPage = () => {
       console.log({ vendorID });
 
       const getVendorRegistrationFormRequest = await getProtected(
-        `companies/register/form/${vendorID}`, user.role
+        `companies/register/form/${vendorID}`
       );
 
       if (getVendorRegistrationFormRequest.status === "OK") {
@@ -232,9 +230,7 @@ const ViewPage = () => {
                         }
                         
 
-                        {
-                          field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
-                        }
+                        <a style={{marginLeft: "20px"}}>Certificate History</a>
                     </div>
                 </div>
 

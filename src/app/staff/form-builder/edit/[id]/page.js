@@ -48,7 +48,6 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import TextBlock from "@/components/formComponents/textBlock"
 import FileUploader from "@/components/fileUploader"
 import Link from "next/link"
-import { useSelector } from "react-redux"
 
 
 const EditForm = () => {
@@ -95,7 +94,6 @@ const EditForm = () => {
     const [updateSuccessMessage, setUpdateSuccessMessage] = useState("")
     const [updateErrorMessage, setUpdateErrorMessage] = useState("")
     const [showUploadPreviewImageModal, setShowUploadPreviewImageModal] = useState(false)
-    const user = useSelector((state) => state.user.user)
 
     
       const [content, setContent] = useState('');
@@ -155,7 +153,7 @@ const EditForm = () => {
            let {id} = param
            
            if (id) {
-            const fetchFormRequest = await getProtected(`forms/form/${id}`, user.role)
+            const fetchFormRequest = await getProtected(`forms/form/${id}`)
 
             if (fetchFormRequest.status === "OK") {
                 let tempForm = {...newForm}
@@ -815,7 +813,7 @@ const EditForm = () => {
     const createNewForm = async () => {
         try {
             setSavingForm(true)
-            const createNewFormRequest = await postProtected("forms/new", {form: newForm}, user.role)
+            const createNewFormRequest = await postProtected("forms/new", {form: newForm})
 
             setSavingForm(false)
 
