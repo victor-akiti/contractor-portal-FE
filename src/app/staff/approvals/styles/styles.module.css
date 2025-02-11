@@ -1,6 +1,9 @@
 .approvals {
   width: 100%;
 }
+.approvals a {
+  cursor: pointer;
+}
 .approvals .tableHeading {
   display: flex;
   align-items: center;

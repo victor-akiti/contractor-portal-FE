@@ -122,11 +122,11 @@ const Approval = () => {
     }
 
     const vendorIsParked = () => {
-        return (vendorData?.approvalData?.flags?.status === "parked" || vendorData?.approvalData?.flags?.stage === "parked")
+        return (vendorData?.approvalData?.flags?.status === "parked")
     }
 
     const vendorApplicationIsReturned = () => {
-        return (vendorData?.approvalData?.flags?.status === "returned" || vendorData?.approvalData?.flags?.stage === "returned")
+        return (vendorData?.approvalData?.flags?.status === "returned" )
     }
 
     const fetchVendorData = async (vendorID) => {
