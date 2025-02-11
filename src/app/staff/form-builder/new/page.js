@@ -46,7 +46,6 @@ import SuccessMessage from "@/components/successMessage"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import TextBlock from "@/components/formComponents/textBlock"
 import Modal from "@/components/modal"
-import { useSelector } from "react-redux"
 
 const NewForm = () => {
     const [newForm, setNewForm] = useState({
@@ -91,7 +90,6 @@ const NewForm = () => {
     const addOptionRef = useRef(null)
     const [updateSuccessMessage, setUpdateSuccessMessage] = useState("")
     const [updateErrorMessage, setUpdateErrorMessage] = useState("")
-    const user = useSelector((state) => state.user.user)
     
       const [content, setContent] = useState('');
 
@@ -150,7 +148,7 @@ const NewForm = () => {
            let {id} = param
            
            if (id) {
-            const fetchFormRequest = await getProtected(`forms/form/${id}`, user.role)
+            const fetchFormRequest = await getProtected(`forms/form/${id}`)
 
             if (fetchFormRequest.status === "OK") {
                 let tempForm = {...newForm}
@@ -810,7 +808,7 @@ const NewForm = () => {
     const createNewForm = async () => {
         try {
             setSavingForm(true)
-            const createNewFormRequest = await postProtected("forms/new", {form: newForm}, user.role)
+            const createNewFormRequest = await postProtected("forms/new", {form: newForm})
 
             setSavingForm(false)
 

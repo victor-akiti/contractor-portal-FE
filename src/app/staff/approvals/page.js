@@ -98,7 +98,15 @@ const Approvals = () => {
 
     const user= useAppSelector(state => state?.user?.user)
 
+    
 
+    const triggerInviteMigration = async () => {
+        try {
+            const triggerMigration = await getProtected("migrations/newRequests")
+        } catch (error) {
+            console.log({error});
+        }
+    }
 
     const setInviteToArchiveObject = invite => {
         let tempInviteToArchive = {...inviteToArchive}
@@ -120,11 +128,14 @@ const Approvals = () => {
         setArchivingInvite(false)
     }
 
+    const triggerMigration = async () => {
+        const migrate = await getProtected("migrations/newRequests")
+    }
 
     const fetchAllApprovalsData = async () => {
         console.log("Fetching approvals data");
         try {
-            const fetchAllApprovalsDataRequest = await getProtected("companies/approvals/all", user.role)
+            const fetchAllApprovalsDataRequest = await getProtected("companies/approvals/all")
 
             console.log({fetchAllApprovalsDataRequest});
             setFetchingContractors(false)
@@ -420,7 +431,7 @@ const Approvals = () => {
     const archiveInvite = async () => {
         try {
             setArchivingInvite(true)
-            const archiveInviteRequest = await postProtected("invites/archive", inviteToArchive, user.role)
+            const archiveInviteRequest = await postProtected("invites/archive", inviteToArchive)
 
             setArchivingInvite(false)
 
@@ -557,7 +568,7 @@ const Approvals = () => {
     const approveParkRequest = async (vendorID) => {
         setActionProgress("processing")
         try {
-          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
+          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`)
           console.log({approveRequest})
 
           if (approveRequest.status === "OK") {
@@ -586,7 +597,7 @@ const Approvals = () => {
       const declineParkRequest = async (vendorID) => {
         console.log("Decline");
         try {
-          const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`, user.role)
+          const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
           console.log({declineRequest})
         } catch (error) {
           console.log({error})
@@ -598,7 +609,7 @@ const Approvals = () => {
         
         setActionProgress("processing")
         try {
-            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from}, user.role)
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from})
 
             if (revertRequest.status === "OK") {
                 setActionProgress("success")
@@ -1249,7 +1260,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
     const sendReminder = async () => {
         try {
             setSendReminderText("SENDING REMINDER")
-            const sendReminderRequest = await getProtected(`invites/remind/${inviteDetails._id}`, user.role)
+            const sendReminderRequest = await getProtected(`invites/remind/${inviteDetails._id}`)
 
             if (sendReminderRequest.status === "OK") {
                 setSendReminderText("REMINDER SENT")
@@ -1270,7 +1281,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
             console.log("Renewing");
             setRenewText("EXTENDING EXPIRY DATE...")
 
-            const renewInviteRequest = await getProtected(`invites/renew/${inviteDetails._id}`, user.role)
+            const renewInviteRequest = await getProtected(`invites/renew/${inviteDetails._id}`)
 
             console.log({renewInviteRequest});
 

@@ -5,6 +5,7 @@ import ErrorText from "@/components/errorText"
 import SuccessMessage from "@/components/successMessage"
 import { useState } from "react"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import { getProtected } from "@/requests/get"
 import { putProtected } from "@/requests/put"
 import { useParams } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
@@ -33,7 +34,7 @@ const VendorSettings = () => {
     const setPortalAdministratorProfile = async () => {
         try {
             setUpdating(true)
-            const setPortalAdministratorProfileRequest = await putProtected(`companies/portal-admin/update/${vendorID}`, administratorProfile, user.role)
+            const setPortalAdministratorProfileRequest = await putProtected(`companies/portal-admin/update/${vendorID}`, administratorProfile)
 
             if (setPortalAdministratorProfileRequest.status === "OK") {
                 //@ts-ignore
@@ -70,7 +71,7 @@ const VendorSettings = () => {
     const requestToReplaceAdministrator = async (email) => {
         try {
             setUpdating(true)
-            const requestToReplaceAdministratorRequest = await postProtected(`companies/portal-admin/replace/${vendorID}`, {email}, user.role)
+            const requestToReplaceAdministratorRequest = await postProtected(`companies/portal-admin/replace/${vendorID}`, {email})
 
             if (requestToReplaceAdministratorRequest.status === "OK") {
                 setUpdating(false)

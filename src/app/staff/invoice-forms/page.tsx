@@ -8,7 +8,6 @@ import ManageJobCategories from "./manageJobCategories"
 import Modal from "@/components/modal"
 import Switch from "react-switch"
 import { getProtected } from "@/requests/get"
-import { useSelector } from "react-redux"
 
 type User  = {
     firstName?: String,
@@ -30,8 +29,6 @@ const InvoiceForms = () => {
 
     const [copiedFields, setCopiedFields] = useState([])
 
-    const user = useSelector((state: any) => state.user.user)
-
 
     useEffect(() => {
         fetchAllInvoiceForms()
@@ -39,7 +36,7 @@ const InvoiceForms = () => {
 
     const fetchAllInvoiceForms = async () => {
         try {
-            const fetchAllInvoiceFormsRequest =  await getProtected("docuware/invoice-forms/all", user.role)
+            const fetchAllInvoiceFormsRequest =  await getProtected("docuware/invoice-forms/all")
 
             if (fetchAllInvoiceFormsRequest.status === "OK") {
                 let tempInvoiceForms = [...invoiceForms]

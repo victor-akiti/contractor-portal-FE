@@ -11,7 +11,6 @@ import { getProtected } from "@/requests/get"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import SuccessMessage from "@/components/successMessage"
 import { putProtected } from "@/requests/put"
-import { useSelector } from "react-redux"
 
 type User  = {
     firstName?: String,
@@ -46,7 +45,6 @@ const Tasks = () => {
     const [fixedUsersList, setFixedUsersList] = useState<any>([])
     const [selectedUser, setSelectedUser] = useState<User>({})
     const manageUserModalRef = useRef(null)
-    const user = useSelector((state: any) => state.user.user)
 
     const sampleEndUser: User = {
         firstName: "firstName",
@@ -95,7 +93,7 @@ const Tasks = () => {
 
     const getAllStaff = async () => {
         try {
-            const getAllStaffRequest = await getProtected("users/all", user.role)
+            const getAllStaffRequest = await getProtected("users/all")
 
             console.log({getAllStaffRequest});
             
@@ -135,7 +133,7 @@ const Tasks = () => {
             } else {
                 setOptionToUpdate("role")
             }
-            const updateUserRoleRequest = await putProtected(`users/role/${selectedUser._id}`, {role: newRole, replace}, user.role)
+            const updateUserRoleRequest = await putProtected(`users/role/${selectedUser._id}`, {role: newRole, replace})
 
             if (updateUserRoleRequest.status === "OK") {
                 setOptionToUpdate("")
@@ -210,7 +208,7 @@ const Tasks = () => {
         try {
             console.log("updating department");
             
-            const updateUserDepartmentRequest = await putProtected(`users/department/${selectedUser._id}`, {department: newDepartment}, user.role)
+            const updateUserDepartmentRequest = await putProtected(`users/department/${selectedUser._id}`, {department: newDepartment})
 
             if (updateUserDepartmentRequest.status === "OK") {
                 getAllStaff()

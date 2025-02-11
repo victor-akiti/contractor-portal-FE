@@ -131,7 +131,7 @@ const Approval = () => {
 
     const fetchVendorData = async (vendorID) => {
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
+            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`)
 
             setVendorID(vendorID)
 
@@ -154,7 +154,7 @@ const Approval = () => {
         if (!updatingApplication) {
             try {
                 setUpdatingApplication(true)
-                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from: "parked", reason}, user.role)
+                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from: "parked", reason})
 
                 setUpdatingApplication(false)
                 setShowReturnToL2Modal(false)
@@ -191,7 +191,7 @@ const Approval = () => {
     const retrieveApplicationFromVendor = async (reason) => {
         try {
             setUpdatingApplication(true)
-            const retrieveApplicationFromVendorRequest = await postProtected(`approvals/retrieve/${vendorID}`, {reason}, user.role)
+            const retrieveApplicationFromVendorRequest = await postProtected(`approvals/retrieve/${vendorID}`, {reason})
 
             setUpdatingApplication(false)
 

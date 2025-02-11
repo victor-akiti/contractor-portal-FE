@@ -12,7 +12,6 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import Loading from "@/components/loading"
 import deleteIcon from "@/assets/images/delete.svg"
 import {pdf, Document, Page, View, Text, BlobProvider, StyleSheet, Font, Image as RPImage} from "@react-pdf/renderer"
-import { useSelector } from "react-redux"
 
 type Invoice = {
     CONTRACTOR_NAME? : string,
@@ -73,7 +72,6 @@ const InvoiceForm = () => {
         hasSubmittedBefore: false
     })
     const [invoiceSubmitted, setInvoiceSubmitted] = useState(false)
-    const user = useSelector((state : any) => state.user.user)
 
     console.log({invoiceDetails});
     console.log({formErrors});
@@ -365,7 +363,7 @@ const InvoiceForm = () => {
         
 
         try {
-            const fetchInvoiceDetailsRequest = await getProtected(`docuware/invoice/record/${invoiceRecordID}`, user.role)
+            const fetchInvoiceDetailsRequest = await getProtected(`docuware/invoice/record/${invoiceRecordID}`)
 
             if (fetchInvoiceDetailsRequest.status === "OK") {
                 setInvoiceFetchStatus("fetched")
@@ -503,7 +501,7 @@ const InvoiceForm = () => {
             setSubmittingInvoice(true)
             setSubmissionErrorMessage("")
             
-            const createInvoiceRequest = await postProtected("docuware/invoice/new", invoiceDetails, user.role)
+            const createInvoiceRequest = await postProtected("docuware/invoice/new", invoiceDetails)
 
             console.log({createInvoiceRequest});
             
@@ -539,7 +537,7 @@ const InvoiceForm = () => {
                 formData.append("file", filesToUpload.jobCompletionCertificate)
             }
 
-            const completeInvoiceSubmissionRequest = await postProtectedMultipart(`docuware/invoice/attachFiles/${completionID}`, formData, user.role)
+            const completeInvoiceSubmissionRequest = await postProtectedMultipart(`docuware/invoice/attachFiles/${completionID}`, formData)
 
             if (completeInvoiceSubmissionRequest) {
                 setInvoiceSubmitted(true)

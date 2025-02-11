@@ -81,7 +81,7 @@ const StageF = () => {
     const fetchVendorData = async (vendorID) => {
         setVendorID(vendorID)
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
+            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`)
 
             console.log({fetchVendorDataRequest});
 
@@ -255,9 +255,7 @@ const StageF = () => {
                             }
                             
 
-                            {
-                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
-                            }
+                            <a style={{marginLeft: "20px"}}>Certificate History</a>
                         </div>
                     </div>
 
@@ -314,7 +312,7 @@ const StageF = () => {
 
     const fetchJobCategories = async () => {
         try {
-            const jobCategoriesRequest = await getProtected("jobCategories", user.role)
+            const jobCategoriesRequest = await getProtected("jobCategories")
             console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
@@ -401,7 +399,7 @@ const StageF = () => {
         try {
             const updateVendorCategoriesRequest = await putProtected(`companies/job-categories/${vendorID}`, {
                 categories: updateCategories ? updateCategories : selectedCategories
-            }, user.role)
+            })
 
             setUpdatingVendorCategories(false)
 
@@ -464,7 +462,7 @@ const StageF = () => {
                 setUpdating(true)
                 const approveToL3Request = await postProtected(`approvals/process/${vendorID}`, {
                     pages
-                }, user.role)
+                })
                 
     
                 if (approveToL3Request.status === "OK") {
@@ -490,7 +488,7 @@ const StageF = () => {
         try {
             const returnToStageERequest = await postProtected(`approvals/revert/${vendorID}`, {
                 revertReason
-            }, user.role)
+            })
 
             if (returnToStageERequest.status === "OK") {
                 postActionCompleted("Vendor application returned", `${approvalData.companyName}'s application has been returned to the Contracts and Procurement Department for further research.`, 1)
@@ -511,7 +509,7 @@ const StageF = () => {
                 setUpdating(true)
                 const recommendForHoldRequest = await postProtected(`approvals/hold/direct/${vendorID}`, {
 
-                }, user.role)
+                })
     
                 if (recommendForHoldRequest.status === "OK") {
                     postActionCompleted("Vendor application parked", `${approvalData.companyName} been completed at L2. Returning to the vendors list.`, 1)

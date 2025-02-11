@@ -39,7 +39,7 @@ const AccountSettings = () => {
 
     const getAllAvailableStaff = async () => {
         try {
-            const getAllStaffRequest = await getProtected("users/cnpstaff/all", user.role)
+            const getAllStaffRequest = await getProtected("users/cnpstaff/all")
 
             console.log({getAllStaffRequest});
             
@@ -104,7 +104,7 @@ const AccountSettings = () => {
         try {
             clearAllErrorMessages()
             setSettingBeingUpdated("out of office")
-            const setOutOfOfficeRequest = await postProtected (`user/outOfOffice/set`, ooData, user.role)
+            const setOutOfOfficeRequest = await postProtected (`user/outOfOffice/set`, ooData)
 
             setSettingBeingUpdated("")
 
@@ -143,7 +143,7 @@ const AccountSettings = () => {
             clearAllErrorMessages()
             setSettingBeingUpdated("in office")
 
-            const setInOfficeRequest = await postProtected (`user/outOfOffice/unset`, {}, user.role)
+            const setInOfficeRequest = await postProtected (`user/outOfOffice/unset`)
 
             setSettingBeingUpdated("")  
 

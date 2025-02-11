@@ -23,7 +23,6 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import Link from "next/link"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import Image from "next/image"
-import { useSelector } from "react-redux"
 
 type RegistrationForm = {
     _id? : String,
@@ -102,7 +101,6 @@ const NewCompanyRegistration = () => {
     const [submitting, setSubmitting] = useState(false)
     const [savingForm, setSavingForm] = useState(false)
     const [vendorID, setVendorID] = useState<String>("")
-    const user = useSelector((state: any) => state.user.user)
     console.log({location});
     
 
@@ -120,7 +118,7 @@ const NewCompanyRegistration = () => {
 
     const getRegistrationForm = async () => {
         try {
-            const getRegistrationFormRequest = await getProtected("companies/register/form", user.role)
+            const getRegistrationFormRequest = await getProtected("companies/register/form")
 
             console.log({getRegistrationFormRequest});
             
@@ -162,7 +160,7 @@ const NewCompanyRegistration = () => {
             console.log({vendorId});
             setVendorID(vendorId)
             
-            const getVendorRegistrationFormRequest = await getProtected(`companies/register/form/${vendorId}`, user.role)
+            const getVendorRegistrationFormRequest = await getProtected(`companies/register/form/${vendorId}`)
 
             if (getVendorRegistrationFormRequest.status === "OK") {
                 let generalRegistrationForm = getVendorRegistrationFormRequest.data.generalRegistrationForm
@@ -266,7 +264,7 @@ const NewCompanyRegistration = () => {
     const createNewVendor = async () => {
         try {
             setSavingForm(true)
-            const saveCurrentPageRequest = await postProtected("companies/vendor/create", {registrationForm, certificates}, user.role)
+            const saveCurrentPageRequest = await postProtected("companies/vendor/create", {registrationForm, certificates})
 
             console.log({saveCurrentPageRequest});
 
@@ -290,7 +288,7 @@ const NewCompanyRegistration = () => {
     const saveCurrentVendor = async () => {
         setSavingForm(true)
         try {
-            const saveCurrentPageRequest = await putProtected("companies/vendor/update", {registrationForm, certificates}, user.role)
+            const saveCurrentPageRequest = await putProtected("companies/vendor/update", {registrationForm, certificates})
 
             console.log({saveCurrentPageRequest});
 
@@ -673,7 +671,7 @@ const NewCompanyRegistration = () => {
         try {
             setSubmitting(true)
 
-            const submitApplicationRequest = await putProtected("companies/vendor/submit", {vendorID: registrationForm.vendorID}, user.role)
+            const submitApplicationRequest = await putProtected("companies/vendor/submit", {vendorID: registrationForm.vendorID})
 
             setSubmitting(false)
             

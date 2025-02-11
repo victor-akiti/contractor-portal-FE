@@ -68,7 +68,7 @@ const StageC = () => {
 
     const getAllServices = async () => {
         try {
-            const allServicesRequest = await getProtected("jobCategories", user.role)
+            const allServicesRequest = await getProtected("jobCategories")
 
             if (allServicesRequest.status === "OK") {
                 let tempServices = [...services]
@@ -87,7 +87,7 @@ const StageC = () => {
     const fetchVendorData = async (vendorID) => {
         setVendorID(vendorID)
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
+            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`)
 
             console.log({fetchVendorDataRequest});
 
@@ -219,9 +219,7 @@ const StageC = () => {
                             }
                             
 
-                            {
-                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
-                            }
+                            <a style={{marginLeft: "20px"}}>Certificate History</a>
                         </div>
                     </div>
 
@@ -276,7 +274,7 @@ const StageC = () => {
 
     const fetchJobCategories = async () => {
         try {
-            const jobCategoriesRequest = await getProtected("jobCategories", user.role)
+            const jobCategoriesRequest = await getProtected("jobCategories")
             console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
@@ -356,7 +354,7 @@ const StageC = () => {
         try {
             const recommendForHoldRequest = await postProtected(`approvals/hold/direct/${vendorID}`, {
                 reason
-            }, user.role)
+            })
 
             if (recommendForHoldRequest.status === "OK") {
                 setShowSetReasonForHoldModal(false)
@@ -408,7 +406,7 @@ const StageC = () => {
                 pages,
                 selectedServices,
                 siteVisitRequired
-            }, user.role)
+            })
 
             if (processToStageDRequest.status === "OK") {
                 actionCompleted()

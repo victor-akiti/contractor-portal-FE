@@ -16,7 +16,7 @@ export const deletePlain = async (route, body) => {
     }
 }
 
-export const deleteProtected = async (route, body, role) => {
+export const deleteProtected = async (route, body) => {
     try {
         const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
             method: "DELETE",
@@ -27,17 +27,9 @@ export const deleteProtected = async (route, body, role) => {
             body: JSON.stringify(body)
         })
 
-        if (request.status === 401) {
-            if (!role || role === "Vendor" || role === "User") {
-                window.location.href = "/login"
-            } else {
-                window.location.href = "/login/staff"
-            }
-        } else {
-            const result = await request.json()
+        const result = await request.json()
 
-            return result
-        }
+        return result
     } catch (error) {
         console.log({error});
     }

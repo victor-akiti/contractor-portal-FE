@@ -1,8 +1,11 @@
 'use client'
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import ReduxProvider from './reduxProvider'
-
+import { useEffect } from 'react'
+import { getProtected } from '@/requests/get'
+import { useRouter } from 'next/navigation'
 
 const inter = Inter({ subsets: ['latin'] })
 
