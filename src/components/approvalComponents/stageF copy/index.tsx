@@ -239,7 +239,9 @@ const StageX = () => {
                                 <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
                             </div>
 
-                            <a style={{marginLeft: "20px"}}>Certificate History</a>
+                            {
+                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
+                            }
                         </div>
                     </div>
 

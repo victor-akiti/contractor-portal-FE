@@ -232,7 +232,9 @@ const ViewPage = () => {
                         }
                         
 
-                        <a style={{marginLeft: "20px"}}>Certificate History</a>
+                        {
+                          field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
+                        }
                     </div>
                 </div>
 
