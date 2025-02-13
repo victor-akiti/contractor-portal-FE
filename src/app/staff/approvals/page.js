@@ -311,7 +311,7 @@ const Approvals = () => {
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
-                if (!element?.flags?.approvals?.level) {
+                if (!element?.flags?.level && !element?.flags?.approvals?.level) {
                     filteredArray.push(element)
                 }
                 
@@ -325,7 +325,9 @@ const Approvals = () => {
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
-                if (element?.flags?.approvals?.level === 1) {
+                if (element?.flags?.level === 1) {
+                    filteredArray.push(element)
+                } else if (element?.flags?.approvals?.level === 1) {
                     filteredArray.push(element)
                 }
                 
@@ -339,10 +341,11 @@ const Approvals = () => {
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
-                if (element?.flags?.approvals?.level === 2) {
+                if (element?.flags?.level === 2) {
+                    filteredArray.push(element)
+                } else if (element?.flags?.approvals?.level === 2) {
                     filteredArray.push(element)
                 }
-                
             }
 
             tempApprovals.pendingL2 = filteredArray
@@ -353,7 +356,9 @@ const Approvals = () => {
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
-                if (element?.flags?.approvals?.level === 3) {
+                if (element?.flags?.level === 3) {
+                    filteredArray.push(element)
+                } else if (element?.flags?.approvals?.level === 3) {
                     filteredArray.push(element)
                 }
                 
@@ -367,7 +372,9 @@ const Approvals = () => {
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
-                if (element?.flags?.approvals?.level === 4) {
+                if (element?.flags?.level === 4) {
+                    filteredArray.push(element)
+                } else if (element?.flags?.approvals?.level === 4) {
                     filteredArray.push(element)
                 }
                 
@@ -381,7 +388,9 @@ const Approvals = () => {
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
-                if (element?.flags?.approvals?.level === 5) {
+                if (element?.flags?.level === 5) {
+                    filteredArray.push(element)
+                } else if (element?.flags?.approvals?.level === 5) {
                     filteredArray.push(element)
                 }
                 
@@ -395,7 +404,9 @@ const Approvals = () => {
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
-                if (element?.flags?.approvals?.level === 6) {
+                if (element?.flags?.level === 6) {
+                    filteredArray.push(element)
+                } else if (element?.flags?.approvals?.level === 6) {
                     filteredArray.push(element)
                 }
                 
@@ -540,7 +551,7 @@ const Approvals = () => {
 
     const getNextStage = (companyRecord) => {
         
-        if (!companyRecord?.flags?.approvals?.level) {
+        if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
             return "B"
         } else if (companyRecord?.flags?.approvals?.level === 1) {
             return "C"
