@@ -18,6 +18,52 @@
         cursor: pointer;
     }
 }
+
+.addNewEndUserModal {
+    background-color: white;
+    padding: 20px;
+    min-width: 30%;
+
+    h2 {
+        margin-bottom: 10px;
+    }
+
+    input, select {
+        width: 100%;
+        margin-bottom: 20px;
+        border-style: none;
+        border-style: solid;
+        border-width: 1px;
+        border-color: #d1d1d1;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .actionButtons {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+
+        button {
+            padding: 7px;
+            border-style: none;
+            border-radius: 5px;
+        }
+
+        button:nth-child(1) {
+            background-color: $primaryColor;
+            color: white;
+            border-style: none;
+            border-radius: 5px;
+
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+    }
+}
+
+
 .manageUserModal {
     background-color: white;
     width: 30%;
@@ -221,7 +267,7 @@
                 border-style: none;
                 background-color: $primaryColor;
                 border-radius: 5px;
-                font-size: 18px;
+                font-size: 14px;
             }
         }
     }
