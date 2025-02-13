@@ -12,6 +12,8 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import SuccessMessage from "@/components/successMessage"
 import { putProtected } from "@/requests/put"
 import { useSelector } from "react-redux"
+import ErrorText from "@/components/errorText"
+import { postProtected } from "@/requests/post"
 
 type User  = {
     firstName?: String,
@@ -47,6 +49,15 @@ const Tasks = () => {
     const [selectedUser, setSelectedUser] = useState<User>({})
     const manageUserModalRef = useRef(null)
     const user = useSelector((state: any) => state.user.user)
+    const [showCreateNewEndUserModal, setShowCreateNewEndUserModal] = useState(false)
+    const [newEndUser, setNewEndUser] = useState({
+        name: "",
+        email: "",
+        department: ""
+    })
+    const [newEndUserErrorText, setNewEndUserError] = useState("")
+    const [newEndUserSuccess, setNewEndUserSuccess] = useState("")
+    const createNewEndUserFormRef = useRef(null)
 
     const sampleEndUser: User = {
         firstName: "firstName",
@@ -225,9 +236,6 @@ const Tasks = () => {
         }
     }
 
-    console.log({activeTab});
-    console.log({newRole});
-    console.log({newDepartment});
     const tabs = [
         {
             name: "amni-staff",
@@ -261,6 +269,77 @@ const Tasks = () => {
         tempUsers = fixedUsersList["allStaff"].filter(user => user.department === department)
         setUsers(tempUsers)
     }
+
+    const updateNewUserDetails = event => {
+        const field = event.target.name
+        const value = event.target.value
+
+        console.log({field, value});
+        let tempNewEndUser = {...newEndUser}
+        tempNewEndUser[field] = value
+        setNewEndUser(tempNewEndUser)
+    }
+
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/
+
+    const validateNewEndUser = () => {
+        console.log("Validatin user");
+        
+        if (!newEndUser.name) {
+            setNewEndUserError("Please enter a name")
+        } else if (!newEndUser.email) {
+            setNewEndUserError("Please enter an email address")
+        } else if (!emailRegex.test(newEndUser.email)) {
+            setNewEndUserError("Please enter a valid email address")
+        } else if (!newEndUser.department) {
+            setNewEndUserError("Please enter a department")
+        } else {
+            setNewEndUserError("")
+            createNewEndUser()
+        }
+    }
+
+    const createNewEndUser = async () => {
+        setNewEndUserError("")
+        setNewEndUserSuccess("")
+        try {
+            const createNewEndUserRequest = await postProtected("users/enduser/create", newEndUser, user.role)
+
+            if (createNewEndUserRequest.status === "OK") {
+                getAllStaff()
+                setNewEndUserError("")
+                setNewEndUserSuccess("User added successfully")
+                createNewEndUserFormRef.current.reset()
+
+                let tempNewEndUser = {...newEndUser}
+                tempNewEndUser = {
+                    name: "",	
+                    email: "",
+                    department: ""
+                }
+                setNewEndUser(tempNewEndUser)
+            } else {
+                setNewEndUserError(createNewEndUserRequest.error.message)
+            }
+        } catch (error) {
+            console.log({error});
+            
+        }
+    }
+
+    const openAddEndUserModal = () => {
+        setShowCreateNewEndUserModal(true)
+    }
+
+    const closeAddEndUSerModal = () => {
+        setNewEndUserError("")
+        setNewEndUserSuccess("")
+        createNewEndUserFormRef.current.reset()
+        setShowCreateNewEndUserModal(false)
+    }
+
+    console.log({newEndUser});
+    
     
     
     
@@ -434,12 +513,68 @@ const Tasks = () => {
             </Modal>
             }
 
+            {
+                showCreateNewEndUserModal && <Modal>
+                <div className={styles.addNewEndUserModal}>
+                    <h2>Add New End User</h2>
+
+                    {
+                        newEndUserErrorText && <ErrorText text={newEndUserErrorText} />
+                    }
+
+                    {
+                        newEndUserSuccess && <SuccessMessage message={newEndUserSuccess} />
+                    }
+
+                    <form ref={createNewEndUserFormRef} onChange={event => updateNewUserDetails(event)} onSubmit={event => {
+                        event.preventDefault()
+                        validateNewEndUser()
+                    }}>
+                        <input placeholder="Name" name="name" />
+
+                        <input placeholder="Email" name="email" />
+
+                        <select name="department">
+
+                            <option disabled selected>Department</option>
+                            <option value={"Contracts and Procurement"}>Contracts and Procurement</option>
+                            <option value={"Corporate Communications"}>Corporate Communications</option>
+                            <option value={"Drilling"}>Drilling</option>
+                            <option value={"Finance"}>Finance</option>
+                            <option value={"Legal"}>Legal</option>
+                            <option value={"Human Resources"}>Human Resources</option>
+                            <option value={"Internal Control and Risk Management"}>Internal Control and Risk Management</option>
+                            <option value={"ICT"}>ICT</option>
+                            <option value={"Insurance"}>Insurance</option>
+                            <option value={"Information Management"}>Information Management</option>
+                            <option value={"Operations"}>Operations</option>
+                        </select>
+                    </form>
+
+                    <div className={styles.actionButtons}>
+                        <button onClick={() => validateNewEndUser()}>Add End User</button>
+
+                        <button onClick={() => closeAddEndUSerModal()}>Cancel</button>
+                    </div>
+                </div>
+            </Modal>
+            }
+
 
             <h2>User Management</h2>
 
             <div className={styles.tab}>
             <header>
-                <h3>Manage Users</h3>
+                <div>
+                    <h3>Manage Users</h3>
+
+                    {
+                        (user.role === "Admin" || user.role === "IT Admin" || user.role === "C&P Admin") && <button onClick={() => openAddEndUserModal()}>Add End User</button>
+                    }
+
+                    
+                </div>
+                
 
                 {/* <label>Filter</label> */}
 
