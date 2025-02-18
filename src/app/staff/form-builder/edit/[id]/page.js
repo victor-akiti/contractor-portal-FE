@@ -1377,6 +1377,7 @@ const EditForm = () => {
 
                                             {
                                                ( propertyToEdit.fieldType === "shortText" || propertyToEdit.fieldType === "longText") &&
+                                                <>
                                                 <div className={styles.editFieldDivs}>
                                                     <label>Text Type</label>
                                                     <select onChange={event => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "textType", value: event.target.value, pageIndex: propertyToEdit.page})}>
@@ -1385,6 +1386,20 @@ const EditForm = () => {
                                                         <option value={"email"}>Email</option>
                                                     </select>
                                                 </div>
+
+                                                {
+                                                    newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex]?.textType === "number" && <div className={styles.editFieldDivs} style={{display: "flex", alignItems: "center", flexDirection: "row", justifyContent: "left"}}>
+                                                    <label>Is Currency</label>
+                                                    <input 
+                                                    type="checkbox" style={{width: "unset", margin: "0px", marginLeft: "10px"}} checked={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex]?.isCurrency}
+                                                    onChange={event => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "isCurrency", value: event.target.checked, pageIndex: propertyToEdit.page})}
+                                                    />
+                                                </div>
+                                                }
+
+                                                
+                                                
+                                                </>
                                             }
 
                                             {
