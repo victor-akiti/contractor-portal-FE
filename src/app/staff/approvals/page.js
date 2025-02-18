@@ -959,6 +959,10 @@ const Approvals = () => {
         }
     }
 
+    const vendorIsPending = vendorData => {
+        return (vendorData?.flags?.status === "pending")
+    }
+
     console.log({returnToL2Data});
     
 
@@ -1026,7 +1030,9 @@ const Approvals = () => {
 
                                     <div className={styles.searchResultsActionButtons}>
                                         <Link href={`/staff/vendor/${item?._id}`}><button>VIEW</button></Link>
-                                        <Link href={`/staff/approvals/${item?._id}`}><button>{`Process to ${getNextStage(item)}`}</button></Link>
+                                        {
+                                            vendorIsPending(item) && <Link href={`/staff/approvals/${item?._id}`}><button>{`Process to ${getNextStage(item)}`}</button></Link>
+                                        }
                                     </div>
                                 </div>)
                                 }
