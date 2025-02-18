@@ -148,6 +148,12 @@ const StageA = ({approvalData, formPages, vendorID}) => {
 
         updateVendorCategories(tempSelectedCategories)
     }
+
+    const formatNumberAsCurrency = (number) => {
+        console.log({number});
+        
+        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(number);
+    }
     
 
     const getFieldItemComponent = (field, index) => {
@@ -157,7 +163,14 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                 <div>
                     <p className={styles.fieldData}>
                         <label>{`${field.label}:`}</label>
-                        <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
+                        
+                        {
+                            field.textType === "number" && <p>{field?.isCurrency ? formatNumberAsCurrency(field.value) : field.value}</p>
+                        }
+
+                        {
+                            field.textType !== "number" && <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
+                        }
                     </p>
                 </div>
 
