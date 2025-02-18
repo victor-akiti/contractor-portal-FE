@@ -198,7 +198,18 @@ const ViewVendorPage = () => {
                 <div>
                     <p className={styles.fieldData}>
                         <label>{`${field.label}:`}</label>
-                        <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
+                        {
+                            field.textType === "number" && <p>{field?.isCurrency ? formatNumberAsCurrency(field.value) : field.value}</p>
+                        }
+
+                        {
+                            field.textType !== "number" && <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
+                        }
+
+
+
+
+                        
                     </p>
                 </div>
 
@@ -523,6 +534,12 @@ const ViewVendorPage = () => {
         } catch (error) {
             console.log({error})
         }
+    }
+
+    const formatNumberAsCurrency = (number) => {
+        console.log({number});
+        
+        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(number);
     }
     
 
