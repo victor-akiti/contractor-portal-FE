@@ -14,6 +14,7 @@ import { putProtected } from "@/requests/put"
 import { useSelector } from "react-redux"
 import ErrorText from "@/components/errorText"
 import { postProtected } from "@/requests/post"
+import { deleteProtected } from "@/requests/delete"
 
 type User  = {
     firstName?: String,
@@ -339,6 +340,55 @@ const Tasks = () => {
     }
 
     console.log({newEndUser});
+
+    const [removingUserAccountState, setRemovingUserAccountState] = useState({
+        status: "",
+        message: ""
+    })
+    const [userAccountToRemove, setUserAccountToRemove] = useState(null)
+
+    const closeRemoveUserModal = () => {
+        setRemovingUserAccountState({
+            status: "",
+            message: ""
+        })
+        setUserAccountToRemove(null)
+    }
+
+    const openRemoveUserModal = (selectedUser) => {
+        setUserAccountToRemove(selectedUser)
+    }
+
+    const removeUserAccount = async () => {
+        let tempRemovingUserAccountState = {...removingUserAccountState}
+        tempRemovingUserAccountState.status = "removing"
+        setRemovingUserAccountState(tempRemovingUserAccountState)
+        
+        try {
+            const removeUserAccountRequest = await deleteProtected(`user/${userAccountToRemove._id}`, {}, user.role)
+            if (removeUserAccountRequest.status === "OK") {
+                getAllStaff()
+                let tempRemovingUserAccountState = {...removingUserAccountState}
+                tempRemovingUserAccountState.status = "success"
+                tempRemovingUserAccountState.message = "User has been removed successfully"
+                setRemovingUserAccountState(tempRemovingUserAccountState)
+                
+                setTimeout(() => {
+                    let tempSelectedUser = {...selectedUser}
+                    tempSelectedUser = {}
+                    setSelectedUser(tempSelectedUser)
+                    closeRemoveUserModal()
+                }, 3000)
+            } else {
+                let tempRemovingUserAccountState = {...removingUserAccountState}
+                tempRemovingUserAccountState.status = "error"
+                tempRemovingUserAccountState.message = removeUserAccountRequest.error.message
+                setRemovingUserAccountState(tempRemovingUserAccountState)
+            }
+        } catch (error) {
+            console.log({error});
+        }
+    }
     
     
     
@@ -482,7 +532,7 @@ const Tasks = () => {
                         <div>
                                 
 
-                                <button className={styles.disableUserButton}>Remove user account</button>
+                                <button className={styles.disableUserButton} onClick={() => openRemoveUserModal(selectedUser)}>Remove user account</button>
                         </div>
                     </div>
 
@@ -493,6 +543,34 @@ const Tasks = () => {
                     </div>
                 </div>
             </Modal>
+            }
+
+            {
+                userAccountToRemove && <Modal>
+                    <div className={styles.removeUserModal}>
+                        <h2>Remove User</h2>
+
+                        <p>You are about to remove Selected User's user account. This action would delete their user account and cannot be undone. Continue?.</p>
+
+                        {
+                            removingUserAccountState.status === "error" && <ErrorText text={removingUserAccountState.message} />
+                        }
+
+                        {
+                            removingUserAccountState.status === "success" && <SuccessMessage message={removingUserAccountState.message} />
+                        }
+
+
+
+                        {
+                            removingUserAccountState.status !== "success" && <div>
+                            <button onClick={() => removeUserAccount()}>Remove Account {removingUserAccountState.status === "removing" && <ButtonLoadingIcon />}</button>
+
+                            <button onClick={() => closeRemoveUserModal()}>Cancel</button>
+                        </div>
+                        }
+                    </div>
+                </Modal>
             }
 
             {
