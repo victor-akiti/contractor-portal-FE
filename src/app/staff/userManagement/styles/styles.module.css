@@ -1,3 +1,39 @@
+.removeUserModal {
+  background-color: white;
+  padding: 20px;
+  min-width: 30%;
+  max-width: 40%;
+}
+.removeUserModal h2 {
+  margin-bottom: 10px !important;
+}
+.removeUserModal > div {
+  margin-top: 20px;
+  display: flex;
+  justify-content: end;
+}
+.removeUserModal > div button {
+  margin-left: 10px;
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.removeUserModal > div button > div {
+  margin-left: 5px;
+}
+.removeUserModal > div button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}
+.removeUserModal > div button:nth-child(2) {
+  background-color: grey;
+  color: white;
+}
+
 .userManagement h2 {
   margin-bottom: 50px;
 }
