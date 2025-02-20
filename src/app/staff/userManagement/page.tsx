@@ -550,7 +550,7 @@ const Tasks = () => {
                     <div className={styles.removeUserModal}>
                         <h2>Remove User</h2>
 
-                        <p>You are about to remove Selected User's user account. This action would delete their user account and cannot be undone. Continue?.</p>
+                        <p>{`You are about to remove ${selectedUser.name}'s user account. This action would delete their user account and cannot be undone. Continue?.`}</p>
 
                         {
                             removingUserAccountState.status === "error" && <ErrorText text={removingUserAccountState.message} />
