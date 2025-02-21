@@ -70,6 +70,9 @@ const StageC = () => {
         try {
             const allServicesRequest = await getProtected("jobCategories", user.role)
 
+            console.log({allServicesRequest});
+            
+
             if (allServicesRequest.status === "OK") {
                 let tempServices = [...services]
                 tempServices = allServicesRequest.data
@@ -593,13 +596,13 @@ const StageC = () => {
                         <div>
                             <div>
                                 <h5>Option 1 - Progress Registration</h5>
-                                <p>Select if you think this contractor would be a suitable contractor for your Department.</p>
+                                <p>Select if you think this contractor would be a suitable contractor for your department.</p>
 
                                 {
                                     approvalChoice === "approve" && <>
                                     <div>
                                         <h6>You must select a service</h6>
-                                        <p><span>a&#41;</span> Select the type of services this contractor could provide to your Department.</p>
+                                        <p><span>a&#41;</span> Select the type of services this contractor could provide to your department.</p>
 
                                         <div className={styles.selectedServicesDiv}>
                                         {
@@ -621,7 +624,7 @@ const StageC = () => {
                                     </div>
 
                                     <div className={styles.siteVisitRequiredDiv}>
-                                        <p><span>b&#41;</span> Indicate, by checking the box, if a site visit is required by an Amni Team to verify the capacity of Test Company Leidi Jack</p>
+                                        <p><span>b&#41;</span> {`Indicate, by checking the box, if a site visit is required by an Amni Team to verify the capacity of ${approvalData.companyName}`}</p>
 
                                         <Image src={siteVisitRequired ? checkboxIconChecked :  checkboxIconUnchecked} alt="checkbox" width={30} height={30} onClick={() => toggleSiteVisitRequiredStatus()} />
                                     </div>
@@ -638,8 +641,8 @@ const StageC = () => {
 
                                 {
                                     approvalChoice === "complete" && <p>If, after reviewing the information uploaded on the portal, you think that this contractor
-                                    is NOT a needed or suitable contractor for your Department at this time, 
-                                    please select this option <span>and no further action will be taken on the registration at this point.</span>
+                                    is NOT a needed or suitable contractor for your department at this time, 
+                                    please select this option <span>and no further action will be taken on the registration at this point. </span>
                                 A Contractor’s registration can always be progressed further at a later time.</p>
                                 }
                             </div>

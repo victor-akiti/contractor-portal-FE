@@ -27,6 +27,8 @@
 .stageC .allApprovedDiv .selectedServicesDiv {
   display: flex;
   margin-top: 10px;
+  width: 100%;
+  flex-wrap: wrap;
 }
 .stageC .allApprovedDiv .selectedServicesDiv div {
   margin-right: 20px;
@@ -37,6 +39,8 @@
   border-radius: 10px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  margin-bottom: 10px;
 }
 .stageC .allApprovedDiv .selectedServicesDiv div label {
   color: white;
