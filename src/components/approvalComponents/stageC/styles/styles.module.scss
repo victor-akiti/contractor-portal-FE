@@ -31,6 +31,8 @@
         .selectedServicesDiv {
             display: flex;
             margin-top: 10px;
+            width: 100%;
+            flex-wrap: wrap;
             div {
                 margin-right: 20px;
                 padding: 7px;
@@ -40,6 +42,8 @@
                 border-radius: 10px;
                 display: flex;
                 align-items: center;
+                flex-shrink: 0;
+                margin-bottom: 10px;
 
                 label {
                     color: white;

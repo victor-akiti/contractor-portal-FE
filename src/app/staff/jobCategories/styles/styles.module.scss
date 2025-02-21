@@ -1,6 +1,9 @@
 @import "../../../../assets//style//colors.scss";
 
 .tasksPage {
+    button, a {
+        cursor: pointer;
+    }
     h2 {
         margin-bottom: 50px;
     }
