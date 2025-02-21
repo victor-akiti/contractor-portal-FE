@@ -2,7 +2,7 @@
 
 import styles from "./styles/styles.module.css"
 import Tabs from "@/components/tabs"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import ManageEndUsers from "./manageEndUsers"
 import ManageJobCategories from "./manageJobCategories"
 import Modal from "@/components/modal"
@@ -28,6 +28,7 @@ const Tasks = () => {
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
     const [categoryToUpdate, setCategoryToUpdate] = useState<Category>({})
     const [categoryToDelete, setCategoryToDelete] = useState<Category>({})
+    const jobCategoriesDivRef = useRef(null)
     const user = useSelector((state:any) => state.user)
     
 
@@ -35,8 +36,10 @@ const Tasks = () => {
         if (!newCategoryLabel) {
             return false
         } else {
+            console.log({categoryToUpdate});
+            
 
-            if (categoryToUpdate.category) {
+            if (Object.values(categoryToUpdate).length > 0) {
                 updateExistingCategory()
             } else {
                 createNewCategory()
@@ -87,12 +90,20 @@ const Tasks = () => {
             const addNewJobCategoryRequest = await postProtected("jobCategories", newJobCategory, user.role)
 
             if (addNewJobCategoryRequest.status === "OK") {
+                console.log("CReated new category");
+                
+
+                setNewCategoryLabel("")
+                setCategoryToUpdate({})
+
                 setUpdatingCategories(false)
                 setShowAddCategoryModal(false)
 
                 let tempJobCategories = [...jobCategories]
                 tempJobCategories.push(addNewJobCategoryRequest.data)
                 setJobCategories(tempJobCategories)
+
+                
             }
 
             console.log({addNewJobCategoryRequest});
@@ -110,6 +121,7 @@ const Tasks = () => {
             if (updateExistingJobCategoryRequest.status === "OK") {
                 setUpdatingCategories(false)
                 setShowAddCategoryModal(false)
+                setNewCategoryLabel("")
 
                 let tempJobCategories = [...jobCategories]
 
@@ -180,7 +192,7 @@ const Tasks = () => {
 
                         <label>Label</label>
 
-                        <input placeholder="Job category label" onChange={event => setNewCategoryLabel(event.target.value)} value={newCategoryLabel} />
+                        <input ref={jobCategoriesDivRef} placeholder="Job category label" onChange={event => setNewCategoryLabel(event.target.value)} value={newCategoryLabel} />
                         <p>Your category label should be short but descriptive</p>
 
                     </div>
@@ -190,7 +202,7 @@ const Tasks = () => {
                     <footer>
                         <button onClick={() => closeAddCategoryModal()}>CANCEL</button>
 
-                        <button disabled={!newCategoryLabel && updatingCategories} className={(newCategoryLabel && !updatingCategories) ? styles.enabled : styles.disabled} onClick={validateNewCategoryLabel} >{categoryToUpdate.category ? "UPDATE" : "ADD"} { updatingCategories && <ButtonLoadingIcon />}</button>
+                        <button disabled={!newCategoryLabel && updatingCategories} className={(newCategoryLabel && !updatingCategories) ? styles.enabled : styles.disabled} onClick={() => validateNewCategoryLabel()} >{categoryToUpdate.category ? "UPDATE" : "ADD"} { updatingCategories && <ButtonLoadingIcon />}</button>
                     </footer>
                 </div>
             </Modal>

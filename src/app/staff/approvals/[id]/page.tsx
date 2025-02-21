@@ -20,6 +20,7 @@ import ErrorText from "@/components/errorText"
 
 type ApprovalData = {
     companyName?: string,
+    currentEndUsers?: Array<string>,
     vendor?: string,
     flags?: {
         level?: number,
@@ -97,7 +98,9 @@ const Approval = () => {
                 hasApprovalPermissions = true
             }
         } else if (vendorData.approvalData.flags.level === 2) {
-            if (["End User", "Executive Approver", "HOD","Admin"].includes(user.role)) {
+            if (["HOD","Admin"].includes(user.role)) {
+                hasApprovalPermissions = true
+            } else if (vendorData.approvalData.currentEndUsers.includes(user._id)) {
                 hasApprovalPermissions = true
             }
         } else if (vendorData.approvalData.flags.level === 3) {
@@ -285,7 +288,7 @@ const Approval = () => {
             !userHasApprovalPermissions() && <>
 
                 {
-                    !vendorData.approvalData.flags.approved && <div className={styles.noApprovalDiv}>
+                    !vendorData?.approvalData?.flags?.approved && <div className={styles.noApprovalDiv}>
                         <h4>Access Denied</h4>
 
                         <p>You do not have the required permissions to carry out approvals at this stage</p>
@@ -299,7 +302,7 @@ const Approval = () => {
                 }
 
                 {
-                    vendorData.approvalData.flags.approved && <div className={styles.noApprovalDiv}>
+                    vendorData?.approvalData?.flags?.approved && <div className={styles.noApprovalDiv}>
                     <h4>No Further Approvals</h4>
         
                     <p>This vendor is at L3. There are no further approval actions available.</p>

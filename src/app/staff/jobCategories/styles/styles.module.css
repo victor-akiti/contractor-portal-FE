@@ -1,3 +1,6 @@
+.tasksPage button, .tasksPage a {
+  cursor: pointer;
+}
 .tasksPage h2 {
   margin-bottom: 50px;
 }
