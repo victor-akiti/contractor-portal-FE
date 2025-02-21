@@ -1438,7 +1438,7 @@ const PendingL2Item = ({index, companyRecord, user}) => {
             return true
         } else if (user.role === "User") {
             return false
-        } else if (user.role === "End User" && companyRecord?.flags?.level === 2 && companyRecord.currentEndUsers.includes(user._id)) {
+        } else if (companyRecord?.flags?.level === 2 && companyRecord.currentEndUsers.includes(user._id)) {
             return true
         } else if (user.role === "VRM" && (!companyRecord?.flags?.level ||companyRecord?.flags?.level === 3)) {
             return true
