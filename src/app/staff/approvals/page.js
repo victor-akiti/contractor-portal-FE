@@ -549,20 +549,21 @@ const Approvals = () => {
     }
 
     const getNextStage = (companyRecord) => {
+       
         
         if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
             return "B"
-        } else if (companyRecord?.flags?.approvals?.level === 1) {
+        } else if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) {
             return "C"
-        } else if (companyRecord?.flags?.approvals?.level === 2) {
+        } else if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
             return "D"
-        } else if (companyRecord?.flags?.approvals?.level === 3) {
+        } else if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3) {
             return "E"
-        } else if (companyRecord?.flags?.approvals?.level === 4) {
+        } else if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4) {
             return "F"
-        } else if (companyRecord?.flags?.approvals?.level === 5) {
+        } else if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5) {
             return "G"
-        } else if (companyRecord?.flags?.approvals?.level === 6) {
+        } else if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6) {
             return "H"
         }
     }
@@ -1415,6 +1416,10 @@ const InProgressItem = ({index, companyRecord}) => {
             const lastUpdatedDate = new Date(companyRecord.approvalActivityHistory[0].date)
 
             return lastUpdatedDate.toISOString()
+        } else if (companyRecord.updatedAt) {
+            const lastUpdatedDate = new Date(companyRecord.updatedAt)
+
+            return lastUpdatedDate.toISOString()
         }
     }
     return (
@@ -1486,6 +1491,7 @@ const PendingL2Item = ({index, companyRecord, user}) => {
     }
 
     const getLastUpdated = () => {
+        
         if (companyRecord.lastUpdate) {
             const lastUpdatedDate = new Date(companyRecord.lastUpdate._seconds * 1000)
 
@@ -1496,6 +1502,10 @@ const PendingL2Item = ({index, companyRecord, user}) => {
             return lastUpdatedDate.toISOString()
         } else if (companyRecord.approvalActivityHistory) {
             const lastUpdatedDate = new Date(companyRecord.approvalActivityHistory[0].date)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.updatedAt) {
+            const lastUpdatedDate = new Date(companyRecord.updatedAt)
 
             return lastUpdatedDate.toISOString()
         }
@@ -1546,6 +1556,10 @@ const L3Item = ({index, companyRecord, revertToL2, user}) => {
             const lastUpdatedDate = new Date(companyRecord.approvalActivityHistory[0].date)
 
             return lastUpdatedDate.toISOString()
+        } else if (companyRecord.updatedAt) {
+            const lastUpdatedDate = new Date(companyRecord.updatedAt)
+
+            return lastUpdatedDate.toISOString()
         }
     }
 
@@ -1594,8 +1608,12 @@ const CompletedL2Item = ({index, companyRecord, revertToL2, user}) => {
             const lastUpdatedDate = new Date(companyRecord.approvalActivityHistory[0].date)
 
             return lastUpdatedDate.toISOString()
+        } else if (companyRecord.updatedAt) {
+            const lastUpdatedDate = new Date(companyRecord.updatedAt)
+
+            return lastUpdatedDate.toISOString()
         }
-    }
+    } 
 
     const hasAdminPermissions = (role) => {
         return (["Admin", "HOD"].includes(role))
@@ -1737,6 +1755,10 @@ const ReturnedItem = ({index, companyRecord}) => {
             return lastUpdatedDate.toISOString()
         } else if (companyRecord.approvalActivityHistory) {
             const lastUpdatedDate = new Date(companyRecord.approvalActivityHistory[0].date)
+
+            return lastUpdatedDate.toISOString()
+        } else if (companyRecord.updatedAt) {
+            const lastUpdatedDate = new Date(companyRecord.updatedAt)
 
             return lastUpdatedDate.toISOString()
         }
