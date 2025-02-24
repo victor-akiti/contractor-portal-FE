@@ -255,7 +255,7 @@ const Dashboard = () => {
                                 <Link href={`/contractor/settings/${item.vendor}`}>SETTINGS</Link>
 
                                 {
-                                    (!item.flags.submitted || item.flags.stage === "returned") && <Link href={`/contractor/form/${item.vendor}`}>CONTINUE & SUBMIT</Link>
+                                    (!item.flags.submitted || item.flags.stage === "returned" || item.flags.status === "returned") && <Link href={`/contractor/form/form/${item.vendor}`}>CONTINUE & SUBMIT</Link>
                                 }
                             </div>
                         </div>)
@@ -267,7 +267,7 @@ const Dashboard = () => {
                     dashboardData.companies.length === 0 && <div className={styles.noRegisteredCompaniesDiv}>
                         <p>You have not started your company registration.</p>
 
-                        <Link href={"/contractor/form"}>
+                        <Link href={"/contractor/form/form"}>
                         <button>Start company registration</button>
                         </Link>
                     </div>

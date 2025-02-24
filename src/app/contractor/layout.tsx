@@ -98,11 +98,11 @@ const Layout = ({children}) => {
 
                   <hr />
 
-                  <div className={styles.officeStatusDiv}>
+                  {/* <div className={styles.officeStatusDiv}>
                     <Link href={`/contractor/settings`}><p>Settings</p></Link>
-                  </div>
+                  </div> */}
 
-                  <hr />
+                  {/* <hr /> */}
 
                   <div className={styles.logoutActionDiv}>
                     <p onClick={() => logUserOut()}>Logout</p>
