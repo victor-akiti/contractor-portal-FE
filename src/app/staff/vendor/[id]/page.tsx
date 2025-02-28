@@ -20,12 +20,15 @@ import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import SuccessMessage from "@/components/successMessage"
 import ErrorText from "@/components/errorText"
+import Tabs from "@/components/tabs"
+import { deleteProtected } from "@/requests/delete"
 
 
 
 const ViewVendorPage = () => {
     
     const [approvalData, setApprovalData] = useState<any>({})
+    const [currentPortalAdministrator, setCurrentPortalAdministrator] = useState<any>({})
     const [pages, setPages] = useState([])
     const [selectedCategories, setSelectedCategories] = useState([])
     const [vendorID, setVendorID] = useState("")
@@ -49,6 +52,8 @@ const ViewVendorPage = () => {
         message: ""
     })
     const router = useRouter()
+    const [currentSelectedEndUsers, setCurrentSelectedEndUsers] = useState([])
+    const [allAvailableEndUsers, setAllAvailableEndUsers] = useState([])
     
     console.log({user});
     const params = useParams()
@@ -57,11 +62,6 @@ const ViewVendorPage = () => {
         pages: []
     })
 
-    console.log({pages});
-    
-    
-
-    console.log({pathname: params.id});
     
     useEffect(() => {
         if (params.id) {
@@ -99,6 +99,18 @@ const ViewVendorPage = () => {
                 let tempApprovalData = {...approvalData}
                 tempApprovalData = fetchVendorDataRequest.data.approvalData
                 setApprovalData(tempApprovalData)
+
+                let tempCurrentPortalAdministrator = {...currentPortalAdministrator}
+                tempCurrentPortalAdministrator = fetchVendorDataRequest.data.portalAdministrator
+                setCurrentPortalAdministrator(tempCurrentPortalAdministrator)
+
+                let tempCurrentSelectedEndUsers = [...currentSelectedEndUsers]
+                tempCurrentSelectedEndUsers = fetchVendorDataRequest.data.currentEndUsers
+                setCurrentSelectedEndUsers(tempCurrentSelectedEndUsers)
+
+                let tempAllAvailableEndUsers = [...allAvailableEndUsers]
+                tempAllAvailableEndUsers = fetchVendorDataRequest.data.allAmniStaff
+                setAllAvailableEndUsers(tempAllAvailableEndUsers)
 
                 getExpiringAndExpiredCertificates(tempPages)
             }
@@ -159,7 +171,6 @@ const ViewVendorPage = () => {
 
     const filterCategoriesListByQueryString = (queryString) => {
         let tempCategoriesList = [...fixedJobCategories]
-        console.log({fixedJobCategories});
         
         tempCategoriesList  = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
 
@@ -316,7 +327,6 @@ const ViewVendorPage = () => {
     const fetchJobCategories = async () => {
         try {
             const jobCategoriesRequest = await getProtected("jobCategories", user.role)
-            console.log({jobCategoriesRequest});
 
             if (jobCategoriesRequest.status === "OK") {
 
@@ -427,8 +437,6 @@ const ViewVendorPage = () => {
         setShowAddCategory(!showAddCategory)
     }
 
-    console.log({currentVendorCategories});
-
     const approveParkRequest = async () => {
         try {
             updateUpdateStatus("approving")
@@ -537,9 +545,256 @@ const ViewVendorPage = () => {
     }
 
     const formatNumberAsCurrency = (number) => {
-        console.log({number});
         
         return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(number);
+    }
+
+    const [activeModifyContractorTab, setActiveModifyContractorTab] = useState("currentEndUsers")
+    const modifyContractorModalTabs = [
+        {
+            label: "Change Current End Users",
+            name: "currentEndUsers"
+        },
+        {
+            label: "Change Portal Administrator",
+            name: "portalAdmin"
+        }
+    ]
+
+    const [endUserAction, setEndUserAction] = useState({
+        action: "",
+        index: null,
+        status: "",
+        response: {
+            error: "",
+            success: ""
+        }
+    })
+
+    const [newPortalAdminAction, setNewPortalAdminAction] = useState({
+        status: "",
+        response: {
+            error: "",
+            success: ""
+        }
+    })
+
+    const [showModifyContractorModal, setShowModifyContractorModal] = useState(false)
+
+    const updateEndUserResponses = (responseField, responseMessage) => {
+        let tempEndUserAction = {...endUserAction}
+        tempEndUserAction.response[responseField] = responseMessage
+        setEndUserAction(tempEndUserAction)
+    }
+
+    const clearEndUserResponses = () => {
+        let tempEndUserAction = {...endUserAction}
+        tempEndUserAction.response.error = ""
+        tempEndUserAction.response.success = ""
+        setEndUserAction(tempEndUserAction)
+    }
+
+    const validateEndUser = (event, previousEndUser, requestType) => {
+        event.preventDefault()
+
+        clearEndUserResponses()
+
+        const value = event.target[0].value
+
+        if (value === "") {
+            updateEndUserResponses("error", "Please select a replacement end user.")
+        } else if (approvalData.currentEndUsers.includes(value)) {
+            updateEndUserResponses("error", "End user already exists for this contractor application. Please select a different end user.")
+            
+        } else {
+            if (requestType === "replace") {
+                replaceEndUserInCurrentEndUsers(value, previousEndUser)
+            } else {
+                addEndUser(value)
+            }
+        }
+        
+    }
+
+    const replaceEndUserInCurrentEndUsers = (newEndUser, previousEndUser) => {
+        let endUsersListWithoutPreviousEndUser = approvalData.currentEndUsers.filter((endUser) => endUser !== previousEndUser)
+        endUsersListWithoutPreviousEndUser.push(newEndUser)
+
+
+        replaceEndUser(endUsersListWithoutPreviousEndUser)
+    }
+
+    const replaceEndUser = async (updatedEndUsersList) => {
+        const tempEndUserAction = {...endUserAction}
+        tempEndUserAction.status = "updating"
+        setEndUserAction(tempEndUserAction)
+        try {
+            const replaceEndUserRequest = await putProtected(`companies/vendor/end-users/${vendorID}`, {
+                updatedEndUsersList
+            }, user.role)
+
+            console.log({replaceEndUserRequest});
+            
+
+            if (replaceEndUserRequest.status === "OK") {
+                
+                const {currentEndUsers, updatedEndUsersList} = replaceEndUserRequest.data
+
+                const tempApprovalData = {...approvalData}
+                tempApprovalData.currentEndUsers = updatedEndUsersList
+                setApprovalData(tempApprovalData)
+
+                let tempCurrentSelectedEndUsers = [...currentSelectedEndUsers]
+                tempCurrentSelectedEndUsers = currentEndUsers
+                setCurrentSelectedEndUsers(tempCurrentSelectedEndUsers)
+
+                updateEndUserResponses("success", "Successfully replaced end user.")
+            } else {
+                updateEndUserResponses("error", replaceEndUserRequest.error.message)
+            }
+        } catch (error) {
+            console.log({error});
+            
+        }
+    }
+
+    const removeEndUser = async (endUserID) => {
+        console.log({endUserID});
+        
+        try {
+            const removeEndUserRequest = await postProtected(`companies/vendor/end-users/remove/${vendorID}`, {
+                endUserID
+            }, user.role)
+
+            if (removeEndUserRequest.status === "OK") {
+                const {updatedEndUsersList, currentEndUsers} = removeEndUserRequest.data
+
+                const tempApprovalData = {...approvalData}
+                tempApprovalData.currentEndUsers = updatedEndUsersList
+                setApprovalData(tempApprovalData)
+
+                let tempCurrentSelectedEndUsers = [...currentSelectedEndUsers]
+                tempCurrentSelectedEndUsers = currentEndUsers
+                setCurrentSelectedEndUsers(tempCurrentSelectedEndUsers)
+
+                updateEndUserResponses("success", "Successfully removed end user.")
+
+                resetEndUserAction()
+            } else {
+                updateEndUserResponses("error", removeEndUserRequest.error.message)
+            }
+
+        } catch (error) {
+            console.log({error});
+        }
+    }
+
+    const resetEndUserAction = () => {
+        let tempEndUserAction = {...endUserAction}
+        tempEndUserAction.action = ""
+        tempEndUserAction.index = null
+        tempEndUserAction.status = ""
+        tempEndUserAction.response.error = ""
+        tempEndUserAction.response.success = ""
+        setEndUserAction(tempEndUserAction)
+    }
+
+
+
+    const addEndUser = async (newEndUserID) => {
+
+        try {
+            let tempEndUserAction = {...endUserAction}
+            tempEndUserAction.status = "adding"
+            setEndUserAction(tempEndUserAction)
+
+            const addEndUserRequest = await postProtected(`companies/vendor/end-users/${vendorID}`, {
+                newEndUserID
+            }, user.role)
+
+            if (addEndUserRequest.status === "OK") {
+                let tempCurrentSelectedEndUsers = [...currentSelectedEndUsers]
+                let tempApprovalData = {...approvalData}
+
+                const {updatedEndUsersList, currentEndUsers} = addEndUserRequest.data
+
+                tempApprovalData.currentEndUsers = updatedEndUsersList
+                setApprovalData(tempApprovalData)
+
+                tempCurrentSelectedEndUsers = currentEndUsers
+                setCurrentSelectedEndUsers(tempCurrentSelectedEndUsers)
+
+                updateEndUserResponses("success", "Successfully added end user.")
+            } else {
+                updateEndUserResponses("error", addEndUserRequest.error.message)
+            }
+
+            console.log({addEndUserRequest});
+            
+        } catch (error) {
+            console.log({error});
+        }
+    }
+
+    const validateNewPortalAdminEmail = async (event) => {
+        event.preventDefault()
+
+        const email = event.target[0].value
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+        if (!email) {
+            updateNewPortalAdminAction("error", "Please enter an email address.")
+        } else if (!emailRegex.test(email)) {
+            updateNewPortalAdminAction("error", "Please enter a valid email address.")
+        } else {
+            updateNewPortalAdminAction("error", "")
+            requestNewPortalAdmin(email)
+        }
+    }
+
+    const updateNewPortalAdminAction = (field, value) => {
+        let tempNewPortalAdminAction = {...newPortalAdminAction}
+
+        if (field === "status") {
+            tempNewPortalAdminAction[field] = value
+        } else {
+            tempNewPortalAdminAction.response[field] = value
+        }
+
+        setNewPortalAdminAction(tempNewPortalAdminAction)
+    }
+
+    const resetNewPortalAdminAction = () => {
+        let tempNewPortalAdminAction = {...newPortalAdminAction}
+
+        tempNewPortalAdminAction.status = ""
+        tempNewPortalAdminAction.response.error = ""
+        tempNewPortalAdminAction.response.success = ""
+
+        setNewPortalAdminAction(tempNewPortalAdminAction)
+    }
+
+    const requestNewPortalAdmin = async (email) => {
+        updateNewPortalAdminAction("status", "requesting")
+        try {
+            const requestNewPortalAdminRequest = await postProtected(`companies/portal-admin/replace/${vendorID}`, {email}, user.role)
+            updateNewPortalAdminAction("status", "")
+
+            if (requestNewPortalAdminRequest.status === "OK") {
+                updateNewPortalAdminAction("success", "Successfully requested new portal admin.")
+            } else {
+                updateNewPortalAdminAction("error", requestNewPortalAdminRequest.error.message)
+            }
+        } catch (error) {
+            console.log({error});
+        }
+    }
+
+    const closeModifyContractorModal = () => {
+        setShowModifyContractorModal(false)
+        resetEndUserAction()
+        resetNewPortalAdminAction()
     }
     
 
@@ -556,9 +811,162 @@ const ViewVendorPage = () => {
                     <a onClick={() => hideAllRemarks()}>HIDE COMMENTS</a>
 
                     {
-                        (user?.user?.role === "Admin" || user?.user?.role === "C&P Admin" || user?.user?.role === "HOD" || user?.user?.tempRole === "HOD") && <a onClick={() => toggleShowSetAccountInactiveModal()}>MAKE INACTIVE</a>
+                        (user?.user?.role === "Admin" || user?.user?.role === "C&P Admin" || user?.user?.role === "HOD" || user?.user?.tempRole === "HOD") && <>
+                            <a onClick={() => toggleShowSetAccountInactiveModal()}>MAKE INACTIVE</a>
+
+                            <a onClick={() => setShowModifyContractorModal(true)}>MODIFY CONTRACTOR</a>
+                        </>
                     }
+
+                    
                 </div>
+
+                {
+                    showModifyContractorModal && <Modal>
+                    <div className={styles.modifyContractorModal}>
+                        <h2>Modify Contractor</h2>
+                    
+
+                        <div className={styles.tabsContainer}>
+                            <Tabs activeTab={activeModifyContractorTab}  tabs={modifyContractorModalTabs} updateActiveTab={(newActiveTab) => {
+                                setActiveModifyContractorTab(newActiveTab)
+                            }}  />
+                        </div>
+                        
+                        {
+                            activeModifyContractorTab === "currentEndUsers" && <div className={styles.currentEndUsersContainer}>
+                            <h4>Current End Users:</h4>
+
+
+
+                            {
+                                currentSelectedEndUsers.map((item, index) => <div key={index} className={styles.endUserItem}>
+                                <div className={styles.endUserDetailsContainer}>
+                                    <label>{item.name}</label>
+
+                                    <div>
+                                        <button onClick={() => {
+                                            setEndUserAction({...endUserAction,action: "remove", index: index})
+                                            removeEndUser(item._id)
+                                        }}>Remove</button>
+
+                                        {
+                                            endUserAction.action === "remove" && index === endUserAction.index && <ButtonLoadingIconPrimary />
+                                        }
+
+                                        <button onClick={() => setEndUserAction({...endUserAction, action: "replace", index: index})}>Replace</button>
+                                        
+                                    </div>
+                                </div>
+
+                                {
+                                    endUserAction.action === "replace" && index === endUserAction.index && <form onSubmit={e => validateEndUser(e, item._id, "replace")}>
+                                        <div className={styles.replaceEndUserDiv}>
+                                    <select>
+                                        <option>Select a replacement end user</option>
+
+                                        {
+                                            allAvailableEndUsers.map((item, index) => <option value={item._id} key={index}>{item.name}</option>)
+                                        }
+                                    </select>
+
+                                    <button>Save {endUserAction.status === "updating" && <ButtonLoadingIcon />}</button>
+
+                                    <button onClick={() => setEndUserAction({action: "", index: null, response: {error: "", success: ""}, status: ""})}>Cancel</button>
+                                </div>
+                                    </form>
+                                }
+
+                                <hr />
+
+                                
+                                
+                            </div>)
+                            }
+
+                            {
+                                endUserAction.response.error && <ErrorText text={endUserAction.response.error} />
+                            }
+
+                            {
+                                endUserAction.response.success && <SuccessMessage message={endUserAction.response.success} />
+                            }
+
+                            
+
+                            
+
+                            <div className={styles.addEndUserDiv}>
+                                <h3>Add End User</h3>
+
+                                <form onSubmit={e => validateEndUser(e, "", "add")}>
+                                    <div>
+                                        <select>
+                                            <option>Select an end user</option>
+
+                                            {
+                                                allAvailableEndUsers.map((item, index) => <option value={item._id} key={index}>{item.name}</option>)
+                                            }
+                                        </select>
+
+                                        <button>Add {endUserAction.status === "adding" && <ButtonLoadingIcon />}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        }
+
+                        {
+                            activeModifyContractorTab === "portalAdmin" && <div className={styles.portalAdminContainer}>
+                            <h3>Current Portal Administrator</h3>
+
+                            <div>
+                                <div className={styles.currentAdminInfoItem}>
+                                    <label>Name</label>
+
+                                    <p>{currentPortalAdministrator.name}</p>
+                                </div>
+
+                                <div className={styles.currentAdminInfoItem}>
+                                    <label>Email</label>
+
+                                    <p>{currentPortalAdministrator.email}</p>
+                                </div>
+
+                                <div className={styles.currentAdminInfoItem}>
+                                    <label>Phone Number</label>
+
+                                    <p>{currentPortalAdministrator.phone}</p>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <h3>Replace Portal Administrator</h3>
+
+                            {
+                                newPortalAdminAction.response.error && <ErrorText text={newPortalAdminAction.response.error} />
+                            }
+
+                            {
+                                newPortalAdminAction.response.success && <SuccessMessage message={newPortalAdminAction.response.success} />
+                            }
+
+                            <form onSubmit={e => validateNewPortalAdminEmail(e)}>
+                                <div className={styles.replaceAdministratorDiv}>
+                                    <input placeholder="Enter the new portal administrator's email address" />
+                                    <button>Send Replacement Request {newPortalAdminAction.status === "requesting" && <ButtonLoadingIcon />}</button>
+                                </div>
+                            </form>
+                        </div>
+                        }
+
+                        <div className={styles.closeModifyContractorModalDiv}>
+                            <button onClick={() => closeModifyContractorModal()}>Close</button>
+                        </div>
+                    </div>
+                </Modal>
+                }
 
                 {
                     showSetAccountInactiveModal && <Modal>

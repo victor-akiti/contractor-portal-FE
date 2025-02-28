@@ -2,7 +2,7 @@
 import styles from "./styles/styles.module.css"
 
 const Tabs = ({tabs, activeTab, updateActiveTab}) => {
-    console.log({tabs, activeTab});
+
 
     return (
         <div className={styles.tabs}>
