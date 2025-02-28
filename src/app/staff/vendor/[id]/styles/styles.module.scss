@@ -1,5 +1,201 @@
 @import "../../../../../assets/style/colors.scss";
 
+.modifyContractorModal {
+    background-color: white;
+    padding: 20px;
+    border-style: none;
+    border-radius: 5px;
+    min-width: 50%;
+
+    .tabsContainer {
+        margin-top: 20px;
+        &>div {
+            display: flex;
+            flex-direction: row;
+        }
+    }
+
+    .closeModifyContractorModalDiv {
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+        margin-top: 20px;
+
+        button {
+            border-style: none;
+            background-color: rgb(147, 147, 147);
+            color: white;
+            padding: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    }
+
+    .currentEndUsersContainer {
+        margin-top: 20px;
+        .endUserItem {
+            padding-top: 5px;
+            padding-bottom: 5px;
+
+            .endUserDetailsContainer {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+
+                div {
+                    margin-left: 20px;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+
+                    div {
+                        margin: 0px;
+                    }
+
+                    button {
+                        margin-left: 10px;
+                        background-color: rgba(0,0,0,0);
+                        border-style: none;
+                        color: $primaryColor;
+                        cursor: pointer;
+                    }
+                }
+            }
+
+            .replaceEndUserDiv {
+                display: flex;
+                flex-direction: row;
+                margin-top: 10px;
+
+                select {
+                    flex-grow: 1;
+                    border-style: none;
+                    padding: 5px;
+                    border-radius: 5px;
+                    background-color: #ececec;
+                    
+                }
+
+                button {
+                    border-style: none;
+                    background-color: $primaryColor;
+                    color: white;
+                    padding: 5px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin-left: 10px;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: center;
+
+                    div {
+                        margin: 0px;
+                    }
+                }
+            }
+
+            hr {
+                border-style: none;
+                border-top-style: solid;
+                border-top-width: 1px;
+                border-top-color: #ededed;
+                margin-top: 10px;
+            }
+        }
+
+        .addEndUserDiv {
+            
+            div {
+                display: flex;
+                flex-direction: row;
+                margin-top: 10px;
+
+                select {
+                    flex-grow: 1;
+                    border-style: none;
+                    padding: 5px;
+                    border-radius: 5px;
+                    background-color: #ececec;
+                    
+                }
+
+                button {
+                    border-style: none;
+                    background-color: $primaryColor;
+                    color: white;
+                    padding: 5px;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin-left: 10px;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: center;
+
+                    div {
+                        margin: 0px;
+                    }
+                }
+            }
+        }
+    }
+
+    .portalAdminContainer {
+        padding-top: 10px;
+
+        hr {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            margin-bottom: 10px;
+        }
+
+        .currentAdminInfoItem {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 10px;
+
+            p {
+                margin-left: 10px;
+            }
+        }
+        .replaceAdministratorDiv {
+            display: flex;
+            flex-direction: row;
+            margin-top: 10px;
+
+            input {
+                flex-grow: 1;
+                border-style: none;
+                padding: 10px;
+                border-radius: 5px;
+                background-color: #f3f3f3;
+                margin-right: 10px;
+            }
+
+            button {
+                border-style: none;
+                background-color: $primaryColor;
+                color: white;
+                padding: 7px;
+                border-radius: 5px;
+                cursor: pointer;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+    }
+}
+
 .addRemarkModal {
     background-color: white;
     max-height: 70vh;
