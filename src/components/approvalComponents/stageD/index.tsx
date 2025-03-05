@@ -102,6 +102,9 @@ const StageD = ({approvalData, formPages, vendorID}) => {
     const router = useRouter()
     const user = useSelector((state: any) => state.user.user)
 
+    console.log({approvalData});
+    
+
     useEffect(() => {
         if (approvalData.dueDiligence) {
             console.log({dd: approvalData.dueDiligence});
@@ -352,7 +355,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
             return "Please enter remark for this flagged entry"
         }
 
-        if (!exposedPerson.finding) {
+        if (Array.isArray(exposedPerson.finding) && exposedPerson.finding.length === 0) {
             return "Please upload your findings for this exposed person"
         }
 
@@ -374,7 +377,12 @@ const StageD = ({approvalData, formPages, vendorID}) => {
     } 
 
     const sectionValidated = (sectionData) => {
-        if (!sectionData.finding) {
+        console.log({sectionData});
+
+        console.log(Array.isArray(sectionData.finding));
+        
+        
+        if (Array.isArray(sectionData.finding) && sectionData.finding.length === 0) {
             return false
         }
 
@@ -470,7 +478,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                 </p>
             </header>
 
-            <div>
+            <div className={styles.dueDiligenceCheckDiv}>
                 <div>
                     <h3>Contractors Company Registration Check</h3>
 
@@ -494,11 +502,11 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                     </div>
                     }
 
-                    <h5>Upload Findings</h5>
+                    <h5>Upload Findings<span>*</span></h5>
 
 
                     {
-                        !vendorDueDiligenceData.registrationCheck.finding && <>
+                        (Array.isArray(vendorDueDiligenceData.registrationCheck.finding) && vendorDueDiligenceData.registrationCheck.finding.length === 0) && <>
                             <p>Upload a screenshot of the CAC website listing.</p>
                             <button onClick={() => {setFieldToUploadFor("registrationCheck", 0)}}>UPLOAD</button>
                         </>
@@ -506,7 +514,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                     }
 
                     {
-                        vendorDueDiligenceData.registrationCheck.finding && <div className={styles.actionButtons}>
+                        (Array.isArray(vendorDueDiligenceData.registrationCheck.finding) && vendorDueDiligenceData.registrationCheck.finding.length > 0) && <div className={styles.actionButtons}>
                         <button onClick={() => {setFieldToUploadFor("registrationCheck", 0)}}>Change</button>
                         <button className={styles.clearButton} onClick={() => clearUploadedField("registrationCheck", currentUpload.index)}>Clear</button>
                         
@@ -528,7 +536,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
 
 
 
-            <div>
+            <div className={styles.dueDiligenceCheckDiv}>
                 <div>
                     <h3>Internet Check</h3>
 
@@ -552,11 +560,11 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                     </div>
                     }
 
-                    <h5>Upload Findings</h5>
+                    <h5>Upload Findings<span>*</span></h5>
 
 
                     {
-                        !vendorDueDiligenceData.internetCheck.finding && <>
+                        (Array.isArray(vendorDueDiligenceData.internetCheck.finding) && vendorDueDiligenceData.internetCheck.finding.length === 0) && <>
                             <p>Upload a pdf of your google search results.</p>
                             <button onClick={() => {setFieldToUploadFor("internetCheck", 0)}}>UPLOAD</button>
                         </>
@@ -564,7 +572,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
 
 
                     {
-                        vendorDueDiligenceData.internetCheck.finding && <div className={styles.actionButtons}>
+                        (Array.isArray(vendorDueDiligenceData.internetCheck.finding) && vendorDueDiligenceData.internetCheck.finding.length > 0) && <div className={styles.actionButtons}>
                         <button onClick={() => {setFieldToUploadFor("internetCheck", 0)}}>Change</button>
                         <button className={styles.clearButton} onClick={() => clearUploadedField("internetCheck", currentUpload.index)}>Clear</button>
                         
@@ -586,7 +594,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
 
 
 
-            <div className={styles.exposedPersonsDiv}>
+            <div className={[styles.exposedPersonsDiv, styles.dueDiligenceCheckDiv].join(" ")}>
                 <h3>Exposed Person Check</h3>
 
                 <p>For each director, shareholder and former director or shareholder of the contractor (from the CAC documents) please perform a google search to see if the person is a politically exposed person, involved in politics or involved with politicians or involved in court cases or scandal. For each person, if anything is found, flag for the HOD to review and enter a note. Also for each person put the search results into one word document, pdf and upload.</p>
@@ -614,12 +622,12 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                                 {
                                     vendorDueDiligenceData.exposedPersons[index].entityType === "company" && <div className={styles.companyDetailsDiv}>
                                     <div>
-                                        <label>Company Name</label>
+                                        <label>Company Name<span>*</span></label>
                                         <input name="companyName" defaultValue={item.companyName} />
                                     </div>
 
                                     <div>
-                                        <label>Registration Number</label>
+                                        <label>Registration Number<span>*</span></label>
                                         <input name="registrationNumber" defaultValue={item.registrationNumber} />
                                     </div>
                                 </div>
@@ -628,7 +636,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                                 {
                                     vendorDueDiligenceData.exposedPersons[index].entityType === "individual" && <div className={styles.individualDetailsDiv}>
                                     <div>
-                                        <label>Title</label>
+                                        <label>Title<span>*</span></label>
                                         <select name="title" >
                                             <option selected={item.title === "Mr"}>Mr</option>
                                             <option selected={item.title === "Mrs"}>Mrs</option>
@@ -637,12 +645,12 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                                     </div>
 
                                     <div>
-                                        <label>First Name</label>
+                                        <label>First Name<span>*</span></label>
                                         <input name="firstName" defaultValue={item.firstName} />
                                     </div>
 
                                     <div>
-                                        <label>Surname</label>
+                                        <label>Surname<span>*</span></label>
                                         <input name="lastName" defaultValue={item.lastName} />
                                     </div>
                                 </div>
@@ -657,7 +665,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                                     }
 
                                     <div>
-                                        <label>Role</label>
+                                        <label>Role<span>*</span></label>
                                         <select name="role" defaultValue={item.role}>
                                             <option selected={item.role === "Shareholder"}>Shareholder</option>
                                             <option selected={item.role === "Director"}>Director</option>
@@ -691,32 +699,32 @@ const StageD = ({approvalData, formPages, vendorID}) => {
 
                         <div className={styles.uploadFindingsDiv}>
                             <div>
-                                <h5>Upload Findings</h5>
+                                <h5>Upload Findings<span>*</span></h5>
 
                                 {
-                                    !vendorDueDiligenceData.exposedPersons[index].finding && <>
+                                    (Array.isArray(vendorDueDiligenceData.exposedPersons[index].finding) && vendorDueDiligenceData.exposedPersons[index].finding.length === 0) && <>
                                         <p>Upload a screenshot of the CAC website listing.</p>
                                         <button onClick={() => {setFieldToUploadFor("exposedPersons", index)}}>UPLOAD</button>
                                     </>
                                 }
 
-                        {
-                            vendorDueDiligenceData.exposedPersons[index].finding && <div className={styles.actionButtons}>
-                                <button onClick={() => {setFieldToUploadFor("exposedPersons", index)}}>Change</button>
-                                <button className={styles.clearButton} onClick={() => clearUploadedField("exposedPersons", currentUpload.index)}>Clear</button>
+                            {
+                                (Array.isArray(vendorDueDiligenceData.exposedPersons[index].finding) && vendorDueDiligenceData.exposedPersons[index].finding.length > 0) && <div className={styles.actionButtons}>
+                                    <button onClick={() => {setFieldToUploadFor("exposedPersons", index)}}>Change</button>
+                                    <button className={styles.clearButton} onClick={() => clearUploadedField("exposedPersons", currentUpload.index)}>Clear</button>
+                                    
+
+                                    {
+                                        vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url && <Link href={vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                                    }
+
+                                    <label>{vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.name}</label>
+                                </div>
+                            }
                                 
-
-                                {
-                                    vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url && <Link href={vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url} target="_blank"><button>View</button></Link>
-                                }
-
-                                <label>{vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.name}</label>
-                            </div>
-                        }
-                                
                             </div>
 
-                            <button onClick={() =>  saveExposedPerson(vendorDueDiligenceData.exposedPersons[index], index)}>{vendorDueDiligenceData.exposedPersons[index]._id ? "UPDATE PERSON" : "SAVE PERSON"}</button>
+                            <button className={!validateExposedPerson(item) ? styles.activeButton : styles.inactiveButton} onClick={() =>  saveExposedPerson(vendorDueDiligenceData.exposedPersons[index], index)}>{vendorDueDiligenceData.exposedPersons[index]._id ? "UPDATE PERSON" : "SAVE PERSON"}</button>
                         </div>
 
                         {
@@ -744,7 +752,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
 
 
 
-            <div>
+            <div className={styles.dueDiligenceCheckDiv}>
                 <div>
                     <h3>Reference Check</h3>
 
@@ -768,18 +776,18 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                         </div>
                     }
 
-                    <h5>Upload Findings</h5>
+                    <h5>Upload Findings<span>*</span></h5>
 
 
                     {
-                        !vendorDueDiligenceData.referenceCheck.finding && <>
+                        (Array.isArray(vendorDueDiligenceData.referenceCheck.finding) && vendorDueDiligenceData.referenceCheck.finding.length === 0) && <>
                             <p>Upload a pdf of the e-mail trail or record of discussion of the reference checks.</p>
                             <button  onClick={() => {setFieldToUploadFor("referenceCheck", 0)}}>UPLOAD</button>
                         </>
                     }
 
                     {
-                        vendorDueDiligenceData.referenceCheck.finding && <div className={styles.actionButtons}>
+                        (Array.isArray(vendorDueDiligenceData.referenceCheck.finding) && vendorDueDiligenceData.referenceCheck.finding.length > 0) && <div className={styles.actionButtons}>
                         <button onClick={() => {setFieldToUploadFor("referenceCheck", 0)}}>Change</button>
                         <button className={styles.clearButton} onClick={() => clearUploadedField("referenceCheck", currentUpload.index)}>Clear</button>
                         
