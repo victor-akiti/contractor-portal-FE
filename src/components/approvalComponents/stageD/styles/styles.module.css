@@ -1,5 +1,6 @@
 .dueDiligencePage {
   width: 70%;
+  position: relative;
 }
 .dueDiligencePage h2 {
   font-weight: 500;
@@ -31,6 +32,7 @@
 }
 .dueDiligencePage .finishDiv {
   display: block;
+  margin-top: 50px;
 }
 .dueDiligencePage .finishDiv p {
   color: #856404;
@@ -52,6 +54,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
 }
 .dueDiligencePage .finishDiv > div button:nth-child(1) {
   background-color: rgb(243, 243, 243);
@@ -71,6 +76,10 @@
   border-color: black;
   color: black;
   background-color: rgba(0, 0, 0, 0);
+}
+.dueDiligencePage .actionButtons .clearButton:hover {
+  background-color: rgb(34, 34, 34);
+  color: white;
 }
 .dueDiligencePage .titleDiv {
   display: flex;
@@ -92,12 +101,11 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin-top: 20px;
 }
 .dueDiligencePage .addPersonDiv p {
-  margin: 0px;
-  margin-right: 5px;
-  color: #e26b09;
+  margin: 0px !important;
+  margin-right: 5px !important;
+  color: #e26b09 !important;
   font-size: 1rem;
 }
 .dueDiligencePage header {
@@ -137,21 +145,21 @@
 .dueDiligencePage footer .notValidated {
   background-color: #98ff94;
 }
-.dueDiligencePage > div {
+.dueDiligencePage .dueDiligenceCheckDiv {
   margin-top: 50px;
   display: flex;
 }
-.dueDiligencePage > div > div {
+.dueDiligencePage .dueDiligenceCheckDiv > div {
   flex-grow: 1;
 }
-.dueDiligencePage > div > div p {
+.dueDiligencePage .dueDiligenceCheckDiv > div p {
   margin-top: 10px;
   margin-bottom: 20px;
   font-size: 0.875em;
   font-weight: 400;
   color: #212529;
 }
-.dueDiligencePage > div > div h3 {
+.dueDiligencePage .dueDiligenceCheckDiv > div h3 {
   font-weight: 500;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -159,7 +167,7 @@
   color: #64676b;
   font-size: 1.5rem;
 }
-.dueDiligencePage > div > div h5 {
+.dueDiligencePage .dueDiligenceCheckDiv > div h5 {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   font-size: 1rem;
@@ -171,7 +179,10 @@
   margin-top: 10px;
   margin-bottom: 10px;
 }
-.dueDiligencePage > div > div button {
+.dueDiligencePage .dueDiligenceCheckDiv > div h5 span {
+  color: rgb(194, 0, 0);
+}
+.dueDiligencePage .dueDiligenceCheckDiv > div button {
   margin-bottom: 10px;
   padding: 10px;
   border-style: none;
@@ -183,7 +194,7 @@
   border-radius: 5px;
   cursor: pointer;
 }
-.dueDiligencePage > div > div button:hover {
+.dueDiligencePage .dueDiligenceCheckDiv > div button:hover {
   background-color: #e26b09;
   color: white;
 }
@@ -217,8 +228,8 @@
 }
 .dueDiligencePage .uploadFindingsDiv {
   display: flex;
-  align-items: center;
-  width: 70%;
+  align-items: end;
+  width: 100%;
 }
 .dueDiligencePage .uploadFindingsDiv > div {
   flex-grow: 1;
@@ -226,6 +237,21 @@
 .dueDiligencePage .uploadFindingsDiv button {
   background-color: #e26b09;
   color: white;
+}
+.dueDiligencePage .uploadFindingsDiv .activeButton {
+  background-color: #e26b09;
+  color: white;
+}
+.dueDiligencePage .uploadFindingsDiv .inactiveButton {
+  background-color: #fec678;
+  color: white;
+  border-color: #fec678;
+}
+.dueDiligencePage .uploadFindingsDiv .inactiveButton:hover {
+  background-color: #fec678;
+  color: white;
+  border-color: #fec678;
+  cursor: default;
 }
 .dueDiligencePage .exposedPersonsDiv {
   display: block;
@@ -235,7 +261,7 @@
   margin-bottom: 20px;
 }
 .dueDiligencePage .exposedPersonContainerDiv {
-  margin-bottom: 40px;
+  margin-bottom: 10px;
   display: flex;
 }
 .dueDiligencePage .exposedPersonContainerDiv > div {
@@ -286,6 +312,9 @@
 .dueDiligencePage .exposedPersonItem div label {
   font-weight: 500;
   color: black;
+}
+.dueDiligencePage .exposedPersonItem div label span {
+  color: rgb(194, 0, 0);
 }
 .dueDiligencePage .exposedPersonItem .companyDetailsDiv {
   justify-content: space-between;
