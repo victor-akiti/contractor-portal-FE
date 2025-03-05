@@ -1009,7 +1009,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                         </table>
                                     </div>
 
-                                    <p className={styles.checksDoneByText}>Checks carried out by - <span>{approvalData.flags.approvals.level4.approver.name}</span></p>
+                                    <p className={styles.checksDoneByText}>Checks carried out by - <span>{approvalData.flags.approvals.level3.approver.name}</span></p>
                                 </div>
                             </Accordion>
                         </div>
