@@ -332,6 +332,8 @@ const Approvals = () => {
                 
             }
 
+
+            
             tempApprovals.pendingL2 = filteredArray
         } else if (stage === "C") {
             console.log({fixedApprovals});
