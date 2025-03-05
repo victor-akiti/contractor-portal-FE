@@ -326,7 +326,7 @@ const Approvals = () => {
 
                 if (element?.flags?.level === 1) {
                     filteredArray.push(element)
-                } else if (element?.flags?.approvals?.level === 1) {
+                } else if (!element?.flags?.level && element?.flags?.approvals?.level === 1) {
                     filteredArray.push(element)
                 }
                 
@@ -342,7 +342,7 @@ const Approvals = () => {
 
                 if (element?.flags?.level === 2) {
                     filteredArray.push(element)
-                } else if (element?.flags?.approvals?.level === 2) {
+                } else if (!element?.flags?.level && element?.flags?.approvals?.level === 2) {
                     filteredArray.push(element)
                 }
             }
@@ -357,7 +357,7 @@ const Approvals = () => {
 
                 if (element?.flags?.level === 3) {
                     filteredArray.push(element)
-                } else if (element?.flags?.approvals?.level === 3) {
+                } else if (!element?.flags?.level && element?.flags?.approvals?.level === 3) {
                     filteredArray.push(element)
                 }
                 
@@ -373,7 +373,7 @@ const Approvals = () => {
 
                 if (element?.flags?.level === 4) {
                     filteredArray.push(element)
-                } else if (element?.flags?.approvals?.level === 4) {
+                } else if (!element?.flags?.level && element?.flags?.approvals?.level === 4) {
                     filteredArray.push(element)
                 }
                 
@@ -389,7 +389,7 @@ const Approvals = () => {
 
                 if (element?.flags?.level === 5) {
                     filteredArray.push(element)
-                } else if (element?.flags?.approvals?.level === 5) {
+                } else if (!element?.flags?.level &&element?.flags?.approvals?.level === 5) {
                     filteredArray.push(element)
                 }
                 
@@ -405,7 +405,7 @@ const Approvals = () => {
 
                 if (element?.flags?.level === 6) {
                     filteredArray.push(element)
-                } else if (element?.flags?.approvals?.level === 6) {
+                } else if (!element?.flags?.level && element?.flags?.approvals?.level === 6) {
                     filteredArray.push(element)
                 }
                 
