@@ -647,7 +647,7 @@ const Tasks = () => {
                     <h3>Manage Users</h3>
 
                     {
-                        (user.role === "Admin" || user.role === "IT Admin" || user.role === "C&P Admin") && <button onClick={() => openAddEndUserModal()}>Add End User</button>
+                        (user.role === "Admin" || user.role === "IT Admin" || user.role === "C&P Admin" || user.role === "HOD") && <button onClick={() => openAddEndUserModal()}>Add End User</button>
                     }
 
                     
