@@ -967,6 +967,10 @@ const Approvals = () => {
         return (vendorData?.flags?.status === "pending")
     }
 
+    const userIsCnPStaff = () => {
+        return (user?.role === "C and P Staff" || user?.role === "Admin" || user?.role === "C&P Admin" || user?.role === "IT Admin" || user?.role === "Supervisor" || user?.role === "VRM" || user?.role === "HOD")
+    }
+
     console.log({returnToL2Data});
     
 
@@ -1088,7 +1092,9 @@ const Approvals = () => {
                         }} />
 
                     <div className={styles.inviteFilters}>
-                        <label>Filter: </label>
+                        {
+                            userIsCnPStaff() && <label>Filter: </label>
+                        }
 
                         {
                             activeTab === "invited" && <div>
@@ -1106,7 +1112,7 @@ const Approvals = () => {
 
 
                         {
-                            activeTab === "pending-l2" && <div>
+                            activeTab === "pending-l2" && userIsCnPStaff() && <div>
                                 <p className={activeFilter === "All" && styles.active}  onClick={() => {
                                     setActiveFilter("All")
                                     filterL2Companies("All")
