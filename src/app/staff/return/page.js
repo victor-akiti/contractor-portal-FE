@@ -793,21 +793,87 @@ const Approvals = () => {
     console.log({returnToL2Data});
 
     const [selectedVendors, setSelectedVendors] = useState([])
+    const [selectedVendorsData, setSelectedVendorsData] = useState([])
 
-    const toggleVendorSelection = (vendorID) => {
-        if (selectedVendors.includes(vendorID)) {
-            setSelectedVendors(selectedVendors.filter(vendor => vendor !== vendorID))
+    const toggleVendorSelection = (vendorData) => {
+        if (selectedVendors.includes(vendorData._id)) {
+            setSelectedVendors(selectedVendors.filter(vendor => vendor !== vendorData._id))
+            setSelectedVendorsData(selectedVendorsData.filter(vendor => vendor._id !== vendorData._id))
         } else {
-            setSelectedVendors([...selectedVendors, vendorID])
+            setSelectedVendors([...selectedVendors, vendorData._id])
+            setSelectedVendorsData([...selectedVendorsData, vendorData])
         }
     }
 
+    console.log({selectedVendorsData});
+    
+
     const clearSelectedVendors = () => {
         setSelectedVendors([])
+        setSelectedVendorsData([])
     }
+
+    const [showReturnApplicationsModal, setShowReturnApplicationsModal] = useState(false)
+
+    const closeReturnApplicationsModal = () => {
+        setShowReturnApplicationsModal(false)
+        
+
+        if (returnApplicationStatus.status === "success") {
+            console.log("is success");
+            
+            clearSelectedVendors()
+        }
+
+        setReturnApplicationStatus({
+            status: "",
+            message: ""
+        })
+    }
+
+    const openReturnApplicationsModal = () => {
+        setShowReturnApplicationsModal(true)
+    }
+
+    const [returnApplicationStatus, setReturnApplicationStatus] = useState({
+        status: "",
+        message: "",
+    })
 
     console.log({selectedVendors});
     
+    const returnApplications = async () => {
+        try {
+            setReturnApplicationStatus({
+                status: "returning",
+                message: ""
+            })
+
+            const returnApplicationsRequest = await postProtected("approvals/existing/return", {selectedVendors}, user.role)
+
+            console.log({returnApplicationsRequest});
+            
+
+            if (returnApplicationsRequest.status === "OK") {
+                setReturnApplicationStatus({
+                    status: "success",
+                    message: returnApplicationsRequest.message
+                })
+
+                fetchAllApprovalsData()
+            } else {
+                setReturnApplicationStatus({
+                    status: "error",
+                    message: returnApplicationsRequest.error.message
+                })
+            }
+        } catch (error) {
+            console.log({error});
+            
+        }
+
+
+    }
     
 
     
@@ -818,6 +884,39 @@ const Approvals = () => {
         <div className={styles.approvals}>
             {
                 actionProgress && <FloatingProgressIndicator status={actionProgress} />
+            }
+
+            {
+                showReturnApplicationsModal && <Modal>
+                <div className={styles.returnApplicationsModal}>
+                    <h2>Return Applications To Vendors</h2>
+
+                    <div>
+                        <p className={styles.modalBodyText}>You are about to return the following vendors applications. After re-submission, their applications will be returned to stage A.</p>
+
+                        <div>
+                            {
+                                selectedVendorsData.map((item, index) => <p key={index} className={styles.companyItem}>{item.companyName}</p>)
+                            }
+                        </div>
+                    </div>
+
+                    {
+                        returnApplicationStatus.status === "success" && <SuccessMessage message={"Vendor applications returned."} />
+                    }
+
+                    {
+                        returnApplicationStatus.status === "error" && <ErrorText text={returnApplicationStatus.message} />
+                    }
+
+                    <div className={styles.footer}>
+                        {
+                            returnApplicationStatus.status !== "success" && <button onClick={() => returnApplications()}>Continue {returnApplicationStatus.status === "returning" && <ButtonLoadingIcon />}</button>
+                        }
+                        <button onClick={() => closeReturnApplicationsModal()}>{returnApplicationStatus.status === "success" ? "Close" : "Cancel"}</button>
+                    </div>
+                </div>
+            </Modal>
             }
 
             <header>
@@ -868,7 +967,11 @@ const Approvals = () => {
             </header>
 
             <div className={styles.stageAReturnButtonDiv}>
-                <button className={selectedVendors.length === 0 ? styles.inactive : styles.active}>Stage A Return</button>
+                <button className={selectedVendors.length === 0 ? styles.inactive : styles.active} onClick={() => {
+                    if (selectedVendors.length > 0) {
+                        openReturnApplicationsModal()
+                    }
+                } }>Stage A Return</button>
 
                 <button onClick={() => clearSelectedVendors()} className={styles.clearButton}>Clear Selected List</button>
             </div>
@@ -959,16 +1062,16 @@ const Approvals = () => {
                         <tbody>
 
                             {
-                                activeTab === "pending-l2" && approvals.pendingL2.map((item, index) => <PendingL2Item key={index} user={user} companyRecord={item} index={index} selectedVendors={selectedVendors} toggleVendorSelection={vendorID => toggleVendorSelection(vendorID)} />)
+                                activeTab === "pending-l2" && approvals.pendingL2.map((item, index) => <PendingL2Item key={index} user={user} companyRecord={item} index={index} selectedVendors={selectedVendors} toggleVendorSelection={vendorData => toggleVendorSelection(vendorData)} />)
                             }
 
 
                             {
-                                activeTab === "completed-l2" && approvals.completedL2.map((item, index) => <CompletedL2Item revertToL2={vendorID => setDataForReturnToL2(item._id, "parked")} key={index} user={user} companyRecord={item} index={index} selectedVendors={selectedVendors} toggleVendorSelection={vendorID => toggleVendorSelection(vendorID)} />)
+                                activeTab === "completed-l2" && approvals.completedL2.map((item, index) => <CompletedL2Item revertToL2={vendorID => setDataForReturnToL2(item._id, "parked")} key={index} user={user} companyRecord={item} index={index} selectedVendors={selectedVendors} toggleVendorSelection={vendorData => toggleVendorSelection(vendorData)} />)
                             }
 
                             {
-                                activeTab === "returned-to-contractor" && approvals.returned.map((item, index) => <ReturnedItem key={index} user={user} companyRecord={item} index={index} selectedVendors={selectedVendors} toggleVendorSelection={vendorID => toggleVendorSelection(vendorID)} />)
+                                activeTab === "returned-to-contractor" && approvals.returned.map((item, index) => <ReturnedItem key={index} user={user} companyRecord={item} index={index} selectedVendors={selectedVendors} toggleVendorSelection={vendorData => toggleVendorSelection(vendorData)} />)
                             }
                         </tbody>
                     </table>
@@ -1063,7 +1166,7 @@ const PendingL2Item = ({index, companyRecord, user, selectedVendors, toggleVendo
     return (
         <tr className={[selectedVendors.includes(companyRecord._id) && styles.selectedVendor,styles.pendingL2Item, companyRecord.needsAttention ? styles.needsAttendionBackground : index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <input checked={selectedVendors.includes(companyRecord._id)} type="checkbox" onClick={() => toggleVendorSelection(companyRecord._id)} />
+                <input checked={selectedVendors.includes(companyRecord._id)} type="checkbox" onClick={() => toggleVendorSelection(companyRecord)} />
             </td>
             <td>
                 <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
@@ -1143,7 +1246,7 @@ const CompletedL2Item = ({index, companyRecord, revertToL2, user, selectedVendor
     return (
         <tr className={[selectedVendors.includes(companyRecord._id) && styles.selectedVendor,styles.completedL2Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <input checked={selectedVendors.includes(companyRecord._id)} type="checkbox" onClick={() => toggleVendorSelection(companyRecord._id)} />
+                <input checked={selectedVendors.includes(companyRecord._id)} type="checkbox" onClick={() => toggleVendorSelection(companyRecord)} />
             </td>
             <td>
                 <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
@@ -1217,7 +1320,7 @@ const ReturnedItem = ({index, companyRecord, selectedVendors, toggleVendorSelect
     return (
         <tr className={[selectedVendors.includes(companyRecord._id) && styles.selectedVendor, styles.returnedItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
             <td>
-                <input checked={selectedVendors.includes(companyRecord._id)} type="checkbox" onClick={() => toggleVendorSelection(companyRecord._id)} />
+                <input checked={selectedVendors.includes(companyRecord._id)} type="checkbox" onClick={() => toggleVendorSelection(companyRecord)} />
             </td>
             <td>
                 <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toLocaleUpperCase()}</Link>
