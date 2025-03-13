@@ -252,7 +252,7 @@ const Dashboard = () => {
                             <div className={styles.actionItems}>
                                 <Link href={`/contractor/application/view/${item.vendor}`}>VIEW</Link>
 
-                                <Link href={`/contractor/settings/${item.vendor}`}>SETTINGS</Link>
+                                <Link href={`/contractor/settings/${item._id}`}>SETTINGS</Link>
 
                                 {
                                     (!item.flags.submitted || item.flags.stage === "returned" || item.flags.status === "returned") && <Link href={`/contractor/form/form/${item.vendor}`}>CONTINUE & SUBMIT</Link>

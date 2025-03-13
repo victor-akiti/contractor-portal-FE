@@ -273,7 +273,7 @@ const ViewPage = () => {
                 <p className={styles.fieldData}>
                 <label>{`${field.label}:`}</label>
                 {
-                    field.value.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
+                    field?.value?.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
                 }
             </p>
             </div>
