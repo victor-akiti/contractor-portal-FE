@@ -29,6 +29,7 @@ const ViewVendorPage = () => {
     
     const [approvalData, setApprovalData] = useState<any>({})
     const [currentPortalAdministrator, setCurrentPortalAdministrator] = useState<any>({})
+    const [inviteDetails, setInviteDetails] = useState<any>({})
     const [pages, setPages] = useState([])
     const [selectedCategories, setSelectedCategories] = useState([])
     const [vendorID, setVendorID] = useState("")
@@ -103,6 +104,10 @@ const ViewVendorPage = () => {
                 let tempCurrentPortalAdministrator = {...currentPortalAdministrator}
                 tempCurrentPortalAdministrator = fetchVendorDataRequest.data.portalAdministrator
                 setCurrentPortalAdministrator(tempCurrentPortalAdministrator)
+
+                let tempInviteDetails = {...inviteDetails}
+                tempInviteDetails = fetchVendorDataRequest.data.companyInvite
+                setInviteDetails(tempInviteDetails)
 
                 let tempCurrentSelectedEndUsers = [...currentSelectedEndUsers]
                 tempCurrentSelectedEndUsers = fetchVendorDataRequest.data.currentEndUsers
@@ -1066,79 +1071,143 @@ const ViewVendorPage = () => {
                 !applicationProcessed && <>
                         <div className={styles.approvalContent}>
 
+                            <Accordion defaultOpen={true} title="Contractor Details">
+                                <div className={styles.sectionItem}>
+                                    <div>
+                                        <div className={styles.sectionHeader}>
+                                            <h6>{"Invite Details"}</h6>                              
+                                        </div>
+
+                                        <div>
+                                            <div className={styles.fieldItem}>
+                                                <div>
+                                                    <p className={styles.fieldData}>
+                                                        <label>{`Invited Company Name:`}</label>
+                                                        {
+                                                            <p>{inviteDetails?.invitedCompanyName}</p>
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.fieldItem}>
+                                                <div>
+                                                    <p className={styles.fieldData}>
+                                                        <label>{`Invited by:`}</label>
+                                                        {
+                                                            <p>{inviteDetails?.name}</p>
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr />
+
+                                        <div className={styles.sectionHeader}>
+                                            <h6 style={{marginTop: "20px"}}>{"Portal Administrator"}</h6>                              
+                                        </div>
+
+                                        <div>
+                                            <div className={styles.fieldItem}>
+                                                <div>
+                                                    <p className={styles.fieldData}>
+                                                        <label>{`Name:`}</label>
+                                                        {
+                                                            <p>{currentPortalAdministrator?.name}</p>
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.fieldItem}>
+                                                <div>
+                                                    <p className={styles.fieldData}>
+                                                        <label>{`Email:`}</label>
+                                                        {
+                                                            <p>{currentPortalAdministrator?.email}</p>
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                
+                            </Accordion>
+
                         {
                             pages.map((item, index) => <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
                                 {
                                     item.sections.map((sectionItem, sectionIndex) => {
                                         if (!sectionItem.hideOnApproval) {
                                             return <div key={sectionIndex} className={styles.sectionItem}>
-                                            <div>
-                                                <div className={styles.sectionHeader}>
-                                                    <h6>{sectionItem.title}</h6>
-    
-                                                    
-                                                </div>
-    
                                                 <div>
-                                                    {
-                                                        sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
-                                                    }
-                                                </div>
-    
-                                                <div>
-                                                    
-    
-                                                    {
-                                                        (sectionItem.remarks && sectionItem.remarks.length > 0  ) && <div className={styles.showCommentTriggerDiv}>
-                                                            <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
-                                                        </div>
-                                                    }
-    
-                                                    {
-                                                        sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
+                                                    <div className={styles.sectionHeader}>
+                                                        <h6>{sectionItem.title}</h6>                              
+                                                    </div>
+        
+                                                    <div>
                                                         {
-                                                            sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
-                                                            <p>Remarks</p>
-    
-                                                            <div>
-                                                                {
-                                                                    sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
-                                                                        <p>{remarkItem.remark}</p>
-                                                                        <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                    </div>)
-                                                                }
-                                                            </div>
-    
-                                                        </div>
+                                                            sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
                                                         }
-    
+                                                    </div>
+        
+                                                    <div>
+                                                        
+        
                                                         {
-                                                            sectionItem?.comments && sectionItem?.comments.length > 0  && <div className={styles.commentsContent}>
-                                                            <p>Comments</p>
-    
-                                                            <div>
-                                                                {
-                                                                    sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
-                                                                        <p>{commentItem.comment}</p>
-                                                                        <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                    </div>)
-                                                                }
+                                                            (sectionItem.remarks && sectionItem.remarks.length > 0  ) && <div className={styles.showCommentTriggerDiv}>
+                                                                <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
                                                             </div>
-    
+                                                        }
+        
+                                                        {
+                                                            sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
+                                                            {
+                                                                sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
+                                                                <p>Remarks</p>
+        
+                                                                <div>
+                                                                    {
+                                                                        sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
+                                                                            <p>{remarkItem.remark}</p>
+                                                                            <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                        </div>)
+                                                                    }
+                                                                </div>
+        
+                                                            </div>
+                                                            }
+        
+                                                            {
+                                                                sectionItem?.comments && sectionItem?.comments.length > 0  && <div className={styles.commentsContent}>
+                                                                <p>Comments</p>
+        
+                                                                <div>
+                                                                    {
+                                                                        sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
+                                                                            <p>{commentItem.comment}</p>
+                                                                            <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                        </div>)
+                                                                    }
+                                                                </div>
+        
+                                                            </div>
+                                                            }
                                                         </div>
                                                         }
                                                     </div>
-                                                    }
+        
+        
+        
+                                                        {
+                                                            sectionIndex !== item.sections.length - 1 && <hr />
+                                                        }
                                                 </div>
     
-    
-    
-                                                {
-                                                    sectionIndex !== item.sections.length - 1 && <hr />
-                                                }
                                             </div>
-    
-                                        </div>
                                         }
                                     })
                                 }
