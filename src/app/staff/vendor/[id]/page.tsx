@@ -1202,9 +1202,9 @@ const ViewVendorPage = () => {
         
         
         
-                                                    {
-                                                        sectionIndex !== item.sections.length - 1 && <hr />
-                                                    }
+                                                        {
+                                                            sectionIndex !== item.sections.length - 1 && <hr />
+                                                        }
                                                 </div>
     
                                             </div>
