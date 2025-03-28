@@ -941,11 +941,13 @@ const ViewVendorPage = () => {
                                 <div className={styles.currentAdminInfoItem}>
                                     <label>Phone Number</label>
 
-                                    <p>{currentPortalAdministrator.phone}</p>
+                                    <p>{currentPortalAdministrator?.phone?.number ? currentPortalAdministrator.phone.number : currentPortalAdministrator.phone}</p>
                                 </div>
                             </div>
 
+
                             <hr />
+                            
 
                             <h3>Replace Portal Administrator</h3>
 
