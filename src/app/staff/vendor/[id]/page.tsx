@@ -945,7 +945,9 @@ const ViewVendorPage = () => {
                                 </div>
                             </div>
 
+
                             <hr />
+                            
 
                             <h3>Replace Portal Administrator</h3>
 
