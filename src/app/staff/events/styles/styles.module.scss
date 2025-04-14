@@ -1,3 +1,5 @@
+@import "../../../../assets//style/colors.scss";
+
 .events {
     h2 {
         font-size: 1.25rem;
@@ -6,10 +8,42 @@
         line-height: 1.2;
     }
 
+    .searchDiv {
+        input {
+            margin-right: 20px;
+        }
+    }
+
+    .filterDiv {
+        display: flex;
+        align-items: center;
+        margin-top: 20px;
+
+        p {
+            margin-right: 20px;
+        }
+
+        div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            input {
+                margin-right: 20px;
+                min-width: 200px;
+            }
+        }
+
+        .resetButton {
+            background-color: rgba($color: #000000, $alpha: 0.0);
+            color: $primaryColor;
+        }
+    }
+
     &>div {
         display: flex;
 
-        input {
+        input, select {
             padding: 10px;
             width: 30%;
             border-style: none;
