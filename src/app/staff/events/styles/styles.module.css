@@ -4,10 +4,34 @@
   font-weight: 500;
   line-height: 1.2;
 }
+.events .searchDiv input {
+  margin-right: 20px;
+}
+.events .filterDiv {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+.events .filterDiv p {
+  margin-right: 20px;
+}
+.events .filterDiv div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.events .filterDiv div input {
+  margin-right: 20px;
+  min-width: 200px;
+}
+.events .filterDiv .resetButton {
+  background-color: rgba(0, 0, 0, 0);
+  color: #e26b09;
+}
 .events > div {
   display: flex;
 }
-.events > div input {
+.events > div input, .events > div select {
   padding: 10px;
   width: 30%;
   border-style: none;
