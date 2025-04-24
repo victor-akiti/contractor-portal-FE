@@ -20,6 +20,7 @@ import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import SuccessMessage from "@/components/successMessage"
 import ErrorText from "@/components/errorText"
+import CertificateHistoryModal from "@/components/certificateHistory"
 
 
 
@@ -186,6 +187,20 @@ const StageX = () => {
 
         updateVendorCategories(tempSelectedCategories)
     }
+
+    const [currentCertificateHistory, setCurrentCertificateHistory] = useState([])
+
+    const setHistoryAsCurrentCertificateHistory = (certificateHistory) => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = certificateHistory
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
+
+    const clearCurrentCertificateHistory = () => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = []
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
     
 
     const getFieldItemComponent = (field, index) => {
@@ -240,7 +255,7 @@ const StageX = () => {
                             </div>
 
                             {
-                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
+                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
                             }
                         </div>
                     </div>
@@ -487,6 +502,10 @@ const StageX = () => {
 
     return (
         <div className={styles.stageF}>
+            {
+                currentCertificateHistory.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
+            }
+
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>
 

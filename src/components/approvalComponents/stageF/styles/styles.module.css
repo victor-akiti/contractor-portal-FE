@@ -345,6 +345,9 @@
 .approvalContent .sectionItem .fieldItem .fieldData p {
   margin-left: 20px;
 }
+.approvalContent .sectionItem .fieldItem .fieldData a {
+  cursor: pointer;
+}
 .approvalContent .sectionItem .fieldItem .approvalInfoText {
   font-size: 14px;
   color: #dc3545;
