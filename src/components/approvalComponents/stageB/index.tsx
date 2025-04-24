@@ -20,6 +20,7 @@ import { putProtected } from "@/requests/put"
 import { postProtected } from "@/requests/post"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import ErrorText from "@/components/errorText"
+import CertificateHistoryModal from "@/components/certificateHistory"
 
 function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
     useEffect(() => {
@@ -181,6 +182,20 @@ const StageB = ({approvalData, formPages, vendorID}) => {
         
         return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(number);
     }
+
+    const [currentCertificateHistory, setCurrentCertificateHistory] = useState([])
+
+    const setHistoryAsCurrentCertificateHistory = (certificateHistory) => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = certificateHistory
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
+
+    const clearCurrentCertificateHistory = () => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = []
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
     
 
     const getFieldItemComponent = (field, index) => {
@@ -245,7 +260,7 @@ const StageB = ({approvalData, formPages, vendorID}) => {
                             
 
                             {
-                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
+                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
                             }
                         </div>
                     </div>
@@ -867,6 +882,10 @@ const StageB = ({approvalData, formPages, vendorID}) => {
                 </div>
                 </form>
             </Modal>
+            }
+
+            {
+                currentCertificateHistory.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
             }
 
             {

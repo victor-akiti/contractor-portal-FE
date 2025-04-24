@@ -1,0 +1,35 @@
+.certificateHistoryModal {
+  background-color: white;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  width: 50%;
+}
+.certificateHistoryModal h2 {
+  margin-bottom: 20px;
+}
+.certificateHistoryModal table {
+  width: 100% !important;
+}
+.certificateHistoryModal table thead {
+  background-color: black;
+  color: white;
+}
+.certificateHistoryModal table thead tr td {
+  padding: 10px;
+}
+.certificateHistoryModal table tbody tr td {
+  padding: 10px;
+}
+.certificateHistoryModal footer {
+  display: flex;
+  justify-content: end;
+  margin-top: 20px;
+}
+.certificateHistoryModal footer button {
+  margin-left: 10px;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  cursor: pointer;
+}/*# sourceMappingURL=styles.module.css.map */

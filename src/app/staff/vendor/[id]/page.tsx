@@ -22,6 +22,7 @@ import SuccessMessage from "@/components/successMessage"
 import ErrorText from "@/components/errorText"
 import Tabs from "@/components/tabs"
 import { deleteProtected } from "@/requests/delete"
+import CertificateHistoryModal from "@/components/certificateHistory"
 
 
 
@@ -273,7 +274,7 @@ const ViewVendorPage = () => {
                             
 
                             {
-                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}}>Certificate History</a>
+                            field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
                             }
                         </div>
                     </div>
@@ -801,6 +802,20 @@ const ViewVendorPage = () => {
         resetEndUserAction()
         resetNewPortalAdminAction()
     }
+
+    const [currentCertificateHistory, setCurrentCertificateHistory] = useState([])
+
+    const setHistoryAsCurrentCertificateHistory = (certificateHistory) => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = certificateHistory
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
+
+    const clearCurrentCertificateHistory = () => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = []
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
     
 
     
@@ -1000,6 +1015,11 @@ const ViewVendorPage = () => {
                         }
                     </div>
                 </Modal>
+                }
+
+
+                {
+                    currentCertificateHistory.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
                 }
 
                 
