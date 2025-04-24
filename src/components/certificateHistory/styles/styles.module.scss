@@ -1,0 +1,49 @@
+.certificateHistoryModal {
+    background-color: white;
+    padding: 10px;
+    border-style: none;
+    border-radius: 5px;
+    width: 50%;
+
+    h2 {
+        margin-bottom: 20px;
+
+    }
+
+    table {
+        width: 100% !important;
+        
+        thead {
+            background-color: black;
+            color: white;
+            
+            tr {
+                td {
+                    padding: 10px;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                td {
+                    padding: 10px;
+                }
+            }
+        }
+    }
+
+    footer {
+        display: flex;
+        justify-content: end;
+        margin-top: 20px;
+
+        button {
+            margin-left: 10px;
+            padding: 10px;
+            border-style: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    }
+}

@@ -18,6 +18,7 @@ import roundCheckboxIconUnchecked from "@/assets/images/rounde_checkbox_unchecke
 import roundCheckboxIconChecked from "@/assets/images/round_checkbox_checked.svg"
 import closeIconWhite from "@/assets/images/close_icon_white.svg"
 import Modal from "@/components/modal"
+import CertificateHistoryModal from "@/components/certificateHistory"
 
 
 
@@ -172,6 +173,20 @@ const StageC = () => {
         
         return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(number);
     }
+
+    const [currentCertificateHistory, setCurrentCertificateHistory] = useState([])
+
+    const setHistoryAsCurrentCertificateHistory = (certificateHistory) => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = certificateHistory
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
+
+    const clearCurrentCertificateHistory = () => {
+        let tempCurrentCertificateHistory = [...currentCertificateHistory]
+        tempCurrentCertificateHistory = []
+        setCurrentCertificateHistory(tempCurrentCertificateHistory)
+    }
     
 
     const getFieldItemComponent = (field, index) => {
@@ -236,7 +251,7 @@ const StageC = () => {
                             
 
                             {
-                                field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
+                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
                             }
                         </div>
                     </div>
@@ -459,6 +474,11 @@ const StageC = () => {
                     </div>
                 </Modal>
             }
+
+            {
+                currentCertificateHistory.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
+            }
+
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>
 
