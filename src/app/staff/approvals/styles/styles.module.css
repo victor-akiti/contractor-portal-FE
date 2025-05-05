@@ -1,6 +1,82 @@
 .approvals {
   width: 100%;
 }
+.approvals .exportModal {
+  background-color: white;
+  padding: 10px;
+  border-style: none;
+  border-radius: 10px;
+  width: 50vw;
+}
+.approvals .exportModal hr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.approvals .exportModal .exportOptionsDiv {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.approvals .exportModal .exportOptionsDiv div {
+  display: flex;
+  align-items: center;
+}
+.approvals .exportModal .exportOptionsDiv div input {
+  margin-right: 5px;
+}
+.approvals .exportModal .searchVendorsDiv input {
+  width: 100%;
+  padding: 10px;
+  border-style: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #ced4da;
+  border-radius: 5px;
+}
+.approvals .exportModal .searchVendorsDiv .vendorSearchResultList {
+  max-height: 100px;
+  overflow-y: scroll;
+}
+.approvals .exportModal .searchVendorsDiv .vendorSearchResultList .vendorSearchResultItem {
+  font-size: 14px;
+  padding: 10px;
+  color: #e26b09;
+  cursor: pointer;
+}
+.approvals .exportModal .searchVendorsDiv .vendorSearchResultList .vendorSearchResultItem:hover {
+  background-color: #fae3d0;
+}
+.approvals .exportModal .searchVendorsDiv .vendorSearchResultList .selected {
+  background-color: #e26b09;
+  color: white;
+}
+.approvals .exportModal .selectedVendorsToExportDiv {
+  padding-top: 20px;
+}
+.approvals .exportModal .selectedVendorsToExportDiv h5 {
+  margin-bottom: 10px;
+}
+.approvals .exportModal .selectedVendorsToExportDiv .selectedVendorsToExportItem {
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.approvals .exportModal .selectedVendorsToExportDiv .selectedVendorsToExportItem p {
+  color: #212529;
+}
+.approvals .exportModal .selectedVendorsToExportDiv .selectedVendorsToExportItem:hover {
+  background-color: #f6f6f6;
+}
+.approvals .exportModal .selectedVendorsToExportDiv .selectedVendorsToExportItem a {
+  cursor: pointer;
+}
+.approvals .exportModal .selectedVendorsToExportDiv .noSelectedVendorsText {
+  font-size: 14px;
+  color: #64676b;
+}
 .approvals a {
   cursor: pointer;
 }

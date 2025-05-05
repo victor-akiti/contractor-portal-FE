@@ -31,17 +31,21 @@ function useOutsideClick(ref, onClickOut, deps = []){
 
 
 const Approvals = () => {
-    useEffect(() => {
-        fetchAllApprovalsData()
-
-        // triggerInviteMigration()
-    }, [])
-    const searchResultRef = useRef(null)
-
-    
-    
-
-    
+    const [activeTab, setActiveTab] = useState("pending-l2")
+    const [activeFilter, setActiveFilter] = useState("All")
+    const [searchQueryResults, setSearchQueryResults] = useState([])
+    const[fetchingContractors, setFetchingContractors] = useState(true)
+    const [successMessage, setSuccessMessage] = useState("")
+    const [errorMessage, setErrorMessage] = useState("")
+    const [currentSearchFilter, setCurrentSearchFilter] = useState("all")
+    const [actionProgress, setActionProgress] = useState("")
+    const [returnToL2Data, setReturnToL2Data] = useState(null)
+    const [l3Filters, setL3Filters] = useState(["All", "Healthy", "With Vendor", "Yet To Be Reviewed"])
+    const [activeL3Filter, setActiveL3Filter] = useState("All")
+    const [nameSortAscending, setNameSortAscending] = useState(true)
+    const [dateSortAscending, setDateSortAscending] = useState(true)
+    const [inviteToArchive, setInviteToArchive] = useState({})
+    const [currentSort, setCurrentSort] = useState("alphabetical")
 
     const [approvals, setApprovals] = useState({
         completedL2: [],
@@ -92,13 +96,27 @@ const Approvals = () => {
         // }
     ])
 
-    const [inviteToArchive, setInviteToArchive] = useState({})
-
-
+    const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"]
+    const approvalStages = ["A", "B", "C", "D", "E", "F"]
+    const tableHeaders = {
+        invited: ["Company Name", "User Details", "Status"],
+        inProgress: ["Contractor Name", "Last Contractor Update"],
+        pendingL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+        l3: ["Contractor Name", "Action", "Last Contractor Update"],
+        completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+        returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+        parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Action"],
+    }
+    
     const user= useAppSelector(state => state?.user?.user)
+    const searchResultRef = useRef(null)
 
+    useEffect(() => {
+        fetchAllApprovalsData()
 
-
+        // triggerInviteMigration()
+    }, [])
+    
     const setInviteToArchiveObject = invite => {
         let tempInviteToArchive = {...inviteToArchive}
         tempInviteToArchive = invite
@@ -156,30 +174,6 @@ const Approvals = () => {
         }
     }
 
-
-
-    const tableHeaders = {
-        invited: ["Company Name", "User Details", "Status"],
-        inProgress: ["Contractor Name", "Last Contractor Update"],
-        pendingL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
-        l3: ["Contractor Name", "Action", "Last Contractor Update"],
-        completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
-        returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
-        parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Action"],
-    }
-
-    const [activeTab, setActiveTab] = useState("pending-l2")
-    const [activeFilter, setActiveFilter] = useState("All")
-    const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"]
-    const approvalStages = ["A", "B", "C", "D", "E", "F"]
-    const [searchQueryResults, setSearchQueryResults] = useState([])
-    const[fetchingContractors, setFetchingContractors] = useState(true)
-    const [successMessage, setSuccessMessage] = useState("")
-    const [errorMessage, setErrorMessage] = useState("")
-    const [currentSearchFilter, setCurrentSearchFilter] = useState("all")
-    const [actionProgress, setActionProgress] = useState("")
-    const [returnToL2Data, setReturnToL2Data] = useState(null)
-
     const getActiveTable = () => {
         switch (activeTab) {
             case "invited": 
@@ -194,23 +188,6 @@ const Approvals = () => {
                 return tableHeaders["completedL2"]
             case "park-requests":
                 return tableHeaders["parkRequests"]
-            default:
-                return tableHeaders["returned"]
-        }
-    }
-
-    const getActiveTableData = () => {
-        switch (activeTab) {
-            case "invited": 
-                return invitedData
-            case "in-progress":
-                return tableHeaders["inProgress"]
-            case "pendingL2":
-                return tableHeaders["pendingL2"]
-            case "l3":
-                return tableHeaders["l3"]
-            case "completed-l2":
-                return tableHeaders["completedL2"]
             default:
                 return tableHeaders["returned"]
         }
@@ -427,6 +404,7 @@ const Approvals = () => {
     }
 
     const [archivingInvite, setArchivingInvite] = useState()
+
     const [archiveStatusMessages, setArchiveStatusMessages] = useState({
         errorMessage: "",
         successMessage: ""
@@ -683,15 +661,8 @@ const Approvals = () => {
         setReturnToL2Data(tempReturnToL2Data)
       }
 
-      console.log({returnToL2Data});
-      
 
-    console.log({currentSearchFilter});
 
-    const [l3Filters, setL3Filters] = useState(["All", "Healthy", "With Vendor", "Yet To Be Reviewed"])
-    const [activeL3Filter, setActiveL3Filter] = useState("All")
-    const [nameSortAscending, setNameSortAscending] = useState(true)
-    const [dateSortAscending, setDateSortAscending] = useState(true)
     
     //This function filters companies in the L3 category by the selected filter
     const filterL3Companies = (filter) => {
@@ -719,8 +690,6 @@ const Approvals = () => {
             }
         }
     }
-
-    const [currentSort, setCurrentSort] = useState("alphabetical")
 
     const getSortToPerform = index => {
         if (index === 0) {
@@ -844,11 +813,6 @@ const Approvals = () => {
         setApprovals(tempApprovals)
         setDateSortAscending(!dateSortAscending)
     }
-    
-
-    console.log({currentSort});
-    
-
 
     const sortArrayNumerically = array => {
         console.log("Sorting", array.length);
@@ -970,12 +934,142 @@ const Approvals = () => {
         return (user?.role === "C and P Staff" || user?.role === "Admin" || user?.role === "C&P Admin" || user?.role === "IT Admin" || user?.role === "Supervisor" || user?.role === "VRM" || user?.role === "HOD")
     }
 
-    console.log({returnToL2Data});
+    const [exportOptions, setExportOptions] = useState({
+        root: "invited",
+        selectedInviteType: "",
+        selectedStages: [],
+        l2Stages: [],
+        pendingL2Stages: [],
+        exportType: "all",
+        selectedVendors: []
+    })
+
+    const [exportVendorSearchResults, setExportVendorSearchResults] = useState([])
+    const [selectedVendorsToExport, setSelectedVendorsToExport] = useState([])
+    const [selectedVendorsToExportIDs, setSelectedVendorsToExportIDs] = useState([])
+
+    const updateExportOptions = (option, value) => {
+        let tempExportOptions = {...exportOptions}
+        tempExportOptions[option] = value
+        setExportOptions(tempExportOptions)
+    }
+
+    const toggleExportOptions = (option, value) => {
+        let tempExportOptions = {...exportOptions}
+
+        if (tempExportOptions[option].includes(value)) {
+            tempExportOptions[option] = tempExportOptions[option].filter(item => item !== value)
+        } else {
+            tempExportOptions[option].push(value)
+        }
+
+        setExportOptions(tempExportOptions)
+    }
+
+    const findVendorsByName = vendorName => {
+        let vendorSearchResults = []
+
+        if (exportOptions.selectedStages.includes("inProgress")) {
+            fixedApprovals.inProgress.forEach(item => {
+                if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
+                    vendorSearchResults.push(item)
+                }
+            })
+        }
+
+        if (exportOptions.selectedStages.includes("l2")) {
+            
+            
+            if (exportOptions.l2Stages.includes("pending")) {
+                fixedApprovals.pendingL2.forEach(item => {
+                    if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
+                        if (item.flags.status === "pending" || item.flags.stage === "pending") {
+                            vendorSearchResults.push(item)
+                        }
+                    }
+                })
+            }
+
+            if (exportOptions.l2Stages.includes("completed")) {
+                fixedApprovals.completedL2.forEach(item => {
+                    if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
+                        if (item.flags.status === "parked" || item.flags.stage === "parked") {
+                            vendorSearchResults.push(item)
+                        }
+                    }
+                })
+            }
+
+            if (exportOptions.l2Stages.includes("returned")) {
+                console.log("filtering returned");
+                fixedApprovals.returned.forEach(item => {
+                    if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
+                        if (item.flags.status === "returned" || item.flags.stage === "returned") {
+                            vendorSearchResults.push(item)
+                        }
+                    }
+                })
+            }
+
+            if (exportOptions.l2Stages.includes("returnRequested")) {
+                if (fixedApprovals.returnRequested) {
+                    fixedApprovals.returnRequested.forEach(item => {
+                        if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
+                            if (item.flags.status === "park requested" || item.flags.stage === "park requested") {
+                                vendorSearchResults.push(item)
+                            }
+                        }
+                    })
+                }
+            }
+        }
+
+        if (exportOptions.selectedStages.includes("l3")) {
+            fixedApprovals.l3.forEach(item => {
+                if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
+                    vendorSearchResults.push(item)
+                }
+            })
+        }
+
+        vendorSearchResults = sortArrayByName(vendorSearchResults)
+        let tempVendorSearchResults = [...vendorSearchResults]
+        setExportVendorSearchResults(tempVendorSearchResults)
+        
+    }
+
+    const addVendorToSelectedList = (vendorData) => {
+        if (!selectedVendorsToExportIDs.includes(vendorData._id)) {
+            let tempSelectedVendorsToExport = [...selectedVendorsToExport]
+            tempSelectedVendorsToExport.push(vendorData)
+            setSelectedVendorsToExport(tempSelectedVendorsToExport)
+
+            let tempSelectedVendorsToExportIDS = [...selectedVendorsToExportIDs]
+            tempSelectedVendorsToExportIDS.push(vendorData._id)
+            setSelectedVendorsToExportIDs(tempSelectedVendorsToExportIDS)
+
+            //Clear search results
+            let tempExportSearchResults = [...exportVendorSearchResults]
+            tempExportSearchResults= []
+            setExportVendorSearchResults(tempExportSearchResults)
+        }
+    }
+
+    const removeVendorFromSelectedVendorsToExport = vendorID => {
+        if (selectedVendorsToExportIDs.includes(vendorID)) {
+            let tempSelectedVendorsToExport = [...selectedVendorsToExport]
+            tempSelectedVendorsToExport = tempSelectedVendorsToExport.filter(item => item._id !== vendorID)
+            setSelectedVendorsToExport(tempSelectedVendorsToExport)
+
+            let tempSelectedVendorsToExportIDS = [...selectedVendorsToExportIDs]
+            tempSelectedVendorsToExportIDS = tempSelectedVendorsToExportIDS.filter(item => item !== vendorID)
+            setSelectedVendorsToExportIDs(tempSelectedVendorsToExportIDS)
+        }
+    }
+    
+    
     
 
-    
-
-    
 
     return (
         <div className={styles.approvals}>
@@ -1002,6 +1096,213 @@ const Approvals = () => {
                 </div>
             </Modal>
             }
+
+            <Modal>
+                <div className={styles.exportModal}>
+                    <h2>Export Vendors</h2>
+
+                    <hr />
+
+                    <h4>Export options</h4>
+
+                    <div className={styles.exportOptionsDiv}>
+                        <div onClick={() => updateExportOptions("root", "invited")}>
+                            <input type="radio" name="root" checked={exportOptions.root === "invited"} />
+                            <label>Export invited vendors</label>
+                        </div>
+
+                        <div onClick={() => updateExportOptions("root", "registered")}>
+                            <input type="radio" name="root"  checked={exportOptions.root === "registered"} />
+                            <label>Export registered vendors</label>
+                        </div>
+                    </div>
+
+                    {
+                        exportOptions.root === "invited" && <div className={styles.exportOptionsDiv}>
+                            <div onClick={() => updateExportOptions("selectedInviteType", "all")}>
+                                <input type="radio" name="invite" checked={exportOptions.selectedInviteType === "all"} />
+                                <label>All</label>
+                            </div>
+
+                            <div onClick={() => updateExportOptions("selectedInviteType", "active")}>
+                                <input type="radio" name="invite" checked={exportOptions.selectedInviteType === "active"} />
+                                <label>Active</label>
+                            </div>
+
+                            <div onClick={() => updateExportOptions("selectedInviteType", "used")}>
+                                <input type="radio" name="invite" checked={exportOptions.selectedInviteType === "used"} />
+                                <label>Used</label>
+                            </div>
+
+                            <div onClick={() => updateExportOptions("selectedInviteType", "expired")}>
+                                <input type="radio" name="invite" checked={exportOptions.selectedInviteType === "expired"} />
+                                <label>Expired</label>
+                            </div>
+
+                            <div onClick={() => updateExportOptions("selectedInviteType", "archived")}>
+                                <input type="radio" name="invite" checked={exportOptions.selectedInviteType === "archived"} />
+                                <label>Archived</label>
+                            </div>
+                        </div>
+                    }
+
+                    {
+                        exportOptions.root !== "invited" && <>
+                            <h5>Stage</h5>
+
+                            <div className={styles.exportOptionsDiv}>
+                                <div onChange={() => toggleExportOptions("selectedStages", "inProgress")}>
+                                    <input type="checkbox" name="stage" checked={exportOptions.selectedStages.includes["inProgress"]} />
+                                    <label>In Progress</label>
+                                </div>
+
+                                <div onChange={() => toggleExportOptions("selectedStages", "l2")}>
+                                    <input type="checkbox" name="stage" checked={exportOptions.selectedStages.includes["l2"]} />
+                                    <label>L2</label>
+                                </div>
+
+                                <div onChange={() => toggleExportOptions("selectedStages", "l3")}>
+                                    <input type="checkbox" name="stage" checked={exportOptions.selectedStages.includes["l3"]} />
+                                    <label>L3</label>
+                                </div>
+                            </div>
+
+                            {
+                                exportOptions.selectedStages.includes("l2") && <>
+                                        <h5>L2 Status</h5>
+
+                                        <div className={styles.exportOptionsDiv}>
+                                            <div onChange={() => toggleExportOptions("l2Stages", "pending")}>
+                                                <input type="checkbox" checked={exportOptions.l2Stages.includes("pending")} />
+                                                <label>Pending L2</label>
+                                            </div>
+
+                                            <div onChange={() => toggleExportOptions("l2Stages", "completed")}>
+                                                <input type="checkbox" checked={exportOptions.l2Stages.includes("completed")} />
+                                                <label>Completed L2</label>
+                                            </div>
+
+                                            <div onChange={() => toggleExportOptions("l2Stages", "returned")}>
+                                                <input type="checkbox" checked={exportOptions.l2Stages.includes("returned")} />
+                                                <label>Returned to contractor</label>
+                                            </div>
+
+                                            <div onChange={() => toggleExportOptions("l2Stages", "returnRequested")}>
+                                                <input type="checkbox" checked={exportOptions.l2Stages.includes("returnRequested")} />
+                                                <label>Return requested</label>
+                                            </div>
+                                        </div>
+
+                                        {
+                                            exportOptions.l2Stages.includes("pending") && <>
+                                                <h5>L2 Stage</h5>
+
+                                                <div className={styles.exportOptionsDiv}>
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "A")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("A")} />
+                                                        <label>Stage A</label>
+                                                    </div>
+
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "B")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("B")} />
+                                                        <label>Stage B</label>
+                                                    </div>
+
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "C")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("C")} />
+                                                        <label>Stage C</label>
+                                                    </div>
+
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "D")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("D")} />
+                                                        <label>Stage D</label>
+                                                    </div>
+
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "E")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("E")} />
+                                                        <label>Stage E</label>
+                                                    </div>
+
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "F")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("F")} />
+                                                        <label>Stage F</label>
+                                                    </div>
+
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "G")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("G")} />
+                                                        <label>Stage G</label>
+                                                    </div>
+
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "H")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("H")} />
+                                                        <label>Stage H</label>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        }
+                                </>
+                            }
+
+                            {
+                                exportOptions.selectedStages.length > 0 && <>
+                                    <h5>Selection type</h5>
+
+                                    <div className={styles.exportOptionsDiv}>
+                                        <div onClick={() => updateExportOptions("exportType", "all")}>
+                                            <input type="radio" name="specific" checked={exportOptions.exportType === "all"} />
+                                            <label>All</label>
+                                        </div>
+
+                                        <div onClick={() => updateExportOptions("exportType", "select")}>
+                                            <input type="radio" name="specific" checked={exportOptions.exportType === "select"} />
+                                            <label>Select contractors</label>
+                                        </div>
+                                    </div>
+                                </>
+                            }
+
+                            {
+                                exportOptions.exportType === "select" && <div className={styles.searchVendorsDiv}>
+                                <input placeholder="Search vendors" onChange={event => findVendorsByName(event.target.value)} />
+
+                                <div className={styles.vendorSearchResultList}>
+                                    {
+                                        exportVendorSearchResults.map((item, index) => <p key={index} className={styles.vendorSearchResultItem} onClick={() => addVendorToSelectedList(item)}>{item.companyName}</p>)
+                                    }
+                                </div>
+                                
+                            </div>
+                            }
+
+                            {
+                                exportOptions.exportType === "select" && <div className={styles.selectedVendorsToExportDiv}>
+                                <h5>Selected vendors</h5>
+
+                                <div>
+                                    {
+                                        selectedVendorsToExport.map((item, index) => <div key={index} className={styles.selectedVendorsToExportItem}>
+                                        <p>{item.companyName}</p>
+
+                                        <a onClick={() => removeVendorFromSelectedVendorsToExport(item._id)}>Remove</a>
+                                    </div>)
+                                    }
+                                </div>
+
+                                {
+                                    selectedVendorsToExport.length === 0 && <p className={styles.noSelectedVendorsText}>No selected vendors</p>
+                                }
+                            </div>
+                            }
+                        </>
+                    }
+
+                    
+
+
+
+
+                </div>
+            </Modal>
 
             <header>
                 <h3>C&P Officer Dashboard</h3>
