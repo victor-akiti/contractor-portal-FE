@@ -274,7 +274,7 @@ const ViewVendorPage = () => {
                             
 
                             {
-                            field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
+                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
                             }
                         </div>
                     </div>
@@ -314,7 +314,7 @@ const ViewVendorPage = () => {
                     <p className={styles.fieldData}>
                     <label>{`${field.label}:`}</label>
                     {
-                        field.value.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
+                        field?.value?.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
                     }
                 </p>
                 </div>
