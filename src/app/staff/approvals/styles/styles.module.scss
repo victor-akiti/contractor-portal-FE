@@ -98,6 +98,25 @@
                 color: #64676b;
             }
         }
+
+        .exportActionButtons {
+            display: flex;
+            justify-content: end;
+
+            button {
+                margin-left: 20px;
+                padding: 10px;
+                border-style: none;
+                border-radius: 5px;
+                font-size: 13px !important;
+                cursor: pointer;
+            }
+
+            button:nth-child(1) {
+                background-color: $primaryColor;
+                color: white;
+            }
+        }
     }
 
     a {

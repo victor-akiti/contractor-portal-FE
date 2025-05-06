@@ -19,6 +19,7 @@ import { all } from "underscore"
 import upIconBlack from "@/assets/images/upIconBlack.svg"
 import downIconBlack from "@/assets/images/downIconBlack.svg"
 import Image from "next/image"
+import xlsx from "json-as-xlsx"
 
 function useOutsideClick(ref, onClickOut, deps = []){
     useEffect(() => {
@@ -936,7 +937,7 @@ const Approvals = () => {
 
     const [exportOptions, setExportOptions] = useState({
         root: "invited",
-        selectedInviteType: "",
+        selectedInviteType: "all",
         selectedStages: [],
         l2Stages: [],
         pendingL2Stages: [],
@@ -947,6 +948,7 @@ const Approvals = () => {
     const [exportVendorSearchResults, setExportVendorSearchResults] = useState([])
     const [selectedVendorsToExport, setSelectedVendorsToExport] = useState([])
     const [selectedVendorsToExportIDs, setSelectedVendorsToExportIDs] = useState([])
+    const [vendorsToExport, setVendorsToExport] = useState([])
 
     const updateExportOptions = (option, value) => {
         let tempExportOptions = {...exportOptions}
@@ -972,7 +974,7 @@ const Approvals = () => {
         if (exportOptions.selectedStages.includes("inProgress")) {
             fixedApprovals.inProgress.forEach(item => {
                 if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
-                    vendorSearchResults.push(item)
+                    vendorSearchResults.push({...item, stage: "In Progress"})
                 }
             })
         }
@@ -984,7 +986,42 @@ const Approvals = () => {
                 fixedApprovals.pendingL2.forEach(item => {
                     if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
                         if (item.flags.status === "pending" || item.flags.stage === "pending") {
-                            vendorSearchResults.push(item)
+                            
+                            if (exportOptions.pendingL2Stages.includes("All")) {
+                                vendorSearchResults.push(item)
+                            } else {
+                                if (exportOptions.pendingL2Stages.includes("A") && (!item.flags?.approvals?.level)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "A", l2Stage: "Pending", stage: "L2"})
+                                }
+
+                                if (exportOptions.pendingL2Stages.includes("B") && (item.flags?.approvals?.level === 1)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "B", l2Stage: "Pending", stage: "L2"})
+                                }
+
+                                if (exportOptions.pendingL2Stages.includes("C") && (item.flags?.approvals?.level === 2)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "C", l2Stage: "Pending", stage: "L2"})
+                                }
+
+                                if (exportOptions.pendingL2Stages.includes("D") && (item.flags?.approvals?.level === 3)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "D", l2Stage: "Pending", stage: "L2"})
+                                }
+
+                                if (exportOptions.pendingL2Stages.includes("E") && (item.flags?.approvals?.level === 4)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "E", l2Stage: "Pending", stage: "L2"})
+                                }
+
+                                if (exportOptions.pendingL2Stages.includes("F") && (!item.flags?.approvals?.level === 5)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "F", l2Stage: "Pending", stage: "L2"})
+                                }
+
+                                if (exportOptions.pendingL2Stages.includes("G") && (!item.flags?.approvals?.level === 6)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "G", l2Stage: "Pending", stage: "L2"})
+                                }
+
+                                if (exportOptions.pendingL2Stages.includes("H") && (!item.flags?.approvals?.level === 7)) {
+                                    vendorSearchResults.push({...item, l2PendingStage: "H", l2Stage: "Pending", stage: "L2"})
+                                }
+                            }
                         }
                     }
                 })
@@ -994,7 +1031,7 @@ const Approvals = () => {
                 fixedApprovals.completedL2.forEach(item => {
                     if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
                         if (item.flags.status === "parked" || item.flags.stage === "parked") {
-                            vendorSearchResults.push(item)
+                            vendorSearchResults.push({...item, l2Stage: "Completed", stage: "L2"})
                         }
                     }
                 })
@@ -1005,7 +1042,7 @@ const Approvals = () => {
                 fixedApprovals.returned.forEach(item => {
                     if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
                         if (item.flags.status === "returned" || item.flags.stage === "returned") {
-                            vendorSearchResults.push(item)
+                            vendorSearchResults.push({...item, l2Stage: "Returned", stage: "L2"})
                         }
                     }
                 })
@@ -1016,7 +1053,7 @@ const Approvals = () => {
                     fixedApprovals.returnRequested.forEach(item => {
                         if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
                             if (item.flags.status === "park requested" || item.flags.stage === "park requested") {
-                                vendorSearchResults.push(item)
+                                vendorSearchResults.push({...item, l2Stage: "Return Requested", stage: "L2"})
                             }
                         }
                     })
@@ -1027,7 +1064,7 @@ const Approvals = () => {
         if (exportOptions.selectedStages.includes("l3")) {
             fixedApprovals.l3.forEach(item => {
                 if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
-                    vendorSearchResults.push(item)
+                    vendorSearchResults.push({...item, stage: "L3"})
                 }
             })
         }
@@ -1065,6 +1102,241 @@ const Approvals = () => {
             tempSelectedVendorsToExportIDS = tempSelectedVendorsToExportIDS.filter(item => item !== vendorID)
             setSelectedVendorsToExportIDs(tempSelectedVendorsToExportIDS)
         }
+    }
+
+    const exportContractors = () => {
+        if (exportOptions.root === "invited") {
+            exportInvitedVendors()
+        } else {
+            exportRegisteredVendors()
+        }
+    }
+
+    const exportInvitedVendors = () => {
+        let tempVendorsToExport = [...vendorsToExport]
+
+        if (exportOptions.selectedInviteType === "all") {
+            tempVendorsToExport = fixedApprovals.invites
+        } else if (exportOptions.selectedInviteType === "active") {
+            let activeInvites = []
+
+            for (let index = 0; index < fixedApprovals.invites.length; index++) {
+                const element = fixedApprovals.invites[index];
+
+                let currentDate = new Date()
+                let expiryDate = ""
+
+                
+
+                if (element?.expiry?._seconds ) {
+                    expiryDate = new Date(element?.expiry?._seconds * 1000)
+                } else {
+                    expiryDate = new Date(element?.expiry)
+                }
+
+                if (element.email === "testotesta@amni.com") {
+                    console.log({expiryDate, element, expiry: element.expiry});
+                }
+
+                if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) {
+                    activeInvites.push(element)
+                }
+            }
+            tempVendorsToExport = activeInvites
+        } else if (exportOptions.selectedInviteType === "used") {
+            tempVendorsToExport = fixedApprovals.invites.filter(item => item.used)
+        } else if (exportOptions.selectedInviteType === "expired") {
+            let expiredInvites = []
+
+            for (let index = 0; index < fixedApprovals.invites.length; index++) {
+                const element = fixedApprovals.invites[index];
+
+                let currentDate = new Date()
+                let expiryDate = ""
+
+                if (element?.expiry?._seconds ) {
+                    expiryDate = new Date(element?.expiry?._seconds * 1000)
+                } else {
+                    expiryDate = new Date(element?.expiry)
+                }
+
+                if ((currentDate.getTime() > expiryDate.getTime()) && !element.used) {
+                    expiredInvites.push(element)
+                }
+            }
+
+            tempVendorsToExport = expiredInvites
+        } else {
+            tempVendorsToExport = []
+        }
+
+        setVendorsToExport(tempVendorsToExport)
+
+        console.log({tempVendorsToExport});
+        
+
+        exportExcelFile(tempVendorsToExport)
+        
+    }
+
+    const exportRegisteredVendors = () => {
+        let tempVendorsToExport = [...vendorsToExport]
+        tempVendorsToExport = []
+
+        if (exportOptions.exportType === "selected") {
+            tempVendorsToExport = selectedVendorsToExport
+        } else {
+            if (exportOptions.selectedStages.includes("inProgress")) {
+                let mappedStage = fixedApprovals.inProgress.map(item => {
+                    return {...item, stage: "In Progress"}
+                })
+                tempVendorsToExport = [...tempVendorsToExport, ...mappedStage]
+            } 
+
+            if (exportOptions.selectedStages.includes("l3")) {
+                let mappedStage = fixedApprovals.l3.map(item => {
+                    return {...item, stage: "L3"}
+                })
+                tempVendorsToExport = [...tempVendorsToExport, ...mappedStage]
+            }
+
+            if (exportOptions.selectedStages.includes("l2")) {
+                if (exportOptions.l2Stages.includes("returned")) {
+                    let mappedL2Stage = fixedApprovals.returned.map(item => {
+                        return {...item, l2Stage: "Returned", stage: "L2"}
+                    })
+
+                    tempVendorsToExport = [...tempVendorsToExport, mappedL2Stage]
+                }
+
+                if (exportOptions.l2Stages.includes("completed")) {
+                    let mappedL2Stage = fixedApprovals.completedL2.map(item => {
+                        return {...item, l2Stage: "Completed", stage: "L2"}
+                    })
+                    tempVendorsToExport = [...tempVendorsToExport, mappedL2Stage]
+                }
+
+                if (exportOptions.l2Stages.includes("pending")) {
+                    fixedApprovals.pendingL2.forEach((item) => {
+                        if (exportOptions.pendingL2Stages.includes("A") && (!item.flags?.approvals?.level)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "A", l2Stage: "Pending", stage: "L2"})
+                        }
+
+                        if (exportOptions.pendingL2Stages.includes("B") && (item.flags?.approvals?.level === 1)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "B", l2Stage: "Pending", stage: "L2"})
+                        }
+
+                        if (exportOptions.pendingL2Stages.includes("C") && (item.flags?.approvals?.level === 2)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "C", l2Stage: "Pending", stage: "L2"})
+                        }
+
+                        if (exportOptions.pendingL2Stages.includes("D") && (item.flags?.approvals?.level === 3)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "D", l2Stage: "Pending", stage: "L2"})
+                        }
+
+                        if (exportOptions.pendingL2Stages.includes("E") && (item.flags?.approvals?.level === 4)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "E", l2Stage: "Pending", stage: "L2"})
+                        }
+
+                        if (exportOptions.pendingL2Stages.includes("F") && (!item.flags?.approvals?.level === 5)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "F", l2Stage: "Pending", stage: "L2"})
+                        }
+
+                        if (exportOptions.pendingL2Stages.includes("G") && (!item.flags?.approvals?.level === 6)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "G", l2Stage: "Pending", stage: "L2"})
+                        }
+
+                        if (exportOptions.pendingL2Stages.includes("H") && (!item.flags?.approvals?.level === 7)) {
+                            tempVendorsToExport.push({...item, l2PendingStage: "H", l2Stage: "Pending", stage: "L2"})
+                        }
+                    })
+                }
+            }
+        }
+    }
+
+    const inviteIsActive = invite => {
+        const element = invite
+
+        let currentDate = new Date()
+        let expiryDate = ""
+
+        
+
+        if (element?.expiry?._seconds ) {
+            expiryDate = new Date(element?.expiry?._seconds * 1000)
+        } else {
+            expiryDate = new Date(element?.expiry)
+        }
+
+        if (element.email === "testotesta@amni.com") {
+            console.log({expiryDate, element, expiry: element.expiry});
+        }
+
+        if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    const inviteHasExpired = invite => {
+        const element = invite;
+
+        let currentDate = new Date()
+        let expiryDate = ""
+
+        if (element?.expiry?._seconds ) {
+            expiryDate = new Date(element?.expiry?._seconds * 1000)
+        } else {
+            expiryDate = new Date(element?.expiry)
+        }
+
+        if ((currentDate.getTime() > expiryDate.getTime()) && !element.used) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    const exportExcelFile = (exportData) => {
+        let data = [
+            {
+              sheet: "Adults",
+              columns: [
+                { label: "Company Name", value: "companyName" }, // Top level data
+                { label: "Email", value: "email" }, // Custom format
+                { label: "Name", value: "name" }, // Run functions
+                { label: "Sent On", value: row => {
+                    const createdDate = new Date(row.createdAt)
+                    return createdDate
+                }},
+                {
+                    label: "Status", value: row => {
+                        if (row.used) {
+                            return "Used"
+                        } else if (inviteIsActive(row)) {
+                            return "Active"
+                        } else if (inviteHasExpired(row)) {
+                            return "Expired"
+                        }
+                    }
+                }
+              ],
+              content: exportData,
+            },
+
+          ]
+          
+          let settings = {
+            fileName: "VendorListExport", // Name of the resulting spreadsheet
+            extraLength: 3, // A bigger number means that columns will be wider
+            writeMode: "writeFile", // The available parameters are 'WriteFile' and 'write'. This setting is optional. Useful in such cases https://docs.sheetjs.com/docs/solutions/output#example-remote-file
+            writeOptions: {}, // Style options from https://docs.sheetjs.com/docs/api/write-options
+            RTL: false, // Display the columns from right-to-left (the default value is false)
+          }
+          
+          xlsx(data, settings)
     }
     
     
@@ -1198,43 +1470,48 @@ const Approvals = () => {
                                                 <h5>L2 Stage</h5>
 
                                                 <div className={styles.exportOptionsDiv}>
+                                                    <div onChange={() => toggleExportOptions("pendingL2Stages", "All")}>
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("All")} />
+                                                        <label>All Stages</label>
+                                                    </div>
+
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "A")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("A")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("A")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage A</label>
                                                     </div>
 
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "B")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("B")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("B")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage B</label>
                                                     </div>
 
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "C")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("C")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("C")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage C</label>
                                                     </div>
 
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "D")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("D")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("D")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage D</label>
                                                     </div>
 
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "E")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("E")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("E")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage E</label>
                                                     </div>
 
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "F")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("F")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("F")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage F</label>
                                                     </div>
 
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "G")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("G")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("G")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage G</label>
                                                     </div>
 
                                                     <div onChange={() => toggleExportOptions("pendingL2Stages", "H")}>
-                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("H")} />
+                                                        <input type="checkbox" checked={exportOptions.pendingL2Stages.includes("H")} disabled={exportOptions.pendingL2Stages.includes("All")} />
                                                         <label>Stage H</label>
                                                     </div>
                                                 </div>
@@ -1295,6 +1572,12 @@ const Approvals = () => {
                             }
                         </>
                     }
+
+                    <div className={styles.exportActionButtons}>
+                        <button onClick={() => exportContractors()}>Export</button>
+
+                        <button>Close</button>
+                    </div>
 
                     
 

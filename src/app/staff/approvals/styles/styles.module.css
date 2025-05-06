@@ -77,6 +77,22 @@
   font-size: 14px;
   color: #64676b;
 }
+.approvals .exportModal .exportActionButtons {
+  display: flex;
+  justify-content: end;
+}
+.approvals .exportModal .exportActionButtons button {
+  margin-left: 20px;
+  padding: 10px;
+  border-style: none;
+  border-radius: 5px;
+  font-size: 13px !important;
+  cursor: pointer;
+}
+.approvals .exportModal .exportActionButtons button:nth-child(1) {
+  background-color: #e26b09;
+  color: white;
+}
 .approvals a {
   cursor: pointer;
 }
