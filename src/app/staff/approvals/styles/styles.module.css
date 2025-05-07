@@ -1,6 +1,19 @@
 .approvals {
   width: 100%;
 }
+.approvals .exportToExcelDiv {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+}
+.approvals .exportToExcelDiv button {
+  padding: 7px;
+  border-style: none;
+  border-radius: 5px;
+  background-color: #e26b09;
+  color: white;
+  cursor: pointer;
+}
 .approvals .exportModal {
   background-color: white;
   padding: 10px;
