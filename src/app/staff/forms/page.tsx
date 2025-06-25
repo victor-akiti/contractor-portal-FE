@@ -250,12 +250,12 @@ const Forms = () => {
 
                             {/* <td>0</td> */}
 
-                            <td>
+                            <td className={styles.actions}>
                                 {/* <Link href={item?.form?.settings?.isContractorApplicationForm ? "/staff/approvals" : `/staff/forms/responses/${item._id}`}>View Responses</Link> */}
 
                                 <span><span><a onClick={() => duplicateForm(item._id)}>Duplicate {formToDuplicate === item._id && <ButtonLoadingIconPrimary />}</a></span></span>
 
-                                <Link href={`/staff/form-builder/edit/${item._id}`}>Edit</Link>
+                                <div><Link href={`/staff/form-builder/edit/${item._id}`}>Edit</Link></div>
 
                                 <a onClick={() => selectFormForDeletion(item)}>Delete</a>
                             </td>

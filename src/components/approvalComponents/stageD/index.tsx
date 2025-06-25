@@ -494,7 +494,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                         <button onClick={() => toggleFlagForHODReview("registrationCheck", !vendorDueDiligenceData.registrationCheck.flagged, 0)}>UNFLAG</button>
 
                         <div>
-                            <textarea onChange={event => updateFlagMessage("registrationCheck", event.target.value, 0)} rows={5} placeholder="Type your remarks here" defaultValue={vendorDueDiligenceData.registrationCheck.flagMessage}></textarea>
+                            <textarea onChange={event => updateFlagMessage("registrationCheck", event.target.value, 0)} rows={5} placeholder="Type your notes here" defaultValue={vendorDueDiligenceData.registrationCheck.flagMessage}></textarea>
                             {
                                 !vendorDueDiligenceData.registrationCheck.flagMessage && <Image src={alertIcon} alt="alert" width={20} height={20} />
                             }
@@ -552,7 +552,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                         <button onClick={() => toggleFlagForHODReview("internetCheck", !vendorDueDiligenceData.internetCheck.flagged, 0)}>UNFLAG</button>
 
                         <div>
-                            <textarea onChange={event => updateFlagMessage("internetCheck", event.target.value, 0)} rows={5} placeholder="Type your remarks here" defaultValue={vendorDueDiligenceData.internetCheck.flagMessage}></textarea>
+                            <textarea onChange={event => updateFlagMessage("internetCheck", event.target.value, 0)} rows={5} placeholder="Type your notes here" defaultValue={vendorDueDiligenceData.internetCheck.flagMessage}></textarea>
                             {
                                 !vendorDueDiligenceData.internetCheck.flagMessage && <Image src={alertIcon} alt="alert" width={20} height={20} />
                             }
@@ -688,7 +688,7 @@ const StageD = ({approvalData, formPages, vendorID}) => {
                             <button onClick={() => toggleFlagForHODReview("exposedPersons", !vendorDueDiligenceData.exposedPersons[index].flagged, index)}>UNFLAG</button>
 
                             <div>
-                                <textarea onChange={event => updateFlagMessage("exposedPersons", event.target.value, index)} rows={5} placeholder="Type your remarks here" defaultValue={vendorDueDiligenceData.exposedPersons[index].flagMessage}></textarea>
+                                <textarea onChange={event => updateFlagMessage("exposedPersons", event.target.value, index)} rows={5} placeholder="Type your notes here" defaultValue={vendorDueDiligenceData.exposedPersons[index].flagMessage}></textarea>
                                 {
                                     !vendorDueDiligenceData.exposedPersons[index].flagMessage && <Image src={alertIcon} alt="alert" width={20} height={20} />
                                 }

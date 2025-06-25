@@ -824,7 +824,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
                                                     {
                                                         !sectionItem.approved && <div className={[styles.remarksDiv, sectionItem.hodRemarks ? styles.hasValidText: styles.noValidText].join(" ")}>
-                                                        <textarea onChange={(event) => updateHODRemarks(index, sectionIndex, event.target.value)} placeholder="Type your remarks here" rows={5}></textarea>
+                                                        <textarea onChange={(event) => updateHODRemarks(index, sectionIndex, event.target.value)} placeholder="Type your notes here" rows={5}></textarea>
 
                                                         {!sectionItem.hodRemarks && <Image src={errorIcon} alt="remark error" width={20} height={20} />}
                                                         
@@ -835,7 +835,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                                         sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
                                                         {
                                                             sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
-                                                            <p>Remarks</p>
+                                                            <p>Notes for Vendor</p>
     
                                                             <div>
                                                                 {
@@ -1012,7 +1012,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                                     <td>
                                                         <div>
                                                             <p>{item.role}</p>
-                                                            <p>Remarks: <span>{item.flagMessage}</span></p>
+                                                            <p>Notes for Vendor: <span>{item.flagMessage}</span></p>
                                                         </div>
                                                     </td>
 
@@ -1139,7 +1139,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
                 {
                     (unaprovedSectionsWithNoRemarks.length > 0 && !applicationProcessed) && <div className={styles.unapprovedSectionsDiv}>
-                    <p>The following unapproved sections have no remarks. Remarks are required to inform the vendor what they need to add/modify in the relevant section:</p>
+                    <p>The following unapproved sections have no notes for the vendor. Vendor notes are required to inform the vendor what they need to add/modify in the relevant section:</p>
 
                     {
                         unaprovedSectionsWithNoRemarks.map((item, index) => <p key={index}>{item}</p>)
