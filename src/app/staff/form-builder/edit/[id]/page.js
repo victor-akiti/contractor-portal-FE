@@ -96,16 +96,6 @@ const EditForm = () => {
     const [updateErrorMessage, setUpdateErrorMessage] = useState("")
     const [showUploadPreviewImageModal, setShowUploadPreviewImageModal] = useState(false)
     const user = useSelector((state) => state.user.user)
-    const fieldLabelRef = useRef(null)
-    const approvalLabelRef = useRef(null)
-    const defaultValueRef = useRef(null)
-    const infoTextRef = useRef(null)
-    const placeholderRef = useRef(null)
-    const textTypeRef = useRef(null)
-    const sectionLabelRef = useRef(null)
-    const pageLabelRef = useRef(null)
-    const sectionDescriptionRef = useRef(null)
-    const pageDescriptionRef = useRef(null)
 
     
       const [content, setContent] = useState('');
@@ -326,7 +316,7 @@ const EditForm = () => {
         let tempNewForm = {...newForm}
         console.log({addFieldModalSettings});
 
-        
+        console.log({currentSection: newForm.sections[addFieldModalSettings.sectionToAddFieldTo]});
 
         switch(fieldType) {
             case "shortText":
@@ -543,40 +533,6 @@ const EditForm = () => {
         setPropertyToEdit(tempPropertyToEdit)
     }
 
-    const capializeFirstLetter = (string) => {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    const updateSideBarData = ({sectionIndex, fieldIndex, pageIndex}) => {
-        
-        fieldLabelRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].label
-        infoTextRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].infoText
-
-        if (newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].placeholder) {
-            placeholderRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].placeholder
-        }
-        approvalLabelRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].approvalLabel ? newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].approvalLabel : newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].label 
-        
-        if (defaultValueRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].defaultValue) {
-            defaultValueRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].defaultValue
-        }
-        if (newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].textType) {
-            textTypeRef.current.value = capializeFirstLetter(newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].textType)
-        }
-    }
-
-    const updateSideBarDataForSection = ({sectionIndex, pageIndex}) => {
-        sectionLabelRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].title
-        sectionDescriptionRef.current.value = newForm.pages[pageIndex].sections[sectionIndex].description
-    }
-
-    const updateSideBarDataForPage = ({pageIndex}) => {
-        console.log({pageTitle: newForm.pages[pageIndex].pageTitle});
-        
-        pageLabelRef.current.value = newForm.pages[pageIndex].pageTitle
-        pageDescriptionRef.current.value = newForm.pages[pageIndex].pageDescription
-    }
-
     const getFieldComponent = (field, fieldIndex, sectionIndex, pageIndex) => {
         switch (field.type) {
             case "shortText": {
@@ -586,12 +542,7 @@ const EditForm = () => {
                 placeholder={field.placeholder} 
                 infoText={field.infoText}
                 errorText={field.errorText}
-                onClick={(event) => {
-                    setFieldToEdit("shortText", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("shortText", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
 
@@ -602,12 +553,7 @@ const EditForm = () => {
                 placeholder={field.placeholder} 
                 infoText={field.infoText}
                 errorText={field.errorText}
-                onClick={(event) => {
-                    setFieldToEdit("longText", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("longText", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
 
@@ -618,12 +564,7 @@ const EditForm = () => {
                 infoText={field.infoText}
                 errorText={field.errorText}
                 placeholder={field.placeholder} 
-                onClick={(event) => {
-                    setFieldToEdit("dropDown", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("dropDown", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
 
@@ -634,12 +575,7 @@ const EditForm = () => {
                 infoText={field.infoText}
                 errorText={field.errorText}
                 placeholder={field.placeholder} 
-                onClick={(event) => {
-                    setFieldToEdit("checkBoxes", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("checkBoxes", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
 
@@ -651,12 +587,7 @@ const EditForm = () => {
                 errorText={field.errorText}
                 placeholder={field.placeholder} 
                 name={randomString.generate()}
-                onClick={(event) => {
-                    setFieldToEdit("radioButtons", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("checkBoxes", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
 
@@ -667,12 +598,7 @@ const EditForm = () => {
                 infoText={field.infoText}
                 errorText={field.errorText}
                 placeholder={field.placeholder} 
-                onClick={(event) => {
-                    setFieldToEdit("date", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("shortText", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
 
@@ -684,12 +610,7 @@ const EditForm = () => {
                 errorText={field.errorText}
                 placeholder={field.placeholder} 
                 allowedFormats={newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].allowedFormats}
-                onClick={(event) => {
-                    setFieldToEdit("file", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("file", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
 
@@ -702,12 +623,7 @@ const EditForm = () => {
                 placeholder={field.placeholder} 
                 name={randomString.generate()}
                 preSelectedOptions={newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].preSelectedOptions}
-                onClick={(event) => {
-                    setFieldToEdit("multiSelectText", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("multiSelectText", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
             
@@ -721,12 +637,7 @@ const EditForm = () => {
                 placeholder={field.placeholder} 
                 name={randomString.generate()}
                 preSelectedOptions={newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].preSelectedOptions}
-                onClick={(event) => {
-                    setFieldToEdit("textBlock", fieldIndex, sectionIndex, event, pageIndex)
-                    setTimeout(() => {
-                        updateSideBarData({sectionIndex, fieldIndex, pageIndex})
-                    }, 200)
-                }} 
+                onClick={(event) => setFieldToEdit("textBlock", fieldIndex, sectionIndex, event, pageIndex)} 
             />
             }
         }
@@ -742,10 +653,6 @@ const EditForm = () => {
 
     const updateFieldSettings = ({sectionIndex, fieldIndex, propertyToEdit, value, pageIndex}) => {
         let tempForm = {...newForm}
-        console.log({pageIndex, sectionIndex});
-        
-        console.log({field: tempForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]});
-        
         tempForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex][propertyToEdit] = value
         setNewForm(tempForm)
     }
@@ -1003,16 +910,11 @@ const EditForm = () => {
                     </div>
 
                     <div className={styles.pagesTab}>
-                            {newForm.pages.map((item, index) => <p onClick={() => {
-                                setPageToEdit(index)
-                                updateSideBarDataForPage({pageIndex: index})
-                            }} className={propertyToEdit.page === index ? styles.active : styles.inactive} key={index}>{item.pageTitle}</p>)}
+                            {newForm.pages.map((item, index) => <p onClick={() => setPageToEdit(index)} className={propertyToEdit.page === index ? styles.active : styles.inactive} key={index}>{item.pageTitle}</p>)}
                     </div>
 
                     {
-                        <div onClick={() => {
-                            setPageToEdit(propertyToEdit.page)
-                        }}>
+                        <div onClick={() => setPageToEdit(propertyToEdit.page)}>
                         <h2>{newForm.pages[propertyToEdit.page].pageTitle}</h2>
                         <p className={styles.descriptionText}>{newForm.pages[propertyToEdit.page].pageDescription}</p>
 
@@ -1027,7 +929,6 @@ const EditForm = () => {
                             newForm.pages[propertyToEdit.page].sections.map((item, index) => <div key={index} className={[styles.newSection, propertyToEdit.index === index && propertyToEdit.fieldIndex === null && styles.highlighted].join(" ")} onClick={(event) => {
                                 event.stopPropagation()
                                 setSectionToEdit(propertyToEdit.page, index)
-                                updateSideBarDataForSection({sectionIndex: index, pageIndex: propertyToEdit.page})
                             }}>
                                 <h3>{item.title}</h3>
                                 <p className={styles.descriptionText}>{item.description}</p>
@@ -1092,11 +993,11 @@ const EditForm = () => {
                                 propertyToEdit.type === "Page" && <div>
                                 Page Title
 
-                                <input placeholder="Page title" ref={pageLabelRef} defaultValue={newForm.pages[propertyToEdit.page].pageTitle} onChange={(event) => updatePageTitle(event.target.value)}  />
+                                <input placeholder="Page title" defaultValue={newForm.pages[propertyToEdit.page].pageTitle} onChange={(event) => updatePageTitle(event.target.value)}  />
                                 
 
                                 <p className={styles.sectionLabels}>Page Description</p>
-                                <input placeholder="Page description" ref={pageDescriptionRef} defaultValue={newForm.pages[propertyToEdit.page].pageDescription} onChange={(event) => updatePageDescription(event.target.value)}  />
+                                <input placeholder="Page description" defaultValue={newForm.pages[propertyToEdit.page].pageDescription} onChange={(event) => updatePageDescription(event.target.value)}  />
 
                                 <div className={styles.changeSectionPositionDiv}>
 
@@ -1132,11 +1033,11 @@ const EditForm = () => {
                                 propertyToEdit.type === "Section" && <div>
                                 Section Title
 
-                                <input placeholder="Section Title" ref={sectionLabelRef} defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].title} onChange={(event) => updateSectiontitle(event.target.value)}  />
+                                <input placeholder="Section Title" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].title} onChange={(event) => updateSectiontitle(event.target.value)}  />
                                 
 
                                 <p className={styles.sectionLabels}>Section Description</p>
-                                <input placeholder="Section Description" ref={sectionDescriptionRef} defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].description} onChange={(event) => updateSectionDescription(event.target.value)}  />
+                                <input placeholder="Section Title" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].description} onChange={(event) => updateSectionDescription(event.target.value)}  />
 
                                 <div className={styles.editFieldDivs}>
                                             <div style={{marginTop: "20px"}}></div>
@@ -1253,30 +1154,30 @@ const EditForm = () => {
                                         <div>
                                             <div className={styles.editFieldDivs}>
                                                 <label>Field label</label>
-                                                <input ref={fieldLabelRef} placeholder="Label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].label ? newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].label : newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "label", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                <input placeholder="Label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "label", value: event.target.value, pageIndex: propertyToEdit.page})}  />
                                             </div>
 
                                             <div className={styles.editFieldDivs}>
                                                 <label>Approval Label</label>
-                                                <input ref={approvalLabelRef} placeholder="Approval label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "approvalLabel", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                <input placeholder="Approval label" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "approvalLabel", value: event.target.value, pageIndex: propertyToEdit.page})}  />
                                                 <p className={styles.helperText}>Use this if you want the label on the form to be different from the label used during approvals.</p>
                                             </div>
 
                                             <div className={styles.editFieldDivs}>
                                                 <label>Default value</label>
-                                                <input ref={defaultValueRef} placeholder="Default value" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "defaultValue", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                <input placeholder="Default value" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "defaultValue", value: event.target.value, pageIndex: propertyToEdit.page})}  />
                                             </div>
 
                                             <div className={styles.editFieldDivs}>
                                                 <label>Info Text</label>
-                                                <input ref={infoTextRef} placeholder="Additional information for this field" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "infoText", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                <input placeholder="Additional information for this field" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].defaultValue} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "infoText", value: event.target.value, pageIndex: propertyToEdit.page})}  />
                                             </div>
 
                                             {
                                                 (propertyToEdit.fieldType === "shortText" || propertyToEdit.fieldType === "longText") && 
                                                 <div className={styles.editFieldDivs}>
                                                     <label>Placeholder</label>
-                                                    <input ref={placeholderRef} placeholder="Placeholder" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].placeholder} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "placeholder", value: event.target.value, pageIndex: propertyToEdit.page})}  />
+                                                    <input placeholder="Placeholder" defaultValue={newForm.pages[propertyToEdit.page].sections[propertyToEdit.index].fields[propertyToEdit.fieldIndex].placeholder} onChange={(event) => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "placeholder", value: event.target.value, pageIndex: propertyToEdit.page})}  />
                                                 </div>
                                             }
 
@@ -1479,7 +1380,7 @@ const EditForm = () => {
                                                 <>
                                                 <div className={styles.editFieldDivs}>
                                                     <label>Text Type</label>
-                                                    <select ref={textTypeRef} onChange={event => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "textType", value: event.target.value, pageIndex: propertyToEdit.page})}>
+                                                    <select onChange={event => updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "textType", value: event.target.value, pageIndex: propertyToEdit.page})}>
                                                         <option value={"text"}>Text</option>
                                                         <option value={"number"}>Number</option>
                                                         <option value={"email"}>Email</option>

@@ -541,7 +541,7 @@ const StageC = () => {
                                                         sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
                                                         {
                                                             sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
-                                                            <p>Remarks</p>
+                                                            <p>Notes for Vendor</p>
     
                                                             <div>
                                                                 {

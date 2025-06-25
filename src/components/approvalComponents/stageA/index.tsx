@@ -728,14 +728,14 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                 <div className={styles.addRemarkModal}>
                     <div>
                         <header>
-                            <h2>Remarks</h2>
+                            <h2>Notes for Vendor</h2>
 
                             <Image src={closeIcon} alt="close modal icon" width={20} height={20} style={{cursor: "pointer"}} onClick={() => closeAddRemarkModal()} />
                         </header>
 
                         <h4><span>{pages[sectionToRemarkOn.pageIndex].pageTitle}</span> - <span>{pages[sectionToRemarkOn.pageIndex].sections[sectionToRemarkOn.sectionIndex].title}</span></h4>
 
-                        <p className={styles.runnerText}>The contractor will be sent your remarks if you choose to return the registration to them.</p>
+                        <p className={styles.runnerText}>The contractor will be sent your notes if you choose to return the registration to them.</p>
                     </div>
 
                     <hr />
@@ -757,7 +757,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                             
                         </div>
 
-                        <textarea className={styles.remarkTextArea} placeholder="Type your remarks here..." rows={6}></textarea>
+                        <textarea className={styles.remarkTextArea} placeholder="Type your notes here..." rows={6}></textarea>
                     </div>
 
                     <hr />
@@ -803,7 +803,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                             }
                         </div>
 
-                        <textarea className={styles.remarkTextArea} placeholder="Type your remarks here..." rows={6}></textarea>
+                        <textarea className={styles.remarkTextArea} placeholder="Type your notes here..." rows={6}></textarea>
                     </div>
 
                     <hr />
@@ -926,7 +926,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                                                         sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
                                                         {
                                                             sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
-                                                            <p>Remarks</p>
+                                                            <p>Notes for Vendor</p>
     
                                                             <div>
                                                                 {
@@ -963,7 +963,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
                                                     <p className={styles.commentsAndRemarksText} onClick={() => openAddCommentModal(index, sectionIndex)}>ADD INTERNAL COMMENT</p>
     
                                                     {
-                                                        !sectionItem.approved && <p className={styles.commentsAndRemarksText} onClick={() => openAddRemarkModal(index, sectionIndex)}>ADD REMARKS</p>
+                                                        !sectionItem.approved && <p className={styles.commentsAndRemarksText} onClick={() => openAddRemarkModal(index, sectionIndex)}>ADD NOTES FOR VENDOR</p>
                                                     }
                                                 </div>
     
@@ -1055,7 +1055,7 @@ const StageA = ({approvalData, formPages, vendorID}) => {
 
                 {
                     (unaprovedSectionsWithNoRemarks.length > 0 && !applicationProcessed) && <div className={styles.unapprovedSectionsDiv}>
-                    <p>The following unapproved sections have no remarks. Remarks are required to inform the vendor what they need to add/modify in the relevant section:</p>
+                    <p>The following unapproved sections have no notes for the vendor. Ved are required to inform the vendor what they need to add/modify in the relevant section:</p>
 
                     {
                         unaprovedSectionsWithNoRemarks.map((item, index) => <p key={index}>{item}</p>)
