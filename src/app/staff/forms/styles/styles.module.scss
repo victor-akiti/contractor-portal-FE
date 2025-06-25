@@ -98,6 +98,15 @@
         margin-top: 50px;
         border-collapse: collapse;
 
+        .actions {
+            display: flex;
+
+            div {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
         thead {
             background-color: #f2f2f2;
 
