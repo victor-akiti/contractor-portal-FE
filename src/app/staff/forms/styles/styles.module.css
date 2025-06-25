@@ -76,6 +76,13 @@
   margin-top: 50px;
   border-collapse: collapse;
 }
+.forms table .actions {
+  display: flex;
+}
+.forms table .actions div {
+  padding-left: 40px;
+  padding-right: 40px;
+}
 .forms table thead {
   background-color: #f2f2f2;
 }

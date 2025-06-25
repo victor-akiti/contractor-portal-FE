@@ -642,7 +642,7 @@ const StageF = () => {
                 </div>
 
                 <div>
-                    <textarea rows={5} placeholder="Remarks" onChange={(event) => setRevertReason(event.target.value)}></textarea>
+                    <textarea rows={5} placeholder="Notes for Vendor" onChange={(event) => setRevertReason(event.target.value)}></textarea>
 
                     <div>
                         <button onClick={() => returnToStageE()}>RETURN {updating && <ButtonLoadingIcon />}</button>
@@ -707,7 +707,7 @@ const StageF = () => {
                                                         sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
                                                         {
                                                             sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
-                                                            <p>Remarks</p>
+                                                            <p>Notes for Vendor</p>
     
                                                             <div>
                                                                 {
