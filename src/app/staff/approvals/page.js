@@ -1231,14 +1231,14 @@ const Approvals = () => {
                         return {...item, l2Stage: "Returned", stage: "L2"}
                     })
 
-                    tempVendorsToExport = [...tempVendorsToExport, mappedL2Stage]
+                    tempVendorsToExport = [...tempVendorsToExport, ...mappedL2Stage]
                 }
 
                 if (exportOptions.l2Stages.includes("completed")) {
                     let mappedL2Stage = fixedApprovals.completedL2.map(item => {
                         return {...item, l2Stage: "Completed", stage: "L2"}
                     })
-                    tempVendorsToExport = [...tempVendorsToExport, mappedL2Stage]
+                    tempVendorsToExport = [...tempVendorsToExport, ...mappedL2Stage]
                 }
 
                 if (exportOptions.l2Stages.includes("pending")) {
