@@ -219,7 +219,7 @@ const Approvals = () => {
                 let tempApprovals = {...approvals}
                 let expiredInvites = []
 
-                for (let index = 0; index < fixedApprovals.invites.length; index++) {
+                for (let index = 0; index < fixedApprovals.invites?.length; index++) {
                     const element = fixedApprovals.invites[index];
 
                     let currentDate = new Date()
@@ -244,7 +244,7 @@ const Approvals = () => {
             let tempApprovals = {...approvals}
                 let activeInvites = []
 
-                for (let index = 0; index < fixedApprovals.invites.length; index++) {
+                for (let index = 0; index < fixedApprovals.invites?.length; index++) {
                     const element = fixedApprovals.invites[index];
 
                     let currentDate = new Date()
@@ -286,7 +286,7 @@ const Approvals = () => {
             console.log({fixedApprovals});
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
-            for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
+            for (let index = 0; index < fixedApprovals.pendingL2?.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
                 if (!element?.flags?.level && !element?.flags?.approvals?.level) {
@@ -300,7 +300,7 @@ const Approvals = () => {
             console.log({fixedApprovals});
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
-            for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
+            for (let index = 0; index < fixedApprovals.pendingL2?.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
                 if (element?.flags?.level === 1) {
@@ -318,7 +318,7 @@ const Approvals = () => {
             console.log({fixedApprovals});
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
-            for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
+            for (let index = 0; index < fixedApprovals.pendingL2?.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
                 if (element?.flags?.level === 2) {
@@ -333,7 +333,7 @@ const Approvals = () => {
             console.log({fixedApprovals});
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
-            for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
+            for (let index = 0; index < fixedApprovals.pendingL2?.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
                 if (element?.flags?.level === 3) {
@@ -349,7 +349,7 @@ const Approvals = () => {
             console.log({fixedApprovals});
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
-            for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
+            for (let index = 0; index < fixedApprovals.pendingL2?.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
                 if (element?.flags?.level === 4) {
@@ -365,7 +365,7 @@ const Approvals = () => {
             console.log({fixedApprovals});
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
-            for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
+            for (let index = 0; index < fixedApprovals.pendingL2?.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
                 if (element?.flags?.level === 5) {
@@ -381,7 +381,7 @@ const Approvals = () => {
             console.log({fixedApprovals});
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
-            for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
+            for (let index = 0; index < fixedApprovals.pendingL2?.length; index++) {
                 const element = fixedApprovals.pendingL2[index];
 
                 if (element?.flags?.level === 6) {
@@ -485,7 +485,7 @@ const Approvals = () => {
     }
 
     const filterVendorsByQuery = (query, vendorList) => {
-        console.log({query, vendorList: vendorList.length});
+        console.log({query, vendorList: vendorList?.length});
         let mostRelevant = []
         let lessRelevant = []
 
@@ -817,7 +817,7 @@ const Approvals = () => {
     }
 
     const sortArrayNumerically = array => {
-        console.log("Sorting", array.length);
+        console.log("Sorting", array?.length);
         
         const sortedArray =  array.sort((a, b) => {
             let aDate = null
@@ -865,7 +865,7 @@ const Approvals = () => {
     }
 
     const sortArrayNumericallyDescending = array => {
-        console.log("Sorting", array.length);
+        console.log("Sorting", array?.length);
         
         const sortedArray =  array.sort((a, b) => {
             let aDate = null
@@ -1146,7 +1146,7 @@ const Approvals = () => {
         } else if (exportOptions.selectedInviteType === "active") {
             let activeInvites = []
 
-            for (let index = 0; index < fixedApprovals.invites.length; index++) {
+            for (let index = 0; index < fixedApprovals.invites?.length; index++) {
                 const element = fixedApprovals.invites[index];
 
                 let currentDate = new Date()
@@ -1174,7 +1174,7 @@ const Approvals = () => {
         } else if (exportOptions.selectedInviteType === "expired") {
             let expiredInvites = []
 
-            for (let index = 0; index < fixedApprovals.invites.length; index++) {
+            for (let index = 0; index < fixedApprovals.invites?.length; index++) {
                 const element = fixedApprovals.invites[index];
 
                 let currentDate = new Date()
@@ -1612,7 +1612,7 @@ const Approvals = () => {
                             }
 
                             {
-                                exportOptions.selectedStages.length > 0 && <>
+                                exportOptions.selectedStages?.length > 0 && <>
                                     <h5>Selection type</h5>
 
                                     <div className={styles.exportOptionsDiv}>
@@ -1657,7 +1657,7 @@ const Approvals = () => {
                                 </div>
 
                                 {
-                                    selectedVendorsToExport.length === 0 && <p className={styles.noSelectedVendorsText}>No selected vendors</p>
+                                    selectedVendorsToExport?.length === 0 && <p className={styles.noSelectedVendorsText}>No selected vendors</p>
                                 }
                             </div>
                             }
@@ -1703,7 +1703,7 @@ const Approvals = () => {
                             </select>
 
                             {
-                                searchQueryResults.length > 0 && <div className={styles.searchResultsDiv} ref={searchResultRef}>
+                                searchQueryResults?.length > 0 && <div className={styles.searchResultsDiv} ref={searchResultRef}>
                                 {
                                     searchQueryResults.map((item, index) =>  <div key={index} className={styles.searchResultItem}>
                                     <div className={styles.searchResultMetaData}>
@@ -1728,7 +1728,7 @@ const Approvals = () => {
 
 
             {
-                Object.values(inviteToArchive).length > 0 && <Modal>
+                Object.values(inviteToArchive)?.length > 0 && <Modal>
                 <div className={styles.confirmArchiveModalDiv}>
                     {
                         !archiveStatusMessages.successMessage && <p>You are about to archive this invite. You would only be able to restore the invite if the email is still unused.</p> 
@@ -1795,12 +1795,12 @@ const Approvals = () => {
                                 <p className={activeFilter === "All" && styles.active}  onClick={() => {
                                     setActiveFilter("All")
                                     filterL2Companies("All")
-                                }}>{`All ${"All" === activeFilter ? `(${approvals.pendingL2.length})` : ``}`}</p>
+                                }}>{`All ${"All" === activeFilter ? `(${approvals.pendingL2?.length})` : ``}`}</p>
                             {
                                 approvalStages.map((item, index) => <p className={item === activeFilter && styles.active} key={index} onClick={() => {
                                     setActiveFilter(item)
                                     filterL2Companies(item)
-                                }}>{`Stage ${item} ${item === activeFilter ? `(${approvals.pendingL2.length})` : ``}`}</p>)
+                                }}>{`Stage ${item} ${item === activeFilter ? `(${approvals.pendingL2?.length})` : ``}`}</p>)
                             }
                         </div>
                         }
@@ -1812,7 +1812,7 @@ const Approvals = () => {
                             l3Filters.map((item, index) => <p className={item === activeL3Filter && styles.active} key={index} onClick={() => {
                                 setActiveL3Filter(item)
                                 filterL3Companies(item)
-                            }}>{`${item} ${item === activeL3Filter ? `(${approvals.l3.length})` : ``}`}</p>)
+                            }}>{`${item} ${item === activeL3Filter ? `(${approvals.l3?.length})` : ``}`}</p>)
                         }
                     </div>
                         }
@@ -2338,7 +2338,7 @@ const CompletedL2Item = ({index, companyRecord, revertToL2, user}) => {
 
             <td>
                 {
-                    companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
+                    companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers?.length > 0 && <>
                         {/* <p>End User: App Dev</p>
                         <p>Change end user(s)</p> */}
                     </>
@@ -2409,7 +2409,7 @@ const ParkRequestedItem = ({index, companyRecord, approveParkRequest, declinePar
 
             <td>
                 {
-                    companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>
+                    companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers?.length > 0 && <>
                         {/* <p>End User: App Dev</p>
                         <p>Change end user(s)</p> */}
                     </>

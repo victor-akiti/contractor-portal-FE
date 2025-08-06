@@ -827,7 +827,7 @@ const ViewVendorPage = () => {
                 <h1>{approvalData.companyName}</h1>
 
                 <div className={styles.vendorPageActions}>
-                    <Link href={`/staff/approvals/${vendorID}`} target="_blank">OPEN IN APPROVAL VIEW</Link>
+                    <Link href={`/staff/approvals/${vendorID}`}>OPEN IN APPROVAL VIEW</Link>
                     <a onClick={() => hideAllRemarks()}>HIDE COMMENTS</a>
 
                     {
@@ -1019,7 +1019,7 @@ const ViewVendorPage = () => {
 
 
                 {
-                    currentCertificateHistory.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
+                    currentCertificateHistory?.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
                 }
 
                 
@@ -1052,7 +1052,7 @@ const ViewVendorPage = () => {
             {
                 !applicationProcessed && <div>
                 {
-                    expiringCertificates.length > 0 && <div className={styles.expiringCertificatesDiv}>
+                    expiringCertificates?.length > 0 && <div className={styles.expiringCertificatesDiv}>
                     <h3>Expiring Certificates/Permits</h3>
                     <p>The following certificates/permit are expiring within the next 3 months</p>
 
@@ -1070,7 +1070,7 @@ const ViewVendorPage = () => {
                 }
 
                 {
-                    expiredCertificates.length > 0 && <div className={styles.expiredCertificatesDiv}>
+                    expiredCertificates?.length > 0 && <div className={styles.expiredCertificatesDiv}>
                     <h3>Expired Certificates/Permits</h3>
                     <p>The following certificates/permits have expired</p>
 
@@ -1180,7 +1180,7 @@ const ViewVendorPage = () => {
                                                         
         
                                                         {
-                                                            (sectionItem.remarks && sectionItem.remarks.length > 0  ) && <div className={styles.showCommentTriggerDiv}>
+                                                            (sectionItem.remarks && sectionItem.remarks?.length > 0  ) && <div className={styles.showCommentTriggerDiv}>
                                                                 <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
                                                             </div>
                                                         }
@@ -1188,7 +1188,7 @@ const ViewVendorPage = () => {
                                                         {
                                                             sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
                                                             {
-                                                                sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
+                                                                sectionItem?.remarks && sectionItem?.remarks?.length > 0  && <div className={styles.remarksContent}>
                                                                 <p>Notes for Vendor</p>
         
                                                                 <div>
@@ -1204,7 +1204,7 @@ const ViewVendorPage = () => {
                                                             }
         
                                                             {
-                                                                sectionItem?.comments && sectionItem?.comments.length > 0  && <div className={styles.commentsContent}>
+                                                                sectionItem?.comments && sectionItem?.comments?.length > 0  && <div className={styles.commentsContent}>
                                                                 <p>Comments</p>
         
                                                                 <div>
@@ -1225,7 +1225,7 @@ const ViewVendorPage = () => {
         
         
                                                         {
-                                                            sectionIndex !== item.sections.length - 1 && <hr />
+                                                            sectionIndex !== item.sections?.length - 1 && <hr />
                                                         }
                                                 </div>
     
