@@ -15,29 +15,21 @@ import {
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hooks";
 import { setUserData } from "@/redux/reducers/user";
+import { auth } from "@/app/layout";
 
 const StaffLogin = () => {
-  const firebaseConfig = {
-    apiKey: "AIzaSyC0ZtnjPzHg6ieIeTYTuqwMiSgofrgulHw",
-    authDomain: "amni-contractors.firebaseapp.com",
-    databaseURL: "https://amni-contractors.firebaseio.com",
-    projectId: "amni-contractors",
-    storageBucket: "amni-contractors.appspot.com",
-    messagingSenderId: "754512756573",
-    appId: "1:754512756573:web:d5c79ebeca11ea64",
-  };
-
-  const app = initializeApp(firebaseConfig);
+ 
   const provider = new OAuthProvider("microsoft.com");
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const auth = getAuth();
+  // const auth = getAuth();
   const signIn = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
         // User is signed in.
         // IdP data available in result.additionalUserInfo.profile.
+        console.log({result})
 
         // Get the OAuth access token and ID Token
         const credential = OAuthProvider.credentialFromResult(result);

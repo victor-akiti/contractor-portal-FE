@@ -32,27 +32,29 @@ const Layout = ({children}) => {
     
       const getCurrentAuthState = async () => {
         try {
-          const currentAuthState = await getProtected("auth/current-auth-state")
-          dispatch(setUserData({user: currentAuthState.data}))
+          // This call will now automatically handle token refresh if needed
+          const currentAuthState = await getProtected("auth/current-auth-state", "Amni Staff")
           
-
           console.log({currentAuthState});
-          
-    
-          if (currentAuthState.status === "Failed") {
-            router.push("/login")
-          } else {
+
+          if (currentAuthState && currentAuthState.status !== "Failed") {
+            dispatch(setUserData({user: currentAuthState.data}))
+            
             if (currentAuthState.data.role === "Vendor") {
               router.push("/contractor/dashboard")
             } else {
               setAuthenticated(true)
             }
+          } else {
+            // Only redirect if the request actually failed (not just token refresh)
+            console.log('Auth state check failed, redirecting to login');
+            // router.push("/login/staff")
           }
-    
-          
           
         } catch (error) {
-          console.log({error});
+          console.log({getCurrentAuthStateError: error});
+          // If there's a network error or other issue, redirect to login
+          // router.push("/login/staff")
         }
       }
 

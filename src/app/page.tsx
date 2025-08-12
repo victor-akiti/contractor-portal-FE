@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation'
 import Head from 'next/head'
 
 export default function Home() {
-  useEffect(() => {
-    getCurrentAuthState()
-  }, [])
+  // useEffect(() => {
+  //   getCurrentAuthState()
+  // }, [])
 
   const router = useRouter()
 
