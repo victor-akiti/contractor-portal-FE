@@ -48,7 +48,7 @@ const Layout = ({children}) => {
           } else {
             // Only redirect if the request actually failed (not just token refresh)
             console.log('Auth state check failed, redirecting to login');
-            // router.push("/login/staff")
+            router.push("/login/staff")
           }
           
         } catch (error) {

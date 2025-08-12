@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation'
 import Head from 'next/head'
 
 export default function Home() {
-  // useEffect(() => {
-  //   getCurrentAuthState()
-  // }, [])
+  useEffect(() => {
+    getCurrentAuthState()
+  }, [])
 
   const router = useRouter()
 
@@ -23,7 +23,7 @@ export default function Home() {
       console.log({theCurrentAuthState: currentAuthState});
       
 
-      if (currentAuthState.status === "Failed") {
+      if (!currentAuthState || currentAuthState.status === "Failed") {
         router.push("/login")
       } else {
 
