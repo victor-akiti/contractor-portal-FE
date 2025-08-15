@@ -1,4 +1,4 @@
-import { auth } from "@/app/layout";
+import { auth } from '@/lib/firebase';
 import { getIdToken } from "firebase/auth";
 
 const handleTokenRefresh = async (): Promise<boolean> => {

@@ -1,6 +1,6 @@
 import { getAuth, getIdToken } from "firebase/auth";
 import { setUserData } from "@/redux/reducers/user";
-import { auth } from "@/app/layout";
+import { auth } from '@/lib/firebase';
 
 // Simple refresh state management
 let isRefreshing = false;

@@ -15,7 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hooks";
 import { setUserData } from "@/redux/reducers/user";
-import { auth } from "@/app/layout";
+import { auth } from '@/lib/firebase';
 
 const StaffLogin = () => {
  
