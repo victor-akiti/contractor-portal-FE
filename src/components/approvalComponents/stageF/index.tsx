@@ -21,6 +21,7 @@ import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import SuccessMessage from "@/components/successMessage"
 import ErrorText from "@/components/errorText"
 import CertificateHistoryModal from "@/components/certificateHistory"
+import { formatNumberAsCurrency } from "@/utilities/currency"
 
 
 
@@ -200,12 +201,6 @@ const StageF = () => {
         updateVendorCategories(tempSelectedCategories)
     }
 
-    const formatNumberAsCurrency = (number) => {
-        console.log({number});
-        
-        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(number);
-    }
-
     const [currentCertificateHistory, setCurrentCertificateHistory] = useState([])
 
     const setHistoryAsCurrentCertificateHistory = (certificateHistory) => {
@@ -221,28 +216,37 @@ const StageF = () => {
     }
     
 
-    const getFieldItemComponent = (field, index) => {
+    const getFieldItemComponent = (field, index, section) => {
         switch (field.type) {
             case "shortText": 
-            return <div key={index} className={styles.fieldItem}>
-                <div>
-                    <p className={styles.fieldData}>
-                        <label>{`${field.label}:`}</label>
-                        
-                        {
-                            field.textType === "number" && <p>{field?.isCurrency ? formatNumberAsCurrency(field.value) : field.value}</p>
-                        }
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            
+                            {
+                                field.textType === "number" && field.isCurrency ? (
+                                    // For currency fields, find the corresponding currency selection
+                                    (() => {
+                                        // Find the currency field in the same section
+                                       
+                                        const currencyField = section.fields.find(f => f.label === "Currency");
+                                        const selectedCurrency = currencyField?.value || "Naira (NGN)";
+                                        return <p>{formatNumberAsCurrency(field.value, selectedCurrency)}</p>;
+                                    })()
+                                ) : field.textType === "number" ? (
+                                    <p>{field.value}</p>
+                                ) : (
+                                    <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
+                                )
+                            }
+                        </p>
+                    </div>
 
-                        {
-                            field.textType !== "number" && <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
-                        }
-                    </p>
+                    {
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
                 </div>
-
-                {
-                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                }
-            </div>
             case "longText": 
             return <div key={index} className={styles.fieldItem}>
             <div>
@@ -690,7 +694,7 @@ const StageF = () => {
     
                                                 <div>
                                                     {
-                                                        sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
+                                                        sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex, sectionItem) )
                                                     }
                                                 </div>
     
