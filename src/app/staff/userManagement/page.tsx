@@ -741,7 +741,7 @@ const Tasks = () => {
 
                 <tbody>
                     {
-                        users.map((item, index) => <tr className={index%2 === 0 ? styles.dark : styles.light} key={index}>
+                        users?.map((item, index) => <tr className={index%2 === 0 ? styles.dark : styles.light} key={index}>
                             <td>
                                 <p>{ item.name}</p>
                             </td>
