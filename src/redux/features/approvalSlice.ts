@@ -1,0 +1,164 @@
+import { staffApi } from "../apis/staffApi";
+
+export const approvalSlice = staffApi.injectEndpoints({
+    endpoints: (builder) => ({
+        /* =========================
+           QUERIES
+           ========================= */
+
+        // GET /companies/approvals/counts
+        getApprovalCounts: builder.query<any, string>({
+            query: () => ({ url: 'companies/approvals/counts', method: 'GET' }),
+            providesTags: ['Counts'],
+            extraOptions: (role: string) => ({ userRole: role }),
+        }),
+
+        // GET /companies/approvals/:tab
+        getCompaniesByTab: builder.query<any, { tab: string; userRole: string }>({
+            query: ({ tab }) => ({ url: `companies/approvals/${tab}`, method: 'GET' }),
+            providesTags: (r, e, arg) => [{ type: 'Tab', id: arg.tab }],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
+        // GET /companies/invites?filter=... (modified for client-side filtering)
+        getInvites: builder.query<any, { filter: string; userRole: string }>({
+            query: ({ filter }) => ({
+                url: `companies/invites?filter=${encodeURIComponent(filter === "All" ? "all" : filter)}`,
+                method: 'GET',
+            }),
+            providesTags: (r, e, arg) => [{ type: 'Tab', id: 'invited:' + arg.filter }],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
+        // GET /companies/search?query=...&filter=...
+        searchCompanies: builder.query<any, { query: string; filter: string; userRole: string }>({
+            query: ({ query, filter }) => ({
+                url: `companies/search?query=${encodeURIComponent(query)}&filter=${encodeURIComponent(filter)}`,
+                method: 'GET',
+            }),
+            providesTags: (r, e, arg) => [{ type: 'Search', id: `${arg.query}-${arg.filter}` }],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+            keepUnusedDataFor: 0, // Don't cache search results
+        }),
+
+        /* =========================
+           MUTATIONS
+           ========================= */
+
+        // POST /approvals/revert/l2/:vendorId
+        revertToL2: builder.mutation<any, { vendorId: string; from: string; userRole: string }>({
+            query: ({ vendorId, from }) => ({
+                url: `approvals/revert/l2/${vendorId}`,
+                method: 'POST',
+                body: { from },
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'pending-l2' },
+                    { type: 'Tab', id: 'l3' },
+                    { type: 'Tab', id: 'completed-l2' },
+                    { type: 'Tab', id: 'park-requests' }
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
+        // GET /approvals/hold/approve/:vendorId
+        approveParkRequest: builder.mutation<any, { vendorId: string; userRole: string }>({
+            query: ({ vendorId }) => ({
+                url: `approvals/hold/approve/${vendorId}`,
+                method: 'GET',
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'park-requests' },
+                    { type: 'Tab', id: 'completed-l2' }
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
+        // GET /approvals/hold/cancel/:vendorId
+        declineParkRequest: builder.mutation<any, { vendorId: string; userRole: string }>({
+            query: ({ vendorId }) => ({
+                url: `approvals/hold/cancel/${vendorId}`,
+                method: 'GET',
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'park-requests' }
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
+        // POST /invites/archive
+        archiveInvite: builder.mutation<any, { inviteData: any; userRole: string }>({
+            query: ({ inviteData }) => ({
+                url: 'invites/archive',
+                method: 'POST',
+                body: inviteData,
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'invited:all' },
+                    { type: 'Tab', id: 'invited:All' },
+                    { type: 'Tab', id: 'invited:Active' },
+                    { type: 'Tab', id: 'invited:Expired' },
+                    { type: 'Tab', id: 'invited:Used' },
+                    { type: 'Tab', id: 'invited:Archived' }
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
+        // GET /invites/remind/:inviteId
+        sendReminder: builder.mutation<any, { inviteId: string; userRole: string }>({
+            query: ({ inviteId }) => ({
+                url: `invites/remind/${inviteId}`,
+                method: 'GET',
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    { type: 'Tab', id: 'invited:all' },
+                    { type: 'Tab', id: 'invited:All' }
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
+        // GET /invites/renew/:inviteId
+        renewInvite: builder.mutation<any, { inviteId: string; userRole: string }>({
+            query: ({ inviteId }) => ({
+                url: `invites/renew/${inviteId}`,
+                method: 'GET',
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    { type: 'Tab', id: 'invited:all' },
+                    { type: 'Tab', id: 'invited:All' },
+                    { type: 'Tab', id: 'invited:Active' },
+                    { type: 'Tab', id: 'invited:Expired' }
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+    }),
+    overrideExisting: false,
+})
+
+// Export hooks from the slice - this works in Vite
+export const {
+    useGetApprovalCountsQuery,
+    useGetCompaniesByTabQuery,
+    useGetInvitesQuery,
+    useSearchCompaniesQuery,
+    useLazySearchCompaniesQuery,
+    useRevertToL2Mutation,
+    useApproveParkRequestMutation,
+    useDeclineParkRequestMutation,
+    useArchiveInviteMutation,
+    useSendReminderMutation,
+    useRenewInviteMutation,
+    usePrefetch: usePrefetchApprovals
+} = approvalSlice
+
+export default approvalSlice
