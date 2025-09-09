@@ -155,7 +155,7 @@ const Layout = ({children}) => {
             <div className={styles.content}>
                     <div className={styles.left}>
                         <Link href={"/staff/approvals"}>Registration Approvals</Link>
-                        {hasAdminPermissions && <Link href={"/staff/approvals-new"}>New Registration Approvals,</Link>}
+                        {hasAdminPermissions && <Link href={"/staff/approvals-new"}>New Registration Approvals</Link>}
     
                         <Link href={"/staff/invites"}>Registration Invites</Link>
                         
