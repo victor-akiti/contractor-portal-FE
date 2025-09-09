@@ -126,7 +126,7 @@ export default function ApprovalsContainer() {
   const tableHeaders: any = {
     invited: ["Company Name", "User Details", "Status"],
     inProgress: ["Contractor Name", "Last Contractor Update"],
-    pendingL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+    pendingL2: activeFilter === "C" || activeFilter === "E" ? ["Contractor Name", "Approval Stage", "End Users", "Action", "Last Contractor Update"] : ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     l3: ["Contractor Name", "Action", "Last Contractor Update"],
     completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
@@ -1002,7 +1002,7 @@ export default function ApprovalsContainer() {
                 <InProgressRow key={index} companyRecord={item} index={index} />
               ))}
               {activeTab === "pending-l2" && approvals.pendingL2.map((item: any, index: number) => (
-                <PendingL2Row key={index} companyRecord={item} index={index} user={user} />
+                <PendingL2Row key={index} companyRecord={item} index={index} user={user} activeFilter={activeFilter} />
               ))}
               {activeTab === "l3" && approvals.l3.map((item: any, index: number) => (
                 <L3Row key={index} companyRecord={item} index={index} user={user} revertToL2={(vendorID: string) => setDataForReturnToL2(vendorID, "l3")} />
