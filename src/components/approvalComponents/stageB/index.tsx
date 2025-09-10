@@ -14,6 +14,7 @@ import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import CertificateHistoryModal from "@/components/certificateHistory"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
+import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
@@ -21,7 +22,7 @@ import { formatNumberAsCurrency } from "@/utilities/currency"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 
 function useOutsideClick(ref: any, onClickOut: () => void, deps = []) {
     useEffect(() => {
@@ -642,6 +643,21 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
         closeAddRemarkModal()
     }
 
+    const dispatch = useDispatch();
+
+    // Reusable function to invalidate approval-related cache
+    const invalidateApprovalCache = () => {
+        dispatch(staffApi.util.invalidateTags([
+            'Counts',
+            { type: 'Tab', id: 'pending-l2' },
+            { type: 'Tab', id: 'l3' },
+            { type: 'Tab', id: 'completed-l2' },
+            { type: 'Tab', id: 'in-progress' },
+            { type: 'Tab', id: 'returned' },
+            { type: 'Tab', id: 'park-requests' }
+        ]));
+    };
+
     const processToStageC = async () => {
         try {
             setItemBeingUpdated("approve")
@@ -651,6 +667,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
             }, user.role)
 
             if (processToStageCRequest.status === "OK") {
+                invalidateApprovalCache();
                 actionCompleted()
             }
         } catch (error) {

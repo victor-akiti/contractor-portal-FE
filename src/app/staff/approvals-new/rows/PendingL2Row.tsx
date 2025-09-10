@@ -1,6 +1,9 @@
 import moment from 'moment'
 import Link from 'next/link'
+import { shouldShowEndUsers } from '../ApprovalsContainer'
 import styles from '../styles/styles.module.css'
+
+
 export default function PendingL2Row({ index, companyRecord, user, activeFilter }: any) {
   const userCanViewActions = () => {
     if (user.role === "Admin" || user.role === "HOD" || user.role === "Executive Approver") return true
@@ -43,11 +46,12 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter 
       return "No End Users Assigned"
     }
   }
+
   return (
     <tr className={[styles.pendingL2Item, companyRecord.needsAttention ? styles.needsAttendionBackground : (index % 2 === 0 && styles.rowDarkBackground)].join(" ")}>
       <td><Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toUpperCase()}</Link><p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p></td>
       <td><p>{`Stage ${getCurrentStage()}`}</p></td>
-      {(activeFilter === "C" || activeFilter === "E") && <td>{getEndUserNames()}</td>}
+      {shouldShowEndUsers(activeFilter) && <td>{getEndUserNames()}</td>}
       <td>{userCanViewActions() && <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>}</td>
       <td><p>{moment(getLastUpdated()).format("LL")}</p></td>
     </tr>

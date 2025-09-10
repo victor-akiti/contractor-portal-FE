@@ -45,6 +45,37 @@ export const approvalSlice = staffApi.injectEndpoints({
            MUTATIONS
            ========================= */
 
+        // POST /approvals/process/:vendorId (for all approval stages)
+        processApproval: builder.mutation<any, {
+            vendorId: string;
+            data: {
+                pages?: any;
+                selectedEndUsers?: any;
+                selectedServices?: any;
+                siteVisitRequired?: boolean;
+                dueDiligence?: any;
+                hodRemarkForEA?: any;
+            };
+            userRole: string;
+        }>({
+            query: ({ vendorId, data }) => ({
+                url: `approvals/process/${vendorId}`,
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'pending-l2' },
+                    { type: 'Tab', id: 'l3' },
+                    { type: 'Tab', id: 'completed-l2' },
+                    { type: 'Tab', id: 'in-progress' },
+                    { type: 'Tab', id: 'returned' },
+                    { type: 'Tab', id: 'park-requests' }
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
         // POST /approvals/revert/l2/:vendorId
         revertToL2: builder.mutation<any, { vendorId: string; from: string; userRole: string }>({
             query: ({ vendorId, from }) => ({
@@ -141,6 +172,7 @@ export const approvalSlice = staffApi.injectEndpoints({
                 ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
+
     }),
     overrideExisting: false,
 })
@@ -152,6 +184,7 @@ export const {
     useGetInvitesQuery,
     useSearchCompaniesQuery,
     useLazySearchCompaniesQuery,
+    useProcessApprovalMutation,
     useRevertToL2Mutation,
     useApproveParkRequestMutation,
     useDeclineParkRequestMutation,

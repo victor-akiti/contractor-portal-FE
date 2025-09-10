@@ -71,6 +71,10 @@ export const getL2PendingStage = (flags: any) => {
   return "NA"
 }
 
+export const shouldShowEndUsers = (activeFilter: string) => {
+  return activeFilter === "C" || activeFilter === "E"
+}
+
 export default function ApprovalsContainer() {
   const prefetchTab = usePrefetchApprovals('getCompaniesByTab')
   const prefetchInvites = usePrefetchApprovals('getInvites')
@@ -123,10 +127,13 @@ export default function ApprovalsContainer() {
 
   const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"]
   // const approvalStages = ["A", "B", "C", "D", "E", "F"]
+
+
+
   const tableHeaders: any = {
     invited: ["Company Name", "User Details", "Status"],
     inProgress: ["Contractor Name", "Last Contractor Update"],
-    pendingL2: activeFilter === "C" || activeFilter === "E" ? ["Contractor Name", "Approval Stage", "End Users", "Action", "Last Contractor Update"] : ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+    pendingL2: shouldShowEndUsers(activeFilter) ? ["Contractor Name", "Approval Stage", "End Users", "Action", "Last Contractor Update"] : ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     l3: ["Contractor Name", "Action", "Last Contractor Update"],
     completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
