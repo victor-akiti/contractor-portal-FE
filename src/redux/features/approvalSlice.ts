@@ -13,6 +13,13 @@ export const approvalSlice = staffApi.injectEndpoints({
             extraOptions: (role: string) => ({ userRole: role }),
         }),
 
+        // GET /companies/approvals/all
+        getAllCompanies: builder.query<any, { userRole: string }>({
+            query: () => ({ url: `companies/approvals/all`, method: 'GET' }),
+            providesTags: ["All Companies"],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
         // GET /companies/approvals/:tab
         getCompaniesByTab: builder.query<any, { tab: string; userRole: string }>({
             query: ({ tab }) => ({ url: `companies/approvals/${tab}`, method: 'GET' }),
@@ -38,7 +45,7 @@ export const approvalSlice = staffApi.injectEndpoints({
             }),
             providesTags: (r, e, arg) => [{ type: 'Search', id: `${arg.query}-${arg.filter}` }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
-            keepUnusedDataFor: 0, // Don't cache search results
+            keepUnusedDataFor: 60,
         }),
 
         /* =========================
@@ -174,7 +181,7 @@ export const approvalSlice = staffApi.injectEndpoints({
         }),
 
     }),
-    overrideExisting: false,
+    overrideExisting: true,
 })
 
 // Export hooks from the slice - this works in Vite
@@ -191,7 +198,8 @@ export const {
     useArchiveInviteMutation,
     useSendReminderMutation,
     useRenewInviteMutation,
-    usePrefetch: usePrefetchApprovals
+    usePrefetch: usePrefetchApprovals,
+    useGetAllCompaniesQuery
 } = approvalSlice
 
 export default approvalSlice

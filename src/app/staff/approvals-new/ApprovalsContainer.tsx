@@ -11,7 +11,7 @@ import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import xlsx from "json-as-xlsx"
 import Image from "next/image"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
 
 // RTK Query hooks for background caching
@@ -25,7 +25,7 @@ import {
   usePrefetchApprovals,
   useRenewInviteMutation,
   useRevertToL2Mutation,
-  useSendReminderMutation,
+  useSendReminderMutation
 } from '@/redux/features/approvalSlice'
 
 // Extracted UI
@@ -51,13 +51,24 @@ import ReturnedRow from "./rows/ReturnedRow"
 
 const approvalStages = ["A", "B", "C", "D", "E", "F", "G"];
 
-function useOutsideClick(ref: any, onClickOut: any, deps: any[] = []) {
+function useOutsideClick(
+  ref: React.RefObject<HTMLElement>,
+  onClickOut: () => void
+) {
   useEffect(() => {
-    const onClick = ({ target }: any) => !ref?.contains?.(target) && onClickOut?.()
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, deps);
+    function handle(e: MouseEvent) {
+      const el = ref.current;
+      if (el && !el.contains(e.target as Node)) {
+        onClickOut();
+      }
+    }
+
+    // mousedown fires before focus/click, avoids flicker
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [ref, onClickOut]);
 }
+
 
 export const getL2PendingStage = (flags: any) => {
   if ((!flags.level && !flags?.approvals?.level)) return "A"
@@ -126,8 +137,6 @@ export default function ApprovalsContainer() {
   ])
 
   const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"]
-  // const approvalStages = ["A", "B", "C", "D", "E", "F"]
-
 
 
   const tableHeaders: any = {
@@ -141,7 +150,10 @@ export default function ApprovalsContainer() {
   }
 
   const user = useAppSelector((state: any) => state?.user?.user)
+
+  const [searchOpen, setSearchOpen] = useState(false);
   const searchResultRef = useRef<any>(null)
+
 
   // RTK Query hooks - declarative data fetching
   const {
@@ -176,7 +188,8 @@ export default function ApprovalsContainer() {
     }
   )
 
-  const [lazySearch] = useLazySearchCompaniesQuery()
+
+  const [lazySearch, { isFetching: isLazySearchLoading }] = useLazySearchCompaniesQuery()
 
   // prefetch once in background
   useEffect(() => {
@@ -344,7 +357,12 @@ export default function ApprovalsContainer() {
     }
   }
 
-  useOutsideClick(searchResultRef.current, () => setSearchQueryResults([]), [searchQueryResults])
+  const onClickOut = useCallback(() => {
+    setSearchQueryResults([]);
+    setSearchOpen(false);
+  }, []);
+
+  useOutsideClick(searchResultRef, onClickOut);
 
   const filterInvites = (newFilter: string) => {
     const temp = { ...approvals }
@@ -450,12 +468,8 @@ export default function ApprovalsContainer() {
 
   const removeInviteFromExpiredList = (inviteID: string) => { }
 
-  const searchVendors = async (query: string) => {
-    if (!query || query.length < 2) {
-      setSearchQueryResults([])
-      return
-    }
 
+  const getFilterParam = (currentSearchFilter: string) => {
     let filterParam = "all"
     switch (currentSearchFilter) {
       case "in progress": filterParam = "in progress"; break
@@ -466,6 +480,16 @@ export default function ApprovalsContainer() {
       case "park requested": filterParam = "park requested"; break
       default: filterParam = "all"
     }
+    return filterParam;
+  }
+
+  const searchVendors = async (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchQueryResults([])
+      return
+    }
+
+    const filterParam = getFilterParam(currentSearchFilter);
 
     let searchResults: any[] = []
     try {
@@ -478,6 +502,7 @@ export default function ApprovalsContainer() {
         }).unwrap()
         searchResults = result.data.companies || []
       } catch {
+        console.log("RTK Query search failed, falling back to original API");
         // Fallback to original API
         const response = await getProtected(
           `companies/search?query=${encodeURIComponent(query)}&filter=${encodeURIComponent(filterParam)}`,
@@ -928,8 +953,6 @@ export default function ApprovalsContainer() {
   }
 
   const displayRows = useMemo(getdisplayRows, [activeTab, approvals]);
-  console.log({ displayRows, tabData, approvals, fixedApprovals, activeTabData: tabData[activeTab], activeTab })
-
 
   // Render
   return (
@@ -961,9 +984,13 @@ export default function ApprovalsContainer() {
         {!fetchingContractors && activeTab !== "invited" && (
           <SearchBar
             onQuery={searchVendors}
+            isLoading={isLazySearchLoading}
             onFilterChange={setCurrentSearchFilter}
             results={searchQueryResults}
+            filterParam={getFilterParam(currentSearchFilter)}
             resultRef={searchResultRef}
+            searchOpen={searchOpen}
+            setSearchOpen={() => setSearchOpen(true)}
             vendorIsPending={(v: any) => v?.flags?.status === "pending"}
             getNextStage={getNextStage}
             capitalizeWord={capitalizeWord}

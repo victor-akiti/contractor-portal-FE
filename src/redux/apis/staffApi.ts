@@ -5,7 +5,7 @@ import { baseQueryWithReauth } from "../baseQuery"
 export const staffApi = createApi({
   reducerPath: 'staffApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Counts', 'Tab', 'Invites', 'Search'],
+  tagTypes: ['Counts', 'Tab', 'Invites', 'Search', 'All Companies'],
   endpoints: () => ({}), // Empty - endpoints will be injected
 })
 
