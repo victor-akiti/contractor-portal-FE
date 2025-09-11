@@ -221,6 +221,8 @@ export default function ApprovalsContainer() {
   // Update local state when RTK Query data changes - maintains backward compatibility
   useEffect(() => {
     if (activeTab === "invited" && invitesDataRTK?.data?.invites) {
+      if (invitesLoading || invitesFetching) return;  // Avoid updating state while data is still loading
+
       const allInvites = invitesDataRTK.data.invites
 
       // Store complete dataset in fixedApprovals for filtering
@@ -266,7 +268,8 @@ export default function ApprovalsContainer() {
       setApprovals(temp)
 
     } else if (activeTab !== "invited" && tabDataRTK?.data?.companies) {
-      // Keep existing logic for non-invited tabs unchanged
+      if (tabLoading || tabFetching) return;  // Avoid updating state while data is still loading
+
       const companies = tabDataRTK.data.companies
 
       setTabData(prev => ({
@@ -320,10 +323,13 @@ export default function ApprovalsContainer() {
 
   // Simplified tab change - let RTK Query handle the data fetching
   const handleTabChange = (newTab: string) => {
+    if (newTab === activeTab) return;
+
     setActiveTab(newTab)
     setActiveFilter("All")
     setSearchQueryResults([])
     // No manual fetchTabData call - RTK Query handles this automatically
+
   }
 
   const getActiveTable = () => {
@@ -896,6 +902,35 @@ export default function ApprovalsContainer() {
     setShowExportModal(false)
   }
 
+  const getdisplayRows = () => {
+    // If tab hasn't finished its first load yet, return []
+    if (!tabData[activeTab]?.loaded) return []
+
+
+    switch (activeTab) {
+      case "invited":
+        return approvals.invites
+      case "in-progress":
+        return approvals.inProgress
+      case "pending-l2":
+        return approvals.pendingL2
+      case "l3":
+        return approvals.l3
+      case "completed-l2":
+        return approvals.completedL2
+      case "returned":
+        return approvals.returned
+      case "park-requests":
+        return approvals.parkRequested || []
+      default:
+        return []
+    }
+  }
+
+  const displayRows = useMemo(getdisplayRows, [activeTab, approvals]);
+  console.log({ displayRows, tabData, approvals, fixedApprovals, activeTabData: tabData[activeTab], activeTab })
+
+
   // Render
   return (
     <div className={styles.approvals}>
@@ -1005,22 +1040,22 @@ export default function ApprovalsContainer() {
                   removeInviteFromExpired={removeInviteFromExpiredList}
                 />
               ))}
-              {activeTab === "in-progress" && approvals.inProgress.map((item: any, index: number) => (
+              {activeTab === "in-progress" && displayRows?.map((item: any, index: number) => (
                 <InProgressRow key={index} companyRecord={item} index={index} />
               ))}
-              {activeTab === "pending-l2" && approvals.pendingL2.map((item: any, index: number) => (
+              {activeTab === "pending-l2" && displayRows?.map((item: any, index: number) => (
                 <PendingL2Row key={index} companyRecord={item} index={index} user={user} activeFilter={activeFilter} />
               ))}
-              {activeTab === "l3" && approvals.l3.map((item: any, index: number) => (
+              {activeTab === "l3" && displayRows?.map((item: any, index: number) => (
                 <L3Row key={index} companyRecord={item} index={index} user={user} revertToL2={(vendorID: string) => setDataForReturnToL2(vendorID, "l3")} />
               ))}
-              {activeTab === "completed-l2" && approvals.completedL2.map((item: any, index: number) => (
+              {activeTab === "completed-l2" && displayRows?.map((item: any, index: number) => (
                 <CompletedL2Row key={index} companyRecord={item} index={index} user={user} revertToL2={(vendorID: string) => setDataForReturnToL2(item._id, "parked")} />
               ))}
-              {activeTab === "returned" && approvals.returned.map((item: any, index: number) => (
+              {activeTab === "returned" && displayRows?.map((item: any, index: number) => (
                 <ReturnedRow key={index} companyRecord={item} index={index} />
               ))}
-              {activeTab === "park-requests" && approvals.parkRequested && approvals.parkRequested.map((item: any, index: number) => (
+              {activeTab === "park-requests" && displayRows && displayRows?.map((item: any, index: number) => (
                 <ParkRequestedRow key={index} companyRecord={item} index={index}
                   approveParkRequest={() => approveParkRequest(item._id)}
                   declineParkRequest={() => declineParkRequest(item._id)}
