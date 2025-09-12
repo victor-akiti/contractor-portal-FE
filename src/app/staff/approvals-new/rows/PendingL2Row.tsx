@@ -5,7 +5,18 @@ import styles from '../styles/styles.module.css'
 
 
 export default function PendingL2Row({ index, companyRecord, user, activeFilter }: any) {
+
+  const canProcess = () => {
+    if (companyRecord?.currentEndUsers && Array.isArray(companyRecord?.currentEndUsers) && companyRecord?.currentEndUsers?.length > 0) {
+      return companyRecord?.currentEndUsers.find((eu: any) => eu._id === user._id) ? true : false
+    }
+    return false
+  }
+
   const userCanViewActions = () => {
+    if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
+      return canProcess();
+    }
     if (user.role === "Admin" || user.role === "HOD" || user.role === "Executive Approver") return true
     if (user.role === "User") return false
     if (companyRecord?.flags?.level === 2 && companyRecord.currentEndUsers.includes(user._id)) return true

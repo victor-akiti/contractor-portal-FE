@@ -1070,9 +1070,10 @@ export default function ApprovalsContainer() {
               {activeTab === "in-progress" && displayRows?.map((item: any, index: number) => (
                 <InProgressRow key={index} companyRecord={item} index={index} />
               ))}
-              {activeTab === "pending-l2" && displayRows?.map((item: any, index: number) => (
-                <PendingL2Row key={index} companyRecord={item} index={index} user={user} activeFilter={activeFilter} />
-              ))}
+              {activeTab === "pending-l2" && displayRows?.map((item: any, index: number) => {
+                console.log({ item })
+                return <PendingL2Row key={index} companyRecord={item} index={index} user={user} activeFilter={activeFilter} />
+              })}
               {activeTab === "l3" && displayRows?.map((item: any, index: number) => (
                 <L3Row key={index} companyRecord={item} index={index} user={user} revertToL2={(vendorID: string) => setDataForReturnToL2(vendorID, "l3")} />
               ))}
