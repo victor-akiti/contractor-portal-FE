@@ -1,19 +1,19 @@
 'use client'
+import logo from "@/assets/images/logo.png";
 import Image from "next/image";
-import styles from "./styles/styles.module.css"
-import logo from "@/assets/images/logo.png"
+import styles from "./styles/styles.module.css";
 // import {faUserCircle} from "@fortawesome/free-regular-svg-icons"
-import {faCaretDown, faUserCircle} from "@fortawesome/free-solid-svg-icons"
+import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
+import Modal from "@/components/modal";
+import { setUserData } from "@/redux/reducers/user";
+import { getProtected } from "@/requests/get";
+import { postProtected } from "@/requests/post";
+import { faCaretDown, faUserCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getProtected } from "@/requests/get";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserData } from "@/redux/reducers/user";
-import Modal from "@/components/modal";
-import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
-import { postProtected } from "@/requests/post";
 
 const Layout = ({children}) => {
     const [authenticated, setAuthenticated] = useState(false)
@@ -35,7 +35,7 @@ const Layout = ({children}) => {
           // This call will now automatically handle token refresh if needed
           const currentAuthState = await getProtected("auth/current-auth-state", "Amni Staff")
           
-          console.log({currentAuthState});
+          // console.log({currentAuthState});
 
           if (currentAuthState && currentAuthState.status !== "Failed") {
             dispatch(setUserData({user: currentAuthState.data}))
@@ -48,7 +48,7 @@ const Layout = ({children}) => {
           } else {
             // Only redirect if the request actually failed (not just token refresh)
             console.log('Auth state check failed, redirecting to login');
-            // router.push("/login/staff")
+            router.push("/login/staff")
           }
           
         } catch (error) {
@@ -91,8 +91,6 @@ const Layout = ({children}) => {
           console.log({error});
         }
       }
-
-      console.log({authenticated});
       
 
  return (
@@ -157,6 +155,7 @@ const Layout = ({children}) => {
             <div className={styles.content}>
                     <div className={styles.left}>
                         <Link href={"/staff/approvals"}>Registration Approvals</Link>
+                        {/* <Link href={"/staff/approvals-old"}>Old Registration Approvals</Link> */}
     
                         <Link href={"/staff/invites"}>Registration Invites</Link>
                         

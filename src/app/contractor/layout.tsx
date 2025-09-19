@@ -26,7 +26,7 @@ const Layout = ({children}) => {
         try {
           const currentAuthState = await getProtected("auth/current-auth-state")
     
-          if (currentAuthState.status === "Failed") {
+          if (!currentAuthState || currentAuthState.status === "Failed") {
             router.push("/login")
           } else {
             if (currentAuthState.data.role !== "Vendor") {

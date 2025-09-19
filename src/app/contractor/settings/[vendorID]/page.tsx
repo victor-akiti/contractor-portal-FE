@@ -136,7 +136,7 @@ const VendorSettings = () => {
                         }}>
                             <input placeholder="Full Name" name="name" defaultValue={user.name} />
 
-                            <input placeholder="Phone Number" name="phone" defaultValue={user.phone} />
+                            <input placeholder="Phone Number" name="phone" defaultValue={typeof user.phone === "string" ? user.phone : user.phone.internationalNumber } />
                         </form>
                     </div>
 
@@ -191,7 +191,7 @@ const VendorSettings = () => {
 
                     <tr>
                         <td>Phone Number</td>
-                        <td>{user.phone}</td>
+                        <td>{typeof user.phone === "string" ? user.phone : user.phone.internationalNumber}</td>
                     </tr>
                 </table>
                 

@@ -244,7 +244,7 @@ const Tasks = () => {
         },
         {
             name: "vendors",
-            label: "Vendors"
+            label: "Others"
         }
     ]
 
@@ -647,7 +647,7 @@ const Tasks = () => {
                     <h3>Manage Users</h3>
 
                     {
-                        (user.role === "Admin" || user.role === "IT Admin" || user.role === "C&P Admin" || user.role === "HOD") && <button onClick={() => openAddEndUserModal()}>Add End User</button>
+                        // (user.role === "Admin" || user.role === "IT Admin" || user.role === "C&P Admin" || user.role === "HOD") && <button onClick={() => openAddEndUserModal()}>Add End User</button>
                     }
 
                     
@@ -741,7 +741,7 @@ const Tasks = () => {
 
                 <tbody>
                     {
-                        users.map((item, index) => <tr className={index%2 === 0 ? styles.dark : styles.light} key={index}>
+                        users?.map((item, index) => <tr className={index%2 === 0 ? styles.dark : styles.light} key={index}>
                             <td>
                                 <p>{ item.name}</p>
                             </td>

@@ -1,5 +1,6 @@
 import { getIdToken } from "firebase/auth";
-import { auth } from "@/app/layout";
+import { auth } from '@/lib/firebase';
+
 
 // Import the refresh logic from get.js to avoid duplication
 const handleTokenRefresh = async () => {

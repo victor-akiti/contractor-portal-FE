@@ -1,39 +1,40 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from "react"
 import checkedBox from "@/assets/images/checkedBox.svg"
-import uncheckedBox from "@/assets/images/uncheckedBox.svg"
-import styles from "./styles/styles.module.css"
-import { usePathname, useRouter } from "next/navigation"
-import Accordion from "@/components/accordion"
 import closeIcon from "@/assets/images/closeGrey.svg"
+import uncheckedBox from "@/assets/images/uncheckedBox.svg"
+import Accordion from "@/components/accordion"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import styles from "./styles/styles.module.css"
 
 
+import errorIcon from "@/assets/images/red_alert_circle.svg"
+import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import CertificateHistoryModal from "@/components/certificateHistory"
+import Modal from "@/components/modal"
+import staffApi from "@/redux/apis/staffApi"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import { putProtected } from "@/requests/put"
+import { formatNumberAsCurrency } from "@/utilities/currency"
+import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import moment from "moment"
-import Modal from "@/components/modal"
-import { useSelector } from "react-redux"
-import { getProtected } from "@/requests/get"
-import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { putProtected } from "@/requests/put"
-import { postProtected } from "@/requests/post"
-import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
-import errorIcon from "@/assets/images/red_alert_circle.svg"
-import CertificateHistoryModal from "@/components/certificateHistory"
+import { useDispatch, useSelector } from "react-redux"
 
 
-function useOutsideClick(ref: any, onClickOut: () => void, deps = []){
+function useOutsideClick(ref: any, onClickOut: () => void, deps = []) {
     useEffect(() => {
-        const onClick = ({target}: any) => !ref?.contains(target) && onClickOut?.()
+        const onClick = ({ target }: any) => !ref?.contains(target) && onClickOut?.()
         document.addEventListener("click", onClick);
         return () => document.removeEventListener("click", onClick);
     }, deps);
 }
 
-const StageE = ({approvalData, formPages, vendorID}) => {
-    console.log({approvalData, formPages});
-    
-    
+const StageE = ({ approvalData, formPages, vendorID }) => {
+    console.log({ approvalData, formPages });
+
+
     const [pages, setPages] = useState([])
     const [newRemarks, setNewRemarks] = useState({})
     const [newComments, setNewComments] = useState({})
@@ -56,7 +57,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
     const [sectionToCommentOn, setSectionToCommentOn] = useState(null)
     const [sectionToRemarkOn, setSectionToRemarkOn] = useState(null)
     const [unaprovedSectionsWithNoRemarks, setUnapprovedSectionsWithNoRemarks] = useState([])
-    const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false)   
+    const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false)
     const [dueDiligenceApprovals, setDueDiligenceApprovals] = useState({
         internetCheck: false,
         registrationCheck: false,
@@ -64,38 +65,38 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         exposedPersonsCheck: false
     })
     const containerDivRef = useRef(null)
-    console.log({pages});
-    const user = useSelector((state:any) => state.user)
+    console.log({ pages });
+    const user = useSelector((state: any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
     const router = useRouter()
     const [showSendToEA, setShowSendToEA] = useState(false)
     const [hodRemarkForEA, setHODRemarkForEA] = useState("")
-    
-    console.log({user});
-    
 
-    
+    console.log({ user });
+
+
+
 
     useOutsideClick(categoriesListDivRef.current, () => {
         console.log("out click");
-        
+
         setShowCategoriesList(false)
-        
+
     }, [showCategoriesList])
 
 
     const getCertificateTimeValidity = expiryDate => {
         const currentDateObject = new Date()
         const expiryDateObject = new Date(expiryDate)
-        
+
 
         if (currentDateObject.getTime() >= expiryDateObject.getTime()) {
             // let tempExpiredCertificates = [...expiredCertificates]
             // tempExpiredCertificates.push(expiryDate)
             // setExpiredCertificates(tempExpiredCertificates)
-            
+
             return "expired"
-        } else if ((expiryDateObject.getTime() - currentDateObject.getTime())/1000 < 7884000) {
+        } else if ((expiryDateObject.getTime() - currentDateObject.getTime()) / 1000 < 7884000) {
             // let tempExpiringCertificates = [...expiringCertificates]
             // tempExpiringCertificates.push(expiryDate)
             // setExpiringCertificates(tempExpiringCertificates)   
@@ -122,15 +123,15 @@ const StageE = ({approvalData, formPages, vendorID}) => {
             setSelectedCategories(tempSelectedCategories)
 
         }
-        
+
     }
 
 
     const filterCategoriesListByQueryString = (queryString) => {
         let tempCategoriesList = [...fixedJobCategories]
-        console.log({fixedJobCategories});
-        
-        tempCategoriesList  = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
+        console.log({ fixedJobCategories });
+
+        tempCategoriesList = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
 
         setJobCategories(tempCategoriesList)
     }
@@ -147,7 +148,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         if (tempSelectedCategories.some(selectedCategory => selectedCategory.category === category.category)) {
             tempSelectedCategories = tempSelectedCategories.filter(selectedCategory => selectedCategory.category !== category.category)
         }
-        
+
         setSelectedCategories(tempSelectedCategories)
 
         let tempCurrentCategories = [...currentVendorCategories]
@@ -157,12 +158,6 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         setCurrentVendorCategories(tempCurrentCategories)
 
         updateVendorCategories(tempSelectedCategories)
-    }
-
-    const formatNumberAsCurrency = (number) => {
-        console.log({number});
-        
-        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(number);
     }
 
     const [currentCertificateHistory, setCurrentCertificateHistory] = useState([])
@@ -178,89 +173,98 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         tempCurrentCertificateHistory = []
         setCurrentCertificateHistory(tempCurrentCertificateHistory)
     }
-    
 
-    const getFieldItemComponent = (field, index) => {
+
+    const getFieldItemComponent = (field, index, section) => {
         switch (field.type) {
-            case "shortText": 
-            return <div key={index} className={styles.fieldItem}>
-                <div>
-                    <p className={styles.fieldData}>
-                        <label>{`${field.label}:`}</label>
-                        
-                        {
-                            field.textType === "number" && <p>{field?.isCurrency ? formatNumberAsCurrency(field.value) : field.value}</p>
-                        }
-
-                        {
-                            field.textType !== "number" && <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
-                        }
-                    </p>
-                </div>
-
-                {
-                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                }
-            </div>
-            case "longText": 
-            return <div key={index} className={styles.fieldItem}>
-            <div>
-                <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    <p>{field.value}</p>
-                </p>
-            </div>
-
-            {
-                field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-            }
-            </div>
-            case "date":
+            case "shortText":
                 return <div key={index} className={styles.fieldItem}>
-                <div>
-                    <p className={styles.fieldData}>
-                        <label>{`${field.label}:`}</label>
-                        <p>{moment(field.value).format("MMMM Do YYYY")}</p>
-                    </p>
-                </div>
-
-                {
-                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                }
-            </div>
-            case "file": 
-                if (field.value) {
-                    return <div key={index} className={styles.fieldItem}>
                     <div>
-                        <div className={styles.fieldData}>
+                        <p className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
 
                             {
-                                field?.value[0]?.url && <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
-                            }
-                            <div>
-                                
-                            </div>
+                                field.textType === "number" && field.isCurrency ? (
+                                    // For currency fields, find the corresponding currency selection
+                                    (() => {
+                                        // Find the currency field in the same section
 
-                            {
-                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
+                                        const currencyField = section.fields.find(f => f.label === "Currency");
+                                        const selectedCurrency = currencyField?.value || "Naira (NGN)";
+                                        return <p>{formatNumberAsCurrency(field.value, selectedCurrency)}</p>;
+                                    })()
+                                ) : field.textType === "number" ? (
+                                    <p>{field.value}</p>
+                                ) : (
+                                    <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
+                                )
                             }
-                        </div>
+                        </p>
                     </div>
 
                     {
                         field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
                     }
+                </div>
+            case "longText":
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            <p>{field.value}</p>
+                        </p>
+                    </div>
 
                     {
-                        field.isACertificate && <>
-                            {
-                                field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field?.value[0]?.expiryDate}`}</p>
-                            }
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
+                </div>
+            case "date":
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            <p>{moment(field.value).format("MMMM Do YYYY")}</p>
+                        </p>
+                    </div>
 
-                            {
-                                field.value && field?.value[0]?.expiryDate && <>
-                                
+                    {
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
+                </div>
+            case "file":
+                if (field.value) {
+                    return <div key={index} className={styles.fieldItem}>
+                        <div>
+                            <div className={styles.fieldData}>
+                                <label>{`${field.label}:`}</label>
+
+                                {
+                                    field?.value[0]?.url && <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                }
+                                <div>
+
+                                </div>
+
+                                {
+                                    field.hasExpiryDate && field.history && <a style={{ marginLeft: "20px" }} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
+                                }
+                            </div>
+                        </div>
+
+                        {
+                            field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                        }
+
+                        {
+                            field.isACertificate && <>
+                                {
+                                    field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field?.value[0]?.expiryDate}`}</p>
+                                }
+
+                                {
+                                    field.value && field?.value[0]?.expiryDate && <>
+
                                         {
                                             getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
                                         }
@@ -269,25 +273,25 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                             getCertificateTimeValidity(field?.value[0]?.expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
                                         }
 
-                                        
-                                </>
-                            }
 
-                            
-                        </>
-                    }
-                </div>
+                                    </>
+                                }
+
+
+                            </>
+                        }
+                    </div>
                 }
             case "multiSelectText":
                 return <div className={styles.fieldItem}>
                     <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    {
-                        field.value.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
-                    }
-                </p>
+                        <label>{`${field.label}:`}</label>
+                        {
+                            field.value.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
+                        }
+                    </p>
                 </div>
-                
+
 
 
         }
@@ -303,7 +307,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
     const fetchJobCategories = async () => {
         try {
             const jobCategoriesRequest = await getProtected("jobCategories", user.role)
-            console.log({jobCategoriesRequest});
+            console.log({ jobCategoriesRequest });
 
             if (jobCategoriesRequest.status === "OK") {
 
@@ -317,28 +321,28 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
 
             }
-            
+
         } catch (error) {
-            console.log({error});
-            
+            console.log({ error });
+
         }
     }
 
-    
-    
+
+
     const setFormPages = formPages => {
         let tempPages = [...pages]
         tempPages = formPages
         setPages(tempPages)
 
         if (approvalData.jobCategories) {
-            let tempSelectedCategories  = [...selectedCategories]
-        tempSelectedCategories = approvalData.jobCategories
-        setSelectedCategories(tempSelectedCategories)
+            let tempSelectedCategories = [...selectedCategories]
+            tempSelectedCategories = approvalData.jobCategories
+            setSelectedCategories(tempSelectedCategories)
 
-        let tempCurrentCategories = [...currentVendorCategories]
-        tempCurrentCategories = approvalData.jobCategories
-        setCurrentVendorCategories(tempCurrentCategories)
+            let tempCurrentCategories = [...currentVendorCategories]
+            tempCurrentCategories = approvalData.jobCategories
+            setCurrentVendorCategories(tempCurrentCategories)
         }
 
         getExpiringAndExpiredCertificates(tempPages)
@@ -372,8 +376,8 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         setExpiredCertificates(tempExpiredCertificates)
     }
 
-    console.log({expiringCertificates, expiredCertificates});
-    
+    console.log({ expiringCertificates, expiredCertificates });
+
 
     const toggleSectionApproval = (pageIndex, sectionIndex) => {
         let tempPages = [...pages]
@@ -387,26 +391,26 @@ const StageE = ({approvalData, formPages, vendorID}) => {
     }
 
     const closeAddRemarkModal = () => {
-        let tempSectionToRemarkOn = {...sectionToRemarkOn}
+        let tempSectionToRemarkOn = { ...sectionToRemarkOn }
         tempSectionToRemarkOn = null
         setSectionToRemarkOn(tempSectionToRemarkOn)
     }
 
     const closeAddCommentModal = () => {
-        let tempSectionToCommentOn = {...sectionToCommentOn}
+        let tempSectionToCommentOn = { ...sectionToCommentOn }
         tempSectionToCommentOn = null
         setSectionToCommentOn(tempSectionToCommentOn)
     }
 
     const openAddRemarkModal = (pageIndex, sectionIndex) => {
-        let tempSectionToRemarkOn = {...sectionToRemarkOn}
+        let tempSectionToRemarkOn = { ...sectionToRemarkOn }
         tempSectionToRemarkOn["pageIndex"] = pageIndex
         tempSectionToRemarkOn["sectionIndex"] = sectionIndex
         setSectionToRemarkOn(tempSectionToRemarkOn)
     }
 
     const openAddCommentModal = (pageIndex, sectionIndex) => {
-        let tempSectionToCommentOn = {...sectionToCommentOn}
+        let tempSectionToCommentOn = { ...sectionToCommentOn }
         tempSectionToCommentOn["pageIndex"] = pageIndex
         tempSectionToCommentOn["sectionIndex"] = sectionIndex
         setSectionToCommentOn(tempSectionToCommentOn)
@@ -417,10 +421,10 @@ const StageE = ({approvalData, formPages, vendorID}) => {
             return
         }
         let tempPages = [...pages]
-        
+
 
         if (!tempPages[pageIndex].sections[sectionIndex].remarks) {
-            
+
             tempPages[pageIndex].sections[sectionIndex]["remarks"] = []
             tempPages[pageIndex].sections[sectionIndex].remarks.push({
                 remark,
@@ -438,47 +442,47 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         }
         setPages(tempPages)
 
-        let tempNewRemarks = {...newRemarks}
+        let tempNewRemarks = { ...newRemarks }
 
         if (!tempNewRemarks[pages[pageIndex].pageTitle]) {
             tempNewRemarks[pages[pageIndex].pageTitle] = {}
         }
 
-        if  (!tempNewRemarks[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title]) {
+        if (!tempNewRemarks[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title]) {
             tempNewRemarks[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title] = []
         }
 
         tempNewRemarks[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title].push({
             remark,
             userID: user.user.uid,
-                userName: user.user.name,
+            userName: user.user.name,
             date: Date.now()
         })
 
         setNewRemarks(tempNewRemarks)
 
-        
+
 
         validateSectionApproval(tempNewRemarks)
 
         closeAddRemarkModal()
 
-        
+
     }
 
 
 
     const addCommentToSection = (pageIndex, sectionIndex, comment) => {
-        console.log({comment});
-        
+        console.log({ comment });
+
         let tempPages = [...pages]
 
-        console.log({pageIndex, sectionIndex, comment});
-        
-        
+        console.log({ pageIndex, sectionIndex, comment });
+
+
 
         if (!tempPages[pageIndex].sections[sectionIndex].comments) {
-            
+
             tempPages[pageIndex].sections[sectionIndex]["comments"] = []
             tempPages[pageIndex].sections[sectionIndex].comments.push({
                 comment,
@@ -494,29 +498,29 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                 date: Date.now()
             })
         }
-        console.log({tempPages});
-        
+        console.log({ tempPages });
+
         setPages(tempPages)
 
-        let tempNewComments = {...newComments}
+        let tempNewComments = { ...newComments }
 
         if (!tempNewComments[pages[pageIndex].pageTitle]) {
             tempNewComments[pages[pageIndex].pageTitle] = {}
         }
 
-        if  (!tempNewComments[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title]) {
+        if (!tempNewComments[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title]) {
             tempNewComments[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title] = []
         }
 
         tempNewComments[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title].push({
             comment,
             userID: user.user.uid,
-                userName: user.user.name,
+            userName: user.user.name,
             date: Date.now()
         })
 
-        console.log({tempNewComments});
-        
+        console.log({ tempNewComments });
+
 
         setNewComments(tempNewComments)
 
@@ -524,7 +528,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
     }
 
     const toggleHideSectionRemarks = (pageIndex, sectionIndex) => {
-        let tempSectionRemarksToShow = {...sectionRemarksToShow}
+        let tempSectionRemarksToShow = { ...sectionRemarksToShow }
 
         if (!tempSectionRemarksToShow[pageIndex]) {
             tempSectionRemarksToShow[pageIndex] = []
@@ -537,7 +541,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         }
 
         setSectionRemarksToShow(tempSectionRemarksToShow)
-        
+
     }
 
     const hideAllRemarks = () => {
@@ -571,9 +575,9 @@ const StageE = ({approvalData, formPages, vendorID}) => {
             }
 
 
-            
+
         } catch (error) {
-            console.log({error})
+            console.log({ error })
         }
     }
 
@@ -592,7 +596,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         //         }
         //     })
         // })
-        
+
 
         for (let index = 0; index < pages.length; index++) {
             const element = pages[index];
@@ -604,12 +608,12 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                 if (!section.hideOnApproval) {
                     if (!section.approved) {
                         approvedAllSections = false
-    
+
                         let remarksForValidation = remarks ? remarks : newRemarks
-    
-                        console.log({remarks});
-                        
-    
+
+                        console.log({ remarks });
+
+
                         if (!remarksForValidation[element.pageTitle]) {
                             unapprovedSectionsWithoutRemarks.push(section.title)
                         } else if (!remarksForValidation[element.pageTitle][section.title]) {
@@ -618,17 +622,17 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                     }
                 }
 
-                
-                
+
+
             }
-            
+
         }
 
-        console.log({approvedAll, unapprovedSectionsWithoutRemarks});
+        console.log({ approvedAll, unapprovedSectionsWithoutRemarks });
 
-        console.log({newRemarks});
-        
-        
+        console.log({ newRemarks });
+
+
 
         setApprovedAll(approvedAllSections)
 
@@ -639,8 +643,22 @@ const StageE = ({approvalData, formPages, vendorID}) => {
         closeAddRemarkModal()
     }
 
+
+    const dispatch = useDispatch();
+
+    // Reusable function to invalidate approval-related cache
+    const invalidateApprovalCache = () => {
+        dispatch(staffApi.util.invalidateTags([
+            'Counts',
+            { type: 'Tab', id: 'pending-l2' },
+            { type: 'Tab', id: 'l3' },
+            { type: 'Tab', id: 'completed-l2' },
+            { type: 'Tab', id: 'in-progress' },
+            { type: 'Tab', id: 'returned' },
+            { type: 'Tab', id: 'park-requests' }
+        ]));
+    };
     const processToStageF = async () => {
-        
         try {
             setItemBeingUpdated("approve")
             const processToStageFRequest = await postProtected(`approvals/process/${vendorID}`, {
@@ -649,30 +667,31 @@ const StageE = ({approvalData, formPages, vendorID}) => {
             }, user.role)
 
             if (processToStageFRequest.status === "OK") {
+                invalidateApprovalCache();
                 actionCompleted()
             }
         } catch (error) {
-            
+
         }
     }
 
-    const returnToContractsOfficer = async () =>  {
+    const returnToContractsOfficer = async () => {
         setItemBeingUpdated("return")
         try {
-            const returnToContractsOfficerRequest:any = await postProtected(`approvals/return/previous-stage/${vendorID}`, {
+            const returnToContractsOfficerRequest: any = await postProtected(`approvals/return/previous-stage/${vendorID}`, {
                 pages
             }, user.role)
 
             if (returnToContractsOfficerRequest.status === "OK") {
                 actionCompleted()
             }
-            
+
         } catch (error) {
-            
+
         }
     }
 
-    
+
 
     const actionCompleted = () => {
         setApplicationProcessed(true)
@@ -683,9 +702,9 @@ const StageE = ({approvalData, formPages, vendorID}) => {
     }
 
     const parkAtL2 = async (reason) => {
-        console.log({reason});
+        console.log({ reason });
         setItemBeingUpdated("hold")
-        
+
         try {
             const recommendForHoldRequest = await postProtected(`approvals/hold/direct/${vendorID}`, {
                 reason
@@ -696,15 +715,15 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                 actionCompleted()
             }
 
-            console.log({recommendForHoldRequest});
-            
+            console.log({ recommendForHoldRequest });
+
         } catch (error) {
-            
+
         }
     }
 
     const toggleDDApproval = (field) => {
-        let tempDDApproval = {...dueDiligenceApprovals}
+        let tempDDApproval = { ...dueDiligenceApprovals }
         tempDDApproval[field] = !tempDDApproval[field]
         setDueDiligenceApprovals(tempDDApproval)
     }
@@ -731,10 +750,10 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                     }
                 }
 
-                
-                
+
+
             }
-            
+
         }
 
         if (!dueDiligenceApprovals.exposedPersonsCheck || !dueDiligenceApprovals.internetCheck || !dueDiligenceApprovals.referenceCheck || !dueDiligenceApprovals.registrationCheck) {
@@ -746,11 +765,11 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
 
 
-    console.log({currentVendorCategories});
-    
+    console.log({ currentVendorCategories });
 
-    
-    
+
+
+
 
     return (
         <div className={styles.stageE}>
@@ -792,7 +811,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
             {
                 !applicationProcessed && <>
-                        <div className={styles.approvalContent}>
+                    <div className={styles.approvalContent}>
 
                         {
                             pages.map((item, index) => <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
@@ -800,203 +819,203 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                     item.sections.map((sectionItem, sectionIndex) => {
                                         if (!sectionItem.hideOnApproval) {
                                             return <div key={sectionIndex} className={styles.sectionItem}>
-                                            <div>
-                                                <div className={styles.sectionHeader}>
-                                                    <h6>{sectionItem.title}</h6>
-    
-                                                    <Image src={sectionItem.approved ? checkedBox : uncheckedBox} alt="approval checkbox" width={40} height={40} style={{cursor: "pointer"}} onClick={() => toggleSectionApproval(index, sectionIndex)} />
-                                                </div>
-    
                                                 <div>
-                                                    {
-                                                        sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
-                                                    }
-                                                </div>
-    
-                                                <div>
-                                                    
-    
-                                                    {
-                                                        ((sectionItem.comments && sectionItem.comments.length > 0) || (sectionItem.remarks && sectionItem.remarks.length > 0)) && <div className={styles.showCommentTriggerDiv}>
-                                                            <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
-                                                        </div>
-                                                    }
+                                                    <div className={styles.sectionHeader}>
+                                                        <h6>{sectionItem.title}</h6>
 
-                                                    {
-                                                        !sectionItem.approved && <div className={[styles.remarksDiv, sectionItem.hodRemarks ? styles.hasValidText: styles.noValidText].join(" ")}>
-                                                        <textarea onChange={(event) => updateHODRemarks(index, sectionIndex, event.target.value)} placeholder="Type your notes here" rows={5}></textarea>
-
-                                                        {!sectionItem.hodRemarks && <Image src={errorIcon} alt="remark error" width={20} height={20} />}
-                                                        
+                                                        <Image src={sectionItem.approved ? checkedBox : uncheckedBox} alt="approval checkbox" width={40} height={40} style={{ cursor: "pointer" }} onClick={() => toggleSectionApproval(index, sectionIndex)} />
                                                     </div>
-                                                    }
-    
-                                                    {
-                                                        sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
+
+                                                    <div>
                                                         {
-                                                            sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
-                                                            <p>Notes for Vendor</p>
-    
-                                                            <div>
-                                                                {
-                                                                    sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
-                                                                        <p>{remarkItem.remark}</p>
-                                                                        <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                    </div>)
-                                                                }
-                                                            </div>
-    
-                                                        </div>
-                                                        }
-    
-                                                        {
-                                                            sectionItem?.comments && sectionItem?.comments.length > 0  && <div className={styles.commentsContent}>
-                                                            <p>Comments</p>
-    
-                                                            <div>
-                                                                {
-                                                                    sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
-                                                                        <p>{commentItem.comment}</p>
-                                                                        <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                    </div>)
-                                                                }
-                                                            </div>
-    
-                                                        </div>
+                                                            sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex, sectionItem))
                                                         }
                                                     </div>
+
+                                                    <div>
+
+
+                                                        {
+                                                            ((sectionItem.comments && sectionItem.comments.length > 0) || (sectionItem.remarks && sectionItem.remarks.length > 0)) && <div className={styles.showCommentTriggerDiv}>
+                                                                <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
+                                                            </div>
+                                                        }
+
+                                                        {
+                                                            !sectionItem.approved && <div className={[styles.remarksDiv, sectionItem.hodRemarks ? styles.hasValidText : styles.noValidText].join(" ")}>
+                                                                <textarea onChange={(event) => updateHODRemarks(index, sectionIndex, event.target.value)} placeholder="Type your notes here" rows={5}></textarea>
+
+                                                                {!sectionItem.hodRemarks && <Image src={errorIcon} alt="remark error" width={20} height={20} />}
+
+                                                            </div>
+                                                        }
+
+                                                        {
+                                                            sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
+                                                                {
+                                                                    sectionItem?.remarks && sectionItem?.remarks.length > 0 && <div className={styles.remarksContent}>
+                                                                        <p>Notes for Vendor</p>
+
+                                                                        <div>
+                                                                            {
+                                                                                sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
+                                                                                    <p>{remarkItem.remark}</p>
+                                                                                    <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                                </div>)
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                }
+
+                                                                {
+                                                                    sectionItem?.comments && sectionItem?.comments.length > 0 && <div className={styles.commentsContent}>
+                                                                        <p>Comments</p>
+
+                                                                        <div>
+                                                                            {
+                                                                                sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
+                                                                                    <p>{commentItem.comment}</p>
+                                                                                    <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                                </div>)
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+
+
+                                                    {
+                                                        sectionIndex !== item.sections.length - 1 && <hr />
                                                     }
                                                 </div>
-    
-    
-                                                {
-                                                    sectionIndex !== item.sections.length - 1 && <hr />
-                                                }
+
                                             </div>
-    
-                                        </div>
                                         }
                                     })
                                 }
                             </Accordion>)
                         }
 
-                        </div>
+                    </div>
 
-                        <div className={styles.approvalContent}>
-                            <Accordion defaultOpen={true} title={"Contractor Categorization"}>
-                                <div className={styles.sectionItem}>
-                                    <div className={styles.contractorCategorizationDiv}>
-                                        <p onClick={() => toggleShowAddCategory()}>+ ADD CATEGORY</p>
+                    <div className={styles.approvalContent}>
+                        <Accordion defaultOpen={true} title={"Contractor Categorization"}>
+                            <div className={styles.sectionItem}>
+                                <div className={styles.contractorCategorizationDiv}>
+                                    <p onClick={() => toggleShowAddCategory()}>+ ADD CATEGORY</p>
 
-                                        {
-                                            showAddCategory && <>
-                                                    <p>Select the type of services you would consider this Contractor could provide to Amni.</p>
+                                    {
+                                        showAddCategory && <>
+                                            <p>Select the type of services you would consider this Contractor could provide to Amni.</p>
 
-                                                    <div ref={categoriesListDivRef}>
-                                                        <div className={styles.selectedCategoriesList}>
-                                                            {
-                                                                selectedCategories.map((item, index) => <div key={index} className={styles.selectedCategoriesItem}>
-                                                                    <div ><Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => removeCategoryFromSelectedCategories(item)} style={{cursor: "pointer"}} /></div>
-                                                                    <p>{item.category}</p>
-                                                                    
-                                                                </div>)
-                                                            }
-                                                        </div>
-                                                        <input placeholder="Select Job Categories" onClick={() => setShowCategoriesList(true)} onChange={(e) => filterCategoriesListByQueryString(e.target.value)} />
+                                            <div ref={categoriesListDivRef}>
+                                                <div className={styles.selectedCategoriesList}>
+                                                    {
+                                                        selectedCategories.map((item, index) => <div key={index} className={styles.selectedCategoriesItem}>
+                                                            <div ><Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => removeCategoryFromSelectedCategories(item)} style={{ cursor: "pointer" }} /></div>
+                                                            <p>{item.category}</p>
 
-                                                        <Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => {clearSelectedCategories()}} style={{cursor: "pointer"}} />
+                                                        </div>)
+                                                    }
+                                                </div>
+                                                <input placeholder="Select Job Categories" onClick={() => setShowCategoriesList(true)} onChange={(e) => filterCategoriesListByQueryString(e.target.value)} />
 
+                                                <Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => { clearSelectedCategories() }} style={{ cursor: "pointer" }} />
+
+                                                {
+                                                    showCategoriesList && <div className={styles.jobCategoryList} >
                                                         {
-                                                            showCategoriesList && <div className={styles.jobCategoryList} >
-                                                            {
-                                                                jobCategories.map((item, index) => <div key={index} className={styles.jobCategoryItem}>
-                                                                    <p onClick={() => addCategoryToSelectedCategories(item)}>{item.category}</p>
-                                                                </div>)
-                                                            }
-                                                        </div>
+                                                            jobCategories.map((item, index) => <div key={index} className={styles.jobCategoryItem}>
+                                                                <p onClick={() => addCategoryToSelectedCategories(item)}>{item.category}</p>
+                                                            </div>)
                                                         }
                                                     </div>
-
-                                                    <button className={styles.saveCategoriesButton } onClick={() => updateVendorCategories(null)}>Save {updatingVendorCategories && <ButtonLoadingIcon />}</button>
-                                            </>
-                                        }
-
-                                        <table className={styles.currentCategoriesList}>
-                                            <tbody>
-                                                {
-                                                    currentVendorCategories.map((item, index) => <tr key={index}>
-                                                        <td>{item.category}</td>
-                                                        <td onClick={() => deleteCategoryFromCategoriesList(item)}>Delete</td>
-                                                        <td>{`Added by: ${item?.addedBy?.name}`}</td>
-                                                    </tr>)
                                                 }
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            </div>
+
+                                            <button className={styles.saveCategoriesButton} onClick={() => updateVendorCategories(null)}>Save {updatingVendorCategories && <ButtonLoadingIcon />}</button>
+                                        </>
+                                    }
+
+                                    <table className={styles.currentCategoriesList}>
+                                        <tbody>
+                                            {
+                                                currentVendorCategories.map((item, index) => <tr key={index}>
+                                                    <td>{item.category}</td>
+                                                    <td onClick={() => deleteCategoryFromCategoriesList(item)}>Delete</td>
+                                                    <td>{`Added by: ${item?.addedBy?.name}`}</td>
+                                                </tr>)
+                                            }
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </Accordion>
+                            </div>
+                        </Accordion>
 
-                            <Accordion defaultOpen={true} title={"Due Diligence"}>
-                                <div className={styles.dueDiligenceView}>
-                                    <div className={styles.ddCheckDiv}>
-                                        <h5>Company Registration</h5>
+                        <Accordion defaultOpen={true} title={"Due Diligence"}>
+                            <div className={styles.dueDiligenceView}>
+                                <div className={styles.ddCheckDiv}>
+                                    <h5>Company Registration</h5>
 
-                                        {
-                                            approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
-                                        }
-                                        
-                                    </div>
+                                    {
+                                        approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                    }
 
-                                    <div className={styles.ddCheckDiv}>
-                                        <h5>Internet Check</h5>
+                                </div>
 
-                                        {
-                                            approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.internetCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
-                                        }
-                                        
-                                    </div>
+                                <div className={styles.ddCheckDiv}>
+                                    <h5>Internet Check</h5>
 
-                                    <div className={styles.ddCheckDiv}>
-                                        <h5>Reference Check</h5>
+                                    {
+                                        approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.internetCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                    }
 
-                                        {
-                                            approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
-                                        }
-                                        
-                                    </div>
+                                </div>
 
-                                    <div className={styles.directorsAndShareholdersDiv}>
-                                        <h5>Directors and Shareholders</h5>
+                                <div className={styles.ddCheckDiv}>
+                                    <h5>Reference Check</h5>
 
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <td>
-                                                        Type
-                                                    </td>
+                                    {
+                                        approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                    }
 
-                                                    <td>
-                                                        Title
-                                                    </td>
+                                </div>
 
-                                                    <td>
-                                                        Name
-                                                    </td>
+                                <div className={styles.directorsAndShareholdersDiv}>
+                                    <h5>Directors and Shareholders</h5>
 
-                                                    <td>
-                                                        Role (Director/Shareholder)
-                                                    </td>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <td>
+                                                    Type
+                                                </td>
 
-                                                    <td>
-                                                        Findings
-                                                    </td>
-                                                </tr>
-                                            </thead>
+                                                <td>
+                                                    Title
+                                                </td>
 
-                                            <tbody>
-                                                {
-                                                    approvalData.dueDiligence.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <tr className={index/2 == 0 && styles.darkBackground}  key={index}>
+                                                <td>
+                                                    Name
+                                                </td>
+
+                                                <td>
+                                                    Role (Director/Shareholder)
+                                                </td>
+
+                                                <td>
+                                                    Findings
+                                                </td>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {
+                                                approvalData.dueDiligence.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <tr className={index / 2 == 0 && styles.darkBackground} key={index}>
                                                     <td>
                                                         {item.entityType === "individual" ? "Individual" : "Company"}
                                                     </td>
@@ -1020,82 +1039,82 @@ const StageE = ({approvalData, formPages, vendorID}) => {
                                                         {
                                                             item.finding[0].url && <Link href={item.finding[0].url} target="_blank">VIEW FINDINGS</Link>
                                                         }
-                                                        
+
                                                     </td>
                                                 </tr>)
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <p className={styles.checksDoneByText}>Checks carried out by - <span>{approvalData.flags.approvals.level3.approver.name}</span></p>
+                                            }
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </Accordion>
-                        </div>
 
-                        <div className={styles.approvalContent}>
-                            <Accordion defaultOpen={true} title={""} noHeader={true}>
-                                <div className={styles.checksDiv}>
-                                    <div>
-                                        <h5>Contractor’s CAC registration check</h5>
+                                <p className={styles.checksDoneByText}>Checks carried out by - <span>{approvalData.flags.approvals.level3.approver.name}</span></p>
+                            </div>
+                        </Accordion>
+                    </div>
 
-                                        {
-                                            approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
-                                        }
+                    <div className={styles.approvalContent}>
+                        <Accordion defaultOpen={true} title={""} noHeader={true}>
+                            <div className={styles.checksDiv}>
+                                <div>
+                                    <h5>Contractor’s CAC registration check</h5>
 
-                                        
-                                    </div>
+                                    {
+                                        approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                    }
 
-                                    <Image src={dueDiligenceApprovals.registrationCheck  ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("registrationCheck")} />
+
                                 </div>
-                            </Accordion>
 
-                            <Accordion defaultOpen={true} title={""} noHeader={true}>
-                                <div className={styles.checksDiv}>
-                                    <div>
-                                        <h5>Internet search on the Contractor</h5>
+                                <Image src={dueDiligenceApprovals.registrationCheck ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("registrationCheck")} />
+                            </div>
+                        </Accordion>
 
-                                        {
-                                            approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData.dueDiligence.internetCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
-                                        }
+                        <Accordion defaultOpen={true} title={""} noHeader={true}>
+                            <div className={styles.checksDiv}>
+                                <div>
+                                    <h5>Internet search on the Contractor</h5>
 
-                                        
-                                    </div>
-                                    <Image src={dueDiligenceApprovals.internetCheck ?   checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("internetCheck")} />
+                                    {
+                                        approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData.dueDiligence.internetCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                    }
+
+
                                 </div>
-                            </Accordion>
+                                <Image src={dueDiligenceApprovals.internetCheck ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("internetCheck")} />
+                            </div>
+                        </Accordion>
 
-                            <Accordion defaultOpen={true} title={""} noHeader={true}>
-                                <div className={styles.checksDiv}>
-                                    <div>
-                                        <h5>Search on current (and any former) Directors and Shareholders</h5>
+                        <Accordion defaultOpen={true} title={""} noHeader={true}>
+                            <div className={styles.checksDiv}>
+                                <div>
+                                    <h5>Search on current (and any former) Directors and Shareholders</h5>
 
-                                        {
-                                            approvalData?.dueDiligence?.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <div key={index}>
-                                                <p>{`Person ${index+1} : ${item.companyName ? item.companyName : item.firstName + " " + item.lastName} - ${item.role === "Both" ? "Director & Shareholder" : item.role}`}</p>
-                                                <Link href={approvalData?.dueDiligence?.exposedPersons[index]?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
-                                            </div>)
-                                        }
-                                    </div>
-                                    <Image src={dueDiligenceApprovals.exposedPersonsCheck  ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("exposedPersonsCheck")} />
+                                    {
+                                        approvalData?.dueDiligence?.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <div key={index}>
+                                            <p>{`Person ${index + 1} : ${item.companyName ? item.companyName : item.firstName + " " + item.lastName} - ${item.role === "Both" ? "Director & Shareholder" : item.role}`}</p>
+                                            <Link href={approvalData?.dueDiligence?.exposedPersons[index]?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        </div>)
+                                    }
                                 </div>
-                            </Accordion>
+                                <Image src={dueDiligenceApprovals.exposedPersonsCheck ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("exposedPersonsCheck")} />
+                            </div>
+                        </Accordion>
 
-                            <Accordion defaultOpen={true} title={""} noHeader={true}>
-                                <div className={styles.checksDiv}>
-                                    <div>
-                                        <h5>Reference check</h5>
+                        <Accordion defaultOpen={true} title={""} noHeader={true}>
+                            <div className={styles.checksDiv}>
+                                <div>
+                                    <h5>Reference check</h5>
 
-                                        {
-                                            approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
-                                        }
+                                    {
+                                        approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                    }
 
-                                        
-                                    </div>
-                                    <Image src={dueDiligenceApprovals.referenceCheck ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("referenceCheck")} />
+
                                 </div>
-                            </Accordion>
-                        </div>
+                                <Image src={dueDiligenceApprovals.referenceCheck ? checkedBox : uncheckedBox} alt="approval checkbox" width={30} height={30} onClick={() => toggleDDApproval("referenceCheck")} />
+                            </div>
+                        </Accordion>
+                    </div>
 
 
                 </>
@@ -1103,7 +1122,7 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
             {
                 !showSendToEA && !applicationProcessed && <div className={styles.approvalActionsDiv}>
-                <h5>Actions</h5>
+                    <h5>Actions</h5>
 
                     {
                         !validatedAllSections() && <a onClick={() => returnToContractsOfficer()}>RETURN TO CO</a>
@@ -1119,48 +1138,48 @@ const StageE = ({approvalData, formPages, vendorID}) => {
 
             {
                 showSendToEA && !applicationProcessed && <div className={styles.takeToExecutiveApproverDiv}>
-                <h3>Remark for Executive Approver (optional)</h3>
+                    <h3>Remark for Executive Approver (optional)</h3>
 
-                <div>
-                    <textarea placeholder="Type in your remark for the executive approver here" rows={5} onChange={event => setHODRemarkForEA(event.target.value)}></textarea>
+                    <div>
+                        <textarea placeholder="Type in your remark for the executive approver here" rows={5} onChange={event => setHODRemarkForEA(event.target.value)}></textarea>
+                    </div>
+
+                    <div>
+                        <button onClick={() => setShowSendToEA(false)}>CANCEL</button>
+
+                        <button onClick={() => processToStageF()}>SUBMIT</button>
+                    </div>
                 </div>
-
-                <div>
-                    <button onClick={() => setShowSendToEA(false)}>CANCEL</button>
-
-                    <button onClick={() => processToStageF()}>SUBMIT</button>
-                </div>
-            </div>
             }
 
             {
                 showApprovalActions && !applicationProcessed && <div className={styles.approvalActionsDiv}>
-                <h4>Approval Actions</h4>
-
-                {
-                    (unaprovedSectionsWithNoRemarks.length > 0 && !applicationProcessed) && <div className={styles.unapprovedSectionsDiv}>
-                    <p>The following unapproved sections have no notes for the vendor. Vendor notes are required to inform the vendor what they need to add/modify in the relevant section:</p>
+                    <h4>Approval Actions</h4>
 
                     {
-                        unaprovedSectionsWithNoRemarks.map((item, index) => <p key={index}>{item}</p>)
+                        (unaprovedSectionsWithNoRemarks.length > 0 && !applicationProcessed) && <div className={styles.unapprovedSectionsDiv}>
+                            <p>The following unapproved sections have no notes for the vendor. Vendor notes are required to inform the vendor what they need to add/modify in the relevant section:</p>
+
+                            {
+                                unaprovedSectionsWithNoRemarks.map((item, index) => <p key={index}>{item}</p>)
+                            }
+
+
+                        </div>
                     }
 
-                    
-                </div>
-                }
 
 
 
-                
                 </div>
             }
 
             {
-                    applicationProcessed && <div className={styles.allApprovedDiv}>
-                        <p>Success!</p>
+                applicationProcessed && <div className={styles.allApprovedDiv}>
+                    <p>Success!</p>
 
-                        <p>All approval actions have been completed successfully. Redirecting you to the approvals list.</p>
-                    </div>
+                    <p>All approval actions have been completed successfully. Redirecting you to the approvals list.</p>
+                </div>
             }
         </div>
     )
