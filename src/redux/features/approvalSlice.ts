@@ -1,5 +1,13 @@
 import { staffApi } from "../apis/staffApi";
 
+// Helper function to sort by company name
+const sortByCompanyName = (array: any[]) => {
+    if (!Array.isArray(array)) return array;
+    return [...array].sort((a, b) =>
+        String(a.companyName || '').toLowerCase().localeCompare(String(b.companyName || '').toLowerCase())
+    );
+};
+
 export const approvalSlice = staffApi.injectEndpoints({
     endpoints: (builder) => ({
         /* =========================
@@ -18,6 +26,18 @@ export const approvalSlice = staffApi.injectEndpoints({
             query: () => ({ url: `companies/approvals/all`, method: 'GET' }),
             providesTags: ["All Companies"],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
+            transformResponse: (response: any) => {
+                if (response?.data?.companies) {
+                    return {
+                        ...response,
+                        data: {
+                            ...response.data,
+                            companies: sortByCompanyName(response.data.companies)
+                        }
+                    };
+                }
+                return response;
+            },
         }),
 
         // GET /companies/approvals/:tab
@@ -25,6 +45,18 @@ export const approvalSlice = staffApi.injectEndpoints({
             query: ({ tab }) => ({ url: `companies/approvals/${tab}`, method: 'GET' }),
             providesTags: (r, e, arg) => [{ type: 'Tab', id: arg.tab }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
+            transformResponse: (response: any) => {
+                if (response?.data?.companies) {
+                    return {
+                        ...response,
+                        data: {
+                            ...response.data,
+                            companies: sortByCompanyName(response.data.companies)
+                        }
+                    };
+                }
+                return response;
+            },
         }),
 
         // GET /companies/invites?filter=... (modified for client-side filtering)
@@ -35,6 +67,18 @@ export const approvalSlice = staffApi.injectEndpoints({
             }),
             providesTags: (r, e, arg) => [{ type: 'Tab', id: 'invited:' + arg.filter }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
+            transformResponse: (response: any) => {
+                if (response?.data?.invites) {
+                    return {
+                        ...response,
+                        data: {
+                            ...response.data,
+                            invites: sortByCompanyName(response.data.invites)
+                        }
+                    };
+                }
+                return response;
+            },
         }),
 
         // GET /companies/search?query=...&filter=...
@@ -46,6 +90,18 @@ export const approvalSlice = staffApi.injectEndpoints({
             providesTags: (r, e, arg) => [{ type: 'Search', id: `${arg.query}-${arg.filter}` }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
             keepUnusedDataFor: 60,
+            transformResponse: (response: any) => {
+                if (response?.data?.companies) {
+                    return {
+                        ...response,
+                        data: {
+                            ...response.data,
+                            companies: sortByCompanyName(response.data.companies)
+                        }
+                    };
+                }
+                return response;
+            },
         }),
 
         /* =========================
