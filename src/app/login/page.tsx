@@ -1,15 +1,15 @@
 'use client'
-import Image from "next/image"
-import styles from "./styles/styles.module.css"
 import logo from "@/assets/images/logo.png"
-import { useEffect, useState } from "react"
-import ErrorText from "@/components/errorText"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { postProtected } from "@/requests/post"
+import ErrorText from "@/components/errorText"
 import { useAppDispatch } from "@/redux/hooks"
 import { setUserData } from "@/redux/reducers/user"
-import { useRouter } from "next/navigation"
+import { postProtected } from "@/requests/post"
+import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import styles from "./styles/styles.module.css"
 
 const Login = () => {
     const [loginDetails, setLoginDetails] = useState({
@@ -20,19 +20,19 @@ const Login = () => {
     const [loggingIn, setLoggingIn] = useState(false)
     const router = useRouter()
     const dispatch = useAppDispatch()
- 
-   
-    
 
-    console.log({loginDetails});
+
+
+
+    console.log({ loginDetails });
 
     useEffect(() => {
-        console.log({env: process.env.NEXT_PUBLIC_BACKEND_URL});
+        console.log({ env: process.env.NEXT_PUBLIC_BACKEND_URL });
     }, [process.env])
 
-    const updateLoginDetails = ({field, value} : {field: any, value: any}) => {
-        console.log({field, value});
-        let tempLoginDetals = {...loginDetails}
+    const updateLoginDetails = ({ field, value }: { field: any, value: any }) => {
+        console.log({ field, value });
+        let tempLoginDetals = { ...loginDetails }
         tempLoginDetals[field] = value
         setLoginDetails(tempLoginDetals)
     }
@@ -51,10 +51,10 @@ const Login = () => {
     const logUserInWithEmailAndPassword = async () => {
         try {
             setLoggingIn(true)
-            const loginRequest = await postProtected("auth/login", {loginDetails}, null)
+            const loginRequest = await postProtected("auth/login", { loginDetails }, null)
 
             if (loginRequest.status === "OK") {
-                console.log({loginRequestUser: loginRequest.data.user});
+                console.log({ loginRequestUser: loginRequest.data.user });
                 //@ts-ignore
                 dispatch(setUserData({ user: loginRequest.data.user }));
                 router.push("contractor/dashboard")
@@ -64,14 +64,16 @@ const Login = () => {
             }
 
         } catch (error) {
-            console.log({error});
+            console.log({ error });
+            setLoggingIn(false)
+            setErrorText(error.message);
         }
     }
 
     return (
         <div className={styles.login}>
             <div>
-                <Image src={logo} alt="logo" width={70} height={89} style={{marginBottom: "1.5rem"}}/>
+                <Image src={logo} alt="logo" width={70} height={89} style={{ marginBottom: "1.5rem" }} />
 
                 <h5>Amni&#39;s Contractor Registration Portal Page.</h5>
 
@@ -79,15 +81,15 @@ const Login = () => {
                     <h3>Log In</h3>
 
                     {
-                        errorText && <ErrorText text={errorText}/>
+                        errorText && <ErrorText text={errorText} />
 
                     }
                     <form onSubmit={event => {
                         event.preventDefault()
                         validateLoginDetails()
-                    }} onChange={(event: any) => updateLoginDetails({field: event.target.name, value: event.target.value})}>
+                    }} onChange={(event: any) => updateLoginDetails({ field: event.target.name, value: event.target.value })}>
                         <input placeholder="Email" name="email" />
-                        <input placeholder="Password" name="password" type="password"/>
+                        <input placeholder="Password" name="password" type="password" />
 
                         <div>
                             <div>

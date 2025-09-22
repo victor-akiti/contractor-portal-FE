@@ -106,6 +106,7 @@
   padding-left: 1.5rem;
   padding-right: 1.5rem;
   position: relative;
+  height: 5rem;
 }
 .layout nav > div {
   display: flex;
@@ -138,20 +139,40 @@
 }
 .layout .content {
   display: flex;
-  padding: 1.5rem;
-  padding-top: 3rem;
+  /* padding: 0 1.5rem; */
+  /* padding-bottom: 1.5rem; */
+  height: calc(100vh - 5rem);
+  /* border: red solid 8px; */
 }
 .layout .content .left {
+  padding-top: 2rem;
   width: 16%;
+  max-width: 20rem;
+  min-width: max-content;
   display: flex;
   flex-direction: column;
-  padding-right: 20px;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  background-color: #fefefe;
+  box-shadow: inset -1px 0px 0px 0px rgba(0, 0, 0, 0.1);
 }
 .layout .content .left a {
-  padding: 0.5rem 1rem;
+  padding: 1rem;
   color: #e26b09;
-  margin-top: 5px;
-  margin-bottom: 5px;
+
+  margin: 5px 0;
+  /* margin-bottom: 5px; */
+}
+.layout .content .left a:hover {
+  background-color: #e26b0920;
+  border-radius: 5px;
+  /* color: white; */
+}
+.layout .content .left a.active {
+  color: #f4f4f4;
+  border-radius: 5px;
+  background-color: #e26b09;
+  font-weight: 600;
 }
 .layout .content .left hr {
   margin-top: 0.5rem;
@@ -162,5 +183,10 @@
   border-top-color: rgb(224, 224, 224);
 }
 .layout .content .right {
+  padding-top: 2rem;
   width: 80%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }/*# sourceMappingURL=styles.module.css.map */
