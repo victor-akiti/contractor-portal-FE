@@ -520,13 +520,12 @@ export default function ApprovalsContainer() {
 
   const capitalizeWord = (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
 
-  const sortListAlphabetically = (list: any[]) => list.sort((a, b) => {
-    if (a?.companyName && b?.companyName) {
-      const A = a.companyName.toUpperCase(), B = b.companyName.toUpperCase()
-      if (A < B) return -1; if (A > B) return 1
-    }
-    return 0
-  })
+  const sortListAlphabetically = (list: any[]) =>
+    list.sort((a, b) => {
+      const nameA = String(a?.companyName || '').toLowerCase()
+      const nameB = String(b?.companyName || '').toLowerCase()
+      return nameA.localeCompare(nameB)
+    })
 
   const getNextStage = (companyRecord: any) => {
     if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) return "B"
@@ -639,8 +638,16 @@ export default function ApprovalsContainer() {
     else toggleDateSort()
   }
 
-  const sortArrayByName = (array: any[]) => array.sort((a, b) => String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase() ? 1 : -1)
-  const sortArrayByNameDescending = (array: any[]) => array.sort((a, b) => String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase() ? -1 : 1)
+  const sortArrayByName = (array: any[] = []) =>
+    [...array].sort((a, b) =>
+      String(a.companyName || '').toLowerCase().localeCompare(String(b.companyName || '').toLowerCase())
+    )
+
+  const sortArrayByNameDescending = (array: any[] = []) => {
+    return [...array]?.sort((a, b) =>
+      String(b.companyName || '').toLowerCase().localeCompare(String(a.companyName || '').toLowerCase())
+    )
+  }
 
   const toggleNameSort = () => {
     console.log({ currentSort })
