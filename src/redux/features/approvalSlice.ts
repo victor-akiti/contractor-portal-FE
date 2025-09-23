@@ -1,11 +1,16 @@
 import { staffApi } from "../apis/staffApi";
 
-// Helper function to sort by company name
+// Helper function to sort by company name with needsAttention first
 const sortByCompanyName = (array: any[]) => {
     if (!Array.isArray(array)) return array;
-    return [...array].sort((a, b) =>
-        String(a.companyName || '').toLowerCase().localeCompare(String(b.companyName || '').toLowerCase())
-    );
+    return [...array].sort((a, b) => {
+        // First, sort by needsAttention (true comes first)
+        if (a.needsAttention && !b.needsAttention) return -1;
+        if (!a.needsAttention && b.needsAttention) return 1;
+
+        // Within each group (needsAttention or not), sort alphabetically by company name
+        return String(a.companyName || '').toLowerCase().localeCompare(String(b.companyName || '').toLowerCase());
+    });
 };
 
 export const approvalSlice = staffApi.injectEndpoints({
