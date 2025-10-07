@@ -41,6 +41,7 @@ import ExportModal from "./modals/ExportModal"
 import RevertToL2Modal from "./modals/RevertToL2Modal"
 
 // Extracted Rows
+import { toast } from "react-toastify"
 import CompletedL2Row from "./rows/CompletedL2Row"
 import InProgressRow from "./rows/InProgressRow"
 import InvitedContractorRow from "./rows/InvitedContractorRow"
@@ -231,82 +232,92 @@ export default function ApprovalsContainer() {
     }
   }, [countsData])
 
-  // Update local state when RTK Query data changes - maintains backward compatibility
+  // ✅ Update fixedApprovals for all tabs as data becomes available (even if not opened)
   useEffect(() => {
-    if (activeTab === "invited" && invitesDataRTK?.data?.invites) {
-      if (invitesLoading || invitesFetching) return;  // Avoid updating state while data is still loading
+    // Handle invites data
+    if (invitesDataRTK?.data?.invites && !invitesLoading && !invitesFetching) {
+      const allInvites = invitesDataRTK.data.invites;
+      setFixedApprovals(prev => ({ ...prev, invites: allInvites }));
 
-      const allInvites = invitesDataRTK.data.invites
-
-      // Store complete dataset in fixedApprovals for filtering
-      setFixedApprovals(prev => ({ ...prev, invites: allInvites }))
-
-      // Apply current filter to the complete dataset
-      const temp = { ...approvals }
+      // Keep backward compatibility for the Invited tab
+      const temp = { ...approvals };
       if (activeFilter === "All") {
-        temp.invites = allInvites
+        temp.invites = allInvites;
       } else if (activeFilter === "Used") {
-        temp.invites = allInvites.filter((i: any) => i.used)
+        temp.invites = allInvites.filter((i: any) => i.used);
       } else if (activeFilter === "Expired") {
-        const expired: any[] = []
+        const expired: any[] = [];
         for (const element of allInvites || []) {
-          const currentDate = new Date()
-          const expiryDate = element?.expiry?._seconds ? new Date(element.expiry._seconds * 1000) : new Date(element.expiry)
-          if ((currentDate.getTime() > expiryDate.getTime()) && !element.used) expired.push(element)
+          const currentDate = new Date();
+          const expiryDate = element?.expiry?._seconds
+            ? new Date(element.expiry._seconds * 1000)
+            : new Date(element.expiry);
+          if (currentDate.getTime() > expiryDate.getTime() && !element.used)
+            expired.push(element);
         }
-        temp.invites = expired
+        temp.invites = expired;
       } else if (activeFilter === "Active") {
-        const active: any[] = []
+        const active: any[] = [];
         for (const element of allInvites || []) {
-          const currentDate = new Date()
-          const expiryDate = element?.expiry?._seconds ? new Date(element.expiry._seconds * 1000) : new Date(element.expiry)
-          if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) active.push(element)
+          const currentDate = new Date();
+          const expiryDate = element?.expiry?._seconds
+            ? new Date(element.expiry._seconds * 1000)
+            : new Date(element.expiry);
+          if (currentDate.getTime() < expiryDate.getTime() && !element.used)
+            active.push(element);
         }
-        temp.invites = active
+        temp.invites = active;
       } else if (activeFilter === "Archived") {
-        // Add archived filter logic if needed
-        temp.invites = allInvites.filter((i: any) => i.archived)
+        temp.invites = allInvites.filter((i: any) => i.archived);
       }
 
-      // Update tabData for backward compatibility
       setTabData(prev => ({
         ...prev,
-        [activeTab]: {
+        invited: {
           companies: [],
           invites: temp.invites,
-          loaded: true
-        }
-      }))
+          loaded: true,
+        },
+      }));
 
-      setApprovals(temp)
+      setApprovals(temp);
+    }
+  }, [invitesDataRTK, invitesLoading, invitesFetching, activeFilter]);
 
-    } else if (activeTab !== "invited" && tabDataRTK?.data?.companies) {
-      if (tabLoading || tabFetching) return;  // Avoid updating state while data is still loading
+  // ✅ Update fixedApprovals for all company tabs (background population)
+  useEffect(() => {
+    if (tabDataRTK?.data?.companies && !tabLoading && !tabFetching) {
+      const companies = tabDataRTK.data.companies;
 
-      const companies = tabDataRTK.data.companies
+      const updateKeyMap: Record<string, string> = {
+        "pending-l2": "pendingL2",
+        "completed-l2": "completedL2",
+        "l3": "l3",
+        "in-progress": "inProgress",
+        "returned": "returned",
+        "park-requests": "parkRequested",
+      };
 
-      setTabData(prev => ({
-        ...prev,
-        [activeTab]: {
-          companies: companies,
-          invites: [],
-          loaded: true
-        }
-      }))
-
-      const updateKey = activeTab === "pending-l2" ? "pendingL2" :
-        activeTab === "completed-l2" ? "completedL2" :
-          activeTab === "l3" ? "l3" :
-            activeTab === "in-progress" ? "inProgress" :
-              activeTab === "returned" ? "returned" :
-                activeTab === "park-requests" ? "parkRequested" : null
-
+      const updateKey = updateKeyMap[activeTab];
       if (updateKey) {
-        setApprovals(prev => ({ ...prev, [updateKey]: companies }))
-        setFixedApprovals(prev => ({ ...prev, [updateKey]: companies }))
+        // Always update fixedApprovals regardless of tab visibility
+        setFixedApprovals(prev => ({ ...prev, [updateKey]: companies }));
+
+        // Maintain backward compatibility for current tab display
+        setTabData(prev => ({
+          ...prev,
+          [activeTab]: {
+            companies: companies,
+            invites: [],
+            loaded: true,
+          },
+        }));
+
+        setApprovals(prev => ({ ...prev, [updateKey]: companies }));
       }
     }
-  }, [activeTab, activeFilter, tabDataRTK, invitesDataRTK])
+  }, [tabDataRTK, tabLoading, tabFetching, activeTab]);
+
 
   const setInviteToArchiveObject = (invite: any) => { setInviteToArchive(invite) }
 
@@ -816,73 +827,120 @@ export default function ApprovalsContainer() {
   }
 
   const exportInvitedVendors = () => {
-    let temp = [...vendorsToExport]
+    let temp = [...vendorsToExport];
+
     if (exportOptions.selectedInviteType === "all") {
-      temp = fixedApprovals.invites
+      temp = fixedApprovals.invites;
     } else if (exportOptions.selectedInviteType === "active") {
-      const active: any[] = []
+      const active: any[] = [];
       for (const element of fixedApprovals.invites || []) {
-        const currentDate = new Date()
-        const expiryDate = element?.expiry?._seconds ? new Date(element.expiry._seconds * 1000) : new Date(element.expiry)
-        if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) active.push(element)
+        const currentDate = new Date();
+        const expiryDate = element?.expiry?._seconds
+          ? new Date(element.expiry._seconds * 1000)
+          : new Date(element.expiry);
+        if (currentDate.getTime() < expiryDate.getTime() && !element.used)
+          active.push(element);
       }
-      temp = active
+      temp = active;
     } else if (exportOptions.selectedInviteType === "used") {
-      temp = fixedApprovals.invites.filter((i: any) => i.used)
+      temp = fixedApprovals.invites.filter((i: any) => i.used);
     } else if (exportOptions.selectedInviteType === "expired") {
-      const expired: any[] = []
+      const expired: any[] = [];
       for (const element of fixedApprovals.invites || []) {
-        const currentDate = new Date()
-        const expiryDate = element?.expiry?._seconds ? new Date(element.expiry._seconds * 1000) : new Date(element.expiry)
-        if ((currentDate.getTime() > expiryDate.getTime()) && !element.used) expired.push(element)
+        const currentDate = new Date();
+        const expiryDate = element?.expiry?._seconds
+          ? new Date(element.expiry._seconds * 1000)
+          : new Date(element.expiry);
+        if (currentDate.getTime() > expiryDate.getTime() && !element.used)
+          expired.push(element);
       }
-      temp = expired
+      temp = expired;
     } else {
-      temp = []
+      temp = [];
     }
-    setVendorsToExport(temp)
-    exportExcelFile(temp)
-  }
+
+    // 🚨 New: prevent exporting empty data
+    if (!temp || temp.length === 0) {
+      toast.info("No invite records available to export. Try loading data or adjusting your filter.");
+      return;
+    }
+
+    setVendorsToExport(temp);
+    exportExcelFile(temp);
+  };
+
 
   const exportRegisteredVendors = () => {
-    let temp: any[] = []
+    let temp: any[] = [];
+
     if (exportOptions.exportType === "select") {
-      temp = selectedVendorsToExport
+      temp = selectedVendorsToExport;
     } else {
       if (exportOptions.selectedStages.includes("inProgress")) {
-        temp = [...temp, ...fixedApprovals.inProgress.map((i: any) => ({ ...i, stage: "In Progress" }))]
+        temp = [...temp, ...fixedApprovals.inProgress.map((i: any) => ({ ...i, stage: "In Progress" }))];
       }
       if (exportOptions.selectedStages.includes("l3")) {
-        temp = [...temp, ...fixedApprovals.l3.map((i: any) => ({ ...i, stage: "L3" }))]
+        temp = [...temp, ...fixedApprovals.l3.map((i: any) => ({ ...i, stage: "L3" }))];
       }
       if (exportOptions.selectedStages.includes("l2")) {
         if (exportOptions.l2Stages.includes("returned")) {
-          temp = [...temp, ...fixedApprovals.returned.map((i: any) => ({ ...i, l2Stage: "Returned", stage: "L2" }))]
+          temp = [
+            ...temp,
+            ...fixedApprovals.returned.map((i: any) => ({
+              ...i,
+              l2Stage: "Returned",
+              stage: "L2",
+              portalAdminName: i.contractorDetails?.name,
+              portalAdminEmail: i.contractorDetails?.email,
+              portalAdminPhone:
+                typeof i.contractorDetails?.phone === "string"
+                  ? i.contractorDetails?.phone
+                  : i.contractorDetails?.phone?.internationalNumber ||
+                  i.contractorDetails?.phone?.nationalNumber,
+            })),
+          ];
         }
         if (exportOptions.l2Stages.includes("completed")) {
-          temp = [...temp, ...fixedApprovals.completedL2.map((i: any) => ({ ...i, l2Stage: "Completed", stage: "L2" }))]
+          temp = [...temp, ...fixedApprovals.completedL2.map((i: any) => ({ ...i, l2Stage: "Completed", stage: "L2" }))];
         }
         if (exportOptions.l2Stages.includes("pending")) {
           fixedApprovals.pendingL2?.forEach((item: any) => {
-            if (exportOptions.pendingL2Stages.includes("All")) temp.push({ ...item, l2PendingStage: getL2PendingStage(item.flags), l2Stage: "Pending", stage: "L2" })
+            if (exportOptions.pendingL2Stages.includes("All"))
+              temp.push({ ...item, l2PendingStage: getL2PendingStage(item.flags), l2Stage: "Pending", stage: "L2" });
             else {
-              const L = item.flags?.approvals?.level
-              if (exportOptions.pendingL2Stages.includes("A") && (!L)) temp.push({ ...item, l2PendingStage: "A", l2Stage: "Pending", stage: "L2" })
-              if (exportOptions.pendingL2Stages.includes("B") && (L === 1)) temp.push({ ...item, l2PendingStage: "B", l2Stage: "Pending", stage: "L2" })
-              if (exportOptions.pendingL2Stages.includes("C") && (L === 2)) temp.push({ ...item, l2PendingStage: "C", l2Stage: "Pending", stage: "L2" })
-              if (exportOptions.pendingL2Stages.includes("D") && (L === 3)) temp.push({ ...item, l2PendingStage: "D", l2Stage: "Pending", stage: "L2" })
-              if (exportOptions.pendingL2Stages.includes("E") && (L === 4)) temp.push({ ...item, l2PendingStage: "E", l2Stage: "Pending", stage: "L2" })
-              if (exportOptions.pendingL2Stages.includes("F") && (L === 5)) temp.push({ ...item, l2PendingStage: "F", l2Stage: "Pending", stage: "L2" })
-              if (exportOptions.pendingL2Stages.includes("G") && (L === 6)) temp.push({ ...item, l2PendingStage: "G", l2Stage: "Pending", stage: "L2" })
-              if (exportOptions.pendingL2Stages.includes("H") && (L === 7)) temp.push({ ...item, l2PendingStage: "H", l2Stage: "Pending", stage: "L2" })
+              const L = item.flags?.approvals?.level;
+              if (exportOptions.pendingL2Stages.includes("A") && !L)
+                temp.push({ ...item, l2PendingStage: "A", l2Stage: "Pending", stage: "L2" });
+              if (exportOptions.pendingL2Stages.includes("B") && L === 1)
+                temp.push({ ...item, l2PendingStage: "B", l2Stage: "Pending", stage: "L2" });
+              if (exportOptions.pendingL2Stages.includes("C") && L === 2)
+                temp.push({ ...item, l2PendingStage: "C", l2Stage: "Pending", stage: "L2" });
+              if (exportOptions.pendingL2Stages.includes("D") && L === 3)
+                temp.push({ ...item, l2PendingStage: "D", l2Stage: "Pending", stage: "L2" });
+              if (exportOptions.pendingL2Stages.includes("E") && L === 4)
+                temp.push({ ...item, l2PendingStage: "E", l2Stage: "Pending", stage: "L2" });
+              if (exportOptions.pendingL2Stages.includes("F") && L === 5)
+                temp.push({ ...item, l2PendingStage: "F", l2Stage: "Pending", stage: "L2" });
+              if (exportOptions.pendingL2Stages.includes("G") && L === 6)
+                temp.push({ ...item, l2PendingStage: "G", l2Stage: "Pending", stage: "L2" });
+              if (exportOptions.pendingL2Stages.includes("H") && L === 7)
+                temp.push({ ...item, l2PendingStage: "H", l2Stage: "Pending", stage: "L2" });
             }
-          })
+          });
         }
       }
     }
-    temp = sortListAlphabetically(temp)
-    exportRegisteredVendorsToExcel(temp)
-  }
+
+    // 🚨 New: prevent exporting empty data
+    if (!temp || temp.length === 0) {
+      toast.info("No vendor records available to export. Please ensure the data is loaded.");
+      return;
+    }
+
+    temp = sortListAlphabetically(temp);
+    exportRegisteredVendorsToExcel(temp);
+  };
+
 
   const exportRegisteredVendorsToExcel = (exportData: any[]) => {
     const data: any = [{
@@ -893,6 +951,10 @@ export default function ApprovalsContainer() {
         { label: "L2 Stage", value: "l2Stage" },
         { label: "Pending L2 Stage", value: "l2PendingStage" },
         { label: "Last Updated", value: (row: any) => new Date(row.updatedAt) },
+        // Vendor Portal Admin details
+        { label: "Portal Admin Name", value: "portalAdminName" },
+        { label: "Portal Admin Email", value: "portalAdminEmail" },
+        { label: "Portal Admin Phone", value: "portalAdminPhone" },
       ],
       content: exportData,
     }]
@@ -960,6 +1022,8 @@ export default function ApprovalsContainer() {
   }
 
   const displayRows = useMemo(getdisplayRows, [activeTab, approvals]);
+
+  console.log({ fixedApprovals: fixedApprovals.returned })
 
   // Render
   return (
@@ -1078,7 +1142,6 @@ export default function ApprovalsContainer() {
                 <InProgressRow key={index} companyRecord={item} index={index} />
               ))}
               {activeTab === "pending-l2" && displayRows?.map((item: any, index: number) => {
-                console.log({ item })
                 return <PendingL2Row key={index} companyRecord={item} index={index} user={user} activeFilter={activeFilter} />
               })}
               {activeTab === "l3" && displayRows?.map((item: any, index: number) => (
