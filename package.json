@@ -33,6 +33,7 @@
     "react-quill": "^2.0.0",
     "react-redux": "^9.1.2",
     "react-switch": "^7.0.0",
+    "react-toastify": "^11.0.5",
     "underscore": "^1.13.6"
   },
   "devDependencies": {
