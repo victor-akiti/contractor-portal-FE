@@ -50,7 +50,7 @@ import ParkRequestedRow from "./rows/ParkRequestedRow"
 import PendingL2Row from "./rows/PendingL2Row"
 import ReturnedRow from "./rows/ReturnedRow"
 
-const approvalStages = ["A", "B", "C", "D", "E", "F", "G"];
+const approvalStages = ["A", "B", "C", "D", "E", "F",] // "G"];
 
 function useOutsideClick(
   ref: React.RefObject<HTMLElement>,
