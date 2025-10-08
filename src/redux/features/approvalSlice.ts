@@ -15,9 +15,6 @@ const sortByCompanyName = (array: any[]) => {
 
 export const approvalSlice = staffApi.injectEndpoints({
     endpoints: (builder) => ({
-        /* =========================
-           QUERIES
-           ========================= */
 
         // GET /companies/approvals/counts
         getApprovalCounts: builder.query<any, string>({
