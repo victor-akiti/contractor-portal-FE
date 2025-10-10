@@ -223,6 +223,20 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
                         field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
                     }
                 </div>
+
+            case "dropDown":
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            <p>{field.value}</p>
+                        </p>
+                    </div>
+
+                    {
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
+                </div>
             case "date":
                 return <div key={index} className={styles.fieldItem}>
                     <div>
