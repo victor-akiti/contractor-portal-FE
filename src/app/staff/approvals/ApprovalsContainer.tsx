@@ -876,10 +876,21 @@ export default function ApprovalsContainer() {
       temp = selectedVendorsToExport;
     } else {
       if (exportOptions.selectedStages.includes("inProgress")) {
-        temp = [...temp, ...fixedApprovals.inProgress.map((i: any) => ({ ...i, stage: "In Progress" }))];
+        temp = [...temp, ...fixedApprovals.inProgress.map((i: any) => ({
+          ...i, stage: "In Progress",
+          portalAdminName: i.contractorDetails?.name,
+          portalAdminEmail: i.contractorDetails?.email,
+          portalAdminPhone:
+            typeof i.contractorDetails?.phone === "string"
+              ? i.contractorDetails?.phone
+              : i.contractorDetails?.phone?.internationalNumber ||
+              i.contractorDetails?.phone?.nationalNumber,
+        }))];
       }
       if (exportOptions.selectedStages.includes("l3")) {
-        temp = [...temp, ...fixedApprovals.l3.map((i: any) => ({ ...i, stage: "L3" }))];
+        temp = [...temp, ...fixedApprovals.l3.map((i: any) => ({
+          ...i, stage: "L3",
+        }))];
       }
       if (exportOptions.selectedStages.includes("l2")) {
         if (exportOptions.l2Stages.includes("returned")) {
@@ -900,30 +911,120 @@ export default function ApprovalsContainer() {
           ];
         }
         if (exportOptions.l2Stages.includes("completed")) {
-          temp = [...temp, ...fixedApprovals.completedL2.map((i: any) => ({ ...i, l2Stage: "Completed", stage: "L2" }))];
+          temp = [...temp, ...fixedApprovals.completedL2.map((i: any) => ({
+            ...i, l2Stage: "Completed", stage: "L2",
+            portalAdminName: i.contractorDetails?.name,
+            portalAdminEmail: i.contractorDetails?.email,
+            portalAdminPhone:
+              typeof i.contractorDetails?.phone === "string"
+                ? i.contractorDetails?.phone
+                : i.contractorDetails?.phone?.internationalNumber ||
+                i.contractorDetails?.phone?.nationalNumber,
+          }))];
         }
         if (exportOptions.l2Stages.includes("pending")) {
           fixedApprovals.pendingL2?.forEach((item: any) => {
             if (exportOptions.pendingL2Stages.includes("All"))
-              temp.push({ ...item, l2PendingStage: getL2PendingStage(item.flags), l2Stage: "Pending", stage: "L2" });
+              temp.push({
+                ...item, l2PendingStage: getL2PendingStage(item.flags), l2Stage: "Pending", stage: "L2",
+                portalAdminName: item.contractorDetails?.name,
+                portalAdminEmail: item.contractorDetails?.email,
+                portalAdminPhone:
+                  typeof item.contractorDetails?.phone === "string"
+                    ? item.contractorDetails?.phone
+                    : item.contractorDetails?.phone?.internationalNumber ||
+                    item.contractorDetails?.phone?.nationalNumber,
+              });
             else {
               const L = item.flags?.approvals?.level;
               if (exportOptions.pendingL2Stages.includes("A") && !L)
-                temp.push({ ...item, l2PendingStage: "A", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "A", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
               if (exportOptions.pendingL2Stages.includes("B") && L === 1)
-                temp.push({ ...item, l2PendingStage: "B", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "B", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
               if (exportOptions.pendingL2Stages.includes("C") && L === 2)
-                temp.push({ ...item, l2PendingStage: "C", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "C", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
               if (exportOptions.pendingL2Stages.includes("D") && L === 3)
-                temp.push({ ...item, l2PendingStage: "D", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "D", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
               if (exportOptions.pendingL2Stages.includes("E") && L === 4)
-                temp.push({ ...item, l2PendingStage: "E", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "E", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
               if (exportOptions.pendingL2Stages.includes("F") && L === 5)
-                temp.push({ ...item, l2PendingStage: "F", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "F", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
               if (exportOptions.pendingL2Stages.includes("G") && L === 6)
-                temp.push({ ...item, l2PendingStage: "G", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "G", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
               if (exportOptions.pendingL2Stages.includes("H") && L === 7)
-                temp.push({ ...item, l2PendingStage: "H", l2Stage: "Pending", stage: "L2" });
+                temp.push({
+                  ...item, l2PendingStage: "H", l2Stage: "Pending", stage: "L2",
+                  portalAdminName: item.contractorDetails?.name,
+                  portalAdminEmail: item.contractorDetails?.email,
+                  portalAdminPhone:
+                    typeof item.contractorDetails?.phone === "string"
+                      ? item.contractorDetails?.phone
+                      : item.contractorDetails?.phone?.internationalNumber ||
+                      item.contractorDetails?.phone?.nationalNumber,
+                });
             }
           });
         }
