@@ -103,12 +103,12 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     const router = useRouter()
     const user = useSelector((state: any) => state.user.user)
 
-    console.log({ approvalData });
+
 
 
     useEffect(() => {
         if (approvalData.dueDiligence) {
-            console.log({ dd: approvalData.dueDiligence });
+
 
             let tempVendorData = { ...vendorDueDiligenceData }
             if (approvalData.dueDiligence.registrationCheck) {
@@ -282,7 +282,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                 setPageErrors(tempPageErrors)
             }
 
-            console.log({ saveExposedPersonRequest });
+
 
         } catch (error) {
 
@@ -298,7 +298,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     })
 
     const removeExposedPerson = async (exposedPerson, index) => {
-        console.log({ exposedPerson });
+
 
 
 
@@ -306,7 +306,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
             if (exposedPerson._id) {
                 const removeExposedPersonRequest = await postProtected(`approvals/exposed-person/remove/${vendorID}`, { exposedPersonID: exposedPerson._id }, user.role)
 
-                console.log({ removeExposedPersonRequest });
+
 
 
                 if (removeExposedPersonRequest.status !== "OK") {
@@ -321,7 +321,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
             setVendorDueDiligenceData(tempVendorData)
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
 
@@ -378,9 +378,9 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }
 
     const sectionValidated = (sectionData) => {
-        console.log({ sectionData });
 
-        console.log(Array.isArray(sectionData.finding));
+
+
 
 
         if (Array.isArray(sectionData.finding) && sectionData.finding.length === 0) {
@@ -394,7 +394,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
         return true
     }
 
-    console.log({ vendorDueDiligenceData });
+
 
     const allSectionsValidated = () => {
         let allValidated = false
@@ -447,7 +447,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
             if (processToStageERequest.status === "OK") {
                 invalidateApprovalCache();
                 // actionCompleted()
-                console.log({ processToStageERequest });
+
                 setApprovalStatus("approved")
 
                 setTimeout(() => {

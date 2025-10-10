@@ -1,17 +1,14 @@
 'use client'
 
-import styles from "./styles/styles.module.css"
-import Tabs from "@/components/tabs"
-import { useEffect, useRef, useState } from "react"
-import ManageEndUsers from "./manageEndUsers"
-import ManageJobCategories from "./manageJobCategories"
-import Modal from "@/components/modal"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { useSelector } from "react-redux"
-import { putProtected } from "@/requests/put"
+import Modal from "@/components/modal"
+import { deleteProtected } from "@/requests/delete"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
-import { deleteProtected } from "@/requests/delete"
+import { putProtected } from "@/requests/put"
+import { useEffect, useRef, useState } from "react"
+import { useSelector } from "react-redux"
+import styles from "./styles/styles.module.css"
 
 type Category = {
     category?: string,
@@ -29,15 +26,15 @@ const Tasks = () => {
     const [categoryToUpdate, setCategoryToUpdate] = useState<Category>({})
     const [categoryToDelete, setCategoryToDelete] = useState<Category>({})
     const jobCategoriesDivRef = useRef(null)
-    const user = useSelector((state:any) => state.user)
-    
+    const user = useSelector((state: any) => state.user)
+
 
     const validateNewCategoryLabel = () => {
         if (!newCategoryLabel) {
             return false
         } else {
-            console.log({categoryToUpdate});
-            
+
+
 
             if (Object.values(categoryToUpdate).length > 0) {
                 updateExistingCategory()
@@ -47,35 +44,35 @@ const Tasks = () => {
         }
     }
 
-    console.log({categoryToUpdate});
-    
+
+
 
     useEffect(() => {
-        getAllJobCategories() 
+        getAllJobCategories()
     }, [])
 
-    console.log({jobCategories});
+
     const getAllJobCategories = async () => {
         try {
             const getAllJobCategoriesRequest = await getProtected("jobCategories", user.role)
 
             if (getAllJobCategoriesRequest.status === "OK") {
-                
+
                 setJobCategories(sortJobCAtegoriesAlphabetically(getAllJobCategoriesRequest.data))
             }
 
-            console.log({getAllJobCategoriesRequest});
-            
+
+
         } catch (error) {
-            console.log({error});
+            console.error({ error });
         }
     }
 
     const sortJobCAtegoriesAlphabetically = (jobCategories) => {
-        let sortedJobCategories = [...jobCategories].sort((a,b) => a.category.localeCompare(b.category))
+        let sortedJobCategories = [...jobCategories].sort((a, b) => a.category.localeCompare(b.category))
         return sortedJobCategories
     }
-    
+
 
     const createNewCategory = async () => {
         setUpdatingCategories(true)
@@ -90,8 +87,8 @@ const Tasks = () => {
             const addNewJobCategoryRequest = await postProtected("jobCategories", newJobCategory, user.role)
 
             if (addNewJobCategoryRequest.status === "OK") {
-                console.log("CReated new category");
-                
+
+
 
                 setNewCategoryLabel("")
                 setCategoryToUpdate({})
@@ -103,20 +100,20 @@ const Tasks = () => {
                 tempJobCategories.push(addNewJobCategoryRequest.data)
                 setJobCategories(tempJobCategories)
 
-                
+
             }
 
-            console.log({addNewJobCategoryRequest});
-            
+
+
         } catch (error) {
-            console.log({error}); 
+            console.error({ error });
         }
     }
 
     const updateExistingCategory = async () => {
         setUpdatingCategories(true)
         try {
-            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, {category: newCategoryLabel}, user.role)
+            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, { category: newCategoryLabel }, user.role)
 
             if (updateExistingJobCategoryRequest.status === "OK") {
                 setUpdatingCategories(false)
@@ -127,7 +124,7 @@ const Tasks = () => {
 
                 tempJobCategories = tempJobCategories.map(jobCategory => {
                     if (jobCategory._id === categoryToUpdate._id) {
-                        return {...jobCategory, category: updateExistingJobCategoryRequest.data.category}
+                        return { ...jobCategory, category: updateExistingJobCategoryRequest.data.category }
                     } else {
                         return jobCategory
                     }
@@ -136,10 +133,10 @@ const Tasks = () => {
                 setJobCategories(tempJobCategories)
             }
 
-            console.log({updateExistingJobCategoryRequest});
-            
+
+
         } catch (error) {
-            console.log({error});
+            console.error({ error });
         }
     }
 
@@ -157,7 +154,7 @@ const Tasks = () => {
     const deleteJobCategory = async () => {
         try {
             setDeletingCategory(true)
-            const deleteJobCategoryRequest = await deleteProtected(`jobCategories/${categoryToDelete._id}`, {deleted: true}, user.role)
+            const deleteJobCategoryRequest = await deleteProtected(`jobCategories/${categoryToDelete._id}`, { deleted: true }, user.role)
 
             if (deleteJobCategoryRequest.status === "OK") {
                 let tempJobCategories = [...jobCategories]
@@ -169,10 +166,10 @@ const Tasks = () => {
                 closeDeleteCategoryModal()
             }
 
-            console.log({deleteJobCategoryRequest});
-            
+
+
         } catch (error) {
-            console.log({error});
+            console.error({ error });
         }
     }
 
@@ -181,111 +178,111 @@ const Tasks = () => {
 
             {
                 showAddCategoryModal && <Modal>
-                <div className={styles.addJobCategoryModal}>
-                    <header>
-                        <h2>Add Job Category</h2>
-                    </header>
+                    <div className={styles.addJobCategoryModal}>
+                        <header>
+                            <h2>Add Job Category</h2>
+                        </header>
 
-                    <hr />
+                        <hr />
 
-                    <div>
+                        <div>
 
-                        <label>Label</label>
+                            <label>Label</label>
 
-                        <input ref={jobCategoriesDivRef} placeholder="Job category label" onChange={event => setNewCategoryLabel(event.target.value)} value={newCategoryLabel} />
-                        <p>Your category label should be short but descriptive</p>
+                            <input ref={jobCategoriesDivRef} placeholder="Job category label" onChange={event => setNewCategoryLabel(event.target.value)} value={newCategoryLabel} />
+                            <p>Your category label should be short but descriptive</p>
 
+                        </div>
+
+                        <hr />
+
+                        <footer>
+                            <button onClick={() => closeAddCategoryModal()}>CANCEL</button>
+
+                            <button disabled={!newCategoryLabel && updatingCategories} className={(newCategoryLabel && !updatingCategories) ? styles.enabled : styles.disabled} onClick={() => validateNewCategoryLabel()} >{categoryToUpdate.category ? "UPDATE" : "ADD"} {updatingCategories && <ButtonLoadingIcon />}</button>
+                        </footer>
                     </div>
-
-                    <hr />
-                    
-                    <footer>
-                        <button onClick={() => closeAddCategoryModal()}>CANCEL</button>
-
-                        <button disabled={!newCategoryLabel && updatingCategories} className={(newCategoryLabel && !updatingCategories) ? styles.enabled : styles.disabled} onClick={() => validateNewCategoryLabel()} >{categoryToUpdate.category ? "UPDATE" : "ADD"} { updatingCategories && <ButtonLoadingIcon />}</button>
-                    </footer>
-                </div>
-            </Modal>
+                </Modal>
             }
 
 
             {
                 Object.values(categoryToDelete).length > 0 && <Modal>
-                <div className={styles.addJobCategoryModal}>
-                    <header>
-                        <h2>Delete Job Category</h2>
-                    </header>
+                    <div className={styles.addJobCategoryModal}>
+                        <header>
+                            <h2>Delete Job Category</h2>
+                        </header>
 
-                    <hr />
+                        <hr />
 
-                    <div>
+                        <div>
 
-                        <p className={styles.deleteCategoryWarning}>{`You are about to remove ${categoryToDelete.category} from the job category list. Click "CANCEL" if this is not what you want to do.`}</p>
+                            <p className={styles.deleteCategoryWarning}>{`You are about to remove ${categoryToDelete.category} from the job category list. Click "CANCEL" if this is not what you want to do.`}</p>
 
+                        </div>
+
+                        <hr />
+
+                        <footer>
+                            <button onClick={() => closeDeleteCategoryModal()}>CANCEL</button>
+
+                            <button disabled={!newCategoryLabel && updatingCategories} className={styles.enabled} onClick={() => deleteJobCategory()} >DELETE {deletingCategory && <ButtonLoadingIcon />}</button>
+                        </footer>
                     </div>
-
-                    <hr />
-                    
-                    <footer>
-                        <button onClick={() => closeDeleteCategoryModal()}>CANCEL</button>
-
-                        <button disabled={!newCategoryLabel && updatingCategories} className={styles.enabled} onClick={() => deleteJobCategory()} >DELETE { deletingCategory && <ButtonLoadingIcon />}</button>
-                    </footer>
-                </div>
-            </Modal>
+                </Modal>
             }
             <h2>Job Categories</h2>
 
 
             <div className={styles.tab}>
-            <header>
-                <h3>Manage Job Categories</h3>
+                <header>
+                    <h3>Manage Job Categories</h3>
 
-                <button onClick={() => setShowAddCategoryModal(true)}>ADD CATEGORY</button>
-
-
-            </header>
+                    <button onClick={() => setShowAddCategoryModal(true)}>ADD CATEGORY</button>
 
 
-
-            <table>
-                <thead>
-                    <tr>
-                        <td>
-                            <p>Job Category</p>
-                        </td>
+                </header>
 
 
 
-                        <td>
-                            <p>Actions</p>
-                        </td>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {
-                        jobCategories.map((item, index) => <tr className={index%2 === 0 ? styles.dark : styles.light} key={index}>
+                <table>
+                    <thead>
+                        <tr>
                             <td>
-                                <p>{item.category}</p>
+                                <p>Job Category</p>
                             </td>
 
+
+
                             <td>
-                                <a onClick={() => {
-                                    setNewCategoryLabel(item.category)
-                                    setCategoryToUpdate(item)
-                                    setShowAddCategoryModal(true)
-                                }}>UPDATE</a>
-
-                                <a onClick={() => setCategoryToDelete(item)}>DELETE</a>
+                                <p>Actions</p>
                             </td>
-                        </tr>)
-                    }
-                </tbody>
-            </table>
-        </div>
+                        </tr>
+                    </thead>
 
-            
+                    <tbody>
+                        {
+                            jobCategories.map((item, index) => <tr className={index % 2 === 0 ? styles.dark : styles.light} key={index}>
+                                <td>
+                                    <p>{item.category}</p>
+                                </td>
+
+                                <td>
+                                    <a onClick={() => {
+                                        setNewCategoryLabel(item.category)
+                                        setCategoryToUpdate(item)
+                                        setShowAddCategoryModal(true)
+                                    }}>UPDATE</a>
+
+                                    <a onClick={() => setCategoryToDelete(item)}>DELETE</a>
+                                </td>
+                            </tr>)
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+
         </div>
     )
 }

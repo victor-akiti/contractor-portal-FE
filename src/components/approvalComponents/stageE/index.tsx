@@ -32,7 +32,7 @@ function useOutsideClick(ref: any, onClickOut: () => void, deps = []) {
 }
 
 const StageE = ({ approvalData, formPages, vendorID }) => {
-    console.log({ approvalData, formPages });
+
 
 
     const [pages, setPages] = useState([])
@@ -65,20 +65,20 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
         exposedPersonsCheck: false
     })
     const containerDivRef = useRef(null)
-    console.log({ pages });
+
     const user = useSelector((state: any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
     const router = useRouter()
     const [showSendToEA, setShowSendToEA] = useState(false)
     const [hodRemarkForEA, setHODRemarkForEA] = useState("")
 
-    console.log({ user });
+
 
 
 
 
     useOutsideClick(categoriesListDivRef.current, () => {
-        console.log("out click");
+
 
         setShowCategoriesList(false)
 
@@ -129,7 +129,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
     const filterCategoriesListByQueryString = (queryString) => {
         let tempCategoriesList = [...fixedJobCategories]
-        console.log({ fixedJobCategories });
+
 
         tempCategoriesList = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
 
@@ -307,7 +307,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
     const fetchJobCategories = async () => {
         try {
             const jobCategoriesRequest = await getProtected("jobCategories", user.role)
-            console.log({ jobCategoriesRequest });
+
 
             if (jobCategoriesRequest.status === "OK") {
 
@@ -323,7 +323,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
     }
@@ -376,7 +376,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
         setExpiredCertificates(tempExpiredCertificates)
     }
 
-    console.log({ expiringCertificates, expiredCertificates });
+
 
 
     const toggleSectionApproval = (pageIndex, sectionIndex) => {
@@ -473,11 +473,11 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
 
     const addCommentToSection = (pageIndex, sectionIndex, comment) => {
-        console.log({ comment });
+
 
         let tempPages = [...pages]
 
-        console.log({ pageIndex, sectionIndex, comment });
+
 
 
 
@@ -498,7 +498,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                 date: Date.now()
             })
         }
-        console.log({ tempPages });
+
 
         setPages(tempPages)
 
@@ -519,7 +519,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
             date: Date.now()
         })
 
-        console.log({ tempNewComments });
+
 
 
         setNewComments(tempNewComments)
@@ -577,7 +577,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
 
         } catch (error) {
-            console.log({ error })
+
         }
     }
 
@@ -611,7 +611,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
                         let remarksForValidation = remarks ? remarks : newRemarks
 
-                        console.log({ remarks });
+
 
 
                         if (!remarksForValidation[element.pageTitle]) {
@@ -628,9 +628,9 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
         }
 
-        console.log({ approvedAll, unapprovedSectionsWithoutRemarks });
 
-        console.log({ newRemarks });
+
+
 
 
 
@@ -702,7 +702,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
     }
 
     const parkAtL2 = async (reason) => {
-        console.log({ reason });
+
         setItemBeingUpdated("hold")
 
         try {
@@ -715,7 +715,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                 actionCompleted()
             }
 
-            console.log({ recommendForHoldRequest });
+
 
         } catch (error) {
 
@@ -765,7 +765,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
 
 
-    console.log({ currentVendorCategories });
+
 
 
 

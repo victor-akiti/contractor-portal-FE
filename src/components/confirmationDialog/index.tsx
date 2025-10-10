@@ -5,7 +5,7 @@ import styles from "./styles/styles.module.css"
 
 const ConfirmationDialog = ({
     processing,
-    errorMessage ,
+    errorMessage,
     successMessage,
     confirmText,
     cancelText,
@@ -14,32 +14,31 @@ const ConfirmationDialog = ({
     confirmAction,
     cancelAction
 }) => {
-    console.log({successMessage});
-    
+
     return (
         <div className={styles.deleteFormModal}>
-                    <div>
-                        <h5>{headerText}</h5>
+            <div>
+                <h5>{headerText}</h5>
 
-                        {
-                            !successMessage && <p>{bodyText}</p>
-                        }
+                {
+                    !successMessage && <p>{bodyText}</p>
+                }
 
-                        {
-                            successMessage && <SuccessMessage message={successMessage} />
-                        }
+                {
+                    successMessage && <SuccessMessage message={successMessage} />
+                }
 
-                        {
-                            errorMessage && <ErrorText text={errorMessage} />
-                        }
-                        
-                        <div>
-                            <button onClick={() => confirmAction()}>{confirmText ? confirmText : "Confirm"} {processing && <ButtonLoadingIcon />}</button>
+                {
+                    errorMessage && <ErrorText text={errorMessage} />
+                }
 
-                            <button onClick={() => cancelAction()}>{cancelText ? cancelText : "Cancel"}</button>
-                        </div>
-                    </div>
+                <div>
+                    <button onClick={() => confirmAction()}>{confirmText ? confirmText : "Confirm"} {processing && <ButtonLoadingIcon />}</button>
+
+                    <button onClick={() => cancelAction()}>{cancelText ? cancelText : "Cancel"}</button>
                 </div>
+            </div>
+        </div>
     )
 }
 

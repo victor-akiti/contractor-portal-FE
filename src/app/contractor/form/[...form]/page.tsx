@@ -1,37 +1,37 @@
 'use client'
+import { getProtected } from "@/requests/get";
+import { postProtected } from "@/requests/post";
+import { putProtected } from "@/requests/put";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import RegistrationFormBody from "./RegistrationFormBody";
-import { useEffect, useRef, useState } from "react"
-import { getProtected } from "@/requests/get"
-import { postProtected, postProtectedMultipart } from "@/requests/post"
-import { putProtected } from "@/requests/put"
-import { useParams } from "next/navigation"
-import { useSelector } from "react-redux"
 
 type RegistrationForm = {
-    _id? : String,
+    _id?: String,
     vendorID?: String,
     files?: Array<any>,
-    form? : {
-        pages? : [{
-            pageTitle ?: String,
-            sections? : [
-                {   
-                    layout? : String,
-                    title? : String,
-                    description? : String,
-                    allowMultiple? : Boolean,
+    form?: {
+        pages?: [{
+            pageTitle?: String,
+            sections?: [
+                {
+                    layout?: String,
+                    title?: String,
+                    description?: String,
+                    allowMultiple?: Boolean,
                     addSectionText?: String,
                     isDuplicate?: Boolean,
-                    fields? : [
+                    fields?: [
                         {
-                            value? : any,
+                            value?: any,
                             type?: any,
                             placeholder?: any,
-                            options? : any,
+                            options?: any,
                             allowedFormats?: any,
-                            required? : boolean,
-                            maxAllowedFiles? : any,
-                            isACertificate? : boolean,
+                            required?: boolean,
+                            maxAllowedFiles?: any,
+                            isACertificate?: boolean,
                             hasExpiryDate?: any,
                             label?: any,
                             errorText?: any,
@@ -52,11 +52,11 @@ type RegistrationForm = {
 }
 
 type FieldToUploadFor = {
-    pageIndex? : number,
-    sectionIndex? : number,
+    pageIndex?: number,
+    sectionIndex?: number,
     fieldIndex?: number,
-    maxFiles? : any,
-    
+    maxFiles?: any,
+
 }
 
 type ActivePage = {
@@ -85,8 +85,8 @@ const NewCompanyRegistration = () => {
     const [savingForm, setSavingForm] = useState(false)
     const [vendorID, setVendorID] = useState<String>("")
     const user = useSelector((state: any) => state.user.user)
-    console.log({location});
-    
+
+
 
     useEffect(() => {
         const vendorId = location?.form[1]
@@ -96,23 +96,23 @@ const NewCompanyRegistration = () => {
         } else {
             getRegistrationForm()
         }
-        
+
     }, [])
-    
+
 
     const getRegistrationForm = async () => {
         try {
             const getRegistrationFormRequest = await getProtected("companies/register/form", user.role)
 
-            console.log({getRegistrationFormRequest});
-            
+
+
 
             if (getRegistrationFormRequest.status === "OK") {
-                let tempRegistrationForm = {...registrationForm}
+                let tempRegistrationForm = { ...registrationForm }
                 tempRegistrationForm = getRegistrationFormRequest.data
                 setRegistrationForm(tempRegistrationForm)
 
-                let tempBaseRegistrationForm = {...baseRegistrationForm}
+                let tempBaseRegistrationForm = { ...baseRegistrationForm }
                 tempBaseRegistrationForm = getRegistrationFormRequest
 
                 let tempTabs = [...tabs]
@@ -124,7 +124,7 @@ const NewCompanyRegistration = () => {
                 })
                 setTabs(tempTabs)
 
-                let tempActivePage = {...activePage}
+                let tempActivePage = { ...activePage }
                 tempActivePage.index = 0
                 tempActivePage.label = getRegistrationFormRequest.data.form.pages[0].pageTitle
                 setActivePage(tempActivePage)
@@ -132,29 +132,29 @@ const NewCompanyRegistration = () => {
                 setErrorMessage(getRegistrationFormRequest.error.message)
             }
 
-            console.log({getRegistrationFormRequest});
-            
+
+
         } catch (error) {
-            console.log({error})
+            console.error({ error })
         }
     }
 
     const getVendorForm = async (vendorId: String) => {
         try {
-            console.log({vendorId});
+
             setVendorID(vendorId)
-            
+
             const getVendorRegistrationFormRequest = await getProtected(`companies/register/form/${vendorId}`, user.role)
 
             if (getVendorRegistrationFormRequest.status === "OK") {
                 let generalRegistrationForm = getVendorRegistrationFormRequest.data.generalRegistrationForm
                 let vendorRegistrationForm = getVendorRegistrationFormRequest.data.vendorRegistrationForm
 
-                let tempRegistrationForm = {...registrationForm}
+                let tempRegistrationForm = { ...registrationForm }
                 tempRegistrationForm = generalRegistrationForm
                 setRegistrationForm(tempRegistrationForm)
 
-                let tempBaseRegistrationForm = {...baseRegistrationForm}
+                let tempBaseRegistrationForm = { ...baseRegistrationForm }
                 tempBaseRegistrationForm = getVendorRegistrationFormRequest.data.baseRegistrationForm
                 setBaseRegistrationForm(tempBaseRegistrationForm)
 
@@ -168,7 +168,7 @@ const NewCompanyRegistration = () => {
                 })
                 setTabs(tempTabs)
 
-                let tempActivePage = {...activePage}
+                let tempActivePage = { ...activePage }
                 tempActivePage.index = 0
                 tempActivePage.label = generalRegistrationForm.form.pages[0].pageTitle
                 setActivePage(tempActivePage)
@@ -176,15 +176,15 @@ const NewCompanyRegistration = () => {
                 setErrorMessage(getVendorRegistrationFormRequest.error.message)
             }
 
-            console.log({getVendorRegistrationFormRequest});
+
         } catch (error) {
-            console.log({error});
-            
+            console.error({ error });
+
         }
     }
 
     const setFieldToUploadFor = (pageIndex, sectionIndex, fieldIndex, maxFiles) => {
-        let tempFieldToUploadFor = {...currentFieldToUploadFor}
+        let tempFieldToUploadFor = { ...currentFieldToUploadFor }
         tempFieldToUploadFor.pageIndex = pageIndex
         tempFieldToUploadFor.sectionIndex = sectionIndex
         tempFieldToUploadFor.fieldIndex = fieldIndex
@@ -193,15 +193,15 @@ const NewCompanyRegistration = () => {
     }
 
     const closeUploadModal = () => {
-        let tempFieldToUploadFor = {...currentFieldToUploadFor}
+        let tempFieldToUploadFor = { ...currentFieldToUploadFor }
         tempFieldToUploadFor = {}
         setCurrentFieldToUploadFor(tempFieldToUploadFor)
     }
 
     const updateField = (pageIndex, sectionIndex, fieldIndex, valueField, value) => {
-        console.log({sectionIndex});
-        
-        let tempRegistrationForm = {...registrationForm}
+
+
+        let tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex][valueField] = value
         setRegistrationForm(tempRegistrationForm)
 
@@ -212,15 +212,15 @@ const NewCompanyRegistration = () => {
         setShowFinish(false)
         setShowSuccess(false)
         if (activePage.index - 1 >= 0) {
-            const tempActivePage = {...activePage}
-        tempActivePage.index = tempActivePage.index - 1
-        tempActivePage.label = registrationForm.form.pages[activePage.index - 1].pageTitle
-        setActivePage(tempActivePage)
+            const tempActivePage = { ...activePage }
+            tempActivePage.index = tempActivePage.index - 1
+            tempActivePage.label = registrationForm.form.pages[activePage.index - 1].pageTitle
+            setActivePage(tempActivePage)
         }
     }
 
     const saveBeforeProgress = () => {
-        const currentPageIsValid:boolean = validateCurrentPage()
+        const currentPageIsValid: boolean = validateCurrentPage()
         if (currentPageIsValid) {
             if (registrationForm.vendorID) {
                 saveCurrentVendor()
@@ -229,40 +229,40 @@ const NewCompanyRegistration = () => {
             }
         }
 
-        
+
 
     }
 
-    const goToNextPage = () => { 
+    const goToNextPage = () => {
         if (activePage.index + 1 >= registrationForm.form.pages.length) {
             setShowFinish(true)
         } else {
-            const tempActivePage = {...activePage}
+            const tempActivePage = { ...activePage }
             tempActivePage.index = tempActivePage.index + 1
             tempActivePage.label = registrationForm.form.pages[activePage.index + 1].pageTitle
-            setActivePage(tempActivePage)    
+            setActivePage(tempActivePage)
         }
-        
+
     }
 
     const createNewVendor = async () => {
         try {
             setSavingForm(true)
-            const saveCurrentPageRequest = await postProtected("companies/vendor/create", {registrationForm, certificates}, user.role)
+            const saveCurrentPageRequest = await postProtected("companies/vendor/create", { registrationForm, certificates }, user.role)
 
-            console.log({saveCurrentPageRequest});
+
 
             if (saveCurrentPageRequest.status === "OK") {
                 setSavingForm(false)
-                let tempRegistrationForm = {...registrationForm}
-                tempRegistrationForm = {...tempRegistrationForm, ...saveCurrentPageRequest.data}
+                let tempRegistrationForm = { ...registrationForm }
+                tempRegistrationForm = { ...tempRegistrationForm, ...saveCurrentPageRequest.data }
                 setRegistrationForm(tempRegistrationForm)
 
                 goToNextPage()
             }
-            
+
         } catch (error) {
-            console.log({error});
+            console.error({ error });
         }
     }
 
@@ -272,21 +272,21 @@ const NewCompanyRegistration = () => {
     const saveCurrentVendor = async () => {
         setSavingForm(true)
         try {
-            const saveCurrentPageRequest = await putProtected("companies/vendor/update", {registrationForm, certificates}, user.role)
+            const saveCurrentPageRequest = await putProtected("companies/vendor/update", { registrationForm, certificates }, user.role)
 
-            console.log({saveCurrentPageRequest});
+
 
             if (saveCurrentPageRequest.status === "OK") {
                 setSavingForm(false)
-                let tempRegistrationForm = {...registrationForm}
-                tempRegistrationForm = {...tempRegistrationForm, ...saveCurrentPageRequest.data}
+                let tempRegistrationForm = { ...registrationForm }
+                tempRegistrationForm = { ...tempRegistrationForm, ...saveCurrentPageRequest.data }
                 setRegistrationForm(tempRegistrationForm)
 
                 goToNextPage()
             }
         }
         catch (error) {
-            console.log({error})
+            console.error({ error })
         }
     }
 
@@ -338,18 +338,18 @@ const NewCompanyRegistration = () => {
                     const dateRegex = /"([1|2]\d{3})-((0[1-9])|(1[0-2]))-([0][1-9]|([1-2]\d)|(3[0-1]))T(([0-1]\d)|(2[0-3])):([0-5][0-9])"g/
                     const date = new Date(field.value)
 
-                    
+
                     if (String(field.value) === "" && field.required) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
                     } else if (String(field.value).length > field.maxLength) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
-                    } 
+                    }
                     // else if (!dateRegex.test(field.value)) {
                     //     isValidated = false
-                    //     console.log({theValue: dateRegex.test(field.value)});
-                        
+                    //     
+
                     //     setFieldError(pageIndex, sectionIndex, fieldIndex, "Please select a valid date")
                     // } 
                     else {
@@ -365,16 +365,16 @@ const NewCompanyRegistration = () => {
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "file") {
-                    
-                    
+
+
                     if (field.label === "Upload CAC/BN Form 1") {
-                        
+
                         //@ts-ignore
                         if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration" && field.value.length === 0) {
                             isValidated = false
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                         } else {
-                            isValidated = true  
+                            isValidated = true
                             setFieldValid(pageIndex, sectionIndex, fieldIndex)
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
@@ -384,12 +384,12 @@ const NewCompanyRegistration = () => {
                             isValidated = false
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                         } else {
-                            isValidated = true  
+                            isValidated = true
                             setFieldValid(pageIndex, sectionIndex, fieldIndex)
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
                     } else if (field.required && field.value.length === 0) {
-                        console.log("Error: " ,field.label, field.value.length);
+
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                     } else if (field.isACertificate) {
@@ -398,16 +398,16 @@ const NewCompanyRegistration = () => {
                         if (field.hasExpiryDate) {
                             for (let index = 0; index < field.value.length; index++) {
                                 const element = field.value[index];
-                                
+
                                 if (field.isACertificate && field.hasExpiryDate && !element.expiryDate) {
-                                    console.log("Invalid certificate");
-                                    
+
+
                                     setFieldError(pageIndex, sectionIndex, fieldIndex, `Set an expiry date for ${element.label}`)
                                     certificateIsNotValid = true
                                 }
-                                
+
                             }
-    
+
                             if (certificateIsNotValid) {
                                 isValidated = false
                             }
@@ -417,31 +417,31 @@ const NewCompanyRegistration = () => {
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
 
-                        
+
                     } else {
-                        console.log(field.label, field.value.length);
+
                         isValidated = true
-                        
+
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                     }
 
-                    
-                } 
+
+                }
 
 
-                
+
                 if (!isValidated) {
                     break
                 }
-                
+
             }
 
             if (!isValidated) {
-                console.log({name: section.title, isValidated})
+
                 break
             }
-            
+
         }
         return isValidated
     }
@@ -449,11 +449,11 @@ const NewCompanyRegistration = () => {
     const validateField = (pageIndex, sectionIndex, fieldIndex, valueField, value) => {
         const field = registrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]
 
-        console.log({field});
-        
 
-        console.log({validatedValue: value});
-        
+
+
+
+
 
         if (field.type === "shortText") {
             if (String(value) === "" && field.required) {
@@ -474,13 +474,13 @@ const NewCompanyRegistration = () => {
         } else if (field.type === "date") {
             const dateRegex = /"([1|2]\d{3})-((0[1-9])|(1[0-2]))-([0][1-9]|([1-2]\d)|(3[0-1]))T(([0-1]\d)|(2[0-3])):([0-5][0-9])"g/
             const date = new Date(value)
-            console.log({date: date.toISOString()});
-            
+
+
             if (String(value) === "" && field.required) {
                 setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
             } else if (String(value).length > field.maxLength) {
                 setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
-            }  else {
+            } else {
                 setFieldValid(pageIndex, sectionIndex, fieldIndex)
             }
         } else if (field.type === "multiSelectText") {
@@ -489,51 +489,51 @@ const NewCompanyRegistration = () => {
             } else {
                 setFieldValid(pageIndex, sectionIndex, fieldIndex)
             }
-        } 
-        
+        }
+
     }
 
     const setFieldError = (pageIndex, sectionIndex, fieldIndex, errorText) => {
-        console.log({errorText});
-        
-        let tempRegistrationForm = {...registrationForm}
+
+
+        let tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]["errorText"] = errorText
-        console.log({tempRegistrationForm});
-        
+
+
         setRegistrationForm(tempRegistrationForm)
 
     }
 
     const setFieldValid = (pageIndex, sectionIndex, fieldIndex) => {
-        
-        let tempRegistrationForm = {...registrationForm}
+
+        let tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]["errorText"] = ""
-        console.log({tempRegistrationForm});
-        
+
+
         setRegistrationForm(tempRegistrationForm)
 
     }
-    
+
 
     const addCertificates = newCertificates => {
-        console.log({newCertificates});
-        
+
+
         let tempCertificates = [...certificates]
         tempCertificates = [...tempCertificates, ...newCertificates]
         setCertificates(tempCertificates)
     }
 
-    console.log({certificates, currentFieldToUploadFor});
+
 
     const removeFileFromFileList = (pageIndex, sectionIndex, fieldIndex, fileID) => {
-        let tempRegistrationForm = {...registrationForm}
-        console.log({field: tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]});
+        let tempRegistrationForm = { ...registrationForm }
+
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].value = tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].value.filter(item => item._id !== fileID)
-        console.log({temp: tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].value});
-        
+
+
         setRegistrationForm(tempRegistrationForm)
 
-        
+
     }
 
     const removeCertificate = (certificateID) => {
@@ -544,12 +544,12 @@ const NewCompanyRegistration = () => {
 
 
     const addFieldToSection = (field, pageIndex, sectionIndex, index) => {
-        let tempNewForm = {...registrationForm}
+        let tempNewForm = { ...registrationForm }
 
-        let newField = {...field}
-        console.log({newField});
-        
-        
+        let newField = { ...field }
+
+
+
 
         newField["allowMultiple"] = true
         newField["isDuplicate"] = true
@@ -561,15 +561,15 @@ const NewCompanyRegistration = () => {
 
         updateField(pageIndex, sectionIndex, index - 1, "allowMultiple", false)
 
-        
 
-        
+
+
     }
 
     const updateSection = (pageIndex, sectionIndex, valueField, value) => {
-        console.log({pageIndex, sectionIndex, valueField, value});
-        
-        let tempRegistrationForm = {...registrationForm}
+
+
+        let tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex][valueField] = value
         setRegistrationForm(tempRegistrationForm)
 
@@ -580,7 +580,7 @@ const NewCompanyRegistration = () => {
     //     let tempNewForm = {...registrationForm}
 
     //     let createdSection = {}
-        
+
     //     if (section.originalSectionIndex) {
     //         createdSection = baseRegistrationForm.form.pages[pageIndex].sections[section.originalSectionIndex]
     //     } else {
@@ -588,42 +588,42 @@ const NewCompanyRegistration = () => {
     //     }
 
 
-        
-        
-        
+
+
+
 
     //     let newSection = {...createdSection}
 
-        
-        
+
+
 
     //     newSection["allowMultiple"] = true
     //     newSection["isDuplicate"] = true
     //     newSection["label"] = section.addedFieldLabel
-        
+
     //     if (section.originalSectionIndex) {
     //         newSection["originalSectionIndex"] = section.originalSectionIndex
-            
+
     //     } else {
     //         newSection["originalSectionIndex"] = sectionIndex
     //     }
 
-    //     console.log({newSection});
-        
+    //     
+
 
     //     tempNewForm.form.pages[pageIndex].sections.splice(sectionIndex + 1, 0, newSection)
 
     //     setRegistrationForm(tempNewForm)
 
     //     updateSection(pageIndex, sectionIndex, "allowMultiple", false)
-        
+
     // }
 
     const addSectionToPage = (section, pageIndex, sectionIndex) => {
-        let tempNewForm = {...registrationForm}
+        let tempNewForm = { ...registrationForm }
 
         let createdSection = {}
-        
+
         if (section.originalSectionIndex) {
             createdSection = baseRegistrationForm.form.pages[pageIndex].sections[section.originalSectionIndex]
         } else {
@@ -643,24 +643,24 @@ const NewCompanyRegistration = () => {
             } else {
                 field.value = ""
             }
-            
+
             // Clear any error text
             field.errorText = ""
-            
+
             return field
         })
 
         newSection["allowMultiple"] = true
         newSection["isDuplicate"] = true
         newSection["label"] = section.addedSectionLabel
-        
+
         if (section.originalSectionIndex) {
             newSection["originalSectionIndex"] = section.originalSectionIndex
         } else {
             newSection["originalSectionIndex"] = sectionIndex
         }
 
-        console.log({newSection});
+
 
         tempNewForm.form.pages[pageIndex].sections.splice(sectionIndex + 1, 0, newSection)
 
@@ -670,7 +670,7 @@ const NewCompanyRegistration = () => {
     }
 
     const removeFieldFromSection = (field, pageIndex, sectionIndex, index) => {
-        let tempNewForm = {...registrationForm}
+        let tempNewForm = { ...registrationForm }
 
 
 
@@ -686,7 +686,7 @@ const NewCompanyRegistration = () => {
     }
 
     const removeSectionFromPage = (field, pageIndex, sectionIndex) => {
-        let tempNewForm = {...registrationForm}
+        let tempNewForm = { ...registrationForm }
 
 
 
@@ -705,26 +705,26 @@ const NewCompanyRegistration = () => {
         try {
             setSubmitting(true)
 
-            const submitApplicationRequest = await putProtected("companies/vendor/submit", {vendorID: registrationForm.vendorID}, user.role)
+            const submitApplicationRequest = await putProtected("companies/vendor/submit", { vendorID: registrationForm.vendorID }, user.role)
 
             setSubmitting(false)
-            
+
             if (submitApplicationRequest.status === "OK") {
                 setShowSuccess(true)
             }
         } catch (error) {
-            console.log({error});
-            
+            console.error({ error });
+
         }
     }
 
-    // console.log({currentPage: registrationForm.form.pages[activePage.index]});
-    
-    
-    
-    
+    // 
 
-    console.log({registrationForm, tabs, activePage, currentFieldToUploadFor, certificates,});
+
+
+
+
+
 
     return (
 

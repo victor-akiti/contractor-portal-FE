@@ -184,7 +184,7 @@ const Approvals = () => {
     }
 
     const fetchAllApprovalsData = async () => {
-        console.log("Fetching approvals data");
+        
         
         try {
             // Fast counts load first (650ms vs 25-60 seconds)
@@ -199,13 +199,13 @@ const Approvals = () => {
             fetchTabData(activeTab)
             
         } catch (error) {
-            console.log({error});
+            console.error({error});
             setFetchingContractors(false)
         }
     }
 
     const fetchTabData = async (tab) => {
-        console.log(`Loading ${tab} data`);
+        
         setTabLoading(true)
         
         try {
@@ -276,10 +276,10 @@ const Approvals = () => {
                 }
                 setFixedApprovals(tempFixedApprovals)
                 
-                console.log(`${tab} data loaded:`, response.data.companies?.length || response.data.invites?.length || 0, 'records')
+                
             }
         } catch (error) {
-            console.log({error})
+            console.error({error})
         } finally {
             setTabLoading(false)
         }
@@ -312,7 +312,7 @@ const Approvals = () => {
     }
 
     useOutsideClick(searchResultRef.current, () => {
-        console.log("out click");
+        
 
         let tempSearchQueryResults = [...searchQueryResults]
         tempSearchQueryResults = []
@@ -350,7 +350,7 @@ const Approvals = () => {
                     }
                 }
 
-                console.log({expiredInvites});
+                
 
                 tempApprovals.invites = expiredInvites
             setApprovals(tempApprovals)
@@ -371,7 +371,7 @@ const Approvals = () => {
                     }
 
                     if (element.email === "testotesta@amni.com") {
-                        console.log({expiryDate, element, expiry: element.expiry});
+                        
                     }
 
                     if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) {
@@ -379,7 +379,7 @@ const Approvals = () => {
                     }
                 }
 
-                console.log({activeInvites});
+                
 
                 tempApprovals.invites = activeInvites
             setApprovals(tempApprovals)
@@ -392,7 +392,7 @@ const Approvals = () => {
         let tempApprovals = {...approvals}
         let filteredArray = []
 
-        console.log(`Filtering L2 companies by stage: ${stage}, full data count:`, fullData.length);
+        
 
         if (stage === "All") {
             tempApprovals.pendingL2 = fullData
@@ -468,7 +468,7 @@ const Approvals = () => {
             tempApprovals.pendingL2 = filteredArray
         }
         
-        console.log(`Filtered ${stage} companies:`, filteredArray.length);
+        
         setApprovals(tempApprovals)
     }
 
@@ -506,16 +506,16 @@ const Approvals = () => {
             tempApprovals.invites = tempApprovals.invites.filter(item => item._id !== inviteToArchive._id)
             setApprovals(tempApprovals)
         } catch (error) {
-            console.log({error});
+            console.error({error});
         }
     }
 
     const removeInviteFromExpiredList = inviteID => {
-        console.log({inviteID});
+        
     }
 
    const searchVendors = async (query) => {
-        console.log({query});
+        
         
         if (!query || query.length < 2) {
             setSearchQueryResults([])
@@ -564,12 +564,12 @@ const Approvals = () => {
             }
             
         } catch (error) {
-            console.log({error})
+            console.error({error})
             searchResults = []
         }
 
         setSearchQueryResults(searchResults)
-        console.log({searchResults});
+        
     }
 
     const capitalizeWord = word => {
@@ -577,7 +577,7 @@ const Approvals = () => {
     }
 
     const filterVendorsByQuery = (query, vendorList) => {
-        console.log({query, vendorList: vendorList?.length});
+        
         let mostRelevant = []
         let lessRelevant = []
 
@@ -592,7 +592,7 @@ const Approvals = () => {
         mostRelevant = sortListAlphabetically(mostRelevant)
         lessRelevant = sortListAlphabetically(lessRelevant)
 
-        console.log({mostRelevant, lessRelevant});
+        
         
         return [...mostRelevant, ...lessRelevant]
     }
@@ -640,7 +640,7 @@ const Approvals = () => {
         setActionProgress("processing")
         try {
           const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
-          console.log({approveRequest})
+          
 
           if (approveRequest.status === "OK") {
             setActionProgress("success")
@@ -661,22 +661,22 @@ const Approvals = () => {
             setActionProgress("error")
           }
         } catch (error) {
-          console.log({error})
+          console.error({error})
         }
       }
 
       const declineParkRequest = async (vendorID) => {
-        console.log("Decline");
+        
         try {
           const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`, user.role)
-          console.log({declineRequest})
+          
         } catch (error) {
-          console.log({error})
+          console.error({error})
         }
       }
 
       const revertToL2 = async (vendorID, from) => {
-        console.log({vendorID, from});
+        
         
         setActionProgress("processing")
         try {
@@ -721,7 +721,7 @@ const Approvals = () => {
             }
 
         } catch (error) {
-            console.log({error})
+            console.error({error})
         }
       }
 
@@ -784,7 +784,7 @@ const Approvals = () => {
     const toggleNameSort = () => {  
         let tempApprovals = {}
 
-        console.log({currentSort});
+        
 
         if (currentSort === "alphabetical") {
             tempApprovals = {...approvals}
@@ -792,7 +792,7 @@ const Approvals = () => {
             tempApprovals = {...fixedApprovals}
         }
 
-        console.log({nameSortAscending});
+        
 
         if (nameSortAscending) {
             
@@ -829,7 +829,7 @@ const Approvals = () => {
     }
 
     const sortArrayByName = (array) => {
-        console.log("Sorting ascending");
+        
         
         return array.sort((a, b) => {
             if (String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase()) {
@@ -841,7 +841,7 @@ const Approvals = () => {
     }
 
     const sortArrayByNameDescending = (array) => {
-        console.log("Sorting descending");
+        
         
         return array.sort((a, b) => {
             if (String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase()) {
@@ -853,7 +853,7 @@ const Approvals = () => {
     }
 
     const toggleDateSort = () => {
-        console.log("Toggle date sort");
+        
         
         let tempApprovals = {}
 
@@ -895,13 +895,13 @@ const Approvals = () => {
     }
 
     const sortArrayNumerically = array => {
-        console.log("Sorting", array?.length);
+        
         
         const sortedArray =  array.sort((a, b) => {
             let aDate = null
             let bDate = null
 
-            console.log({a});
+            
             
 
             if (a.lastUpdate) {
@@ -929,27 +929,27 @@ const Approvals = () => {
             }
 
             bDate = bDate.getTime()
-            console.log({aDate, bDate});
+            
             
 
 
           return aDate - bDate;
         });
 
-        console.log({sortedArray});
+        
 
         return sortedArray
         
     }
 
     const sortArrayNumericallyDescending = array => {
-        console.log("Sorting", array?.length);
+        
         
         const sortedArray =  array.sort((a, b) => {
             let aDate = null
             let bDate = null
 
-            console.log({a});
+            
             
 
             if (a.lastUpdate) {
@@ -984,7 +984,7 @@ const Approvals = () => {
           return bDate - aDate;
         });
 
-        console.log({sortedArray});
+        
 
         return sortedArray
         
@@ -1142,7 +1142,7 @@ const Approvals = () => {
             }
 
             if (exportOptions.l2Stages.includes("returned")) {
-                console.log("filtering returned");
+                
                 fixedApprovals.returned?.forEach(item => {
                     if (String(item.companyName).toLowerCase() === String(vendorName).toLowerCase() || String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase())) {
                         if (item.flags.status === "returned" || item.flags.stage === "returned") {
@@ -1239,7 +1239,7 @@ const Approvals = () => {
                 }
 
                 if (element.email === "testotesta@amni.com") {
-                    console.log({expiryDate, element, expiry: element.expiry});
+                    
                 }
 
                 if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) {
@@ -1276,7 +1276,7 @@ const Approvals = () => {
 
         setVendorsToExport(tempVendorsToExport)
 
-        console.log({tempVendorsToExport});
+        
         
 
         exportExcelFile(tempVendorsToExport)
@@ -1363,7 +1363,7 @@ const Approvals = () => {
             }
         }
 
-        console.log({tempVendorsToExport});
+        
         
 
         tempVendorsToExport = sortArrayByName(tempVendorsToExport)
@@ -1419,7 +1419,7 @@ const Approvals = () => {
         }
 
         if (element.email === "testotesta@amni.com") {
-            console.log({expiryDate, element, expiry: element.expiry});
+            
         }
 
         if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) {
@@ -1946,10 +1946,10 @@ const Approvals = () => {
 
                             {
                                 activeTab === "park-requests" && approvals.parkRequested && approvals.parkRequested.map((item, index) => <ParkRequestedItem key={index} user={user} companyRecord={item} index={index} approveParkRequest={(vendorID) => {
-                                    console.log("Accept");
+                                    
                                     approveParkRequest(item._id)
                                 }} declineParkRequest={(vendorID) => {
-                                    console.log({item});
+                                    
                                     
                                     setDataForReturnToL2(item._id, "park requests")
                                     // declineParkRequest(item._id)
@@ -2036,7 +2036,7 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
                 }
             }
         } catch (error) {
-            console.log({error});
+            console.error({error});
         }
     }
 
@@ -2044,19 +2044,19 @@ const InvitedContractorItem = ({inviteDetails, index, user, setInviteToArchiveOb
 
     const renewRequest = async () => {
         try {
-            console.log("Renewing");
+            
             setRenewText("EXTENDING EXPIRY DATE...")
 
             const renewInviteRequest = await getProtected(`invites/renew/${inviteDetails._id}`, user.role)
 
-            console.log({renewInviteRequest});
+            
 
             if (renewInviteRequest.status === "OK") {
-                console.log("renewed");
+                
                 setRenewText("EXPIRY DATE EXTENDED")
             }
         } catch (error) {
-            console.log({error});
+            console.error({error});
             setRenewText("EXTEND EXPIRY DATE")
         }
     }
@@ -2323,7 +2323,7 @@ const L3Item = ({index, companyRecord, revertToL2, user}) => {
             <td> 
                 {
                     hasAdminPermissions(user.role) && <a onClick={() => {
-                        console.log("clicked");
+                        
                         revertToL2(companyRecord.vendor)
                         
                     }}>MOVE TO L2</a>  

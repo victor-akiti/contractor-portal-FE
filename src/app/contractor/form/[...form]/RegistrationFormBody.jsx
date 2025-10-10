@@ -36,7 +36,7 @@ const RegistrationFormBody = ({registrationForm,
     updateField, addCertificates, closeUploadModal, errorMessage, activePage, goToPreviousPage, saveBeforeProgress, isComplete, tabs, setActivePage, addFieldToSection, removeFieldFromSection, setFieldToUploadFor, removeCertificate, removeFileFromFileList, addSectionToPage, removeSectionFromPage}) => {
 
     
-    // console.log({registrationForm});
+    // 
 
     const getFieldPlaceholder = (field) => {
         if (field.type === "shortText" && field.label === "Registered Number") {
@@ -52,14 +52,14 @@ const RegistrationFormBody = ({registrationForm,
         }
     }
 
-    console.log({fieldValue: registrationForm?.form?.pages[7]?.sections[0]?.fields[0]?.value});
+    
 
     const [fileSampleURL, setFileSampleURL] = useState("")
     
 
 
     const getFileVisibility = (fieldIndex, fieldItem, sectionIndex) => {
-        console.log({sectionIndex});
+        
         
         if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration" && (fieldItem.label === "Upload CAC Form 7" || fieldItem.label === "Upload CAC Form 2A")) {
             return <span></span>
@@ -205,7 +205,7 @@ const RegistrationFormBody = ({registrationForm,
                     <FileUploader label={registrationForm.form.pages[currentFieldToUploadFor.pageIndex].sections[currentFieldToUploadFor.sectionIndex].fields[currentFieldToUploadFor.fieldIndex].label}
                      updateCode={registrationForm.form.pages[currentFieldToUploadFor.pageIndex].sections[currentFieldToUploadFor.sectionIndex].fields[currentFieldToUploadFor.fieldIndex].updateCode} 
                      updateUploadedFiles={fileUrlsArray => {
-                        console.log({fileUrlsArray});
+                        
                         updateField(currentFieldToUploadFor.pageIndex, currentFieldToUploadFor.sectionIndex, currentFieldToUploadFor.fieldIndex, "value", fileUrlsArray)
                         const currentField = registrationForm.form.pages[currentFieldToUploadFor.pageIndex].sections[currentFieldToUploadFor.sectionIndex].fields[currentFieldToUploadFor.fieldIndex]
                         if (currentField.isACertificate) {

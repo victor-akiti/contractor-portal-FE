@@ -1,21 +1,17 @@
 "use client";
 
-import Head from "next/head";
-import styles from "./styles/styles.module.css";
 import logo from "@/assets/images/logo.png";
-import Image from "next/image";
-import { initializeApp } from "firebase/app";
-import {
-  OAuthProvider,
-  getAuth,
-  signInWithPopup,
-  getIdToken,
-  getIdTokenResult,
-} from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { auth } from '@/lib/firebase';
 import { useAppDispatch } from "@/redux/hooks";
 import { setUserData } from "@/redux/reducers/user";
-import { auth } from '@/lib/firebase';
+import {
+  OAuthProvider,
+  signInWithPopup
+} from "firebase/auth";
+import Head from "next/head";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import styles from "./styles/styles.module.css";
 
 const StaffLogin = () => {
  
@@ -29,18 +25,18 @@ const StaffLogin = () => {
       .then((result) => {
         // User is signed in.
         // IdP data available in result.additionalUserInfo.profile.
-        console.log({result})
+        
 
         // Get the OAuth access token and ID Token
         const credential = OAuthProvider.credentialFromResult(result);
-        console.log({ credential });
+        
         const accessToken = credential.accessToken;
         const idToken = credential.idToken;
 
         auth.currentUser
           .getIdToken()
           .then((result) => {
-            console.log({innerResult: result});
+            
             
             fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
               method: "PUT",
@@ -51,24 +47,24 @@ const StaffLogin = () => {
             }).then(async (response) => {
               const res = await response.json();
 
-              console.log({ res });
+              
 
               if (res.status === "OK") {
                 dispatch(setUserData({ user: res.data.user }));
                 goToApprovals();
               }
             }).catch((innerError) => {
-              console.log({innerError});
+              
               
             })
           })
           .catch((error) => {
-            console.log({ error });
+            console.error({ error });
           });
 
-        console.log({ idToken });
+        
 
-        console.log({ result });
+        
       })
       .catch((error) => {
         // Handle error.

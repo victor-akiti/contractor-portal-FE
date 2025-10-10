@@ -3,7 +3,7 @@ import { getL2PendingStage } from '../ApprovalsContainer'
 import styles from '../styles/styles.module.css'
 export default function ParkRequestedRow({ index, companyRecord, approveParkRequest, declineParkRequest, user }: any) {
   const hasAdminPermissions = (role: string) => (["Admin", "HOD"].includes(role))
-  console.log({ companyRecord })
+
   return (
     <tr className={[styles.parkRequestedItem, index % 2 === 0 && styles.rowDarkBackground].join(" ")}>
       <td><Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toUpperCase()}</Link><p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p></td>

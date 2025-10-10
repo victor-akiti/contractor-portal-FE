@@ -54,12 +54,6 @@ const Approval = () => {
 
     const user = useSelector((state: any) => state.user.user)
 
-    console.log({ user });
-
-
-
-    console.log({ pathname: params.id });
-
     const getCurrentStage = (companyRecord = vendorData?.approvalData) => {
         if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
             return "A"
@@ -149,7 +143,7 @@ const Approval = () => {
 
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 
@@ -168,7 +162,7 @@ const Approval = () => {
                 }
 
             } catch (error) {
-                console.log({ error });
+                console.error({ error });
             }
         }
     }
@@ -205,7 +199,7 @@ const Approval = () => {
                 setErrorMessage(retrieveApplicationFromVendorRequest.error.message)
             }
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
     }

@@ -1,24 +1,22 @@
 'use client'
 
-import Link from "next/link"
-import styles from "./styles/styles.module.css"
-import Tabs from "@/components/tabs/index"
-import { useEffect, useRef, useState } from "react"
-import { getProtected } from "@/requests/get"
-import moment from "moment"
-import { useAppSelector } from "@/redux/hooks"
-import Modal from "@/components/modal"
-import Loading from "@/components/loading"
-import { postProtected } from "@/requests/post"
+import downIconBlack from "@/assets/images/downIconBlack.svg"
+import upIconBlack from "@/assets/images/upIconBlack.svg"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
-import SuccessMessage from "@/components/successMessage"
-import PrimaryColorSmallLoadingIcon from "@/components/primaryColorLoadingIcon"
 import FloatingProgressIndicator from "@/components/floatingProgressIndicator"
-import { all } from "underscore"
-import upIconBlack from "@/assets/images/upIconBlack.svg"
-import downIconBlack from "@/assets/images/downIconBlack.svg"
+import Loading from "@/components/loading"
+import Modal from "@/components/modal"
+import SuccessMessage from "@/components/successMessage"
+import Tabs from "@/components/tabs/index"
+import { useAppSelector } from "@/redux/hooks"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import moment from "moment"
 import Image from "next/image"
+import Link from "next/link"
+import { useEffect, useRef, useState } from "react"
+import styles from "./styles/styles.module.css"
 
 function useOutsideClick(ref, onClickOut, deps = []){
     useEffect(() => {
@@ -90,15 +88,15 @@ const Approvals = () => {
 
 
     const fetchAllApprovalsData = async () => {
-        console.log("Fetching approvals data");
+        
         try {
             const fetchAllApprovalsDataRequest = await getProtected("companies/approvals/all", user.role)
 
-            console.log({fetchAllApprovalsDataRequest});
+            
             setFetchingContractors(false)
 
             if (fetchAllApprovalsDataRequest.status === "OK") {
-                console.log({allApprovalsData: fetchAllApprovalsDataRequest.data});
+                
                 
                 let tempApprovals = {...approvals}
                 tempApprovals = fetchAllApprovalsDataRequest.data
@@ -109,7 +107,7 @@ const Approvals = () => {
                 setFixedApprovals(tempApprovals)
 
                 if (fetchAllApprovalsDataRequest?.data?.parkRequested && fetchAllApprovalsDataRequest?.data?.parkRequested?.length > 0 && (user.role === "Admin" || user.role === "HOD" || user.role === "Supervisor" || user.role === "C&P Admin" || user.role === "IT Admin")) {
-                    console.log("Park requests are available");
+                    
                     
                     let tempApprovalsTabs = [...approvalsTabs]
                     tempApprovalsTabs.push({
@@ -121,7 +119,7 @@ const Approvals = () => {
 
             }
         } catch (error) {
-            console.log({error});
+            console.error({error});
         }
     }
 
@@ -166,7 +164,7 @@ const Approvals = () => {
 
 
     useOutsideClick(searchResultRef.current, () => {
-        console.log("out click");
+        
 
         let tempSearchQueryResults = [...searchQueryResults]
         tempSearchQueryResults = []
@@ -206,7 +204,7 @@ const Approvals = () => {
                     }
                 }
 
-                console.log({expiredInvites});
+                
 
                 tempApprovals.invites = expiredInvites
             setApprovals(tempApprovals)
@@ -229,7 +227,7 @@ const Approvals = () => {
                     }
 
                     if (element.email === "testotesta@amni.com") {
-                        console.log({expiryDate, element, expiry: element.expiry});
+                        
                     }
 
                     if ((currentDate.getTime() < expiryDate.getTime()) && !element.used) {
@@ -237,7 +235,7 @@ const Approvals = () => {
                     }
                 }
 
-                console.log({activeInvites});
+                
 
                 tempApprovals.invites = activeInvites
             setApprovals(tempApprovals)
@@ -247,13 +245,13 @@ const Approvals = () => {
     const filterL2Companies = stage => {
         let tempApprovals = {...approvals}
 
-        console.log({stage});
+        
         let filteredArray = []
 
         if (stage === "All") {
             tempApprovals.pendingL2 = fixedApprovals.pendingL2
         } else if (stage === "A") {
-            console.log({fixedApprovals});
+            
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
@@ -267,7 +265,7 @@ const Approvals = () => {
 
             tempApprovals.pendingL2 = filteredArray
         } else if (stage === "B") {
-            console.log({fixedApprovals});
+            
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
@@ -285,7 +283,7 @@ const Approvals = () => {
             
             tempApprovals.pendingL2 = filteredArray
         } else if (stage === "C") {
-            console.log({fixedApprovals});
+            
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
@@ -300,7 +298,7 @@ const Approvals = () => {
 
             tempApprovals.pendingL2 = filteredArray
         } else if (stage === "D") {
-            console.log({fixedApprovals});
+            
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
@@ -316,7 +314,7 @@ const Approvals = () => {
 
             tempApprovals.pendingL2 = filteredArray
         } else if (stage === "E") {
-            console.log({fixedApprovals});
+            
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
@@ -332,7 +330,7 @@ const Approvals = () => {
 
             tempApprovals.pendingL2 = filteredArray
         } else if (stage === "F") {
-            console.log({fixedApprovals});
+            
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
@@ -348,7 +346,7 @@ const Approvals = () => {
 
             tempApprovals.pendingL2 = filteredArray
         } else if (stage === "G") {
-            console.log({fixedApprovals});
+            
             tempApprovals.pendingl2 = fixedApprovals.pendingL2.filter(item => !item?.flags?.approvals?.level)
 
             for (let index = 0; index < fixedApprovals.pendingL2.length; index++) {
@@ -382,7 +380,7 @@ const Approvals = () => {
     })
 
     const searchVendors = query => {
-        console.log({query});
+        
         let searchResults = [...searchQueryResults]
         switch (currentSearchFilter) {
             case "all": 
@@ -416,7 +414,7 @@ const Approvals = () => {
 
         setSearchQueryResults(searchResults)
 
-        console.log({searchResults});
+        
         
         
     }
@@ -426,7 +424,7 @@ const Approvals = () => {
     }
 
     const filterVendorsByQuery = (query, vendorList) => {
-        console.log({query, vendorList: vendorList.length});
+        
         let mostRelevant = []
         let lessRelevant = []
 
@@ -441,7 +439,7 @@ const Approvals = () => {
         mostRelevant = sortListAlphabetically(mostRelevant)
         lessRelevant = sortListAlphabetically(lessRelevant)
 
-        console.log({mostRelevant, lessRelevant});
+        
         
 
         
@@ -507,10 +505,10 @@ const Approvals = () => {
         setReturnToL2Data(tempReturnToL2Data)
       }
 
-      console.log({returnToL2Data});
+      
       
 
-    console.log({currentSearchFilter});
+    
 
     const [l3Filters, setL3Filters] = useState(["All", "Healthy", "With Vendor", "Yet To Be Reviewed"])
     const [activeL3Filter, setActiveL3Filter] = useState("All")
@@ -556,7 +554,7 @@ const Approvals = () => {
     const toggleNameSort = () => {  
         let tempApprovals = {}
 
-        console.log({currentSort});
+        
         
 
         if (currentSort === "alphabetical") {
@@ -565,7 +563,7 @@ const Approvals = () => {
             tempApprovals = {...fixedApprovals}
         }
 
-        console.log({nameSortAscending});
+        
         
 
         if (nameSortAscending) {
@@ -604,7 +602,7 @@ const Approvals = () => {
     }
 
     const sortArrayByName = (array) => {
-        console.log("Sorting ascending");
+        
         
         return array.sort((a, b) => {
             if (String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase()) {
@@ -616,7 +614,7 @@ const Approvals = () => {
     }
 
     const sortArrayByNameDescending = (array) => {
-        console.log("Sorting descending");
+        
         
         return array.sort((a, b) => {
             if (String(a.companyName).toLowerCase() > String(b.companyName).toLowerCase()) {
@@ -628,7 +626,7 @@ const Approvals = () => {
     }
 
     const toggleDateSort = () => {
-        console.log("Toggle date sort");
+        
         
         let tempApprovals = {}
 
@@ -670,18 +668,18 @@ const Approvals = () => {
     }
     
 
-    console.log({currentSort});
+    
     
 
 
     const sortArrayNumerically = array => {
-        console.log("Sorting", array.length);
+        
         
         const sortedArray =  array.sort((a, b) => {
             let aDate = null
             let bDate = null
 
-            console.log({a});
+            
             
 
             if (a.lastUpdate) {
@@ -709,27 +707,27 @@ const Approvals = () => {
             }
 
             bDate = bDate.getTime()
-            console.log({aDate, bDate});
+            
             
 
 
           return aDate - bDate;
         });
 
-        console.log({sortedArray});
+        
 
         return sortedArray
         
     }
 
     const sortArrayNumericallyDescending = array => {
-        console.log("Sorting", array.length);
+        
         
         const sortedArray =  array.sort((a, b) => {
             let aDate = null
             let bDate = null
 
-            console.log({a});
+            
             
 
             if (a.lastUpdate) {
@@ -764,7 +762,7 @@ const Approvals = () => {
           return bDate - aDate;
         });
 
-        console.log({sortedArray});
+        
 
         return sortedArray
         
@@ -790,7 +788,7 @@ const Approvals = () => {
         return (vendorData?.flags?.status === "pending")
     }
 
-    console.log({returnToL2Data});
+    
 
     const [selectedVendors, setSelectedVendors] = useState([])
     const [selectedVendorsData, setSelectedVendorsData] = useState([])
@@ -805,7 +803,7 @@ const Approvals = () => {
         }
     }
 
-    console.log({selectedVendorsData});
+    
     
 
     const clearSelectedVendors = () => {
@@ -820,7 +818,7 @@ const Approvals = () => {
         
 
         if (returnApplicationStatus.status === "success") {
-            console.log("is success");
+            
             
             clearSelectedVendors()
         }
@@ -840,7 +838,7 @@ const Approvals = () => {
         message: "",
     })
 
-    console.log({selectedVendors});
+    
     
     const returnApplications = async () => {
         try {
@@ -851,7 +849,7 @@ const Approvals = () => {
 
             const returnApplicationsRequest = await postProtected("approvals/existing/return", {selectedVendors}, user.role)
 
-            console.log({returnApplicationsRequest});
+            
             
 
             if (returnApplicationsRequest.status === "OK") {
@@ -868,7 +866,7 @@ const Approvals = () => {
                 })
             }
         } catch (error) {
-            console.log({error});
+            console.error({error});
             
         }
 

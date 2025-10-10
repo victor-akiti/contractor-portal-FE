@@ -55,7 +55,7 @@ const ViewVendorPage = () => {
     const [currentSelectedEndUsers, setCurrentSelectedEndUsers] = useState([])
     const [allAvailableEndUsers, setAllAvailableEndUsers] = useState([])
 
-    console.log({ user });
+
     const params = useParams()
     const [vendorData, setVendorData] = useState({
         approvalData: {},
@@ -74,7 +74,7 @@ const ViewVendorPage = () => {
         try {
             const fetchVendorDataRequest = await getProtected(`companies/approval-data/${vendorID}`, user.role)
 
-            console.log({ fetchVendorDataRequest });
+
 
             if (fetchVendorDataRequest.status === "OK") {
                 let tempVendorData = { ...vendorData }
@@ -122,7 +122,7 @@ const ViewVendorPage = () => {
 
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 
@@ -222,7 +222,7 @@ const ViewVendorPage = () => {
 
                                         const currencyField = section.fields.find(f => f.label === "Currency");
                                         const selectedCurrency = currencyField?.value || "Naira (NGN)";
-                                        console.log({ selectedCurrency })
+
                                         return <p>{formatNumberAsCurrency(field.value, selectedCurrency)}</p>;
                                     })()
                                 ) : field.textType === "number" ? (
@@ -365,7 +365,7 @@ const ViewVendorPage = () => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
     }
@@ -452,7 +452,7 @@ const ViewVendorPage = () => {
 
 
         } catch (error) {
-            console.log({ error })
+
         }
     }
 
@@ -475,7 +475,7 @@ const ViewVendorPage = () => {
                 updateUpdateStatus("park action error", approveRequest.error.message)
             }
         } catch (error) {
-            console.log({ error })
+
         }
     }
 
@@ -497,7 +497,7 @@ const ViewVendorPage = () => {
 
 
         } catch (error) {
-            console.log({ error })
+
         }
     }
 
@@ -506,7 +506,7 @@ const ViewVendorPage = () => {
     //         updateUpdateStatus("rejecting")
     //       const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
 
-    //       console.log({declineParkRequest});
+    //       
 
 
     //       if (declineRequest.status === "OK") {
@@ -519,7 +519,7 @@ const ViewVendorPage = () => {
     //         updateUpdateStatus("park action error", declineRequest.error.message)
     //       }
     //     } catch (error) {
-    //       console.log({error})
+    //       console.error({error})
     //     }
     //   }
 
@@ -563,7 +563,7 @@ const ViewVendorPage = () => {
                 setAccountInactiveStatus({ ...accountInactiveStatus, responseType: "error", message: makeVendorInactiveRequest.error.message })
             }
         } catch (error) {
-            console.log({ error })
+
         }
     }
 
@@ -653,7 +653,7 @@ const ViewVendorPage = () => {
                 updatedEndUsersList
             }, user.role)
 
-            console.log({ replaceEndUserRequest });
+
 
 
             if (replaceEndUserRequest.status === "OK") {
@@ -673,13 +673,13 @@ const ViewVendorPage = () => {
                 updateEndUserResponses("error", replaceEndUserRequest.error.message)
             }
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
     }
 
     const removeEndUser = async (endUserID) => {
-        console.log({ endUserID });
+
 
         try {
             const removeEndUserRequest = await postProtected(`companies/vendor/end-users/remove/${vendorID}`, {
@@ -705,7 +705,7 @@ const ViewVendorPage = () => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 
@@ -749,10 +749,10 @@ const ViewVendorPage = () => {
                 updateEndUserResponses("error", addEndUserRequest.error.message)
             }
 
-            console.log({ addEndUserRequest });
+
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 
@@ -807,7 +807,7 @@ const ViewVendorPage = () => {
                 updateNewPortalAdminAction("error", requestNewPortalAdminRequest.error.message)
             }
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 

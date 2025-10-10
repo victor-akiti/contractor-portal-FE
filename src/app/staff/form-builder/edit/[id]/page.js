@@ -1,54 +1,52 @@
 'use client'
-import {useState, useRef, useEffect} from "react"
-import styles from "./styles/styles.module.css"
-import Modal from "../../../../../components/modal/index"
-import closeIcon from "../../../../../assets/images/closeGrey.svg"
-import shortTextIcon from "../../../../../assets/images/shorttext.svg"
-import longTextIcon from "../../../../../assets/images/longtext.svg"
-import dropDownIcon from "../../../../../assets/images/dropdown.svg"
-import radioButtonIcon from "../../../../../assets/images/radio.svg"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import { putProtected } from "@/requests/put"
+import dynamic from 'next/dynamic'
+import Image from "next/image"
+import { useEffect, useRef, useState } from "react"
+import 'react-quill/dist/quill.snow.css'; // Import Quill styles
 import checkBoxIcon from "../../../../../assets/images/checkbox.svg"
-import parapgraphIcon from "../../../../../assets/images/paragraph.svg"
-import fileIcon from "../../../../../assets/images/file.svg"
-import dateIcon from "../../../../../assets/images/date.svg"
-import removeIcon from "../../../../../assets/images/remove.svg"
-import upRoundIcon from "../../../../../assets/images/up_round.svg"
-import downRoundIcon from "../../../../../assets/images/down_round.svg"
-import multiSelectTextIcon from "../../../../../assets/images/multiSelectText.svg"
-import SingleColumnIcon from "../../../../../assets/images/singleColumn.js"
-import DoubleColumnIcon from "../../../../../assets/images/doubleColumn.js"
 import CloseLightGreyIcon from "../../../../../assets/images/close_light_grey.js"
+import closeIcon from "../../../../../assets/images/closeGrey.svg"
+import dateIcon from "../../../../../assets/images/date.svg"
+import DoubleColumnIcon from "../../../../../assets/images/doubleColumn.js"
+import downRoundIcon from "../../../../../assets/images/down_round.svg"
+import dropDownIcon from "../../../../../assets/images/dropdown.svg"
+import fileIcon from "../../../../../assets/images/file.svg"
+import longTextIcon from "../../../../../assets/images/longtext.svg"
+import multiSelectTextIcon from "../../../../../assets/images/multiSelectText.svg"
+import parapgraphIcon from "../../../../../assets/images/paragraph.svg"
+import radioButtonIcon from "../../../../../assets/images/radio.svg"
+import removeIcon from "../../../../../assets/images/remove.svg"
 import SaveIcon from "../../../../../assets/images/save"
 import SettingsIcon from "../../../../../assets/images/settings"
+import shortTextIcon from "../../../../../assets/images/shorttext.svg"
+import SingleColumnIcon from "../../../../../assets/images/singleColumn.js"
 import svgIcons from "../../../../../assets/images/svgIcons"
-import Image from "next/image"
-import ShortText from "../../../../../components/formComponents/shortText"
-import LongText from "../../../../../components/formComponents/longText"
-import DropDown from "../../../../../components/formComponents/dropDown"
+import upRoundIcon from "../../../../../assets/images/up_round.svg"
 import CheckBoxes from "../../../../../components/formComponents/checkBoxes"
-import RadioButtons from "../../../../../components/formComponents/radioButtons"
 import DateSelect from "../../../../../components/formComponents/date"
+import DropDown from "../../../../../components/formComponents/dropDown"
 import FileSelect from "../../../../../components/formComponents/file"
+import LongText from "../../../../../components/formComponents/longText"
 import MultiSelectText from "../../../../../components/formComponents/multiSelectText"
-import {postPlain, postProtected} from "@/requests/post"
-import {putProtected} from "@/requests/put"
-import { getProtected } from "@/requests/get"
-import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css'; // Import Quill styles
+import RadioButtons from "../../../../../components/formComponents/radioButtons"
+import ShortText from "../../../../../components/formComponents/shortText"
+import Modal from "../../../../../components/modal/index"
+import styles from "./styles/styles.module.css"
 
 
 const QuillEditor = dynamic(() => import('react-quill'), { ssr: false });
 
-import Switch from "react-switch"
-import randomString from "randomstring"
-import { useParams } from "next/navigation"
-import Loading from "@/components/loading"
-import SuccessMessage from "@/components/successMessage"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import TextBlock from "@/components/formComponents/textBlock"
 import FileUploader from "@/components/fileUploader"
+import TextBlock from "@/components/formComponents/textBlock"
 import Link from "next/link"
+import { useParams } from "next/navigation"
+import randomString from "randomstring"
 import { useSelector } from "react-redux"
+import Switch from "react-switch"
 
 
 const EditForm = () => {
@@ -142,7 +140,7 @@ const EditForm = () => {
     const [fetchedForm, setFetchedForm] = useState(false)
     const [successMessage, setSuccessMessage] = useState("")
 
-    console.log({param});
+    
 
     useEffect(() => {
         // fetchAllUsers()
@@ -165,16 +163,16 @@ const EditForm = () => {
                 setFetchedForm(true)
             }
 
-            console.log({fetchFormRequest});
+            
            }
         } catch (error) {
-            console.log({error});
+            console.error({error});
         }
     }
 
     const allAllowedFileFormats = ["PDF", "JPG", "PNG", "SVG", "GIF", "DOC", "DOCX", "XLS", "XLSX", "PPT", "PPTM"]
 
-    console.log({svgIcons});
+    
 
     const [addFieldModalSettings, setAddFieldModalSettings] = useState({
         showModal: false,
@@ -205,7 +203,7 @@ const EditForm = () => {
     }
 
     const addNewPage = (index) => {
-        console.log({pageIndex: index});
+        
         let tempForm = {...newForm}
         tempForm.pages.splice(index, 0, {
             pageTitle: "New Page",
@@ -314,9 +312,9 @@ const EditForm = () => {
 
     const addFieldToSection = (fieldType, sectionIndex) => {
         let tempNewForm = {...newForm}
-        console.log({addFieldModalSettings});
+        
 
-        console.log({currentSection: newForm.sections[addFieldModalSettings.sectionToAddFieldTo]});
+        
 
         switch(fieldType) {
             case "shortText":
@@ -519,8 +517,8 @@ const EditForm = () => {
     }
 
     const setFieldToEdit = (fieldType, fieldIndex, sectionIndex, event,pageIndex) => {
-        console.log("Editing field");
-        console.log({fieldType, fieldIndex, sectionIndex, pageIndex});
+        
+        
         let tempPropertyToEdit = {...propertyToEdit}
         tempPropertyToEdit = {
             type: "Field",
@@ -529,7 +527,7 @@ const EditForm = () => {
             fieldIndex,
             page: pageIndex
         }
-        console.log({tempPropertyToEdit});
+        
         setPropertyToEdit(tempPropertyToEdit)
     }
 
@@ -645,8 +643,8 @@ const EditForm = () => {
 
     const setSectionLayoutStyle = newLayout => {
         let tempForm = {...newForm}
-        console.log({propertyToEdit});
-        console.log({sectionToEdit: tempForm.sections[propertyToEdit.section]});
+        
+        
         tempForm.pages[propertyToEdit.page].sections[propertyToEdit.index].layout = newLayout
         setNewForm(tempForm)
     }
@@ -660,10 +658,10 @@ const EditForm = () => {
     const addOptionToField = ({sectionIndex, fieldIndex, propertyToEdit, value, pageIndex}) => {
         let tempForm = {...newForm}
         const optionsList = String(value).split(",")
-        console.log({optionsList});
+        
         for (let index = 0; index < optionsList.length; index++) {
             const element = optionsList[index];
-            console.log({element});
+            
             tempForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].options.push({
                 value: String(element).trim(),
                 disabled: true,
@@ -692,7 +690,7 @@ const EditForm = () => {
     }
 
     const addAllowedFormat = ({sectionIndex, fieldIndex, propertyToEdit, value, pageIndex}) => {
-        console.log({sectionIndex, fieldIndex, propertyToEdit, value});
+        
         let tempForm = {...newForm}
         tempForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex][propertyToEdit].push(value)
         setNewForm(tempForm)
@@ -732,17 +730,17 @@ const EditForm = () => {
             fieldIndex: newFieldIndex,
             page: propertyToEdit.page
         }
-        console.log({tempPropertyToEdit});
+        
         setPropertyToEdit(tempPropertyToEdit)
     }
 
     const moveSectionUpOrDown = ({sectionIndex, newSectionIndex, pageIndex}) => {
-        console.log({pageIndex});
+        
         let tempForm = {...newForm}
         tempForm.pages[pageIndex].sections = moveItemInArrayFromIndexToIndex(tempForm.pages[pageIndex].sections, sectionIndex, newSectionIndex)
         setNewForm(tempForm)
 
-        console.log({propertyToEdit});
+        
 
         // setFieldToEdit(propertyToEdit.fieldType, propertyToEdit.fieldIndex + 1, propertyToEdit.index)
 
@@ -754,7 +752,7 @@ const EditForm = () => {
             fieldIndex: null,
             page: pageIndex
         }
-        console.log({tempPropertyToEdit});
+        
         setPropertyToEdit(tempPropertyToEdit)
     }
 
@@ -776,19 +774,19 @@ const EditForm = () => {
     };
 
     const removeSection =  (sectionIndex, pageIndex) => {
-        console.log({sectionIndex, pageIndex});
+        
         let tempNewForm = {...newForm}
         tempNewForm.pages[pageIndex].sections = tempNewForm.pages[pageIndex].sections.filter((item, index) => index !== sectionIndex)
         setNewForm(tempNewForm)
     }
 
     const removeField =  (sectionIndex, fieldIndex, pageIndex) => {
-        console.log({fieldIndex, fieldsLength: newForm.pages[pageIndex].sections[sectionIndex].fields.length - 1});
+        
         if (newForm.pages[pageIndex].sections[sectionIndex].fields.length === 1) {
             setSectionToEdit(pageIndex, sectionIndex)
         } else if (fieldIndex === newForm.pages[pageIndex].sections[sectionIndex].fields.length - 1) {
-            console.log("Setting field");
-            console.log(newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex - 1].type, fieldIndex - 1, sectionIndex);
+            
+            
             setFieldToEdit(newForm.pages[pageIndex].sections[sectionIndex].fields[fieldIndex - 1].type, fieldIndex - 1, sectionIndex, {}, pageIndex)
         }
         let tempNewForm = {...newForm}
@@ -819,9 +817,9 @@ const EditForm = () => {
 
             setSavingForm(false)
 
-            console.log({createNewFormRequest});
+            
         } catch (error) {
-            console.log({error});
+            console.error({error});
         }
     }
 
@@ -834,7 +832,7 @@ const EditForm = () => {
 
             const updateForm = await putProtected(`forms/form/${id}`, newForm)
 
-            console.log({updateForm});
+            
 
             setSavingForm(false)
 
@@ -851,7 +849,7 @@ const EditForm = () => {
 
 
         } catch (error) {
-            console.log({error});
+            console.error({error});
         }
     }
 
@@ -865,8 +863,8 @@ const EditForm = () => {
 
     
 
-    console.log({newForm});
-    console.log({propertyToEdit});
+    
+    
 
     return (
         <div className={styles.newForm}>
@@ -1533,7 +1531,7 @@ const EditForm = () => {
                     maxFiles={1}
                     updateCode={""}
                     updateUploadedFiles={(result) => {
-                        console.log({result});
+                        
                         
                         updateFieldSettings({sectionIndex: propertyToEdit.index, fieldIndex: propertyToEdit.fieldIndex, propertyToEdit: "fieldSample", value: result, pageIndex: propertyToEdit.page})
                         setShowUploadPreviewImageModal(false)

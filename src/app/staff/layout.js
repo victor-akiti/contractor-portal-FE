@@ -73,11 +73,11 @@ const Layout = ({ children }) => {
           setAuthenticated(true);
         }
       } else {
-        console.log('Auth state check failed, redirecting to login');
+        console.error('Auth state check failed, redirecting to login');
         router.push("/login/staff");
       }
     } catch (error) {
-      console.log({ getCurrentAuthStateError: error });
+      console.error({ getCurrentAuthStateError: error });
     }
   }, [dispatch, router]);
 
@@ -96,7 +96,7 @@ const Layout = ({ children }) => {
         await getCurrentAuthState();
       }
     } catch (error) {
-      console.log({ error });
+      console.error({ error });
     } finally {
       setUpdatingOutOfOffice(false);
     }
@@ -113,7 +113,7 @@ const Layout = ({ children }) => {
         router.push("/login/staff");
       }
     } catch (error) {
-      console.log({ error });
+      console.error({ error });
     }
   }, [router]);
 

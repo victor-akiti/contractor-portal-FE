@@ -32,7 +32,7 @@ function useOutsideClick(ref: any, onClickOut: () => void, deps = []) {
 }
 
 const StageA = ({ approvalData, formPages, vendorID }) => {
-    console.log({ approvalData, formPages });
+
 
 
     const [pages, setPages] = useState([])
@@ -59,18 +59,17 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
     const [unaprovedSectionsWithNoRemarks, setUnapprovedSectionsWithNoRemarks] = useState([])
     const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false)
     const containerDivRef = useRef(null)
-    console.log({ pages });
+
     const user = useSelector((state: any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
     const router = useRouter()
 
-    console.log({ user });
+
 
 
 
 
     useOutsideClick(categoriesListDivRef.current, () => {
-        console.log("out click");
 
         setShowCategoriesList(false)
 
@@ -121,7 +120,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
 
     const filterCategoriesListByQueryString = (queryString) => {
         let tempCategoriesList = [...fixedJobCategories]
-        console.log({ fixedJobCategories });
+
 
         tempCategoriesList = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
 
@@ -298,7 +297,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
     const fetchJobCategories = async () => {
         try {
             const jobCategoriesRequest = await getProtected("jobCategories", user.role)
-            console.log({ jobCategoriesRequest });
+
 
             if (jobCategoriesRequest.status === "OK") {
 
@@ -314,7 +313,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
     }
@@ -367,7 +366,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
         setExpiredCertificates(tempExpiredCertificates)
     }
 
-    console.log({ expiringCertificates, expiredCertificates });
+
 
 
     const toggleSectionApproval = (pageIndex, sectionIndex) => {
@@ -464,11 +463,11 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
 
 
     const addCommentToSection = (pageIndex, sectionIndex, comment) => {
-        console.log({ comment });
+
 
         let tempPages = [...pages]
 
-        console.log({ pageIndex, sectionIndex, comment });
+
 
 
 
@@ -489,7 +488,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                 date: Date.now()
             })
         }
-        console.log({ tempPages });
+
 
         setPages(tempPages)
 
@@ -510,7 +509,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
             date: Date.now()
         })
 
-        console.log({ tempNewComments });
+
 
 
         setNewComments(tempNewComments)
@@ -568,7 +567,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
 
 
         } catch (error) {
-            console.log({ error })
+
         }
     }
 
@@ -602,7 +601,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
 
                         let remarksForValidation = remarks ? remarks : newRemarks
 
-                        console.log({ remarks });
+
 
 
                         if (!remarksForValidation[element.pageTitle]) {
@@ -619,9 +618,9 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
 
         }
 
-        console.log({ approvedAll, unapprovedSectionsWithoutRemarks });
 
-        console.log({ newRemarks });
+
+
 
 
 
@@ -676,7 +675,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                 newRemarks
             }, user.role)
 
-            console.log({ returnToContractorRequest });
+
 
             if (returnToContractorRequest.status === "OK") {
                 actionCompleted()
@@ -700,7 +699,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
     }
 
     const recommendForHold = async (reason) => {
-        console.log({ reason });
+
         setItemBeingUpdated("hold")
         setNoApprovalErrorMessage("")
 
@@ -720,7 +719,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                 showNoApprovalErrorMessage(recommendForHoldRequest.error.message)
             }
 
-            console.log({ recommendForHoldRequest });
+
 
         } catch (error) {
 
@@ -732,7 +731,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
         setNoApprovalErrorMessage(errorMessage)
     }
 
-    console.log({ currentVendorCategories });
+
 
 
 

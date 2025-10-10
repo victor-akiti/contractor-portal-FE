@@ -38,7 +38,7 @@ const StageF = () => {
     const [showAddCategory, setShowAddCategory] = useState(false)
     const categoriesListDivRef = useRef(null)
     const [applicationProcessed, setApplicationProcessed] = useState(false)
-    console.log({ pages });
+
     const user = useSelector((state: any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
     const [updateStatus, setUpdateStatus] = useState({
@@ -81,7 +81,7 @@ const StageF = () => {
         try {
             const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
 
-            console.log({ fetchVendorDataRequest });
+
 
             if (fetchVendorDataRequest.status === "OK") {
                 let tempVendorData = { ...vendorData }
@@ -113,7 +113,7 @@ const StageF = () => {
 
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 
@@ -166,7 +166,7 @@ const StageF = () => {
 
     const filterCategoriesListByQueryString = (queryString) => {
         let tempCategoriesList = [...fixedJobCategories]
-        console.log({ fixedJobCategories });
+
 
         tempCategoriesList = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
 
@@ -343,7 +343,7 @@ const StageF = () => {
     const fetchJobCategories = async () => {
         try {
             const jobCategoriesRequest = await getProtected("jobCategories", user.role)
-            console.log({ jobCategoriesRequest });
+
 
             if (jobCategoriesRequest.status === "OK") {
 
@@ -359,7 +359,7 @@ const StageF = () => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
     }
@@ -445,7 +445,7 @@ const StageF = () => {
 
 
         } catch (error) {
-            console.log({ error })
+
         }
     }
 
@@ -453,7 +453,7 @@ const StageF = () => {
         setShowAddCategory(!showAddCategory)
     }
 
-    console.log({ currentVendorCategories });
+
 
 
     //   const declineParkRequest = async () => {
@@ -461,7 +461,7 @@ const StageF = () => {
     //         updateUpdateStatus("rejecting")
     //       const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
 
-    //       console.log({declineParkRequest});
+    //       
 
 
     //       if (declineRequest.status === "OK") {
@@ -474,7 +474,7 @@ const StageF = () => {
     //         updateUpdateStatus("park action error", declineRequest.error.message)
     //       }
     //     } catch (error) {
-    //       console.log({error})
+    //       console.error({error})
     //     }
     //   }
 
@@ -521,7 +521,7 @@ const StageF = () => {
                     setErrorText(approveToL3Request.error.message)
                 }
 
-                console.log({ approveToL3Request });
+
 
             } catch (error) {
                 setUpdating(false)
@@ -563,7 +563,7 @@ const StageF = () => {
                     setErrorText(recommendForHoldRequest.error.message)
                 }
 
-                console.log({ recommendForHoldRequest });
+
 
             } catch (error) {
 

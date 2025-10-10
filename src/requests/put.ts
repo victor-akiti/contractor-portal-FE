@@ -6,13 +6,11 @@ const handleTokenRefresh = async (): Promise<boolean> => {
         const user = auth.currentUser;
 
         if (!user) {
-            console.log('No current user found');
             return false;
         }
 
         const freshToken = await getIdToken(user, true);
-        console.log('Got fresh Firebase token, updating backend...');
-        
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
             method: "PUT",
             headers: { token: freshToken },
@@ -22,13 +20,12 @@ const handleTokenRefresh = async (): Promise<boolean> => {
         if (response.ok) {
             const result = await response.json();
             if (result.status === "OK") {
-                console.log('Token refreshed successfully');
                 return true;
             }
         }
         return false;
     } catch (error) {
-        console.log('Token refresh failed:', error);
+        console.error('Token refresh failed:', error);
         return false;
     }
 };
@@ -51,11 +48,11 @@ export const putPlain = async (route: string, body: any) => {
             credentials: "include",
             body: JSON.stringify(body)
         });
-        
+
         const result = await request.json();
         return result;
     } catch (error) {
-        console.log({error});
+        console.error({ error });
         throw error;
     }
 }
@@ -72,10 +69,9 @@ export const putProtected = async (route: string, body: any, role?: string) => {
         });
 
         if (request.status === 401) {
-            console.log('Token expired, attempting refresh...');
-            
+
             const refreshSuccess = await handleTokenRefresh();
-            
+
             if (refreshSuccess) {
                 // Retry the original request
                 const retryRequest = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
@@ -103,7 +99,7 @@ export const putProtected = async (route: string, body: any, role?: string) => {
             throw new Error('Request failed');
         }
     } catch (error) {
-        console.log({error});
+        console.error({ error });
         throw error;
     }
 }

@@ -1,31 +1,25 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from "react"
-import checkedBox from "@/assets/images/checkedBox.svg"
-import uncheckedBox from "@/assets/images/uncheckedBox.svg"
-import styles from "./styles/styles.module.css"
-import { useParams, usePathname, useRouter } from "next/navigation"
-import Accordion from "@/components/accordion"
 import closeIcon from "@/assets/images/closeGrey.svg"
+import Accordion from "@/components/accordion"
+import { useParams, useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import styles from "./styles/styles.module.css"
 
 
+import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import CertificateHistoryModal from "@/components/certificateHistory"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import { putProtected } from "@/requests/put"
+import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import moment from "moment"
-import Modal from "@/components/modal"
 import { useSelector } from "react-redux"
-import { getProtected } from "@/requests/get"
-import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { putProtected } from "@/requests/put"
-import { postProtected } from "@/requests/post"
-import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
-import SuccessMessage from "@/components/successMessage"
-import ErrorText from "@/components/errorText"
-import CertificateHistoryModal from "@/components/certificateHistory"
 
 
 
 const StageX = () => {
-    
+
     const [approvalData, setApprovalData] = useState<any>({})
     const [pages, setPages] = useState([])
     const [selectedCategories, setSelectedCategories] = useState([])
@@ -41,8 +35,8 @@ const StageX = () => {
     const [showAddCategory, setShowAddCategory] = useState(false)
     const categoriesListDivRef = useRef(null)
     const [applicationProcessed, setApplicationProcessed] = useState(false)
-    console.log({pages});
-    const user = useSelector((state:any) => state.user)
+
+    const user = useSelector((state: any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
     const [updateStatus, setUpdateStatus] = useState({
         status: "",
@@ -50,17 +44,17 @@ const StageX = () => {
     })
     const [currentDecision, setCurrentDecision] = useState("")
     const router = useRouter()
-    
-    console.log({user});
+
+
     const params = useParams()
     const [vendorData, setVendorData] = useState({
-        approvalData:{},
+        approvalData: {},
         pages: []
     })
-    
 
-    console.log({pathname: params.id});
-    
+
+
+
     useEffect(() => {
         if (params.id) {
             fetchVendorData(params.id)
@@ -72,10 +66,10 @@ const StageX = () => {
         try {
             const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
 
-            console.log({fetchVendorDataRequest});
+
 
             if (fetchVendorDataRequest.status === "OK") {
-                let tempVendorData = {...vendorData}
+                let tempVendorData = { ...vendorData }
                 tempVendorData.approvalData = fetchVendorDataRequest.data.approvalData
                 tempVendorData.pages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages
                 setVendorData(tempVendorData)
@@ -85,46 +79,46 @@ const StageX = () => {
                 setPages(tempPages)
 
                 if (fetchVendorDataRequest.data.approvalData.jobCategories) {
-                    let tempSelectedCategories  = [...selectedCategories]
-                tempSelectedCategories = fetchVendorDataRequest.data.approvalData.jobCategories
-                setSelectedCategories(tempSelectedCategories)
+                    let tempSelectedCategories = [...selectedCategories]
+                    tempSelectedCategories = fetchVendorDataRequest.data.approvalData.jobCategories
+                    setSelectedCategories(tempSelectedCategories)
 
-                let tempCurrentCategories = [...currentVendorCategories]
-                tempCurrentCategories = fetchVendorDataRequest.data.approvalData.jobCategories
-                setCurrentVendorCategories(tempCurrentCategories)
+                    let tempCurrentCategories = [...currentVendorCategories]
+                    tempCurrentCategories = fetchVendorDataRequest.data.approvalData.jobCategories
+                    setCurrentVendorCategories(tempCurrentCategories)
                 }
 
-                let tempApprovalData = {...approvalData}
+                let tempApprovalData = { ...approvalData }
                 tempApprovalData = fetchVendorDataRequest.data.approvalData
                 setApprovalData(tempApprovalData)
 
                 getExpiringAndExpiredCertificates(tempPages)
             }
 
-            
-            
+
+
         } catch (error) {
-            console.log({error});
+            console.error({ error });
         }
     }
-    
 
-    
+
+
 
 
 
     const getCertificateTimeValidity = expiryDate => {
         const currentDateObject = new Date()
         const expiryDateObject = new Date(expiryDate)
-        
+
 
         if (currentDateObject.getTime() >= expiryDateObject.getTime()) {
             // let tempExpiredCertificates = [...expiredCertificates]
             // tempExpiredCertificates.push(expiryDate)
             // setExpiredCertificates(tempExpiredCertificates)
-            
+
             return "expired"
-        } else if ((expiryDateObject.getTime() - currentDateObject.getTime())/1000 < 7884000) {
+        } else if ((expiryDateObject.getTime() - currentDateObject.getTime()) / 1000 < 7884000) {
             // let tempExpiringCertificates = [...expiringCertificates]
             // tempExpiringCertificates.push(expiryDate)
             // setExpiringCertificates(tempExpiringCertificates)   
@@ -151,15 +145,15 @@ const StageX = () => {
             setSelectedCategories(tempSelectedCategories)
 
         }
-        
+
     }
 
 
     const filterCategoriesListByQueryString = (queryString) => {
         let tempCategoriesList = [...fixedJobCategories]
-        console.log({fixedJobCategories});
-        
-        tempCategoriesList  = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
+
+
+        tempCategoriesList = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
 
         setJobCategories(tempCategoriesList)
     }
@@ -176,7 +170,7 @@ const StageX = () => {
         if (tempSelectedCategories.some(selectedCategory => selectedCategory.category === category.category)) {
             tempSelectedCategories = tempSelectedCategories.filter(selectedCategory => selectedCategory.category !== category.category)
         }
-        
+
         setSelectedCategories(tempSelectedCategories)
 
         let tempCurrentCategories = [...currentVendorCategories]
@@ -201,78 +195,78 @@ const StageX = () => {
         tempCurrentCertificateHistory = []
         setCurrentCertificateHistory(tempCurrentCertificateHistory)
     }
-    
+
 
     const getFieldItemComponent = (field, index) => {
         switch (field.type) {
-            case "shortText": 
-            return <div key={index} className={styles.fieldItem}>
-                <div>
-                    <p className={styles.fieldData}>
-                        <label>{`${field.label}:`}</label>
-                        <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
-                    </p>
-                </div>
-
-                {
-                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                }
-            </div>
-            case "longText": 
-            return <div key={index} className={styles.fieldItem}>
-            <div>
-                <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    <p>{field.value}</p>
-                </p>
-            </div>
-
-            {
-                field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-            }
-            </div>
-            case "date":
+            case "shortText":
                 return <div key={index} className={styles.fieldItem}>
-                <div>
-                    <p className={styles.fieldData}>
-                        <label>{`${field.label}:`}</label>
-                        <p>{moment(field.value).format("MMMM Do YYYY")}</p>
-                    </p>
-                </div>
-
-                {
-                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                }
-            </div>
-            case "file": 
-                if (field.value) {
-                    return <div key={index} className={styles.fieldItem}>
                     <div>
-                        <div className={styles.fieldData}>
+                        <p className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
-                            <div>
-                                <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
-                            </div>
-
-                            {
-                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
-                            }
-                        </div>
+                            <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
+                        </p>
                     </div>
 
                     {
                         field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
                     }
+                </div>
+            case "longText":
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            <p>{field.value}</p>
+                        </p>
+                    </div>
 
                     {
-                        field.isACertificate && <>
-                            {
-                                field.value[0].expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
-                            }
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
+                </div>
+            case "date":
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            <p>{moment(field.value).format("MMMM Do YYYY")}</p>
+                        </p>
+                    </div>
 
-                            {
-                                field.value && field.value[0].expiryDate && <>
-                                
+                    {
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
+                </div>
+            case "file":
+                if (field.value) {
+                    return <div key={index} className={styles.fieldItem}>
+                        <div>
+                            <div className={styles.fieldData}>
+                                <label>{`${field.label}:`}</label>
+                                <div>
+                                    <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                </div>
+
+                                {
+                                    field.hasExpiryDate && field.history && <a style={{ marginLeft: "20px" }} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
+                                }
+                            </div>
+                        </div>
+
+                        {
+                            field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                        }
+
+                        {
+                            field.isACertificate && <>
+                                {
+                                    field.value[0].expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
+                                }
+
+                                {
+                                    field.value && field.value[0].expiryDate && <>
+
                                         {
                                             getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
                                         }
@@ -281,25 +275,25 @@ const StageX = () => {
                                             getCertificateTimeValidity(field.value[0].expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
                                         }
 
-                                        
-                                </>
-                            }
 
-                            
-                        </>
-                    }
-                </div>
+                                    </>
+                                }
+
+
+                            </>
+                        }
+                    </div>
                 }
             case "multiSelectText":
                 return <div className={styles.fieldItem}>
                     <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    {
-                        field.value.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
-                    }
-                </p>
+                        <label>{`${field.label}:`}</label>
+                        {
+                            field.value.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
+                        }
+                    </p>
                 </div>
-                
+
 
 
         }
@@ -314,7 +308,7 @@ const StageX = () => {
     const fetchJobCategories = async () => {
         try {
             const jobCategoriesRequest = await getProtected("jobCategories", user.role)
-            console.log({jobCategoriesRequest});
+
 
             if (jobCategoriesRequest.status === "OK") {
 
@@ -328,10 +322,10 @@ const StageX = () => {
 
 
             }
-            
+
         } catch (error) {
-            console.log({error});
-            
+            console.error({ error });
+
         }
     }
 
@@ -367,7 +361,7 @@ const StageX = () => {
 
 
     const toggleHideSectionRemarks = (pageIndex, sectionIndex) => {
-        let tempSectionRemarksToShow = {...sectionRemarksToShow}
+        let tempSectionRemarksToShow = { ...sectionRemarksToShow }
 
         if (!tempSectionRemarksToShow[pageIndex]) {
             tempSectionRemarksToShow[pageIndex] = []
@@ -380,7 +374,7 @@ const StageX = () => {
         }
 
         setSectionRemarksToShow(tempSectionRemarksToShow)
-        
+
     }
 
     const hideAllRemarks = () => {
@@ -414,9 +408,9 @@ const StageX = () => {
             }
 
 
-            
+
         } catch (error) {
-            console.log({error})
+            console.error({ error })
         }
     }
 
@@ -424,57 +418,57 @@ const StageX = () => {
         setShowAddCategory(!showAddCategory)
     }
 
-    console.log({currentVendorCategories});
+
 
     const approveParkRequest = async () => {
         try {
             updateUpdateStatus("approving")
-          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
-          
-          if (approveRequest.status === "OK") {
-            updateUpdateStatus("park action success", "Vendor application parked")
+            const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
 
-            let tempApprovalData = {...approvalData}
-            tempApprovalData.flags.status = "parked"
-            setApprovalData(tempApprovalData)
-          } else {
-            updateUpdateStatus("park action error", approveRequest.error.message)
-          }
+            if (approveRequest.status === "OK") {
+                updateUpdateStatus("park action success", "Vendor application parked")
+
+                let tempApprovalData = { ...approvalData }
+                tempApprovalData.flags.status = "parked"
+                setApprovalData(tempApprovalData)
+            } else {
+                updateUpdateStatus("park action error", approveRequest.error.message)
+            }
         } catch (error) {
-          console.log({error})
+            console.error({ error })
         }
-      }
+    }
 
-      const rejectParkRequestAndRevertToL2 = async (from) => {
+    const rejectParkRequestAndRevertToL2 = async (from) => {
 
         try {
             updateUpdateStatus("rejecting")
-            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from}, user.role)
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, { from }, user.role)
 
             if (revertRequest.status === "OK") {
                 updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
 
-                let tempApprovalData = {...approvalData}
+                let tempApprovalData = { ...approvalData }
                 tempApprovalData.flags.status = "pending"
                 setApprovalData(tempApprovalData)
             } else {
                 updateUpdateStatus("park action error", revertRequest.error.message)
             }
 
-            
-          } catch (error) {
-            console.log({error})
-          }
-      }
+
+        } catch (error) {
+            console.error({ error })
+        }
+    }
 
     //   const declineParkRequest = async () => {
     //     try {
     //         updateUpdateStatus("rejecting")
     //       const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
 
-    //       console.log({declineParkRequest});
-          
-          
+    //       
+
+
     //       if (declineRequest.status === "OK") {
     //         updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
 
@@ -485,20 +479,20 @@ const StageX = () => {
     //         updateUpdateStatus("park action error", declineRequest.error.message)
     //       }
     //     } catch (error) {
-    //       console.log({error})
+    //       console.error({error})
     //     }
     //   }
 
-      const updateUpdateStatus = (status, message = "") => {
-        let tempUpdateStatus = {...updateStatus}
+    const updateUpdateStatus = (status, message = "") => {
+        let tempUpdateStatus = { ...updateStatus }
         tempUpdateStatus.status = status
         tempUpdateStatus.message = message
         setUpdateStatus(tempUpdateStatus)
-      }
-    
+    }
 
-    
-    
+
+
+
 
     return (
         <div className={styles.stageF}>
@@ -510,13 +504,13 @@ const StageX = () => {
                 <h1>{approvalData.companyName}</h1>
 
                 <div>
-                    
+
                     <a onClick={() => hideAllRemarks()}>HIDE COMMENTS</a>
                 </div>
 
-                
 
-                
+
+
             </div>
 
             <h3 className={styles.subTitle}>Consider Contractor for Approved Contractors List</h3>
@@ -544,34 +538,34 @@ const StageX = () => {
 
             {
                 currentDecision === "return" && <div className={styles.returnDecisionDiv}>
-                <div>
-                    <span>Please indicate research required</span>
-                </div>
-
-                <div>
-                    <textarea rows={5} placeholder="Notes for Vendor"></textarea>
+                    <div>
+                        <span>Please indicate research required</span>
+                    </div>
 
                     <div>
-                        <button>RETURN</button>
+                        <textarea rows={5} placeholder="Notes for Vendor"></textarea>
+
+                        <div>
+                            <button>RETURN</button>
+                        </div>
                     </div>
                 </div>
-            </div>
             }
 
             {
                 currentDecision === "complete" && <div className={styles.completeL2DecisionDiv}>
-                <div>
-                    
-                </div>
+                    <div>
 
-                <div>
-                    <p>Complete registration for now without adding to &#39;Approved Contractors&#39; list.</p>
+                    </div>
 
                     <div>
-                        <button>COMPLETE</button>
+                        <p>Complete registration for now without adding to &#39;Approved Contractors&#39; list.</p>
+
+                        <div>
+                            <button>COMPLETE</button>
+                        </div>
                     </div>
                 </div>
-            </div>
             }
 
 
@@ -579,7 +573,7 @@ const StageX = () => {
 
             {
                 !applicationProcessed && <>
-                        <div className={styles.approvalContent}>
+                    <div className={styles.approvalContent}>
 
                         {
                             pages.map((item, index) => <Accordion defaultOpen={true} key={index} title={item.pageTitle}>
@@ -587,82 +581,82 @@ const StageX = () => {
                                     item.sections.map((sectionItem, sectionIndex) => {
                                         if (!sectionItem.hideOnApproval) {
                                             return <div key={sectionIndex} className={styles.sectionItem}>
-                                            <div>
-                                                <div className={styles.sectionHeader}>
-                                                    <h6>{sectionItem.title}</h6>
-    
-                                                    
-                                                </div>
-    
                                                 <div>
-                                                    {
-                                                        sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
-                                                    }
-                                                </div>
-    
-                                                <div>
-                                                    
-    
-                                                    {
-                                                        (sectionItem.remarks && sectionItem.remarks.length > 0  ) && <div className={styles.showCommentTriggerDiv}>
-                                                            <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
-                                                        </div>
-                                                    }
-    
-                                                    {
-                                                        sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
+                                                    <div className={styles.sectionHeader}>
+                                                        <h6>{sectionItem.title}</h6>
+
+
+                                                    </div>
+
+                                                    <div>
                                                         {
-                                                            sectionItem?.remarks && sectionItem?.remarks.length > 0  && <div className={styles.remarksContent}>
-                                                            <p>Notes for Vendor</p>
-    
-                                                            <div>
-                                                                {
-                                                                    sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
-                                                                        <p>{remarkItem.remark}</p>
-                                                                        <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                    </div>)
-                                                                }
-                                                            </div>
-    
-                                                        </div>
-                                                        }
-    
-                                                        {
-                                                            sectionItem?.comments && sectionItem?.comments.length > 0  && <div className={styles.commentsContent}>
-                                                            <p>Comments</p>
-    
-                                                            <div>
-                                                                {
-                                                                    sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
-                                                                        <p>{commentItem.comment}</p>
-                                                                        <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                    </div>)
-                                                                }
-                                                            </div>
-    
-                                                        </div>
+                                                            sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
                                                         }
                                                     </div>
+
+                                                    <div>
+
+
+                                                        {
+                                                            (sectionItem.remarks && sectionItem.remarks.length > 0) && <div className={styles.showCommentTriggerDiv}>
+                                                                <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
+                                                            </div>
+                                                        }
+
+                                                        {
+                                                            sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
+                                                                {
+                                                                    sectionItem?.remarks && sectionItem?.remarks.length > 0 && <div className={styles.remarksContent}>
+                                                                        <p>Notes for Vendor</p>
+
+                                                                        <div>
+                                                                            {
+                                                                                sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
+                                                                                    <p>{remarkItem.remark}</p>
+                                                                                    <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                                </div>)
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                }
+
+                                                                {
+                                                                    sectionItem?.comments && sectionItem?.comments.length > 0 && <div className={styles.commentsContent}>
+                                                                        <p>Comments</p>
+
+                                                                        <div>
+                                                                            {
+                                                                                sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
+                                                                                    <p>{commentItem.comment}</p>
+                                                                                    <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                                </div>)
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+
+
+
+                                                    {
+                                                        sectionIndex !== item.sections.length - 1 && <hr />
                                                     }
                                                 </div>
-    
-    
-    
-                                                {
-                                                    sectionIndex !== item.sections.length - 1 && <hr />
-                                                }
+
                                             </div>
-    
-                                        </div>
                                         }
                                     })
                                 }
                             </Accordion>)
                         }
 
-                        </div>
+                    </div>
 
-                        <div className={styles.approvalContent}>
+                    <div className={styles.approvalContent}>
                         <Accordion defaultOpen={true} title={"Contractor Categorization"}>
                             <div className={styles.sectionItem}>
                                 <div className={styles.contractorCategorizationDiv}>
@@ -670,34 +664,34 @@ const StageX = () => {
 
                                     {
                                         showAddCategory && <>
-                                                <p>Select the type of services you would consider this Contractor could provide to Amni.</p>
+                                            <p>Select the type of services you would consider this Contractor could provide to Amni.</p>
 
-                                                <div ref={categoriesListDivRef}>
-                                                    <div className={styles.selectedCategoriesList}>
-                                                        {
-                                                            selectedCategories.map((item, index) => <div key={index} className={styles.selectedCategoriesItem}>
-                                                                <div ><Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => removeCategoryFromSelectedCategories(item)} style={{cursor: "pointer"}} /></div>
-                                                                <p>{item.category}</p>
-                                                                
-                                                            </div>)
-                                                        }
-                                                    </div>
-                                                    <input placeholder="Select Job Categories" onClick={() => setShowCategoriesList(true)} onChange={(e) => filterCategoriesListByQueryString(e.target.value)} />
-
-                                                    <Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => {clearSelectedCategories()}} style={{cursor: "pointer"}} />
-
+                                            <div ref={categoriesListDivRef}>
+                                                <div className={styles.selectedCategoriesList}>
                                                     {
-                                                        showCategoriesList && <div className={styles.jobCategoryList} >
+                                                        selectedCategories.map((item, index) => <div key={index} className={styles.selectedCategoriesItem}>
+                                                            <div ><Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => removeCategoryFromSelectedCategories(item)} style={{ cursor: "pointer" }} /></div>
+                                                            <p>{item.category}</p>
+
+                                                        </div>)
+                                                    }
+                                                </div>
+                                                <input placeholder="Select Job Categories" onClick={() => setShowCategoriesList(true)} onChange={(e) => filterCategoriesListByQueryString(e.target.value)} />
+
+                                                <Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => { clearSelectedCategories() }} style={{ cursor: "pointer" }} />
+
+                                                {
+                                                    showCategoriesList && <div className={styles.jobCategoryList} >
                                                         {
                                                             jobCategories.map((item, index) => <div key={index} className={styles.jobCategoryItem}>
                                                                 <p onClick={() => addCategoryToSelectedCategories(item)}>{item.category}</p>
                                                             </div>)
                                                         }
                                                     </div>
-                                                    }
-                                                </div>
+                                                }
+                                            </div>
 
-                                                <button className={styles.saveCategoriesButton } onClick={() => updateVendorCategories(null)}>Save {updatingVendorCategories && <ButtonLoadingIcon />}</button>
+                                            <button className={styles.saveCategoriesButton} onClick={() => updateVendorCategories(null)}>Save {updatingVendorCategories && <ButtonLoadingIcon />}</button>
                                         </>
                                     }
 
@@ -715,14 +709,14 @@ const StageX = () => {
                                 </div>
                             </div>
                         </Accordion>
-                        </div>
+                    </div>
 
-                    
+
                 </>
             }
 
             <div className={styles.allApprovedDiv}>
-                
+
             </div>
 
 

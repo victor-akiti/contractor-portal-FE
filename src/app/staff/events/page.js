@@ -1,10 +1,9 @@
 'use client'
-import { useEffect, useRef, useState } from "react"
-import styles from "./styles/styles.module.css"
 import { getProtected } from "@/requests/get"
 import moment from "moment"
+import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
-import { type } from "os"
+import styles from "./styles/styles.module.css"
 
 const Events = () => {
     const [events, setEvents] = useState([])
@@ -30,15 +29,13 @@ const Events = () => {
         try {
             const fetchAllEventsRequest = await getProtected("events/all", user.role)
 
-            console.log({fetchAllEventsRequest});
-
             if (fetchAllEventsRequest.status === "OK") {
                 setEvents(fetchAllEventsRequest.data)
                 setFixedEvents(fetchAllEventsRequest.data)
             }
             
         } catch (error) {
-            console.log({error});
+            console.error({error});
         }
     }
 
@@ -86,8 +83,6 @@ const Events = () => {
                     } else if (startDateTimestamp === endDateTimestamp) {
                         const eventDate = new Date(event.createdAt)
                         const startDate = new Date(filterRange.startDate)
-
-                        console.log({eventDate, startDate});
                         
         
                         if (eventDate.getDate() === startDate.getDate() + 1 && eventDate.getMonth() === startDate.getMonth() && eventDate.getFullYear() === startDate.getFullYear()) {

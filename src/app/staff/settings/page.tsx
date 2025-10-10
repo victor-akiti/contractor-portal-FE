@@ -1,15 +1,14 @@
 'use client'
 
-import Modal from "@/components/modal"
-import styles from "./styles/styles.module.css"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { useEffect, useState } from "react"
-import { useSelector } from "react-redux"
+import ErrorText from "@/components/errorText"
+import Modal from "@/components/modal"
+import SuccessText from "@/components/successText"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
-import ErrorText from "@/components/errorText"
-import SuccessMessage from "@/components/successMessage"
-import SuccessText from "@/components/successText"
+import { useEffect, useState } from "react"
+import { useSelector } from "react-redux"
+import styles from "./styles/styles.module.css"
 
 const AccountSettings = () => {
     const [showSetOutOfOfficeModal, setShowSetOutOfOfficeModal] = useState(false)
@@ -31,7 +30,7 @@ const AccountSettings = () => {
     useEffect(() => {
         getAllAvailableStaff()
 
-        let tempUserOutOfOfficeStatus = {...userOutOfOfficeStatus}
+        let tempUserOutOfOfficeStatus = { ...userOutOfOfficeStatus }
         tempUserOutOfOfficeStatus = user.outOfOffice
         setUserOutOfOfficeStatus(tempUserOutOfOfficeStatus)
 
@@ -41,37 +40,37 @@ const AccountSettings = () => {
         try {
             const getAllStaffRequest = await getProtected("users/cnpstaff/all", user.role)
 
-            console.log({getAllStaffRequest});
-            
+
+
 
             if (getAllStaffRequest.status === "OK") {
-                // console.log("fetched");
-                
+                // 
 
-                // console.log(sortUserAlphabetically(getAllStaffRequest.data));
-                
-                
+
+                // 
+
+
                 setAvailableStaff(getAllStaffRequest.data)
                 // setFixedUsersList(sortUserAlphabetically(getAllStaffRequest.data))
             }
 
-            console.log({getAllStaffRequest});
-            
+
+
         } catch (error) {
 
         }
     }
 
     const updateOOData = (field, value) => {
-        let tempOOData = {...ooData}
-        
+        let tempOOData = { ...ooData }
+
 
         if (field === "substitute") {
             tempOOData[field] = JSON.parse(value)
         } else {
             tempOOData[field] = value
         }
-        
+
 
         //if field is startDate, check if it's greater than the current end date. IF field is endDate, check if it is less than start date
         if (field === "startDate") {
@@ -89,46 +88,46 @@ const AccountSettings = () => {
         }
     }
 
-    console.log({ooData});
+
 
     const getEndDateMinimumDate = () => {
         const endDate = new Date(new Date(ooData.startDate).getTime() + 60 * 60 * 24 * 1000).toISOString().split('T')[0]
 
-        console.log({endDate});
+
 
         return endDate
-        
+
     }
-    
+
     const setOutOfOffice = async () => {
         try {
             clearAllErrorMessages()
             setSettingBeingUpdated("out of office")
-            const setOutOfOfficeRequest = await postProtected (`user/outOfOffice/set`, ooData, user.role)
+            const setOutOfOfficeRequest = await postProtected(`user/outOfOffice/set`, ooData, user.role)
 
             setSettingBeingUpdated("")
 
             if (setOutOfOfficeRequest.status === "OK") {
-                console.log({setOutOfOfficeRequest});
+
                 handleOutOfOfficeActionSuccess(setOutOfOfficeRequest.data.outOfOffice, "You have been set as out of office and tasks assigned to you will be routed to your selected substitute.")
 
-                setShowSetOutOfOfficeModal(false)            
+                setShowSetOutOfOfficeModal(false)
             } else {
-                
-                let tempErrorMessages = {...errorMessages}
+
+                let tempErrorMessages = { ...errorMessages }
                 tempErrorMessages.outOfOffice = setOutOfOfficeRequest.error.message
                 setErrorMessages(tempErrorMessages)
             }
         } catch (error) {
-            console.log({error});
-            
+            console.error({ error });
+
         }
     }
 
     const handleOutOfOfficeActionSuccess = (outOfOfficeNewData, message) => {
         setOutOfOfficeActionSuccessMessage(message)
 
-        let tempUserOutOfOfficeStatus = {...userOutOfOfficeStatus}
+        let tempUserOutOfOfficeStatus = { ...userOutOfOfficeStatus }
         tempUserOutOfOfficeStatus = outOfOfficeNewData
         setUserOutOfOfficeStatus(tempUserOutOfOfficeStatus)
         setSettingBeingUpdated("")
@@ -143,84 +142,84 @@ const AccountSettings = () => {
             clearAllErrorMessages()
             setSettingBeingUpdated("in office")
 
-            const setInOfficeRequest = await postProtected (`user/outOfOffice/unset`, {}, user.role)
+            const setInOfficeRequest = await postProtected(`user/outOfOffice/unset`, {}, user.role)
 
-            setSettingBeingUpdated("")  
+            setSettingBeingUpdated("")
 
             if (setInOfficeRequest.status === "OK") {
-                console.log({setInOfficeRequest});
 
-                handleOutOfOfficeActionSuccess(setInOfficeRequest.data , "You have successfully been set to in office.")
+
+                handleOutOfOfficeActionSuccess(setInOfficeRequest.data, "You have successfully been set to in office.")
                 setShowInOfficeModal(false)
-                
-                
+
+
             } else {
-                
-                let tempErrorMessages = {...errorMessages}
+
+                let tempErrorMessages = { ...errorMessages }
                 tempErrorMessages.outOfOffice = setInOfficeRequest.error.message
                 setErrorMessages(tempErrorMessages)
             }
         } catch (error) {
-            console.log({error});
-            
+            console.error({ error });
+
         }
     }
 
-    const clearAllErrorMessages = () =>{
-        let tempErrorMessages = {...errorMessages}
+    const clearAllErrorMessages = () => {
+        let tempErrorMessages = { ...errorMessages }
         tempErrorMessages.outOfOffice = ""
         setErrorMessages(tempErrorMessages)
     }
 
-    console.log({userOutOfOfficeStatus});
-    
-    
 
-    
+
+
+
+
 
     return (
         <div className={styles.settingsPage}>
             {
                 showSetOutOfOfficeModal && <Modal>
-                <div className={styles.setOutOfOfficeDiv}>
-                    <h3>Set Out of Office</h3>
+                    <div className={styles.setOutOfOfficeDiv}>
+                        <h3>Set Out of Office</h3>
 
-                    <h4>Set Duration</h4>
+                        <h4>Set Duration</h4>
 
-                    <div>
-                        <label>Start Date</label>
-                        <input min= {new Date().toISOString().split('T')[0]} type="date" onChange={(event) => updateOOData("startDate", event.target.value)} />
-                    </div>
+                        <div>
+                            <label>Start Date</label>
+                            <input min={new Date().toISOString().split('T')[0]} type="date" onChange={(event) => updateOOData("startDate", event.target.value)} />
+                        </div>
 
-                    <div>
-                        <label>End Date</label>
-                        <input min= {getEndDateMinimumDate()} type="date" onChange={(event) => updateOOData("endDate", event.target.value)} />
-                    </div>
+                        <div>
+                            <label>End Date</label>
+                            <input min={getEndDateMinimumDate()} type="date" onChange={(event) => updateOOData("endDate", event.target.value)} />
+                        </div>
 
-                    <h4>Select Substitute</h4>
-                    <p>Tasks assigned to you will be re-assigned to your substitute while you&#39;re out of office.</p>
+                        <h4>Select Substitute</h4>
+                        <p>Tasks assigned to you will be re-assigned to your substitute while you&#39;re out of office.</p>
 
-                    <select onChange={(event) => updateOOData("substitute", event.target.value)}>
-                        <option>Select a substitute</option>
+                        <select onChange={(event) => updateOOData("substitute", event.target.value)}>
+                            <option>Select a substitute</option>
+
+                            {
+                                availableStaff.map((staff: any) => {
+                                    return <option value={JSON.stringify(staff)} key={staff._id}>{`${staff.name} - ${staff.role}`} </option>
+                                })
+                            }
+                        </select>
 
                         {
-                            availableStaff.map((staff: any) => {
-                                return <option value={JSON.stringify(staff)} key={staff._id}>{`${staff.name} - ${staff.role}`} </option>
-                            })
+                            errorMessages.outOfOffice && <ErrorText text={errorMessages.outOfOffice} />
                         }
-                    </select>
 
-                    {
-                        errorMessages.outOfOffice && <ErrorText text={errorMessages.outOfOffice} />
-                    }
+                        <div className={styles.actionButtonsDiv}>
+                            <button onClick={() => setShowSetOutOfOfficeModal(false)}>Cancel</button>
 
-                    <div className={styles.actionButtonsDiv}>
-                        <button onClick={() => setShowSetOutOfOfficeModal(false)}>Cancel</button>
-
-                        <button onClick={() => setOutOfOffice()}>Save {settingBeingUpdated === "out of office" && <ButtonLoadingIcon />}</button>
+                            <button onClick={() => setOutOfOffice()}>Save {settingBeingUpdated === "out of office" && <ButtonLoadingIcon />}</button>
+                        </div>
                     </div>
-                </div>
-            </Modal>
+                </Modal>
             }
 
             {
@@ -232,7 +231,7 @@ const AccountSettings = () => {
                         <div className={styles.actionButtonsDiv}>
                             <button onClick={() => setShowInOfficeModal(false)}>Cancel</button>
 
-                            <button onClick={() => setInOffice()}>Set as in office { settingBeingUpdated === "in office" && <ButtonLoadingIcon />}</button>
+                            <button onClick={() => setInOffice()}>Set as in office {settingBeingUpdated === "in office" && <ButtonLoadingIcon />}</button>
                         </div>
                     </div>
                 </Modal>
@@ -248,35 +247,35 @@ const AccountSettings = () => {
                 }
                 <p>Current status: <span className={userOutOfOfficeStatus?.substitute ? styles.outOfOffice : styles.inOffice}>{userOutOfOfficeStatus?.substitute ? "Out of office" : "In office"}</span></p>
 
-                
+
 
                 {
                     userOutOfOfficeStatus?.substitute && <table>
-                    <thead>
-                        <tr>
-                            <td>Start Date</td>
+                        <thead>
+                            <tr>
+                                <td>Start Date</td>
 
-                            <td>End Date</td>
+                                <td>End Date</td>
 
-                            <td>Substitute</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                {userOutOfOfficeStatus?.startDate}
-                            </td>
+                                <td>Substitute</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    {userOutOfOfficeStatus?.startDate}
+                                </td>
 
-                            <td>
-                                {userOutOfOfficeStatus?.endDate}
-                            </td>
+                                <td>
+                                    {userOutOfOfficeStatus?.endDate}
+                                </td>
 
-                            <td>
-                                {userOutOfOfficeStatus?.substitute?.name}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                <td>
+                                    {userOutOfOfficeStatus?.substitute?.name}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 }
 
                 {
@@ -287,7 +286,7 @@ const AccountSettings = () => {
                     userOutOfOfficeStatus?.substitute && <button className={styles.setInOfficeButton} onClick={() => setShowInOfficeModal(true)}>Set as in office</button>
                 }
 
-                
+
 
                 <hr />
             </div>

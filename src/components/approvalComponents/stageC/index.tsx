@@ -72,7 +72,7 @@ const StageC = () => {
         try {
             const allServicesRequest = await getProtected("jobCategories", user.role)
 
-            console.log({ allServicesRequest });
+
 
 
             if (allServicesRequest.status === "OK") {
@@ -82,7 +82,7 @@ const StageC = () => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 
@@ -94,7 +94,7 @@ const StageC = () => {
         try {
             const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
 
-            console.log({ fetchVendorDataRequest });
+
 
             if (fetchVendorDataRequest.status === "OK") {
                 let tempVendorData = { ...vendorData }
@@ -126,7 +126,7 @@ const StageC = () => {
 
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 
@@ -312,7 +312,7 @@ const StageC = () => {
     const fetchJobCategories = async () => {
         try {
             const jobCategoriesRequest = await getProtected("jobCategories", user.role)
-            console.log({ jobCategoriesRequest });
+
 
             if (jobCategoriesRequest.status === "OK") {
 
@@ -328,7 +328,7 @@ const StageC = () => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
 
         }
     }
@@ -398,7 +398,7 @@ const StageC = () => {
                 actionCompleted()
             }
 
-            console.log({ recommendForHoldRequest });
+
 
         } catch (error) {
 

@@ -513,7 +513,7 @@ export default function ApprovalsContainer() {
         }).unwrap()
         searchResults = result.data.companies || []
       } catch {
-        console.log("RTK Query search failed, falling back to original API");
+        console.info("RTK Query search failed, falling back to original API");
         // Fallback to original API
         const response = await getProtected(
           `companies/search?query=${encodeURIComponent(query)}&filter=${encodeURIComponent(filterParam)}`,
@@ -661,7 +661,6 @@ export default function ApprovalsContainer() {
   }
 
   const toggleNameSort = () => {
-    console.log({ currentSort })
     let temp: any = (currentSort === "alphabetical") ? { ...approvals } : { ...fixedApprovals }
     if (nameSortAscending) {
       if (activeTab === "pending-l2") temp.pendingL2 = sortArrayByNameDescending(temp.pendingL2)
@@ -1023,7 +1022,6 @@ export default function ApprovalsContainer() {
 
   const displayRows = useMemo(getdisplayRows, [activeTab, approvals]);
 
-  console.log({ fixedApprovals: fixedApprovals.returned })
 
   // Render
   return (

@@ -1,16 +1,14 @@
 'use client'
-import Image from "next/image"
-import styles from "./styles/styles.module.css"
 import logo from "@/assets/images/logo.png"
-import { useState } from "react"
-import ErrorText from "@/components/errorText"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { postProtected } from "@/requests/post"
-import { useAppDispatch } from "@/redux/hooks"
-import { setUserData } from "@/redux/reducers/user"
-import { useRouter } from "next/navigation"
+import ErrorText from "@/components/errorText"
 import SuccessMessage from "@/components/successMessage"
+import { postProtected } from "@/requests/post"
+import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import styles from "./styles/styles.module.css"
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState({
@@ -22,9 +20,9 @@ const ForgotPassword = () => {
     const router = useRouter()
 
 
-    const updateEmailDetails = ({field, value} : {field: any, value: any}) => {
-        console.log({field, value});
-        let tempLoginDetals = {...email}
+    const updateEmailDetails = ({ field, value }: { field: any, value: any }) => {
+
+        let tempLoginDetals = { ...email }
         tempLoginDetals[field] = value
         setEmail(tempLoginDetals)
     }
@@ -41,7 +39,7 @@ const ForgotPassword = () => {
     const sendPasswordResetLink = async () => {
         try {
             setSendingResetLink(true)
-            const sendPasswordResetLinkRequest = await postProtected("auth/password/reset", {email}, null)
+            const sendPasswordResetLinkRequest = await postProtected("auth/password/reset", { email }, null)
 
             setSendingResetLink(false)
 
@@ -50,17 +48,15 @@ const ForgotPassword = () => {
             } else {
                 setErrorText(sendPasswordResetLinkRequest.error.message)
             }
-
-            console.log({sendPasswordResetLinkRequest});
         } catch (error) {
-            console.log({error});
+            console.error({ error });
         }
     }
 
     return (
         <div className={styles.forgotPassword}>
             <div>
-                <Image src={logo} alt="logo" width={70} height={89} style={{marginBottom: "1.5rem"}}/>
+                <Image src={logo} alt="logo" width={70} height={89} style={{ marginBottom: "1.5rem" }} />
 
                 <h5>Amni&#39;s Contractor Portal.</h5>
 
@@ -68,7 +64,7 @@ const ForgotPassword = () => {
                     <h3>Forgot Password</h3>
 
                     {
-                        errorText && <ErrorText text={errorText}/>
+                        errorText && <ErrorText text={errorText} />
 
                     }
 
@@ -78,7 +74,7 @@ const ForgotPassword = () => {
                     <form onSubmit={event => {
                         event.preventDefault()
                         validateEmail()
-                    }} onChange={(event: any) => updateEmailDetails({field: event.target.name, value: event.target.value})}>
+                    }} onChange={(event: any) => updateEmailDetails({ field: event.target.name, value: event.target.value })}>
                         <input placeholder="Email" name="email" />
 
 

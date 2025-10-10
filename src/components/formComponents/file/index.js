@@ -1,9 +1,9 @@
-import styles from "./styles/styles.module.css"
-import fileIcon from "../../../assets/images/fileIcon.svg"
-import Image from "next/image"
-import InfoText from "@/components/infoText"
 import FormErrorText from "@/components/formErrorText"
+import InfoText from "@/components/infoText"
+import Image from "next/image"
 import Link from "next/link"
+import fileIcon from "../../../assets/images/fileIcon.svg"
+import styles from "./styles/styles.module.css"
 
 const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG", "PNG"], infoText, errorText, value, clearValues, required, isACertificate, hasExpiryDate, updateIssueDate, updateExpiryDate, setErrorText, removeFile, removeCertificate}) => {
 
@@ -37,7 +37,6 @@ const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG"
     }
 
     const removeSelectedFile = (fileID) => {
-        console.log({fileID});
         removeFile(fileID)
 
         if (isACertificate) {
@@ -45,7 +44,6 @@ const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG"
         }
     }
 
-    console.log({value});
     return (
         <div>
             <>

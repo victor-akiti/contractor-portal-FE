@@ -16,12 +16,6 @@ export default function Home() {
     try {
       const currentAuthState = await getProtected("auth/current-auth-state")
 
-      console.log("Getting current auth state");
-
-
-      // console.log({ theCurrentAuthState: currentAuthState });
-
-
       if (!currentAuthState || currentAuthState.status === "Failed") {
         router.push("/login")
       } else if (currentAuthState.data.role === "Vendor") {
@@ -42,7 +36,7 @@ export default function Home() {
 
 
     } catch (error) {
-      console.log({ error });
+      console.error({ error });
     }
   }
 

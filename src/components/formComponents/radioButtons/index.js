@@ -1,9 +1,9 @@
+import FormErrorText from "@/components/formErrorText"
 import InfoText from "@/components/infoText"
 import styles from "./styles/styles.module.css"
-import FormErrorText from "@/components/formErrorText"
 
 const RadioButtons = ({onClick, label, options, highlighted, name, infoText, errorText, required, value, setOptionAsValue}) => {
-    console.log({radioValue: value});
+    
     return (
         <div className={[styles.radioButtons, highlighted && styles.highlighted].join(" ")} onClick={(event) => {
             event.stopPropagation()

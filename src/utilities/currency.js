@@ -1,5 +1,4 @@
 export const formatNumberAsCurrency = (number, currencyType = "Naira (NGN)") => {
-    console.log({number, currencyType});
     
     // Map currency display names to currency codes and locales
     const currencyMap = {

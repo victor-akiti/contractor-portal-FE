@@ -24,14 +24,14 @@ const Login = () => {
 
 
 
-    console.log({ loginDetails });
+
 
     useEffect(() => {
-        console.log({ env: process.env.NEXT_PUBLIC_BACKEND_URL });
+
     }, [process.env])
 
     const updateLoginDetails = ({ field, value }: { field: any, value: any }) => {
-        console.log({ field, value });
+
         let tempLoginDetals = { ...loginDetails }
         tempLoginDetals[field] = value
         setLoginDetails(tempLoginDetals)
@@ -54,7 +54,7 @@ const Login = () => {
             const loginRequest = await postProtected("auth/login", { loginDetails }, null)
 
             if (loginRequest.status === "OK") {
-                console.log({ loginRequestUser: loginRequest.data.user });
+
                 //@ts-ignore
                 dispatch(setUserData({ user: loginRequest.data.user }));
                 router.push("contractor/dashboard")
@@ -64,7 +64,7 @@ const Login = () => {
             }
 
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
             setLoggingIn(false)
             setErrorText(error.message);
         }
