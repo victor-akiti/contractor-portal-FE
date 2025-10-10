@@ -19,7 +19,7 @@ export default function Home() {
       console.log("Getting current auth state");
 
 
-      console.log({ theCurrentAuthState: currentAuthState });
+      // console.log({ theCurrentAuthState: currentAuthState });
 
 
       if (!currentAuthState || currentAuthState.status === "Failed") {

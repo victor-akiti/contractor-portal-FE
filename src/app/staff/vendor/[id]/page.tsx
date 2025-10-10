@@ -1,34 +1,31 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from "react"
-import checkedBox from "@/assets/images/checkedBox.svg"
-import uncheckedBox from "@/assets/images/uncheckedBox.svg"
-import styles from "./styles/styles.module.css"
-import { useParams, usePathname, useRouter } from "next/navigation"
-import Accordion from "@/components/accordion"
 import closeIcon from "@/assets/images/closeGrey.svg"
-import { formatNumberAsCurrency } from "@/utilities/currency";
+import Accordion from "@/components/accordion"
+import { formatNumberAsCurrency } from "@/utilities/currency"
+import { useParams, useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import styles from "./styles/styles.module.css"
 
 
+import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
+import CertificateHistoryModal from "@/components/certificateHistory"
+import ErrorText from "@/components/errorText"
+import Modal from "@/components/modal"
+import SuccessMessage from "@/components/successMessage"
+import Tabs from "@/components/tabs"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import { putProtected } from "@/requests/put"
+import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
-import moment from "moment"
-import Modal from "@/components/modal"
 import { useSelector } from "react-redux"
-import { getProtected } from "@/requests/get"
-import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import { putProtected } from "@/requests/put"
-import { postProtected } from "@/requests/post"
-import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
-import SuccessMessage from "@/components/successMessage"
-import ErrorText from "@/components/errorText"
-import Tabs from "@/components/tabs"
-import { deleteProtected } from "@/requests/delete"
-import CertificateHistoryModal from "@/components/certificateHistory"
 
 
 
 const ViewVendorPage = () => {
-    
+
     const [approvalData, setApprovalData] = useState<any>({})
     const [currentPortalAdministrator, setCurrentPortalAdministrator] = useState<any>({})
     const [inviteDetails, setInviteDetails] = useState<any>({})
@@ -48,7 +45,7 @@ const ViewVendorPage = () => {
     const [showAddCategory, setShowAddCategory] = useState(false)
     const categoriesListDivRef = useRef(null)
     const [applicationProcessed, setApplicationProcessed] = useState(false)
-    const user = useSelector((state:any) => state.user)
+    const user = useSelector((state: any) => state.user)
     const [itemBeingUpdated, setItemBeingUpdated] = useState("")
     const [updateStatus, setUpdateStatus] = useState({
         status: "",
@@ -57,15 +54,15 @@ const ViewVendorPage = () => {
     const router = useRouter()
     const [currentSelectedEndUsers, setCurrentSelectedEndUsers] = useState([])
     const [allAvailableEndUsers, setAllAvailableEndUsers] = useState([])
-    
-    console.log({user});
+
+    console.log({ user });
     const params = useParams()
     const [vendorData, setVendorData] = useState({
-        approvalData:{},
+        approvalData: {},
         pages: []
     })
 
-    
+
     useEffect(() => {
         if (params.id) {
             fetchVendorData(params.id)
@@ -77,10 +74,10 @@ const ViewVendorPage = () => {
         try {
             const fetchVendorDataRequest = await getProtected(`companies/approval-data/${vendorID}`, user.role)
 
-            console.log({fetchVendorDataRequest});
+            console.log({ fetchVendorDataRequest });
 
             if (fetchVendorDataRequest.status === "OK") {
-                let tempVendorData = {...vendorData}
+                let tempVendorData = { ...vendorData }
                 tempVendorData.approvalData = fetchVendorDataRequest.data.approvalData
                 tempVendorData.pages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages
                 setVendorData(tempVendorData)
@@ -90,7 +87,7 @@ const ViewVendorPage = () => {
                 setPages(tempPages)
 
                 if (fetchVendorDataRequest.data.approvalData.jobCategories) {
-                    let tempSelectedCategories  = [...selectedCategories]
+                    let tempSelectedCategories = [...selectedCategories]
                     tempSelectedCategories = fetchVendorDataRequest.data.approvalData.jobCategories
                     setSelectedCategories(tempSelectedCategories)
 
@@ -99,15 +96,15 @@ const ViewVendorPage = () => {
                     setCurrentVendorCategories(tempCurrentCategories)
                 }
 
-                let tempApprovalData = {...approvalData}
+                let tempApprovalData = { ...approvalData }
                 tempApprovalData = fetchVendorDataRequest.data.approvalData
                 setApprovalData(tempApprovalData)
 
-                let tempCurrentPortalAdministrator = {...currentPortalAdministrator}
+                let tempCurrentPortalAdministrator = { ...currentPortalAdministrator }
                 tempCurrentPortalAdministrator = fetchVendorDataRequest.data.portalAdministrator
                 setCurrentPortalAdministrator(tempCurrentPortalAdministrator)
 
-                let tempInviteDetails = {...inviteDetails}
+                let tempInviteDetails = { ...inviteDetails }
                 tempInviteDetails = fetchVendorDataRequest.data.companyInvite
                 setInviteDetails(tempInviteDetails)
 
@@ -122,30 +119,30 @@ const ViewVendorPage = () => {
                 getExpiringAndExpiredCertificates(tempPages)
             }
 
-            
-            
+
+
         } catch (error) {
-            console.log({error});
+            console.log({ error });
         }
     }
-    
 
-    
+
+
 
 
 
     const getCertificateTimeValidity = expiryDate => {
         const currentDateObject = new Date()
         const expiryDateObject = new Date(expiryDate)
-        
+
 
         if (currentDateObject.getTime() >= expiryDateObject.getTime()) {
             // let tempExpiredCertificates = [...expiredCertificates]
             // tempExpiredCertificates.push(expiryDate)
             // setExpiredCertificates(tempExpiredCertificates)
-            
+
             return "expired"
-        } else if ((expiryDateObject.getTime() - currentDateObject.getTime())/1000 < 7884000) {
+        } else if ((expiryDateObject.getTime() - currentDateObject.getTime()) / 1000 < 7884000) {
             // let tempExpiringCertificates = [...expiringCertificates]
             // tempExpiringCertificates.push(expiryDate)
             // setExpiringCertificates(tempExpiringCertificates)   
@@ -172,14 +169,14 @@ const ViewVendorPage = () => {
             setSelectedCategories(tempSelectedCategories)
 
         }
-        
+
     }
 
 
     const filterCategoriesListByQueryString = (queryString) => {
         let tempCategoriesList = [...fixedJobCategories]
-        
-        tempCategoriesList  = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
+
+        tempCategoriesList = tempCategoriesList.filter(item => item.category.toLowerCase().includes(queryString.toLowerCase()))
 
         setJobCategories(tempCategoriesList)
     }
@@ -196,7 +193,7 @@ const ViewVendorPage = () => {
         if (tempSelectedCategories.some(selectedCategory => selectedCategory.category === category.category)) {
             tempSelectedCategories = tempSelectedCategories.filter(selectedCategory => selectedCategory.category !== category.category)
         }
-        
+
         setSelectedCategories(tempSelectedCategories)
 
         let tempCurrentCategories = [...currentVendorCategories]
@@ -207,25 +204,25 @@ const ViewVendorPage = () => {
 
         updateVendorCategories(tempSelectedCategories)
     }
-    
+
 
     const getFieldItemComponent = (field, index, section) => {
         switch (field.type) {
-           case "shortText": 
+            case "shortText":
                 return <div key={index} className={styles.fieldItem}>
                     <div>
                         <p className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
-                            
+
                             {
                                 field.textType === "number" && field.isCurrency ? (
                                     // For currency fields, find the corresponding currency selection
                                     (() => {
                                         // Find the currency field in the same section
-                                       
+
                                         const currencyField = section.fields.find(f => f.label === "Currency");
                                         const selectedCurrency = currencyField?.value || "Naira (NGN)";
-                                        console.log({selectedCurrency})
+                                        console.log({ selectedCurrency })
                                         return <p>{formatNumberAsCurrency(field.value, selectedCurrency)}</p>;
                                     })()
                                 ) : field.textType === "number" ? (
@@ -241,64 +238,77 @@ const ViewVendorPage = () => {
                         field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
                     }
                 </div>
-            case "longText": 
-            return <div key={index} className={styles.fieldItem}>
-            <div>
-                <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    <p>{field.value}</p>
-                </p>
-            </div>
-
-            {
-                field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-            }
-            </div>
-            case "date":
+            case "longText":
                 return <div key={index} className={styles.fieldItem}>
-                <div>
-                    <p className={styles.fieldData}>
-                        <label>{`${field.label}:`}</label>
-                        <p>{moment(field.value).format("MMMM Do YYYY")}</p>
-                    </p>
-                </div>
-
-                {
-                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                }
-            </div>
-            case "file": 
-                if (field.value) {
-                    return <div key={index} className={styles.fieldItem}>
                     <div>
-                        <div className={styles.fieldData}>
+                        <p className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
-                            {
-                                field?.value[0]?.url && <div>
-                                <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
-                            </div>
-                            }
-                            
-
-                            {
-                                field.hasExpiryDate && field.history && <a style={{marginLeft: "20px"}} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
-                            }
-                        </div>
+                            <p>{field.value}</p>
+                        </p>
                     </div>
 
                     {
                         field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
                     }
+                </div>
+            case "dropDown":
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            <p>{field.value}</p>
+                        </p>
+                    </div>
 
                     {
-                        field.isACertificate && <>
-                            {
-                                field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
-                            }
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
+                </div>
+            case "date":
+                return <div key={index} className={styles.fieldItem}>
+                    <div>
+                        <p className={styles.fieldData}>
+                            <label>{`${field.label}:`}</label>
+                            <p>{moment(field.value).format("MMMM Do YYYY")}</p>
+                        </p>
+                    </div>
 
-                            {
-                                field.value && field?.value[0]?.expiryDate && <>
-                                
+                    {
+                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                    }
+                </div>
+            case "file":
+                if (field.value) {
+                    return <div key={index} className={styles.fieldItem}>
+                        <div>
+                            <div className={styles.fieldData}>
+                                <label>{`${field.label}:`}</label>
+                                {
+                                    field?.value[0]?.url && <div>
+                                        <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                    </div>
+                                }
+
+
+                                {
+                                    field.hasExpiryDate && field.history && <a style={{ marginLeft: "20px" }} onClick={() => setHistoryAsCurrentCertificateHistory(field.history)}>Certificate History</a>
+                                }
+                            </div>
+                        </div>
+
+                        {
+                            field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                        }
+
+                        {
+                            field.isACertificate && <>
+                                {
+                                    field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
+                                }
+
+                                {
+                                    field.value && field?.value[0]?.expiryDate && <>
+
                                         {
                                             getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
                                         }
@@ -307,25 +317,25 @@ const ViewVendorPage = () => {
                                             getCertificateTimeValidity(field.value[0].expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
                                         }
 
-                                        
-                                </>
-                            }
 
-                            
-                        </>
-                    }
-                </div>
+                                    </>
+                                }
+
+
+                            </>
+                        }
+                    </div>
                 }
             case "multiSelectText":
                 return <div className={styles.fieldItem}>
                     <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    {
-                        field?.value?.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
-                    }
-                </p>
+                        <label>{`${field.label}:`}</label>
+                        {
+                            field?.value?.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
+                        }
+                    </p>
                 </div>
-                
+
 
 
         }
@@ -353,10 +363,10 @@ const ViewVendorPage = () => {
 
 
             }
-            
+
         } catch (error) {
-            console.log({error});
-            
+            console.log({ error });
+
         }
     }
 
@@ -393,7 +403,7 @@ const ViewVendorPage = () => {
 
 
     const toggleHideSectionRemarks = (pageIndex, sectionIndex) => {
-        let tempSectionRemarksToShow = {...sectionRemarksToShow}
+        let tempSectionRemarksToShow = { ...sectionRemarksToShow }
 
         if (!tempSectionRemarksToShow[pageIndex]) {
             tempSectionRemarksToShow[pageIndex] = []
@@ -406,7 +416,7 @@ const ViewVendorPage = () => {
         }
 
         setSectionRemarksToShow(tempSectionRemarksToShow)
-        
+
     }
 
     const hideAllRemarks = () => {
@@ -440,9 +450,9 @@ const ViewVendorPage = () => {
             }
 
 
-            
+
         } catch (error) {
-            console.log({error})
+            console.log({ error })
         }
     }
 
@@ -453,43 +463,43 @@ const ViewVendorPage = () => {
     const approveParkRequest = async () => {
         try {
             updateUpdateStatus("approving")
-          const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
-          
-          if (approveRequest.status === "OK") {
-            updateUpdateStatus("park action success", "Vendor application parked")
+            const approveRequest = await getProtected(`approvals/hold/approve/${vendorID}`, user.role)
 
-            let tempApprovalData = {...approvalData}
-            tempApprovalData.flags.status = "parked"
-            setApprovalData(tempApprovalData)
-          } else {
-            updateUpdateStatus("park action error", approveRequest.error.message)
-          }
+            if (approveRequest.status === "OK") {
+                updateUpdateStatus("park action success", "Vendor application parked")
+
+                let tempApprovalData = { ...approvalData }
+                tempApprovalData.flags.status = "parked"
+                setApprovalData(tempApprovalData)
+            } else {
+                updateUpdateStatus("park action error", approveRequest.error.message)
+            }
         } catch (error) {
-          console.log({error})
+            console.log({ error })
         }
-      }
+    }
 
-      const rejectParkRequestAndRevertToL2 = async (from) => {
+    const rejectParkRequestAndRevertToL2 = async (from) => {
 
         try {
             updateUpdateStatus("rejecting")
-            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, {from}, user.role)
+            const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, { from }, user.role)
 
             if (revertRequest.status === "OK") {
                 updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
 
-                let tempApprovalData = {...approvalData}
+                let tempApprovalData = { ...approvalData }
                 tempApprovalData.flags.status = "pending"
                 setApprovalData(tempApprovalData)
             } else {
                 updateUpdateStatus("park action error", revertRequest.error.message)
             }
 
-            
-          } catch (error) {
-            console.log({error})
-          }
-      }
+
+        } catch (error) {
+            console.log({ error })
+        }
+    }
 
     //   const declineParkRequest = async () => {
     //     try {
@@ -497,8 +507,8 @@ const ViewVendorPage = () => {
     //       const declineRequest = await getProtected(`approvals/hold/cancel/${vendorID}`)
 
     //       console.log({declineParkRequest});
-          
-          
+
+
     //       if (declineRequest.status === "OK") {
     //         updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
 
@@ -513,51 +523,51 @@ const ViewVendorPage = () => {
     //     }
     //   }
 
-      const updateUpdateStatus = (status, message = "") => {
-        let tempUpdateStatus = {...updateStatus}
+    const updateUpdateStatus = (status, message = "") => {
+        let tempUpdateStatus = { ...updateStatus }
         tempUpdateStatus.status = status
         tempUpdateStatus.message = message
         setUpdateStatus(tempUpdateStatus)
-      }
+    }
 
-      const [showSetAccountInactiveModal, setShowSetAccountInactiveModal] = useState(false)
+    const [showSetAccountInactiveModal, setShowSetAccountInactiveModal] = useState(false)
 
-      const [accountInactiveStatus, setAccountInactiveStatus] = useState({
+    const [accountInactiveStatus, setAccountInactiveStatus] = useState({
         status: "active",
         responseType: "",
         message: ""
-      })
+    })
 
-      const toggleShowSetAccountInactiveModal = () => {
+    const toggleShowSetAccountInactiveModal = () => {
         if (showSetAccountInactiveModal) {
             setShowSetAccountInactiveModal(false)
-            setAccountInactiveStatus({...accountInactiveStatus, responseType: "", message: ""})
+            setAccountInactiveStatus({ ...accountInactiveStatus, responseType: "", message: "" })
         } else {
             setShowSetAccountInactiveModal(true)
         }
-      }
+    }
 
-      const makeVendorInactive = async () => {
+    const makeVendorInactive = async () => {
         try {
-            setAccountInactiveStatus({...accountInactiveStatus, status: "making inactive"})
+            setAccountInactiveStatus({ ...accountInactiveStatus, status: "making inactive" })
 
             const makeVendorInactiveRequest = await getProtected(`companies/vendor/make-inactive/${vendorID}`, user.role)
 
             if (makeVendorInactiveRequest.status === "OK") {
-                setAccountInactiveStatus({...accountInactiveStatus, responseType: "success", message: "Vendor has been marked as inactive and has been removed from the vendors list."})
+                setAccountInactiveStatus({ ...accountInactiveStatus, responseType: "success", message: "Vendor has been marked as inactive and has been removed from the vendors list." })
 
                 setTimeout(() => {
                     router.push("/staff/approvals")
                 }, 4000)
             } else {
-                setAccountInactiveStatus({...accountInactiveStatus, responseType: "error", message: makeVendorInactiveRequest.error.message})
+                setAccountInactiveStatus({ ...accountInactiveStatus, responseType: "error", message: makeVendorInactiveRequest.error.message })
             }
         } catch (error) {
-            console.log({error})
+            console.log({ error })
         }
     }
 
-     
+
 
     const [activeModifyContractorTab, setActiveModifyContractorTab] = useState("currentEndUsers")
     const modifyContractorModalTabs = [
@@ -592,13 +602,13 @@ const ViewVendorPage = () => {
     const [showModifyContractorModal, setShowModifyContractorModal] = useState(false)
 
     const updateEndUserResponses = (responseField, responseMessage) => {
-        let tempEndUserAction = {...endUserAction}
+        let tempEndUserAction = { ...endUserAction }
         tempEndUserAction.response[responseField] = responseMessage
         setEndUserAction(tempEndUserAction)
     }
 
     const clearEndUserResponses = () => {
-        let tempEndUserAction = {...endUserAction}
+        let tempEndUserAction = { ...endUserAction }
         tempEndUserAction.response.error = ""
         tempEndUserAction.response.success = ""
         setEndUserAction(tempEndUserAction)
@@ -615,7 +625,7 @@ const ViewVendorPage = () => {
             updateEndUserResponses("error", "Please select a replacement end user.")
         } else if (approvalData.currentEndUsers.includes(value)) {
             updateEndUserResponses("error", "End user already exists for this contractor application. Please select a different end user.")
-            
+
         } else {
             if (requestType === "replace") {
                 replaceEndUserInCurrentEndUsers(value, previousEndUser)
@@ -623,7 +633,7 @@ const ViewVendorPage = () => {
                 addEndUser(value)
             }
         }
-        
+
     }
 
     const replaceEndUserInCurrentEndUsers = (newEndUser, previousEndUser) => {
@@ -635,7 +645,7 @@ const ViewVendorPage = () => {
     }
 
     const replaceEndUser = async (updatedEndUsersList) => {
-        const tempEndUserAction = {...endUserAction}
+        const tempEndUserAction = { ...endUserAction }
         tempEndUserAction.status = "updating"
         setEndUserAction(tempEndUserAction)
         try {
@@ -643,14 +653,14 @@ const ViewVendorPage = () => {
                 updatedEndUsersList
             }, user.role)
 
-            console.log({replaceEndUserRequest});
-            
+            console.log({ replaceEndUserRequest });
+
 
             if (replaceEndUserRequest.status === "OK") {
-                
-                const {currentEndUsers, updatedEndUsersList} = replaceEndUserRequest.data
 
-                const tempApprovalData = {...approvalData}
+                const { currentEndUsers, updatedEndUsersList } = replaceEndUserRequest.data
+
+                const tempApprovalData = { ...approvalData }
                 tempApprovalData.currentEndUsers = updatedEndUsersList
                 setApprovalData(tempApprovalData)
 
@@ -663,23 +673,23 @@ const ViewVendorPage = () => {
                 updateEndUserResponses("error", replaceEndUserRequest.error.message)
             }
         } catch (error) {
-            console.log({error});
-            
+            console.log({ error });
+
         }
     }
 
     const removeEndUser = async (endUserID) => {
-        console.log({endUserID});
-        
+        console.log({ endUserID });
+
         try {
             const removeEndUserRequest = await postProtected(`companies/vendor/end-users/remove/${vendorID}`, {
                 endUserID
             }, user.role)
 
             if (removeEndUserRequest.status === "OK") {
-                const {updatedEndUsersList, currentEndUsers} = removeEndUserRequest.data
+                const { updatedEndUsersList, currentEndUsers } = removeEndUserRequest.data
 
-                const tempApprovalData = {...approvalData}
+                const tempApprovalData = { ...approvalData }
                 tempApprovalData.currentEndUsers = updatedEndUsersList
                 setApprovalData(tempApprovalData)
 
@@ -695,12 +705,12 @@ const ViewVendorPage = () => {
             }
 
         } catch (error) {
-            console.log({error});
+            console.log({ error });
         }
     }
 
     const resetEndUserAction = () => {
-        let tempEndUserAction = {...endUserAction}
+        let tempEndUserAction = { ...endUserAction }
         tempEndUserAction.action = ""
         tempEndUserAction.index = null
         tempEndUserAction.status = ""
@@ -714,7 +724,7 @@ const ViewVendorPage = () => {
     const addEndUser = async (newEndUserID) => {
 
         try {
-            let tempEndUserAction = {...endUserAction}
+            let tempEndUserAction = { ...endUserAction }
             tempEndUserAction.status = "adding"
             setEndUserAction(tempEndUserAction)
 
@@ -724,9 +734,9 @@ const ViewVendorPage = () => {
 
             if (addEndUserRequest.status === "OK") {
                 let tempCurrentSelectedEndUsers = [...currentSelectedEndUsers]
-                let tempApprovalData = {...approvalData}
+                let tempApprovalData = { ...approvalData }
 
-                const {updatedEndUsersList, currentEndUsers} = addEndUserRequest.data
+                const { updatedEndUsersList, currentEndUsers } = addEndUserRequest.data
 
                 tempApprovalData.currentEndUsers = updatedEndUsersList
                 setApprovalData(tempApprovalData)
@@ -739,10 +749,10 @@ const ViewVendorPage = () => {
                 updateEndUserResponses("error", addEndUserRequest.error.message)
             }
 
-            console.log({addEndUserRequest});
-            
+            console.log({ addEndUserRequest });
+
         } catch (error) {
-            console.log({error});
+            console.log({ error });
         }
     }
 
@@ -750,7 +760,7 @@ const ViewVendorPage = () => {
         event.preventDefault()
 
         const email = event.target[0].value
-        
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
         if (!email) {
@@ -764,7 +774,7 @@ const ViewVendorPage = () => {
     }
 
     const updateNewPortalAdminAction = (field, value) => {
-        let tempNewPortalAdminAction = {...newPortalAdminAction}
+        let tempNewPortalAdminAction = { ...newPortalAdminAction }
 
         if (field === "status") {
             tempNewPortalAdminAction[field] = value
@@ -776,7 +786,7 @@ const ViewVendorPage = () => {
     }
 
     const resetNewPortalAdminAction = () => {
-        let tempNewPortalAdminAction = {...newPortalAdminAction}
+        let tempNewPortalAdminAction = { ...newPortalAdminAction }
 
         tempNewPortalAdminAction.status = ""
         tempNewPortalAdminAction.response.error = ""
@@ -788,7 +798,7 @@ const ViewVendorPage = () => {
     const requestNewPortalAdmin = async (email) => {
         updateNewPortalAdminAction("status", "requesting")
         try {
-            const requestNewPortalAdminRequest = await postProtected(`companies/portal-admin/replace/${vendorID}`, {email}, user.role)
+            const requestNewPortalAdminRequest = await postProtected(`companies/portal-admin/replace/${vendorID}`, { email }, user.role)
             updateNewPortalAdminAction("status", "")
 
             if (requestNewPortalAdminRequest.status === "OK") {
@@ -797,7 +807,7 @@ const ViewVendorPage = () => {
                 updateNewPortalAdminAction("error", requestNewPortalAdminRequest.error.message)
             }
         } catch (error) {
-            console.log({error});
+            console.log({ error });
         }
     }
 
@@ -820,10 +830,10 @@ const ViewVendorPage = () => {
         tempCurrentCertificateHistory = []
         setCurrentCertificateHistory(tempCurrentCertificateHistory)
     }
-    
 
-    
-    
+
+
+
 
     return (
         <div>
@@ -842,183 +852,183 @@ const ViewVendorPage = () => {
                         </>
                     }
 
-                    
+
                 </div>
 
                 {
                     showModifyContractorModal && <Modal>
-                    <div className={styles.modifyContractorModal}>
-                        <h2>Modify Contractor</h2>
-                    
-
-                        <div className={styles.tabsContainer}>
-                            <Tabs activeTab={activeModifyContractorTab}  tabs={modifyContractorModalTabs} updateActiveTab={(newActiveTab) => {
-                                setActiveModifyContractorTab(newActiveTab)
-                            }}  />
-                        </div>
-                        
-                        {
-                            activeModifyContractorTab === "currentEndUsers" && <div className={styles.currentEndUsersContainer}>
-                            <h4>Current End Users:</h4>
+                        <div className={styles.modifyContractorModal}>
+                            <h2>Modify Contractor</h2>
 
 
+                            <div className={styles.tabsContainer}>
+                                <Tabs activeTab={activeModifyContractorTab} tabs={modifyContractorModalTabs} updateActiveTab={(newActiveTab) => {
+                                    setActiveModifyContractorTab(newActiveTab)
+                                }} />
+                            </div>
 
                             {
-                                currentSelectedEndUsers.map((item, index) => <div key={index} className={styles.endUserItem}>
-                                <div className={styles.endUserDetailsContainer}>
-                                    <label>{item.name}</label>
+                                activeModifyContractorTab === "currentEndUsers" && <div className={styles.currentEndUsersContainer}>
+                                    <h4>Current End Users:</h4>
 
-                                    <div>
-                                        <button onClick={() => {
-                                            setEndUserAction({...endUserAction,action: "remove", index: index})
-                                            removeEndUser(item._id)
-                                        }}>Remove</button>
 
-                                        {
-                                            endUserAction.action === "remove" && index === endUserAction.index && <ButtonLoadingIconPrimary />
-                                        }
 
-                                        <button onClick={() => setEndUserAction({...endUserAction, action: "replace", index: index})}>Replace</button>
-                                        
-                                    </div>
-                                </div>
+                                    {
+                                        currentSelectedEndUsers.map((item, index) => <div key={index} className={styles.endUserItem}>
+                                            <div className={styles.endUserDetailsContainer}>
+                                                <label>{item.name}</label>
 
-                                {
-                                    endUserAction.action === "replace" && index === endUserAction.index && <form onSubmit={e => validateEndUser(e, item._id, "replace")}>
-                                        <div className={styles.replaceEndUserDiv}>
-                                    <select>
-                                        <option>Select a replacement end user</option>
+                                                <div>
+                                                    <button onClick={() => {
+                                                        setEndUserAction({ ...endUserAction, action: "remove", index: index })
+                                                        removeEndUser(item._id)
+                                                    }}>Remove</button>
 
-                                        {
-                                            allAvailableEndUsers.map((item, index) => <option value={item._id} key={index}>{item.name}</option>)
-                                        }
-                                    </select>
+                                                    {
+                                                        endUserAction.action === "remove" && index === endUserAction.index && <ButtonLoadingIconPrimary />
+                                                    }
 
-                                    <button>Save {endUserAction.status === "updating" && <ButtonLoadingIcon />}</button>
+                                                    <button onClick={() => setEndUserAction({ ...endUserAction, action: "replace", index: index })}>Replace</button>
 
-                                    <button onClick={() => setEndUserAction({action: "", index: null, response: {error: "", success: ""}, status: ""})}>Cancel</button>
-                                </div>
-                                    </form>
-                                }
-
-                                <hr />
-
-                                
-                                
-                            </div>)
-                            }
-
-                            {
-                                endUserAction.response.error && <ErrorText text={endUserAction.response.error} />
-                            }
-
-                            {
-                                endUserAction.response.success && <SuccessMessage message={endUserAction.response.success} />
-                            }
-
-                            
-
-                            
-
-                            <div className={styles.addEndUserDiv}>
-                                <h3>Add End User</h3>
-
-                                <form onSubmit={e => validateEndUser(e, "", "add")}>
-                                    <div>
-                                        <select>
-                                            <option>Select an end user</option>
+                                                </div>
+                                            </div>
 
                                             {
-                                                allAvailableEndUsers.map((item, index) => <option value={item._id} key={index}>{item.name}</option>)
+                                                endUserAction.action === "replace" && index === endUserAction.index && <form onSubmit={e => validateEndUser(e, item._id, "replace")}>
+                                                    <div className={styles.replaceEndUserDiv}>
+                                                        <select>
+                                                            <option>Select a replacement end user</option>
+
+                                                            {
+                                                                allAvailableEndUsers.map((item, index) => <option value={item._id} key={index}>{item.name}</option>)
+                                                            }
+                                                        </select>
+
+                                                        <button>Save {endUserAction.status === "updating" && <ButtonLoadingIcon />}</button>
+
+                                                        <button onClick={() => setEndUserAction({ action: "", index: null, response: { error: "", success: "" }, status: "" })}>Cancel</button>
+                                                    </div>
+                                                </form>
                                             }
-                                        </select>
 
-                                        <button>Add {endUserAction.status === "adding" && <ButtonLoadingIcon />}</button>
+                                            <hr />
+
+
+
+                                        </div>)
+                                    }
+
+                                    {
+                                        endUserAction.response.error && <ErrorText text={endUserAction.response.error} />
+                                    }
+
+                                    {
+                                        endUserAction.response.success && <SuccessMessage message={endUserAction.response.success} />
+                                    }
+
+
+
+
+
+                                    <div className={styles.addEndUserDiv}>
+                                        <h3>Add End User</h3>
+
+                                        <form onSubmit={e => validateEndUser(e, "", "add")}>
+                                            <div>
+                                                <select>
+                                                    <option>Select an end user</option>
+
+                                                    {
+                                                        allAvailableEndUsers.map((item, index) => <option value={item._id} key={index}>{item.name}</option>)
+                                                    }
+                                                </select>
+
+                                                <button>Add {endUserAction.status === "adding" && <ButtonLoadingIcon />}</button>
+                                            </div>
+                                        </form>
                                     </div>
-                                </form>
-                            </div>
-                        </div>
-                        }
-
-                        {
-                            activeModifyContractorTab === "portalAdmin" && <div className={styles.portalAdminContainer}>
-                            <h3>Current Portal Administrator</h3>
-
-                            <div>
-                                <div className={styles.currentAdminInfoItem}>
-                                    <label>Name</label>
-
-                                    <p>{currentPortalAdministrator.name}</p>
                                 </div>
-
-                                <div className={styles.currentAdminInfoItem}>
-                                    <label>Email</label>
-
-                                    <p>{currentPortalAdministrator.email}</p>
-                                </div>
-
-                                <div className={styles.currentAdminInfoItem}>
-                                    <label>Phone Number</label>
-
-                                    <p>{currentPortalAdministrator?.phone?.number ? currentPortalAdministrator.phone.number : currentPortalAdministrator.phone}</p>
-                                </div>
-                            </div>
-
-
-                            <hr />
-                            
-
-                            <h3>Replace Portal Administrator</h3>
-
-                            {
-                                newPortalAdminAction.response.error && <ErrorText text={newPortalAdminAction.response.error} />
                             }
 
                             {
-                                newPortalAdminAction.response.success && <SuccessMessage message={newPortalAdminAction.response.success} />
+                                activeModifyContractorTab === "portalAdmin" && <div className={styles.portalAdminContainer}>
+                                    <h3>Current Portal Administrator</h3>
+
+                                    <div>
+                                        <div className={styles.currentAdminInfoItem}>
+                                            <label>Name</label>
+
+                                            <p>{currentPortalAdministrator.name}</p>
+                                        </div>
+
+                                        <div className={styles.currentAdminInfoItem}>
+                                            <label>Email</label>
+
+                                            <p>{currentPortalAdministrator.email}</p>
+                                        </div>
+
+                                        <div className={styles.currentAdminInfoItem}>
+                                            <label>Phone Number</label>
+
+                                            <p>{currentPortalAdministrator?.phone?.number ? currentPortalAdministrator.phone.number : currentPortalAdministrator.phone}</p>
+                                        </div>
+                                    </div>
+
+
+                                    <hr />
+
+
+                                    <h3>Replace Portal Administrator</h3>
+
+                                    {
+                                        newPortalAdminAction.response.error && <ErrorText text={newPortalAdminAction.response.error} />
+                                    }
+
+                                    {
+                                        newPortalAdminAction.response.success && <SuccessMessage message={newPortalAdminAction.response.success} />
+                                    }
+
+                                    <form onSubmit={e => validateNewPortalAdminEmail(e)}>
+                                        <div className={styles.replaceAdministratorDiv}>
+                                            <input placeholder="Enter the new portal administrator's email address" />
+                                            <button>Send Replacement Request {newPortalAdminAction.status === "requesting" && <ButtonLoadingIcon />}</button>
+                                        </div>
+                                    </form>
+                                </div>
                             }
 
-                            <form onSubmit={e => validateNewPortalAdminEmail(e)}>
-                                <div className={styles.replaceAdministratorDiv}>
-                                    <input placeholder="Enter the new portal administrator's email address" />
-                                    <button>Send Replacement Request {newPortalAdminAction.status === "requesting" && <ButtonLoadingIcon />}</button>
-                                </div>
-                            </form>
+                            <div className={styles.closeModifyContractorModalDiv}>
+                                <button onClick={() => closeModifyContractorModal()}>Close</button>
+                            </div>
                         </div>
-                        }
-
-                        <div className={styles.closeModifyContractorModalDiv}>
-                            <button onClick={() => closeModifyContractorModal()}>Close</button>
-                        </div>
-                    </div>
-                </Modal>
+                    </Modal>
                 }
 
                 {
                     showSetAccountInactiveModal && <Modal>
-                    <div className={styles.makeInactiveModal}>
-                        <h2>Make Vendor Inactive</h2>
+                        <div className={styles.makeInactiveModal}>
+                            <h2>Make Vendor Inactive</h2>
 
-                        <p>You are about to make this vendor account inactive. Their user account will be deleted and their vendor records archived. Continue?</p>
+                            <p>You are about to make this vendor account inactive. Their user account will be deleted and their vendor records archived. Continue?</p>
 
-                        <div>
+                            <div>
+                                {
+                                    accountInactiveStatus.responseType === "success" && <SuccessMessage message={"Vendor has been marked as inactive and has been removed from the vendors list. Returning to vendors list..."} />
+                                }
+
+                                {
+                                    accountInactiveStatus.responseType === "error" && <ErrorText text={accountInactiveStatus.message} />
+                                }
+                            </div>
+
                             {
-                                accountInactiveStatus.responseType === "success" && <SuccessMessage message={"Vendor has been marked as inactive and has been removed from the vendors list. Returning to vendors list..."} />
-                            }
-
-                            {
-                                accountInactiveStatus.responseType === "error" && <ErrorText text={accountInactiveStatus.message} />
+                                accountInactiveStatus.responseType !== "success" && <div className={styles.actionButtons}>
+                                    <button onClick={() => toggleShowSetAccountInactiveModal()}>Cancel</button>
+                                    <button onClick={() => makeVendorInactive()}>Confirm {accountInactiveStatus.status === "making inactive" && <ButtonLoadingIcon />}</button>
+                                </div>
                             }
                         </div>
-
-                        {
-                            accountInactiveStatus.responseType !== "success" && <div className={styles.actionButtons}>
-                            <button onClick={() => toggleShowSetAccountInactiveModal()}>Cancel</button>
-                            <button onClick={() => makeVendorInactive()}>Confirm {accountInactiveStatus.status === "making inactive" && <ButtonLoadingIcon />}</button>
-                        </div>
-                        }
-                    </div>
-                </Modal>
+                    </Modal>
                 }
 
 
@@ -1026,22 +1036,22 @@ const ViewVendorPage = () => {
                     currentCertificateHistory?.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
                 }
 
-                
+
             </div>
 
             {/* <h3 className={styles.subTitle}>Carry out Stage B</h3> */}
             {
                 approvalData?.flags?.status === "park requested" && <div className={styles.holdRequestDiv}>
-                <h5>Hold Requested</h5>
-                <p>{`${approvalData?.flags?.hold?.requestedBy?.name} has recommended that this vendor application should be put on hold`}</p>
-                <p className={styles.holdRequestReasonLabel}>Reason:</p>
-                <p className={styles.holdRequestReason}>{approvalData?.flags?.hold?.reason}</p>
+                    <h5>Hold Requested</h5>
+                    <p>{`${approvalData?.flags?.hold?.requestedBy?.name} has recommended that this vendor application should be put on hold`}</p>
+                    <p className={styles.holdRequestReasonLabel}>Reason:</p>
+                    <p className={styles.holdRequestReason}>{approvalData?.flags?.hold?.reason}</p>
 
-                <div>
-                    <button onClick={() => approveParkRequest()}>Approve hold and park at L2 {updateStatus.status === "approving" && <ButtonLoadingIcon />}</button>
-                    <button onClick={() => rejectParkRequestAndRevertToL2("park requests")}>Cancel hold request {updateStatus.status === "rejecting" && <ButtonLoadingIconPrimary />}</button>
+                    <div>
+                        <button onClick={() => approveParkRequest()}>Approve hold and park at L2 {updateStatus.status === "approving" && <ButtonLoadingIcon />}</button>
+                        <button onClick={() => rejectParkRequestAndRevertToL2("park requests")}>Cancel hold request {updateStatus.status === "rejecting" && <ButtonLoadingIconPrimary />}</button>
+                    </div>
                 </div>
-            </div>
             }
 
             {
@@ -1051,117 +1061,117 @@ const ViewVendorPage = () => {
             {
                 updateStatus.status === "park action error" && <ErrorText text={updateStatus.message} />
             }
-            
+
 
             {
                 !applicationProcessed && <div>
-                {
-                    expiringCertificates?.length > 0 && <div className={styles.expiringCertificatesDiv}>
-                    <h3>Expiring Certificates/Permits</h3>
-                    <p>The following certificates/permit are expiring within the next 3 months</p>
+                    {
+                        expiringCertificates?.length > 0 && <div className={styles.expiringCertificatesDiv}>
+                            <h3>Expiring Certificates/Permits</h3>
+                            <p>The following certificates/permit are expiring within the next 3 months</p>
 
-                    <div>
-                        {
-                            expiringCertificates.map((item, index) => <div key={index} className={styles.expiringCertificatesItem}>
-                                <h4>{item.approvalLabel}</h4>
-                                <p>{item.expiryDate}</p>
-                            </div>)
-                        }
-                    </div>
+                            <div>
+                                {
+                                    expiringCertificates.map((item, index) => <div key={index} className={styles.expiringCertificatesItem}>
+                                        <h4>{item.approvalLabel}</h4>
+                                        <p>{item.expiryDate}</p>
+                                    </div>)
+                                }
+                            </div>
 
-                    <a><p>Notify vendor</p></a>
+                            <a><p>Notify vendor</p></a>
+                        </div>
+                    }
+
+                    {
+                        expiredCertificates?.length > 0 && <div className={styles.expiredCertificatesDiv}>
+                            <h3>Expired Certificates/Permits</h3>
+                            <p>The following certificates/permits have expired</p>
+
+                            <div>
+                                {
+                                    expiredCertificates.map((item, index) => <div key={index} className={styles.expiringCertificatesItem}>
+                                        <h4>{item.approvalLabel}</h4>
+                                        <p>{item.expiryDate}</p>
+                                    </div>)
+                                }
+                            </div>
+
+                            <a><p>Notify vendor</p></a>
+                        </div>
+                    }
                 </div>
-                }
-
-                {
-                    expiredCertificates?.length > 0 && <div className={styles.expiredCertificatesDiv}>
-                    <h3>Expired Certificates/Permits</h3>
-                    <p>The following certificates/permits have expired</p>
-
-                    <div>
-                        {
-                            expiredCertificates.map((item, index) => <div key={index} className={styles.expiringCertificatesItem}>
-                                <h4>{item.approvalLabel}</h4>
-                                <p>{item.expiryDate}</p>
-                            </div>)
-                        }
-                    </div>
-
-                    <a><p>Notify vendor</p></a>
-                </div>
-                }
-            </div>
             }
 
             {
                 !applicationProcessed && <>
-                        <div className={styles.approvalContent}>
+                    <div className={styles.approvalContent}>
 
-                            <Accordion defaultOpen={true} title="Contractor Details">
-                                <div className={styles.sectionItem}>
+                        <Accordion defaultOpen={true} title="Contractor Details">
+                            <div className={styles.sectionItem}>
+                                <div>
+                                    <div className={styles.sectionHeader}>
+                                        <h6>{"Invite Details"}</h6>
+                                    </div>
+
                                     <div>
-                                        <div className={styles.sectionHeader}>
-                                            <h6>{"Invite Details"}</h6>                              
-                                        </div>
-
-                                        <div>
-                                            <div className={styles.fieldItem}>
-                                                <div>
-                                                    <p className={styles.fieldData}>
-                                                        <label>{`Invited Company Name:`}</label>
-                                                        {
-                                                            <p>{inviteDetails?.invitedCompanyName}</p>
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className={styles.fieldItem}>
-                                                <div>
-                                                    <p className={styles.fieldData}>
-                                                        <label>{`Invited by:`}</label>
-                                                        {
-                                                            <p>{inviteDetails?.name}</p>
-                                                        }
-                                                    </p>
-                                                </div>
+                                        <div className={styles.fieldItem}>
+                                            <div>
+                                                <p className={styles.fieldData}>
+                                                    <label>{`Invited Company Name:`}</label>
+                                                    {
+                                                        <p>{inviteDetails?.invitedCompanyName}</p>
+                                                    }
+                                                </p>
                                             </div>
                                         </div>
 
-                                        <hr />
+                                        <div className={styles.fieldItem}>
+                                            <div>
+                                                <p className={styles.fieldData}>
+                                                    <label>{`Invited by:`}</label>
+                                                    {
+                                                        <p>{inviteDetails?.name}</p>
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                        <div className={styles.sectionHeader}>
-                                            <h6 style={{marginTop: "20px"}}>{"Portal Administrator"}</h6>                              
+                                    <hr />
+
+                                    <div className={styles.sectionHeader}>
+                                        <h6 style={{ marginTop: "20px" }}>{"Portal Administrator"}</h6>
+                                    </div>
+
+                                    <div>
+                                        <div className={styles.fieldItem}>
+                                            <div>
+                                                <p className={styles.fieldData}>
+                                                    <label>{`Name:`}</label>
+                                                    {
+                                                        <p>{currentPortalAdministrator?.name}</p>
+                                                    }
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <div className={styles.fieldItem}>
-                                                <div>
-                                                    <p className={styles.fieldData}>
-                                                        <label>{`Name:`}</label>
-                                                        {
-                                                            <p>{currentPortalAdministrator?.name}</p>
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className={styles.fieldItem}>
-                                                <div>
-                                                    <p className={styles.fieldData}>
-                                                        <label>{`Email:`}</label>
-                                                        {
-                                                            <p>{currentPortalAdministrator?.email}</p>
-                                                        }
-                                                    </p>
-                                                </div>
+                                        <div className={styles.fieldItem}>
+                                            <div>
+                                                <p className={styles.fieldData}>
+                                                    <label>{`Email:`}</label>
+                                                    {
+                                                        <p>{currentPortalAdministrator?.email}</p>
+                                                    }
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                
-                            </Accordion>
+
+                        </Accordion>
 
                         {
                             pages.map((item, index) => <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
@@ -1171,68 +1181,68 @@ const ViewVendorPage = () => {
                                             return <div key={sectionIndex} className={styles.sectionItem}>
                                                 <div>
                                                     <div className={styles.sectionHeader}>
-                                                        <h6>{sectionItem.title}</h6>                              
+                                                        <h6>{sectionItem.title}</h6>
                                                     </div>
-        
+
                                                     <div>
                                                         {
                                                             sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex, sectionItem))
                                                         }
                                                     </div>
-        
+
                                                     <div>
-                                                        
-        
+
+
                                                         {
-                                                            (sectionItem.remarks && sectionItem.remarks?.length > 0  ) && <div className={styles.showCommentTriggerDiv}>
+                                                            (sectionItem.remarks && sectionItem.remarks?.length > 0) && <div className={styles.showCommentTriggerDiv}>
                                                                 <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
                                                             </div>
                                                         }
-        
+
                                                         {
                                                             sectionRemarksToShow[index]?.includes(sectionIndex) && <div>
-                                                            {
-                                                                sectionItem?.remarks && sectionItem?.remarks?.length > 0  && <div className={styles.remarksContent}>
-                                                                <p>Notes for Vendor</p>
-        
-                                                                <div>
-                                                                    {
-                                                                        sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
-                                                                            <p>{remarkItem.remark}</p>
-                                                                            <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                        </div>)
-                                                                    }
-                                                                </div>
-        
+                                                                {
+                                                                    sectionItem?.remarks && sectionItem?.remarks?.length > 0 && <div className={styles.remarksContent}>
+                                                                        <p>Notes for Vendor</p>
+
+                                                                        <div>
+                                                                            {
+                                                                                sectionItem?.remarks?.map((remarkItem, remarkIndex) => <div key={remarkIndex} className={styles.remarksItem}>
+                                                                                    <p>{remarkItem.remark}</p>
+                                                                                    <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                                </div>)
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                }
+
+                                                                {
+                                                                    sectionItem?.comments && sectionItem?.comments?.length > 0 && <div className={styles.commentsContent}>
+                                                                        <p>Comments</p>
+
+                                                                        <div>
+                                                                            {
+                                                                                sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
+                                                                                    <p>{commentItem.comment}</p>
+                                                                                    <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                                </div>)
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                }
                                                             </div>
-                                                            }
-        
-                                                            {
-                                                                sectionItem?.comments && sectionItem?.comments?.length > 0  && <div className={styles.commentsContent}>
-                                                                <p>Comments</p>
-        
-                                                                <div>
-                                                                    {
-                                                                        sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
-                                                                            <p>{commentItem.comment}</p>
-                                                                            <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
-                                                                        </div>)
-                                                                    }
-                                                                </div>
-        
-                                                            </div>
-                                                            }
-                                                        </div>
                                                         }
                                                     </div>
-        
-        
-        
-                                                        {
-                                                            sectionIndex !== item.sections?.length - 1 && <hr />
-                                                        }
+
+
+
+                                                    {
+                                                        sectionIndex !== item.sections?.length - 1 && <hr />
+                                                    }
                                                 </div>
-    
+
                                             </div>
                                         }
                                     })
@@ -1240,9 +1250,9 @@ const ViewVendorPage = () => {
                             </Accordion>)
                         }
 
-                        </div>
+                    </div>
 
-                        <div className={styles.approvalContent}>
+                    <div className={styles.approvalContent}>
                         <Accordion defaultOpen={false} title={"Contractor Categorization"}>
                             <div className={styles.sectionItem}>
                                 <div className={styles.contractorCategorizationDiv}>
@@ -1250,34 +1260,34 @@ const ViewVendorPage = () => {
 
                                     {
                                         showAddCategory && <>
-                                                <p>Select the type of services you would consider this Contractor could provide to Amni.</p>
+                                            <p>Select the type of services you would consider this Contractor could provide to Amni.</p>
 
-                                                <div ref={categoriesListDivRef}>
-                                                    <div className={styles.selectedCategoriesList}>
-                                                        {
-                                                            selectedCategories.map((item, index) => <div key={index} className={styles.selectedCategoriesItem}>
-                                                                <div ><Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => removeCategoryFromSelectedCategories(item)} style={{cursor: "pointer"}} /></div>
-                                                                <p>{item.category}</p>
-                                                                
-                                                            </div>)
-                                                        }
-                                                    </div>
-                                                    <input placeholder="Select Job Categories" onClick={() => setShowCategoriesList(true)} onChange={(e) => filterCategoriesListByQueryString(e.target.value)} />
-
-                                                    <Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => {clearSelectedCategories()}} style={{cursor: "pointer"}} />
-
+                                            <div ref={categoriesListDivRef}>
+                                                <div className={styles.selectedCategoriesList}>
                                                     {
-                                                        showCategoriesList && <div className={styles.jobCategoryList} >
+                                                        selectedCategories.map((item, index) => <div key={index} className={styles.selectedCategoriesItem}>
+                                                            <div ><Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => removeCategoryFromSelectedCategories(item)} style={{ cursor: "pointer" }} /></div>
+                                                            <p>{item.category}</p>
+
+                                                        </div>)
+                                                    }
+                                                </div>
+                                                <input placeholder="Select Job Categories" onClick={() => setShowCategoriesList(true)} onChange={(e) => filterCategoriesListByQueryString(e.target.value)} />
+
+                                                <Image src={closeIcon} alt="close icon" width={10} height={10} onClick={() => { clearSelectedCategories() }} style={{ cursor: "pointer" }} />
+
+                                                {
+                                                    showCategoriesList && <div className={styles.jobCategoryList} >
                                                         {
                                                             jobCategories.map((item, index) => <div key={index} className={styles.jobCategoryItem}>
                                                                 <p onClick={() => addCategoryToSelectedCategories(item)}>{item.category}</p>
                                                             </div>)
                                                         }
                                                     </div>
-                                                    }
-                                                </div>
+                                                }
+                                            </div>
 
-                                                <button className={styles.saveCategoriesButton } onClick={() => updateVendorCategories(null)}>Save {updatingVendorCategories && <ButtonLoadingIcon />}</button>
+                                            <button className={styles.saveCategoriesButton} onClick={() => updateVendorCategories(null)}>Save {updatingVendorCategories && <ButtonLoadingIcon />}</button>
                                         </>
                                     }
 
@@ -1295,9 +1305,9 @@ const ViewVendorPage = () => {
                                 </div>
                             </div>
                         </Accordion>
-                        </div>
+                    </div>
 
-                    
+
                 </>
             }
 

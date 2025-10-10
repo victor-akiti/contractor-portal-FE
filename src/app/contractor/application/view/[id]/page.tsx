@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
-import styles from "./styles/styles.module.css";
-import { getProtected } from "@/requests/get";
-import { useParams } from "next/navigation";
 import Accordion from "@/components/accordion";
-import Link from "next/link";
+import { getProtected } from "@/requests/get";
 import moment from "moment";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import styles from "./styles/styles.module.css";
 
 type RegistrationForm = {
   _id?: String;
@@ -62,7 +62,6 @@ const ViewPage = () => {
   const user = useSelector((state: any) => state.user.user)
 
   useEffect(() => {
-    console.log({ location });
 
     const vendorID = location?.id;
 
@@ -73,7 +72,6 @@ const ViewPage = () => {
 
   const getVendorForm = async (vendorID: any) => {
     try {
-      console.log({ vendorID });
 
       const getVendorRegistrationFormRequest = await getProtected(
         `companies/register/form/${vendorID}`, user.role
@@ -92,25 +90,21 @@ const ViewPage = () => {
         // setErrorMessage(getVendorRegistrationFormRequest.error.message)
       }
 
-      console.log({ getVendorRegistrationFormRequest });
     } catch (error) {
       console.log({ error });
     }
   };
 
   const getFileComponent = (file) => {
-    console.log({ file });
 
     if (file.value.length > 0) {
-      console.log("Has files");
 
       return (
         <div>
           {file.value.map((item, index) => (
             <div key={index} className={styles.fieldItem}>
-              <label className={styles.fieldLabel}>{`${file.label} ${
-                index > 1 ? index : ""
-              }`}</label>
+              <label className={styles.fieldLabel}>{`${file.label} ${index > 1 ? index : ""
+                }`}</label>
 
               <div className={styles.fileDetailsDiv}>
                 <p>{item.name}</p>
@@ -138,7 +132,6 @@ const ViewPage = () => {
 
   const getMultiSelectComponent = (field) => {
     if (field.value.length > 0) {
-      console.log("Has files");
 
       return (
         <div className={styles.fieldItem}>
@@ -160,128 +153,128 @@ const ViewPage = () => {
   const getCertificateTimeValidity = expiryDate => {
     const currentDateObject = new Date()
     const expiryDateObject = new Date(expiryDate)
-    
+
 
     if (currentDateObject.getTime() >= expiryDateObject.getTime()) {
-        // let tempExpiredCertificates = [...expiredCertificates]
-        // tempExpiredCertificates.push(expiryDate)
-        // setExpiredCertificates(tempExpiredCertificates)
-        
-        return "expired"
-    } else if ((expiryDateObject.getTime() - currentDateObject.getTime())/1000 < 7884000) {
-        // let tempExpiringCertificates = [...expiringCertificates]
-        // tempExpiringCertificates.push(expiryDate)
-        // setExpiringCertificates(tempExpiringCertificates)   
-        return "expiring"
+      // let tempExpiredCertificates = [...expiredCertificates]
+      // tempExpiredCertificates.push(expiryDate)
+      // setExpiredCertificates(tempExpiredCertificates)
+
+      return "expired"
+    } else if ((expiryDateObject.getTime() - currentDateObject.getTime()) / 1000 < 7884000) {
+      // let tempExpiringCertificates = [...expiringCertificates]
+      // tempExpiringCertificates.push(expiryDate)
+      // setExpiringCertificates(tempExpiringCertificates)   
+      return "expiring"
     } else {
-        return ""
+      return ""
     }
-}
+  }
 
   const getFieldItemComponent = (field, index) => {
     switch (field.type) {
-        case "shortText": 
+      case "shortText":
         return <div key={index} className={styles.fieldItem}>
-            <div>
-                <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    <p>{field.value}</p>
-                </p>
-            </div>
-
-            {
-                field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-            }
-        </div>
-        case "longText": 
-        return <div key={index} className={styles.fieldItem}>
-        <div>
+          <div>
             <p className={styles.fieldData}>
-                <label>{`${field.label}:`}</label>
-                <p>{field.value}</p>
+              <label>{`${field.label}:`}</label>
+              <p>{field.value}</p>
             </p>
-        </div>
+          </div>
 
-        {
+          {
             field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-        }
+          }
         </div>
-        case "date":
-            return <div key={index} className={styles.fieldItem}>
+      case "longText":
+        return <div key={index} className={styles.fieldItem}>
+          <div>
+            <p className={styles.fieldData}>
+              <label>{`${field.label}:`}</label>
+              <p>{field.value}</p>
+            </p>
+          </div>
+
+          {
+            field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+          }
+        </div>
+      case "date":
+        return <div key={index} className={styles.fieldItem}>
+          <div>
+            <p className={styles.fieldData}>
+              <label>{`${field.label}:`}</label>
+              <p>{moment(field.value).format("MMMM Do YYYY")}</p>
+            </p>
+          </div>
+
+          {
+            field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+          }
+        </div>
+      case "file":
+        if (field.value) {
+          return <div key={index} className={styles.fieldItem}>
             <div>
-                <p className={styles.fieldData}>
-                    <label>{`${field.label}:`}</label>
-                    <p>{moment(field.value).format("MMMM Do YYYY")}</p>
-                </p>
+              <div className={styles.fieldData}>
+                <label>{`${field.label}:`}</label>
+                {
+                  field?.value[0]?.url && <div>
+                    <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                  </div>
+                }
+
+
+                {
+                  field.hasExpiryDate && <a style={{ marginLeft: "20px" }}>Certificate History</a>
+                }
+              </div>
             </div>
 
             {
-                field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+              field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
             }
+
+            {
+              field.isACertificate && <>
+                {
+                  field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
+                }
+
+                {
+                  field.value && field?.value[0]?.expiryDate && <>
+
+                    {
+                      getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
+                    }
+
+                    {
+                      getCertificateTimeValidity(field.value[0].expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
+                    }
+
+
+                  </>
+                }
+
+
+              </>
+            }
+          </div>
+        }
+      case "multiSelectText":
+        return <div className={styles.fieldItem}>
+          <p className={styles.fieldData}>
+            <label>{`${field.label}:`}</label>
+            {
+              field?.value?.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
+            }
+          </p>
         </div>
-        case "file": 
-            if (field.value) {
-                return <div key={index} className={styles.fieldItem}>
-                <div>
-                    <div className={styles.fieldData}>
-                        <label>{`${field.label}:`}</label>
-                        {
-                            field?.value[0]?.url && <div>
-                            <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
-                        </div>
-                        }
-                        
 
-                        {
-                          field.hasExpiryDate && <a style={{marginLeft: "20px"}}>Certificate History</a>
-                        }
-                    </div>
-                </div>
-
-                {
-                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                }
-
-                {
-                    field.isACertificate && <>
-                        {
-                            field?.value[0]?.expiryDate && <p className={styles.expiryDateText}>{`Expiry date: ${field.value[0].expiryDate}`}</p>
-                        }
-
-                        {
-                            field.value && field?.value[0]?.expiryDate && <>
-                            
-                                    {
-                                        getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && <p className={styles.certificateExpiredText}>Certificate has expired</p>
-                                    }
-
-                                    {
-                                        getCertificateTimeValidity(field.value[0].expiryDate) === "expiring" && <p className={styles.certificateToExpireText}>Certificate will soon expire</p>
-                                    }
-
-                                    
-                            </>
-                        }
-
-                        
-                    </>
-                }
-            </div>
-            }
-        case "multiSelectText":
-            return <div className={styles.fieldItem}>
-                <p className={styles.fieldData}>
-                <label>{`${field.label}:`}</label>
-                {
-                    field?.value?.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
-                }
-            </p>
-            </div>
-            
 
 
     }
-}
+  }
 
   const getFieldComponent = (field) => {
     switch (field.type) {
@@ -342,49 +335,49 @@ const ViewPage = () => {
           </div> */}
 
 
-        <div className={styles.approvalContent}>
+          <div className={styles.approvalContent}>
 
-        {
-            registrationForm.form.pages.map((item, index) => <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
+            {
+              registrationForm.form.pages.map((item, index) => <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
                 {
-                    item.sections.map((sectionItem, sectionIndex) => {
-                        if (!sectionItem.hideOnApproval) {
-                            return <div key={sectionIndex} className={styles.sectionItem}>
-                            <div>
-                                <div className={styles.sectionHeader}>
-                                    <h6>{sectionItem.title}</h6>
+                  item.sections.map((sectionItem, sectionIndex) => {
+                    if (!sectionItem.hideOnApproval) {
+                      return <div key={sectionIndex} className={styles.sectionItem}>
+                        <div>
+                          <div className={styles.sectionHeader}>
+                            <h6>{sectionItem.title}</h6>
 
-                                    
-                                </div>
 
-                                <div>
-                                    {
-                                        sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
-                                    }
-                                </div>
+                          </div>
 
-                                <div>
-                                    
+                          <div>
+                            {
+                              sectionItem.fields.map((fieldItem, fieldIndex) => getFieldItemComponent(fieldItem, fieldIndex))
+                            }
+                          </div>
 
-                                    
-                                </div>
+                          <div>
 
 
 
-                                {
-                                    sectionIndex !== item.sections.length - 1 && <hr />
-                                }
-                            </div>
+                          </div>
 
+
+
+                          {
+                            sectionIndex !== item.sections.length - 1 && <hr />
+                          }
                         </div>
-                        }
-                    })
-                }
-                
-            </Accordion>)
-        }
 
-        </div>
+                      </div>
+                    }
+                  })
+                }
+
+              </Accordion>)
+            }
+
+          </div>
         </>
       )}
     </div>
