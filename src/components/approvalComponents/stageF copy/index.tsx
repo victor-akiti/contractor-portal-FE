@@ -243,7 +243,7 @@ const StageX = () => {
                     <div>
                         <p className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
-                            <p>{moment(field.value).format("MMMM Do YYYY")}</p>
+                            <p>{field.value ? moment(field.value).format("YYYY-MM-DD") : ""}</p>
                         </p>
                     </div>
 
