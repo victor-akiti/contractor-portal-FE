@@ -317,7 +317,7 @@ const Dashboard = () => {
 
                         {
                             dashboardData.expiredCertificates.length === 0 && <div className={styles.noCertificates}>
-                                <p>You do not have any expiring certificates</p>
+                                <p>You do not have any expired certificate</p>
                             </div>
                         }
 
