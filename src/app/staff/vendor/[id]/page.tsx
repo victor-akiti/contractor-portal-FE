@@ -1,7 +1,6 @@
 'use client'
 import closeIcon from "@/assets/images/closeGrey.svg"
 import Accordion from "@/components/accordion"
-import { formatNumberAsCurrency } from "@/utilities/currency"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
@@ -17,6 +16,7 @@ import Tabs from "@/components/tabs"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
+import { formatNumberAsCurrency } from "@/utilities/currency"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
@@ -207,14 +207,15 @@ const ViewVendorPage = () => {
 
 
     const getFieldItemComponent = (field, index, section) => {
-        switch (field.type) {
-            case "shortText":
-                return <div key={index} className={styles.fieldItem}>
-                    <div>
-                        <p className={styles.fieldData}>
-                            <label>{`${field.label}:`}</label>
 
-                            {
+        switch (field.type) {
+            case "shortText": return <div key={index} className={styles.fieldItem}>
+                <div>
+                    <p className={styles.fieldData}>
+                        <label>{`${field.label}:`}</label>
+
+                        {
+                            typeof field.value !== "string" ? <div></div> : //For Priori Energy where the TIN field value is an object of url, etc. as in type file
                                 field.textType === "number" && field.isCurrency ? (
                                     // For currency fields, find the corresponding currency selection
                                     (() => {
@@ -230,14 +231,14 @@ const ViewVendorPage = () => {
                                 ) : (
                                     <p>{field?.value?.e164Number ? field.value.number : field.value}</p>
                                 )
-                            }
-                        </p>
-                    </div>
-
-                    {
-                        field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
-                    }
+                        }
+                    </p>
                 </div>
+
+                {
+                    field.approvalInfoText && <p className={styles.approvalInfoText}>Approval info text</p>
+                }
+            </div>
             case "longText":
                 return <div key={index} className={styles.fieldItem}>
                     <div>
