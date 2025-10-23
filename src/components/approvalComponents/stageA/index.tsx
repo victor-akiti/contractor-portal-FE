@@ -174,7 +174,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                         <p className={styles.fieldData}>
                             <label>{`${field.label}:`}</label>
 
-                            {
+                            {typeof field.value !== "string" ? <div></div> :
                                 field.textType === "number" && field.isCurrency ? (
                                     // For currency fields, find the corresponding currency selection
                                     (() => {
