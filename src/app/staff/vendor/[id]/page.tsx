@@ -877,7 +877,7 @@ const ViewVendorPage = () => {
                                     {
                                         currentSelectedEndUsers.map((item, index) => <div key={index} className={styles.endUserItem}>
                                             <div className={styles.endUserDetailsContainer}>
-                                                <label>{item.name}</label>
+                                                <label>{item?.name}</label>
 
                                                 <div>
                                                     <button onClick={() => {
@@ -1067,7 +1067,8 @@ const ViewVendorPage = () => {
             {
                 !applicationProcessed && <div>
                     {
-                        expiringCertificates?.length > 0 && <div className={styles.expiringCertificatesDiv}>
+                        expiringCertificates?.length > 0 &&
+                        <div className={styles.expiringCertificatesDiv}>
                             <h3>Expiring Certificates/Permits</h3>
                             <p>The following certificates/permit are expiring within the next 3 months</p>
 
