@@ -26,14 +26,31 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter 
     return false
   }
   const getCurrentStage = () => {
-    if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) return "A"
-    if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) return "B"
-    if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) return "C"
-    if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3) return "D"
-    if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4) return "E"
-    if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5) return "F"
-    if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6) return "G"
-  }
+    const level =
+      companyRecord?.flags?.approvals?.level ??
+      companyRecord?.flags?.level ??
+      0; // fallback
+
+    switch (level) {
+      case 0:
+        return "A";
+      case 1:
+        return "B";
+      case 2:
+        return "C";
+      case 3:
+        return "D";
+      case 4:
+        return "E";
+      case 5:
+        return "F";
+      case 6:
+        return "G";
+      default:
+        return "A";
+    }
+  };
+
   const getNextStage = () => {
     if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) return "B"
     if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) return "C"

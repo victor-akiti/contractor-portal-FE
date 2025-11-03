@@ -19,7 +19,7 @@
   border-radius: 2px;
 }
 .settingsPage .settingsSection .setOOButton {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .settingsPage .settingsSection .setInOfficeButton {
@@ -108,7 +108,7 @@
   justify-content: center;
 }
 .settingsPage .setOutOfOfficeDiv .actionButtonsDiv button:nth-child(2) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   display: flex;
   justify-content: center;
@@ -170,7 +170,7 @@
   justify-content: center;
 }
 .settingsPage .setOutInOfficeDiv .actionButtonsDiv button:nth-child(2) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   display: flex;
   justify-content: center;

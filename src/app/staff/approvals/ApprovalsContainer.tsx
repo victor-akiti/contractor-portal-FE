@@ -205,12 +205,12 @@ export default function ApprovalsContainer() {
       'park-requests',
     ]
 
+    // invites too
+    prefetchInvites({ filter: 'All', userRole: user.role }, { force: false })
+
     tabsToPrefetch.forEach(tab => {
       prefetchTab({ tab, userRole: user.role }, { force: false })
     })
-
-    // invites too
-    prefetchInvites({ filter: 'All', userRole: user.role }, { force: false })
   }, [user?.role, countsData, prefetchTab, prefetchInvites])
 
 

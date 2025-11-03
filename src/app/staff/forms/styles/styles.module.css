@@ -13,7 +13,7 @@
   margin-right: 10px;
 }
 .forms .formsSortAndFilterDiv button {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   padding: 10px;
   border-style: none;
@@ -46,7 +46,7 @@
   align-items: center;
 }
 .forms .deleteFormModal > div > div button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .forms .deleteFormModal > div > div button:nth-child(2) {
@@ -64,7 +64,7 @@
 .forms .noFormsDiv div button {
   width: 100%;
   margin-top: 10px;
-  background-color: #e26b09;
+  background-color: #e67509;
   border-style: none;
   padding: 7px;
   border-radius: 5px;
@@ -97,7 +97,7 @@
 .forms table tbody tr td a {
   margin-right: 20px;
   cursor: pointer;
-  color: #e26b09;
+  color: #e67509;
   display: inline-flex;
   align-items: center;
 }

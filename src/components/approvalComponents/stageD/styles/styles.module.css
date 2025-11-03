@@ -89,7 +89,7 @@
 }
 .dueDiligencePage .titleDiv a {
   font-size: 14px;
-  color: #e26b09;
+  color: #e67509;
 }
 .dueDiligencePage > h3 {
   margin-top: 30px;
@@ -105,7 +105,7 @@
 .dueDiligencePage .addPersonDiv p {
   margin: 0px !important;
   margin-right: 5px !important;
-  color: #e26b09 !important;
+  color: #e67509 !important;
   font-size: 1rem;
 }
 .dueDiligencePage header {
@@ -188,14 +188,14 @@
   border-style: none;
   border-style: solid;
   border-width: 1px;
-  border-color: #e26b09;
-  color: #e26b09;
+  border-color: #e67509;
+  color: #e67509;
   background-color: rgba(0, 0, 0, 0);
   border-radius: 5px;
   cursor: pointer;
 }
 .dueDiligencePage .dueDiligenceCheckDiv > div button:hover {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .dueDiligencePage .flagButton {
@@ -208,7 +208,7 @@
 }
 .dueDiligencePage .flagEntryDiv button {
   margin-right: 20px;
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .dueDiligencePage .flagEntryDiv div {
@@ -235,11 +235,11 @@
   flex-grow: 1;
 }
 .dueDiligencePage .uploadFindingsDiv button {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .dueDiligencePage .uploadFindingsDiv .activeButton {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .dueDiligencePage .uploadFindingsDiv .inactiveButton {

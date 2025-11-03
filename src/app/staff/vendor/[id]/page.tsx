@@ -571,7 +571,7 @@ const ViewVendorPage = () => {
 
 
     const [activeModifyContractorTab, setActiveModifyContractorTab] = useState("currentEndUsers")
-    const modifyContractorModalTabs = [
+    const modifyContractorModalTabs = user?.user?.role === "Admin" ? [
         {
             label: "Change Current End Users",
             name: "currentEndUsers"
@@ -579,7 +579,20 @@ const ViewVendorPage = () => {
         {
             label: "Change Portal Administrator",
             name: "portalAdmin"
+        },
+        {
+            label: "Return to Past Approval Stage",
+            name: "approvalStage"
         }
+    ] : [
+        {
+            label: "Change Current End Users",
+            name: "currentEndUsers"
+        },
+        {
+            label: "Change Portal Administrator",
+            name: "portalAdmin"
+        },
     ]
 
     const [endUserAction, setEndUserAction] = useState({
@@ -593,6 +606,14 @@ const ViewVendorPage = () => {
     })
 
     const [newPortalAdminAction, setNewPortalAdminAction] = useState({
+        status: "",
+        response: {
+            error: "",
+            success: ""
+        }
+    })
+
+    const [newApprovalStage, setNewApprovalStage] = useState({
         status: "",
         response: {
             error: "",
@@ -812,10 +833,56 @@ const ViewVendorPage = () => {
         }
     }
 
+    const resetNewApprovalStage = () => {
+        let tempNewApprovalStage = { ...newApprovalStage }
+
+        tempNewApprovalStage.status = ""
+        tempNewApprovalStage.response.error = ""
+        tempNewApprovalStage.response.success = ""
+
+        setNewPortalAdminAction(tempNewApprovalStage)
+    }
+
+    const updateNewApprovalStage = (field, value) => {
+        let tempNewApprovalStage = { ...newApprovalStage }
+
+        if (field === "status") {
+            tempNewApprovalStage[field] = value
+        } else {
+            tempNewApprovalStage.response[field] = value
+        }
+
+        setNewApprovalStage(tempNewApprovalStage)
+    }
+
+    const submitNewApprovalStage = async (e) => {
+        e.preventDefault();
+        const stage = Number(e.target[0]?.value || 0); //To be dynamic based on selection
+
+        updateNewApprovalStage("status", "requesting")
+        try {
+            const requestUpdateNewApprovalStage = await postProtected(`approvals/change-stage/${vendorID}`, {
+                newStage: stage,
+                reason: "Returning to previous stage per request.",
+                role: user?.user?.role
+            }, user?.user?.role);
+            updateNewApprovalStage("status", "")
+
+            if (requestUpdateNewApprovalStage.status === "OK") {
+                updateNewApprovalStage("success", "Successfully updated Approval stage.")
+            } else {
+                updateNewApprovalStage("error", requestUpdateNewApprovalStage.error.message)
+            }
+        } catch (error) {
+            console.error({ error });
+        }
+    }
+
     const closeModifyContractorModal = () => {
         setShowModifyContractorModal(false)
         resetEndUserAction()
         resetNewPortalAdminAction()
+        resetNewApprovalStage()
     }
 
     const [currentCertificateHistory, setCurrentCertificateHistory] = useState([])
@@ -857,7 +924,8 @@ const ViewVendorPage = () => {
                 </div>
 
                 {
-                    showModifyContractorModal && <Modal>
+                    showModifyContractorModal &&
+                    <Modal>
                         <div className={styles.modifyContractorModal}>
                             <h2>Modify Contractor</h2>
 
@@ -993,6 +1061,54 @@ const ViewVendorPage = () => {
                                         <div className={styles.replaceAdministratorDiv}>
                                             <input placeholder="Enter the new portal administrator's email address" />
                                             <button>Send Replacement Request {newPortalAdminAction.status === "requesting" && <ButtonLoadingIcon />}</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            }
+
+                            {
+                                activeModifyContractorTab === "approvalStage" &&
+                                <div className={styles.portalAdminContainer}>
+                                    <h3>Current Approval Stage: {[
+                                        { label: "A", value: 0 },
+                                        { label: "B", value: 1 },
+                                        { label: "C", value: 2 },
+                                        { label: "D", value: 3 },
+                                        { label: "E", value: 4 },
+                                    ].find(x => {
+                                        const level = approvalData?.flags?.approvals?.level || approvalData?.flags?.level;
+                                        console.log({ level });
+                                        return x.value === level
+                                    })?.label}</h3>
+                                    <hr />
+                                    <h3>Move to Previous Stage</h3>
+
+                                    {
+                                        newApprovalStage.response.error && <ErrorText text={newApprovalStage.response.error} />
+                                    }
+
+                                    {
+                                        newApprovalStage.response.success && <SuccessMessage message={newApprovalStage.response.success} />
+                                    }
+
+                                    <form onSubmit={e => submitNewApprovalStage(e)}>
+                                        <div className={styles.replaceAdministratorDiv}>
+                                            <select style={{ margin: "0px 10px", padding: "10px", height: "100%", minWidth: "150px" }}>
+                                                {[
+                                                    { label: "Stage A", value: 0 },
+                                                    { label: "Stage B", value: 1 },
+                                                    { label: "Stage C", value: 2 },
+                                                    { label: "Stage D", value: 3 },
+                                                    { label: "Stage E", value: 4 },
+                                                ].filter(x => {
+                                                    const level = approvalData?.flags?.approvals?.level || approvalData?.flags?.level;
+                                                    return x.value < level;
+                                                })
+                                                    .map((item, index) =>
+                                                        <option key={index} value={item.value}>{item.label}</option>
+                                                    )}
+                                            </select>
+                                            <button style={{}}>Confirm Update {newApprovalStage.status === "requesting" && <ButtonLoadingIcon />}</button>
                                         </div>
                                     </form>
                                 </div>

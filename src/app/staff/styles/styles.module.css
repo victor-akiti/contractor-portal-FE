@@ -36,7 +36,7 @@
   color: red;
 }
 .layout .floatingUserMenu .officeStatusDiv button {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   border-style: none;
   border-radius: 5px;
@@ -81,7 +81,7 @@
   margin-top: 20px;
 }
 .layout .outOfOfficeDiv .outOfOfficeActionButtons button {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   border-style: none;
   border-radius: 5px;
@@ -93,7 +93,7 @@
 }
 .layout .outOfOfficeDiv .outOfOfficeActionButtons button:nth-child(1) {
   background-color: white;
-  color: #e26b09;
+  color: #e67509;
 }
 .layout nav {
   display: flex;
@@ -158,20 +158,20 @@
 }
 .layout .content .left a {
   padding: 1rem;
-  color: #e26b09;
+  color: #e67509;
 
   margin: 5px 0;
   /* margin-bottom: 5px; */
 }
 .layout .content .left a:hover {
-  background-color: #e26b0920;
+  background-color: #e6750920;
   border-radius: 5px;
   /* color: white; */
 }
 .layout .content .left a.active {
   color: #f4f4f4;
   border-radius: 5px;
-  background-color: #e26b09;
+  background-color: #e67509;
   font-weight: 600;
 }
 .layout .content .left hr {

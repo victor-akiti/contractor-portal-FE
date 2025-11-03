@@ -16,7 +16,7 @@
   padding: 10px;
   border-radius: 10px;
   border-style: none;
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   display: flex;
   align-items: center;
@@ -97,7 +97,7 @@
   margin-left: 10px;
 }
 .newForm .formActionButtons button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
 }
 .newForm .pagesTab {
   display: flex;
@@ -111,7 +111,7 @@
   color: gray;
 }
 .newForm .pagesTab .active {
-  color: #e26b09;
+  color: #e67509;
   font-weight: bold;
 }
 .newForm .activePage {
@@ -127,7 +127,7 @@
 }
 .newForm .addPageDiv p {
   margin-left: 20px;
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 .newForm .addPageDiv p > :hover {
@@ -177,7 +177,7 @@
 }
 .newForm .newFormContent .newFormContentLeft .newSection footer button {
   background-color: rgba(0, 0, 0, 0);
-  color: #e26b09;
+  color: #e67509;
   border-style: none;
   margin-left: 30px;
   font-size: 16px;
@@ -417,7 +417,7 @@
   justify-content: space-between;
 }
 .newForm .filePreviewSelectorDiv a {
-  color: #e26b09;
+  color: #e67509;
   font-size: 14px;
 }
 .newForm .filePreviewSelectorDiv .infoText {
@@ -466,7 +466,7 @@
   justify-content: end;
 }
 .newForm .formSettingsModal .closeButton button {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   padding: 10px;
   border-style: none;

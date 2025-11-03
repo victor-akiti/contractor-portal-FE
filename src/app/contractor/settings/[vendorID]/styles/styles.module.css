@@ -23,7 +23,7 @@
   margin-top: 20px;
 }
 .settings .actionButtonsDiv button {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   border-style: none;
   border-radius: 5px;
@@ -35,7 +35,7 @@
 }
 .settings .actionButtonsDiv button:nth-child(2) {
   background-color: white;
-  color: #e26b09;
+  color: #e67509;
 }
 .settings .changePortalAdministratorModal {
   background-color: white;
@@ -85,5 +85,5 @@
   background-color: #d7d7d7;
 }
 .settings .changePortalAdministratorModal .modalActionButtons button:nth-child(2) {
-  background-color: #e26b09 !important;
+  background-color: #e67509 !important;
 }/*# sourceMappingURL=styles.module.css.map */

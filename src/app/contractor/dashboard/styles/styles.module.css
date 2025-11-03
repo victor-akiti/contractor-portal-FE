@@ -42,7 +42,7 @@
   border-style: none;
 }
 .dashboard .updateCertificateModal > div button:nth-child(3) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   display: flex;
   justify-content: center;
@@ -71,7 +71,7 @@
   background-color: #f3f3f3;
 }
 .dashboard .noRegisteredCompaniesDiv button {
-  color: #e26b09;
+  color: #e67509;
   background-color: rgba(0, 0, 0, 0);
   border-style: none;
   margin-top: 10px;
@@ -106,7 +106,7 @@
   border-style: none;
   padding: 5px;
   margin-right: 10px;
-  color: #e26b09;
+  color: #e67509;
   background-color: rgba(0, 0, 0, 0);
   cursor: pointer;
 }
@@ -150,7 +150,7 @@
   align-items: center;
 }
 .dashboard > div .companyApplicationDiv a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 .dashboard > div .companyApplicationDiv a:hover {

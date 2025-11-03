@@ -34,7 +34,7 @@
   height: 100%;
 }
 .approvals .returnApplicationsModal .footer button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .approvals .stageAReturnButtonDiv {
@@ -51,7 +51,7 @@
   cursor: pointer;
 }
 .approvals .stageAReturnButtonDiv .active {
-  background-color: #e26b09;
+  background-color: #e67509;
 }
 .approvals .stageAReturnButtonDiv .inactive {
   background-color: #ffb171;
@@ -61,10 +61,10 @@
   color: white;
 }
 .approvals .selectedVendor {
-  background-color: #e26b09 !important;
+  background-color: #e67509 !important;
 }
 .approvals .selectedVendor td {
-  background-color: #e26b09 !important;
+  background-color: #e67509 !important;
   color: white !important;
 }
 .approvals .selectedVendor td p {
@@ -100,7 +100,7 @@
   cursor: pointer;
 }
 .approvals .revertToL2Div div button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .approvals header {
@@ -176,19 +176,19 @@
 }
 .approvals header .searchFilterDiv .searchResultsDiv .searchResultItem button {
   padding: 10px;
-  background-color: #e26b09;
+  background-color: #e67509;
   border-style: none;
   border-radius: 5px;
   margin-left: 10px;
   color: white;
 }
 .approvals header .searchFilterDiv .searchResultsDiv .searchResultItem:hover {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .approvals header .searchFilterDiv .searchResultsDiv .searchResultItem:hover button {
   background-color: white;
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 .approvals header .searchFilterDiv input, .approvals header .searchFilterDiv select {
@@ -225,7 +225,7 @@
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 .approvals a {
-  color: #e26b09;
+  color: #e67509;
   font-size: 0.875em;
   font-weight: 400;
   margin-bottom: 3px;
@@ -269,7 +269,7 @@
   margin-bottom: 3px;
 }
 .approvals table tbody tr .renewText {
-  color: #e26b09;
+  color: #e67509;
   font-size: 0.875em;
   font-weight: 400;
   margin-bottom: 3px;
@@ -357,7 +357,7 @@
   background-color: black;
 }
 .confirmArchiveModalDiv div button:nth-child(2) {
-  background-color: #e26b09;
+  background-color: #e67509;
 }
 
 .loading {
@@ -389,7 +389,7 @@
   cursor: pointer;
 }
 .inviteFilters div .active {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .inviteFilters input {
@@ -407,7 +407,7 @@
   width: 70%;
 }
 .inProgressItem td:nth-child(1) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -424,7 +424,7 @@
 }
 
 .pendingL2Item td:nth-child(1) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -440,7 +440,7 @@
   line-height: 1.5;
 }
 .pendingL2Item td:nth-child(3) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -461,7 +461,7 @@
   width: 60%;
 }
 .l3Item td:nth-child(1) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -477,7 +477,7 @@
   line-height: 1.5;
 }
 .l3Item td:nth-child(2) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -495,7 +495,7 @@
   text-decoration: underline;
 }
 .completedL2Item td:nth-child(1) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -511,7 +511,7 @@
   line-height: 1.5;
 }
 .completedL2Item td:nth-child(3) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -530,7 +530,7 @@
   text-decoration: underline;
 }
 .parkRequestedItem td:nth-child(1) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -552,7 +552,7 @@
   font-size: 1rem;
 }
 .parkRequestedItem td:nth-child(3) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -574,7 +574,7 @@
   width: 40%;
 }
 .returnedItem td:nth-child(1) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;
@@ -590,7 +590,7 @@
   line-height: 1.5;
 }
 .returnedItem td:nth-child(3) a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 400;

@@ -10,7 +10,7 @@
   margin-bottom: 10px;
 }
 .noApprovalDiv a {
-  color: #e26b09;
+  color: #e67509;
   margin-bottom: 10px;
   cursor: pointer;
 }
@@ -65,6 +65,6 @@
   cursor: pointer;
 }
 .returnToL2Modal form > div button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }/*# sourceMappingURL=styles.module.css.map */

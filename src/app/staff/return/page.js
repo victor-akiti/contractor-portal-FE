@@ -1105,22 +1105,31 @@ const PendingL2Item = ({index, companyRecord, user, selectedVendors, toggleVendo
         }
     }
     const getCurrentStage = () => {
-        if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
-            return "A"
-        } else if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) {
-            return "B"
-        } else if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
-            return "C"
-        } else if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3) {
-            return "D"
-        } else if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4) {
-            return "E"
-        } else if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5) {
-            return "F"
-        } else if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6) {
-            return "G"
+        const level =
+            companyRecord?.flags?.approvals?.level ??
+            companyRecord?.flags?.level ??
+            0; // fallback
+
+        switch (level) {
+            case 0:
+            return "A";
+            case 1:
+            return "B";
+            case 2:
+            return "C";
+            case 3:
+            return "D";
+            case 4:
+            return "E";
+            case 5:
+            return "F";
+            case 6:
+            return "G";
+            default:
+            return "A";
         }
-    }
+    };
+
 
     const getNextStage = () => {
         if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
@@ -1224,22 +1233,31 @@ const CompletedL2Item = ({index, companyRecord, revertToL2, user, selectedVendor
     }
 
     const getCurrentStage = () => {
-        if (!companyRecord?.flags?.approvals?.level) {
-            return "A"
-        } else if (companyRecord?.flags?.approvals?.level === 1) {
-            return "B"
-        } else if (companyRecord?.flags?.approvals?.level === 2) {
-            return "C"
-        } else if (companyRecord?.flags?.approvals?.level === 3) {
-            return "D"
-        } else if (companyRecord?.flags?.approvals?.level === 4) {
-            return "E"
-        } else if (companyRecord?.flags?.approvals?.level === 5) {
-            return "F"
-        } else if (companyRecord?.flags?.approvals?.level === 6) {
-            return "G"
+        const level =
+            companyRecord?.flags?.approvals?.level ??
+            companyRecord?.flags?.level ??
+            0; // fallback
+
+        switch (level) {
+            case 0:
+            return "A";
+            case 1:
+            return "B";
+            case 2:
+            return "C";
+            case 3:
+            return "D";
+            case 4:
+            return "E";
+            case 5:
+            return "F";
+            case 6:
+            return "G";
+            default:
+            return "A";
         }
-    }
+    };
+
 
     return (
         <tr className={[selectedVendors.includes(companyRecord._id) && styles.selectedVendor,styles.completedL2Item, index%2 === 0 && styles.rowDarkBackground].join(" ")}>
@@ -1298,22 +1316,31 @@ const ReturnedItem = ({index, companyRecord, selectedVendors, toggleVendorSelect
     }
 
     const getCurrentStage = () => {
-        if (!companyRecord?.flags?.approvals?.level) {
-            return "A"
-        } else if (companyRecord?.flags?.approvals?.level === 1) {
-            return "B"
-        } else if (companyRecord?.flags?.approvals?.level === 2) {
-            return "C"
-        } else if (companyRecord?.flags?.approvals?.level === 3) {
-            return "D"
-        } else if (companyRecord?.flags?.approvals?.level === 4) {
-            return "E"
-        } else if (companyRecord?.flags?.approvals?.level === 5) {
-            return "F"
-        } else if (companyRecord?.flags?.approvals?.level === 6) {
-            return "G"
+        const level =
+            companyRecord?.flags?.approvals?.level ??
+            companyRecord?.flags?.level ??
+            0; // fallback
+
+        switch (level) {
+            case 0:
+            return "A";
+            case 1:
+            return "B";
+            case 2:
+            return "C";
+            case 3:
+            return "D";
+            case 4:
+            return "E";
+            case 5:
+            return "F";
+            case 6:
+            return "G";
+            default:
+            return "A";
         }
-    }
+    };
+
 
     return (
         <tr className={[selectedVendors.includes(companyRecord._id) && styles.selectedVendor, styles.returnedItem, index%2 === 0 && styles.rowDarkBackground].join(" ")}>

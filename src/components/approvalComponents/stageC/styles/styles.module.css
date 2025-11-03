@@ -33,7 +33,7 @@
 .stageC .allApprovedDiv .selectedServicesDiv div {
   margin-right: 20px;
   padding: 7px;
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   border-style: none;
   border-radius: 10px;
@@ -203,8 +203,8 @@
   border-style: solid;
   border-radius: 10px;
   border-width: 1px;
-  border-color: #e26b09;
-  color: #e26b09;
+  border-color: #e67509;
+  color: #e67509;
   background-color: rgba(0, 0, 0, 0);
 }
 .addRemarkModal .submitButtonDiv .active:hover {
@@ -245,7 +245,7 @@
   margin-top: 40px;
 }
 .approvalContent a {
-  color: #e26b09;
+  color: #e67509;
 }
 .approvalContent h6 {
   margin-bottom: 0.5rem;
@@ -297,7 +297,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #e26b09;
+  color: #e67509;
   margin-bottom: 20px;
   margin-top: 20px;
 }
@@ -362,7 +362,7 @@
   justify-content: center;
   background-color: rgba(0, 0, 0, 0);
   border-style: none;
-  color: #e26b09;
+  color: #e67509;
   display: inline-flex;
   cursor: pointer;
 }
@@ -370,7 +370,7 @@
   background-color: rgb(255, 208, 208);
 }
 .approvalActionsDiv .actionLink {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 
@@ -422,7 +422,7 @@
   background-color: #e7e7e7;
 }
 .recommendForHoldModal form > div button:nth-child(2) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 
@@ -455,7 +455,7 @@
   margin-bottom: 10px;
 }
 .expiringCertificatesDiv a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 .expiringCertificatesDiv h3 {
@@ -474,7 +474,7 @@
   margin-bottom: 10px;
 }
 .expiredCertificatesDiv a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 .expiredCertificatesDiv h3 {
@@ -541,7 +541,7 @@
   display: flex;
   justify-content: flex-end;
   margin-bottom: 20px;
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 
@@ -552,7 +552,7 @@
   margin-bottom: 20px;
 }
 .approvalHeader a {
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 .approvalHeader div {
@@ -564,14 +564,14 @@
 }
 
 .contractorCategorizationDiv p:nth-child(1) {
-  color: #e26b09;
+  color: #e67509;
   margin-bottom: 20px;
 }
 .contractorCategorizationDiv p:nth-child(2) {
   margin-bottom: 20px;
 }
 .contractorCategorizationDiv .saveCategoriesButton {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   border-style: none;
   border-radius: 5px;
@@ -590,7 +590,7 @@
   font-size: 14px;
 }
 .contractorCategorizationDiv .currentCategoriesList tbody tr td:nth-child(2) {
-  color: #e26b09;
+  color: #e67509;
 }
 .contractorCategorizationDiv .currentCategoriesList tbody tr td {
   padding-top: 10px;
@@ -711,10 +711,10 @@
   display: block;
 }
 .holdRequestDiv div button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .holdRequestDiv div button:nth-child(2) {
   background-color: white;
-  color: #e26b09;
+  color: #e67509;
 }/*# sourceMappingURL=styles.module.css.map */

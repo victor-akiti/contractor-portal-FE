@@ -45,7 +45,7 @@
   font-size: 14px;
 }
 .uploadFileModal .selectUploadFileDiv .selectedFilesTable tbody tr td a {
-  color: #e26b09;
+  color: #e67509;
 }
 .uploadFileModal footer {
   display: flex;
@@ -68,7 +68,7 @@
   margin-left: 5px;
 }
 .uploadFileModal footer button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 

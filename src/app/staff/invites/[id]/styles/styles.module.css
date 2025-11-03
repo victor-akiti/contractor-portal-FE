@@ -23,11 +23,11 @@
 .invite .similarCompaniesDiv p {
   padding: 10px;
   margin-bottom: 10px;
-  color: #e26b09;
+  color: #e67509;
   cursor: pointer;
 }
 .invite .similarCompaniesDiv p:hover {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
 }
 .invite .sendReminderDiv {
@@ -50,7 +50,7 @@
   margin-left: 10px;
 }
 .invite .sendReminderDiv div button:nth-child(1) {
-  background-color: #e26b09;
+  background-color: #e67509;
 }
 .invite .sendReminderDiv div button:nth-child(2) {
   background-color: black;

@@ -43,7 +43,7 @@
   color: #495057;
   background-color: #fff;
   background-clip: padding-box;
-  border: 1px solid #e26b09;
+  border: 1px solid #e67509;
   border-radius: 0.25rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   margin-top: 5px;
@@ -82,8 +82,8 @@
 .tasksPage .addJobCategoryModal footer button:nth-child(1) {
   border-style: solid;
   border-width: 1px;
-  border-color: #e26b09;
-  color: #e26b09;
+  border-color: #e67509;
+  color: #e67509;
 }
 .tasksPage .addJobCategoryModal footer button:nth-child(2) {
   color: white;
@@ -100,7 +100,7 @@
   background-color: #ffae6c;
 }
 .tasksPage .addJobCategoryModal footer .enabled {
-  background-color: #e26b09;
+  background-color: #e67509;
 }
 .tasksPage .deleteCategoryWarning {
   color: #721c24 !important;
@@ -125,7 +125,7 @@
   padding: 10px;
   color: white;
   border-style: none;
-  background-color: #e26b09;
+  background-color: #e67509;
   border-radius: 5px;
   font-size: 16px;
 }
@@ -157,6 +157,6 @@
   background-color: white;
 }
 .tab table a {
-  color: #e26b09;
+  color: #e67509;
   margin-right: 20px;
 }/*# sourceMappingURL=styles.module.css.map */

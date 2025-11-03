@@ -39,11 +39,11 @@
 .manageUserModal .closeButtonDiv button {
   border-style: none;
   background-color: rgba(0, 0, 0, 0);
-  color: #e26b09;
+  color: #e67509;
   font-size: 18px;
 }
 .manageUserModal .disableUserButton {
-  background-color: #e26b09;
+  background-color: #e67509;
   border-style: none;
   border-radius: 5px;
   color: white;
@@ -89,7 +89,7 @@
   justify-content: end;
 }
 .manageUserModal .actionButtonDiv button {
-  background-color: #e26b09;
+  background-color: #e67509;
   color: white;
   border-style: none;
   border-radius: 5px;
@@ -127,7 +127,7 @@
   padding: 10px;
   color: white;
   border-style: none;
-  background-color: #e26b09;
+  background-color: #e67509;
   border-radius: 5px;
   font-size: 18px;
 }
@@ -159,6 +159,6 @@
   background-color: white;
 }
 .tab table a {
-  color: #e26b09;
+  color: #e67509;
   margin-right: 20px;
 }/*# sourceMappingURL=styles.module.css.map */

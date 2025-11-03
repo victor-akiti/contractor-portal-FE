@@ -60,51 +60,84 @@ export const postPlain = async (route, body, role) => {
 }
 
 export const postProtected = async (route, body, role) => {
-    try {
-        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "include",
-            body: JSON.stringify(body)
+  try {
+    const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+
+    // 🔐 Handle unauthorized first
+    if (request.status === 401) {
+      const refreshSuccess = await handleTokenRefresh();
+
+      if (refreshSuccess) {
+        const retryRequest = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(body),
         });
 
-        if (request.status === 401) {
-            
-            const refreshSuccess = await handleTokenRefresh();
-            
-            if (refreshSuccess) {
-                // Retry the original request
-                const retryRequest = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    credentials: "include",
-                    body: JSON.stringify(body)
-                });
-
-                if (retryRequest.ok) {
-                    const result = await retryRequest.json();
-                    return result;
-                } else {
-                    redirectToLogin(role);
-                }
-            } else {
-                redirectToLogin(role);
-            }
-        } else if (request.ok) {
-            const result = await request.json();
-            return result;
+        if (retryRequest.ok) {
+          const result = await retryRequest.json();
+          return result;
         } else {
-            throw new Error('Request failed');
+          redirectToLogin(role);
         }
-    } catch (error) {
-        console.error({error});
-        throw error;
+      } else {
+        redirectToLogin(role);
+      }
     }
-}
+
+    // ✅ Handle all other cases (including non-OK)
+    let result;
+    try {
+      result = await request.json(); // try to parse backend response
+    } catch {
+      result = null;
+    }
+
+    if (request.ok) {
+      return result;
+    } else {
+      // Backend responded but not OK → descriptive error likely exists
+      return (
+        result || {
+          status: "FAILED",
+          error: { message: `Request failed with status ${request.status}` },
+        }
+      );
+    }
+  } catch (error) {
+    console.error({ error });
+
+    // ⛔ Network / unexpected failure
+    if (error?.response?.data) {
+      const data = error.response.data;
+      return {
+        status: "FAILED",
+        error: {
+          message:
+            data?.error?.message ||
+            data?.message ||
+            JSON.stringify(data),
+        },
+      };
+    }
+
+    return {
+      status: "FAILED",
+      error: { message: error.message || "An unexpected error occurred." },
+    };
+  }
+};
+
 
 export const postProtectedMultipart = async (route, body, role) => {
     try {

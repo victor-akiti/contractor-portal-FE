@@ -55,22 +55,31 @@ const Approval = () => {
     const user = useSelector((state: any) => state.user.user)
 
     const getCurrentStage = (companyRecord = vendorData?.approvalData) => {
-        if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) {
-            return "A"
-        } else if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1) {
-            return "B"
-        } else if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
-            return "C"
-        } else if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3) {
-            return "D"
-        } else if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4) {
-            return "E"
-        } else if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5) {
-            return "F"
-        } else if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6) {
-            return "G"
+        const level =
+            companyRecord?.flags?.approvals?.level ??
+            companyRecord?.flags?.level ??
+            0; // fallback
+
+        switch (level) {
+            case 0:
+                return "A";
+            case 1:
+                return "B";
+            case 2:
+                return "C";
+            case 3:
+                return "D";
+            case 4:
+                return "E";
+            case 5:
+                return "F";
+            case 6:
+                return "G";
+            default:
+                return "A";
         }
-    }
+    };
+
 
     useEffect(() => {
         if (params.id) {
@@ -80,39 +89,57 @@ const Approval = () => {
 
 
     const userHasApprovalPermissions = () => {
-        let hasApprovalPermissions = false
-        if (user?.role === "user") {
-            return false
-        } else if (!vendorData?.approvalData?.flags?.level) {
-            if (["VRM", "C and P Staff", "CO", "GM", "Supervisor", "Executive Approver", "HOD", "Insurance Officer", "Admin"].includes(user.role)) {
-                hasApprovalPermissions = true
+        let hasApprovalPermissions = false;
+        const level =
+            vendorData?.approvalData?.flags?.approvals?.level ??
+            vendorData?.approvalData?.flags?.level ??
+            0;
+
+        if (user?.role === "user") return false;
+
+        if (level === 0) {
+            if (
+                ["VRM", "C and P Staff", "CO", "GM", "Supervisor", "Executive Approver", "HOD", "Insurance Officer", "Admin"].includes(
+                    user.role
+                )
+            ) {
+                hasApprovalPermissions = true;
             }
-        } else if (vendorData.approvalData.flags.level === 1) {
-            if (["CO", "GM", "Supervisor", "Executive Approver", "HOD", "Insurance Officer", "Admin"].includes(user.role)) {
-                hasApprovalPermissions = true
+        } else if (level === 1) {
+            if (
+                ["CO", "GM", "Supervisor", "Executive Approver", "HOD", "Insurance Officer", "Admin"].includes(
+                    user.role
+                )
+            ) {
+                hasApprovalPermissions = true;
             }
-        } else if (vendorData.approvalData.flags.level === 2) {
+        } else if (level === 2) {
             if (["HOD", "Admin"].includes(user.role)) {
-                hasApprovalPermissions = true
-            } else if (vendorData.approvalData.currentEndUsers.includes(user._id)) {
-                hasApprovalPermissions = true
+                hasApprovalPermissions = true;
+            } else if (vendorData?.approvalData?.currentEndUsers?.includes(user._id)) {
+                hasApprovalPermissions = true;
             }
-        } else if (vendorData.approvalData.flags.level === 3) {
+        } else if (level === 3) {
             if (["VRM", "Executive Approver", "HOD", "Admin"].includes(user.role)) {
-                hasApprovalPermissions = true
+                hasApprovalPermissions = true;
             }
-        } else if (vendorData.approvalData.flags.level === 4) {
-            if (["GM", "Supervisor", "Executive Approver", "HOD", "Admin"].includes(user.role)) {
-                hasApprovalPermissions = true
+        } else if (level === 4) {
+            if (
+                ["GM", "Supervisor", "Executive Approver", "HOD", "Admin"].includes(
+                    user.role
+                )
+            ) {
+                hasApprovalPermissions = true;
             }
-        } else if (vendorData.approvalData.flags.level === 5) {
+        } else if (level === 5) {
             if (["Executive Approver", "Admin"].includes(user.role)) {
-                hasApprovalPermissions = true
+                hasApprovalPermissions = true;
             }
         }
 
-        return hasApprovalPermissions
-    }
+        return hasApprovalPermissions;
+    };
+
 
     const hasAdminPermissions = (role) => {
         return (["Admin", "HOD"].includes(role))

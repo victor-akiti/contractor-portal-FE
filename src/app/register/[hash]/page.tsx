@@ -12,6 +12,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
+import { toast } from "react-toastify"
 import logo from "../../../assets/images/logo.png"
 import styles from "./styles/styles.module.css"
 
@@ -19,9 +20,9 @@ const Register = () => {
     const params = useParams()
     const [hashValid, setHashValid] = useState(null)
     const [registrationDetails, setRegistrationDetails] = useState({
-        fname: "Test",
-        lname: "Test",
-        email: "Test",
+        fname: "",
+        lname: "",
+        email: "",
         password: "",
         passwordConfirm: "",
         acceptedTerms: false,
@@ -101,9 +102,6 @@ const Register = () => {
             setCreatingAccount(true)
             const createNewAccountRequest = await postProtected("auth/register", registrationDetails, null)
 
-
-
-
             setCreatingAccount(false)
 
             if (createNewAccountRequest.status === "OK") {
@@ -116,6 +114,8 @@ const Register = () => {
                 setErrorMessage(createNewAccountRequest.error.message)
             }
         } catch (error) {
+            setCreatingAccount(false)
+            toast.error(error?.message || "An error occurred while creating your account. Please try again later.")
             console.error({ error });
 
         }
@@ -138,7 +138,8 @@ const Register = () => {
                 <h4>Register</h4>
 
                 {
-                    showAcceptNDPRModal && <Modal>
+                    showAcceptNDPRModal &&
+                    <Modal>
                         <div className={styles.ndprModal}>
                             <h3>Accept NDPR</h3>
 
@@ -162,7 +163,8 @@ const Register = () => {
                 }
 
                 {
-                    hashValid && !createdAccount && <form onSubmit={(event) => {
+                    hashValid && !createdAccount &&
+                    <form onSubmit={(event) => {
                         event.preventDefault()
                         validateForm()
                     }} onChange={(event: any) => updateRegistrationDetails(event.target.name, event.target.value)}>
