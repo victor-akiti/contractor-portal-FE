@@ -1,5 +1,11 @@
 import FloatingProgressIndicator from '@/components/floatingProgressIndicator'
-export default function FloatingControls({ status }: { status: string }) {
+
+interface Props {
+  status: string
+}
+
+export default function FloatingControls({ status }: Props) {
   if (!status) return null
-  return <FloatingProgressIndicator status={status} statusMessage={""} />
+
+  return <FloatingProgressIndicator status={status} statusMessage="" />
 }

@@ -1,11 +1,32 @@
 import React from 'react'
 
-interface Props{
-  TabsComponent: any
-  tabs: any[]
-  activeTab: string
-  onTabChange: (tab:string)=>void
+interface Tab {
+  label: string
+  name: string
 }
-export default function ApprovalsTabs({TabsComponent, tabs, activeTab, onTabChange}:Props){
-  return <TabsComponent tabs={tabs} activeTab={activeTab} updateActiveTab={onTabChange} />
+
+interface Props {
+  TabsComponent: React.ComponentType<{
+    tabs: Tab[]
+    activeTab: string
+    updateActiveTab: (tab: string) => void
+  }>
+  tabs: Tab[]
+  activeTab: string
+  onTabChange: (tab: string) => void
+}
+
+export default function ApprovalsTabs({
+  TabsComponent,
+  tabs,
+  activeTab,
+  onTabChange
+}: Props) {
+  return (
+    <TabsComponent
+      tabs={tabs}
+      activeTab={activeTab}
+      updateActiveTab={onTabChange}
+    />
+  )
 }
