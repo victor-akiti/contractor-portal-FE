@@ -10,6 +10,7 @@
 
 .tabs {
   display: flex;
+  flex-direction: row !important;
   gap: var(--spacing-xs);
   position: relative;
   border-bottom: 2px solid var(--color-border-light);
@@ -64,7 +65,7 @@
 .tab.active {
   color: var(--color-primary);
   font-weight: 600;
-  border-bottom: 4px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
 }
 
 .tab.active:hover {
