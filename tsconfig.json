@@ -34,8 +34,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/staff/form-builder/new/page.js",
-    "src/app/login/staff/page.js",
-    "src/app/contractor/form/[...form]/RegistrationFormBody.jsx"
+    "src/app/login/staff/page.ts",
+    "src/app/contractor/form/[...form]/RegistrationFormBody.jsx",
+    "src/app/staff/layout.js"
   ],
   "exclude": [
     "node_modules"
