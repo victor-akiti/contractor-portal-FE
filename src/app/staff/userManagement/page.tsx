@@ -33,7 +33,7 @@ function useOutsideClick(ref, onClickOut, deps = []) {
     }, deps);
 }
 
-const Tasks = () => {
+const Users = () => {
     const [activeTab, setActiveTab] = useState("amni-staff")
     const [fixedUsers, setFixedUsers] = useState([])
     const [users, setUsers] = useState([])
@@ -774,4 +774,4 @@ const Tasks = () => {
     )
 }
 
-export default Tasks
+export default Users

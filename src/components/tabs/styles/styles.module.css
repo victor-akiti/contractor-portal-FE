@@ -32,16 +32,16 @@
 .tab {
   position: relative;
   padding: var(--spacing-md) var(--spacing-lg);
-  background: transparent;
+  background: transparent !important;
   border: none;
   cursor: pointer;
   font-size: var(--font-size-base);
   font-weight: 500;
   font-family: var(--font-family-base);
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary) !important;
   white-space: nowrap;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
   outline: none;
   
   /* Smooth transform on interaction */
@@ -51,7 +51,7 @@
 /* Hover State */
 .tab:hover {
   color: var(--color-primary);
-  background-color: rgba(230, 117, 9, 0.05);
+  background-color: rgba(230, 117, 9, 0.05) !important;
   /* transform: translateY(-2px); */
 }
 
@@ -63,7 +63,7 @@
 
 /* Active State */
 .tab.active {
-  color: var(--color-primary);
+  color: var(--color-primary) !important;
   font-weight: 600;
   border-bottom: 2px solid var(--color-primary);
 }
@@ -103,7 +103,7 @@
     var(--color-primary) 50%,
     var(--color-primary-light) 100%
   ); */
-  border-radius: 3px 3px 0 0;
+  /* border-radius: 3px 3px 0 0; */
   /* animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
   /* box-shadow: 0 2px 8px rgba(230, 117, 9, 0.3); */
 }
