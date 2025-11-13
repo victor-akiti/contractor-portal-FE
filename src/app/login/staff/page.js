@@ -33,9 +33,9 @@ const StaffLogin = () => {
         const accessToken = credential.accessToken;
         const idToken = credential.idToken;
 
-        // console.log({ accessToken, idToken, auth: auth.currentUser.getIdToken() });
+        console.log({ accessToken, idToken, auth1: auth.user, auth2: auth.currentUser });
 
-        auth.user
+        auth.currentUser
           .getIdToken()
           .then((result) => {
             console.log({result})
