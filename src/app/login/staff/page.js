@@ -33,10 +33,13 @@ const StaffLogin = () => {
         const accessToken = credential.accessToken;
         const idToken = credential.idToken;
 
-        auth.currentUser
+        // console.log({ accessToken, idToken, auth: auth.currentUser.getIdToken() });
+
+        auth.user
           .getIdToken()
           .then((result) => {
-            
+            console.log({result})
+            // console.log({ isTokenSameAsAccessToken: result === accessToken, result, accessToken, idToken });
             
             fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
               method: "PUT",
