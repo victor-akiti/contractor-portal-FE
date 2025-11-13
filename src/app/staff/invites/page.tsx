@@ -3,6 +3,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessText from "@/components/successText"
+import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
@@ -15,7 +16,21 @@ type InvitedCompany = {
     email: string
     phone: string
     companyName: string
+    recommendedBy?: {
+        name: string
+        department: string
+        email?: string
+        userId?: string
+    }
     _id?: string
+}
+
+type StaffMember = {
+    _id: string
+    name: string
+    email: string
+    department?: string
+    uid: string
 }
 
 const validateEmail = (email: string) => {
@@ -23,13 +38,32 @@ const validateEmail = (email: string) => {
     return emailRegex.test(email)
 }
 
+// Department list from your user management
+const DEPARTMENTS = [
+    "Contracts and Procurement",
+    "Corporate Communications",
+    "Drilling",
+    "Finance",
+    "Legal",
+    "Human Resources",
+    "Internal Control and Risk Management",
+    "ICT",
+    "Insurance",
+    "Information Management",
+    "Operations"
+]
+
 const Invites = () => {
     const invitedCompanyTemplate = {
         fname: "",
         lname: "",
         email: "",
         phone: "",
-        companyName: ""
+        companyName: "",
+        recommendedBy: {
+            name: "",
+            department: ""
+        }
     }
 
     const [submitting, setSubmitting] = useState(false)
@@ -41,6 +75,13 @@ const Invites = () => {
     const [currentQueryString, setCurrentQueryString] = useState("")
     const [searchingCompanies, setSearchingCompanies] = useState(false)
     const emailFieldRef = useRef(null)
+
+    // States for staff autocomplete
+    const [allStaff, setAllStaff] = useState<StaffMember[]>([])
+    const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([])
+    const [showStaffDropdown, setShowStaffDropdown] = useState(false)
+    const [loadingStaff, setLoadingStaff] = useState(false)
+    const staffDropdownRef = useRef(null)
 
     const [registrationStatus, setRegistrationStatus] = useState({
         status: 0,
@@ -60,14 +101,33 @@ const Invites = () => {
     const user = useSelector((state: any) => state.user.user)
 
     useEffect(() => {
-        fetchAllCompanies()
+        fetchAllStaff()
     }, [])
 
-    const fetchAllCompanies = async () => {
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (staffDropdownRef.current && !staffDropdownRef.current.contains(event.target as Node)) {
+                setShowStaffDropdown(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    const fetchAllStaff = async () => {
         try {
-            // Placeholder for future implementation
+            setLoadingStaff(true)
+            const staffRequest = await getProtected("users/staff/all", user.role)
+
+            if (staffRequest.status === "OK") {
+                setAllStaff(staffRequest.data)
+            }
+            setLoadingStaff(false)
         } catch (error) {
             console.error({ error })
+            setLoadingStaff(false)
         }
     }
 
@@ -91,6 +151,24 @@ const Invites = () => {
         }
     }
 
+    // THIS IS THE SMART FILTER - It filters staff as you type
+    const filterStaff = (searchTerm: string) => {
+        if (!searchTerm || searchTerm.length < 2) {
+            setFilteredStaff([])
+            setShowStaffDropdown(false)
+            return
+        }
+
+        const filtered = allStaff.filter((staff) =>
+            (staff.name && staff.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (staff.email && staff.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (staff.department && staff.department.toLowerCase().includes(searchTerm.toLowerCase()))
+        ).slice(0, 10) // Limit to 10 suggestions
+
+        setFilteredStaff(filtered)
+        setShowStaffDropdown(filtered.length > 0)
+    }
+
     const updateNewInvitee = (event: any) => {
         const field: string = event.target.name
         const value: string = event.target.value
@@ -102,6 +180,37 @@ const Invites = () => {
 
         // Clear validation error for this field
         setValidationErrors(prev => ({ ...prev, [field]: false }))
+    }
+
+    // THIS FUNCTION IS CALLED WHEN YOU TYPE IN THE NAME FIELD
+    const updateRecommendedBy = (field: 'name' | 'department', value: string) => {
+        setNewInvitee(prev => ({
+            ...prev,
+            recommendedBy: {
+                ...prev.recommendedBy,
+                [field]: value
+            }
+        }))
+
+        // Auto-filter staff when typing in name field - THIS TRIGGERS THE AUTOCOMPLETE
+        if (field === 'name') {
+            filterStaff(value)
+        }
+    }
+
+    // THIS FUNCTION IS CALLED WHEN YOU SELECT A STAFF MEMBER FROM THE DROPDOWN
+    const selectStaffMember = (staff: StaffMember) => {
+        setNewInvitee(prev => ({
+            ...prev,
+            recommendedBy: {
+                name: staff.name,
+                department: staff.department || "",
+                email: staff.email,
+                userId: staff.uid
+            }
+        }))
+        setShowStaffDropdown(false)
+        setFilteredStaff([])
     }
 
     const validateNewInviteeDetails = () => {
@@ -186,7 +295,15 @@ const Invites = () => {
                 setSuccessMessage("")
                 setSubmitting(true)
 
-                const sendNewInviteRequest = await postProtected("invites/new", newInvitee, user.role)
+                // Clean up recommendedBy - only send if name is provided
+                const inviteData = {
+                    ...newInvitee,
+                    recommendedBy: newInvitee.recommendedBy?.name
+                        ? newInvitee.recommendedBy
+                        : undefined
+                }
+
+                const sendNewInviteRequest = await postProtected("invites/new", inviteData, user.role)
 
                 if (sendNewInviteRequest.status === "OK") {
                     setSuccessMessage(`Invite sent to ${newInvitee.email} successfully.`)
@@ -194,6 +311,7 @@ const Invites = () => {
                     setNewInvitee(invitedCompanyTemplate)
                     setSimilarCompanyNames([])
                     setSelectedExistingCompany(invitedCompanyTemplate)
+                    setFilteredStaff([])
                 } else {
                     setErrorMessage(sendNewInviteRequest.error.message)
                 }
@@ -282,7 +400,7 @@ const Invites = () => {
                                 event.preventDefault()
                                 validateNewInviteeDetails()
                             }}
-                            onChange={updateNewInvitee}
+                        // onChange={updateNewInvitee}
                         >
                             {/* Name Fields */}
                             <div className={styles.formRow}>
@@ -292,8 +410,10 @@ const Invites = () => {
                                         id="fname"
                                         placeholder="Enter first name"
                                         name="fname"
+                                        value={newInvitee.fname}
                                         className={validationErrors.fname ? styles.inputError : ''}
                                         autoComplete="given-name"
+                                        onChange={updateNewInvitee}
                                     />
                                 </div>
 
@@ -303,8 +423,10 @@ const Invites = () => {
                                         id="lname"
                                         placeholder="Enter last name"
                                         name="lname"
+                                        value={newInvitee.lname}
                                         className={validationErrors.lname ? styles.inputError : ''}
                                         autoComplete="family-name"
+                                        onChange={updateNewInvitee}
                                     />
                                 </div>
                             </div>
@@ -317,8 +439,10 @@ const Invites = () => {
                                     type="email"
                                     placeholder="company@example.com"
                                     name="email"
+                                    value={newInvitee.email}
                                     className={validationErrors.email ? styles.inputError : ''}
                                     autoComplete="email"
+                                    onChange={updateNewInvitee}
                                 />
                             </div>
 
@@ -330,8 +454,10 @@ const Invites = () => {
                                     type="tel"
                                     placeholder="+234 XXX XXX XXXX"
                                     name="phone"
+                                    value={newInvitee.phone}
                                     className={validationErrors.phone ? styles.inputError : ''}
                                     autoComplete="tel"
+                                    onChange={updateNewInvitee}
                                 />
                             </div>
 
@@ -343,8 +469,10 @@ const Invites = () => {
                                     ref={emailFieldRef}
                                     placeholder="Enter company name"
                                     name="companyName"
+                                    value={newInvitee.companyName}
                                     className={validationErrors.companyName ? styles.inputError : ''}
                                     onChange={event => {
+                                        updateNewInvitee(event)
                                         _.debounce(() => findCompany(event.target.value), 500)()
                                     }}
                                     autoComplete="organization"
@@ -352,6 +480,64 @@ const Invites = () => {
                                 {searchingCompanies && (
                                     <span className={styles.searchingIndicator}>Searching...</span>
                                 )}
+                            </div>
+
+                            {/* Recommended By Section */}
+                            <div className={styles.formDivider}>
+                                <span>Recommendation Details (Optional)</span>
+                            </div>
+
+                            <div className={styles.formRow}>
+                                {/* Name field with autocomplete */}
+                                <div className={styles.formGroup} ref={staffDropdownRef} style={{ position: 'relative' }}>
+                                    <label htmlFor="recommendedByName">Recommended By</label>
+                                    <input
+                                        id="recommendedByName"
+                                        placeholder="Type to search staff or enter name"
+                                        value={newInvitee.recommendedBy?.name || ""}
+                                        onChange={(e) => updateRecommendedBy('name', e.target.value)}
+                                        autoComplete="off"
+                                    />
+                                    {loadingStaff && (
+                                        <span className={styles.searchingIndicator}>Loading staff...</span>
+                                    )}
+
+                                    {/* Staff Autocomplete Dropdown - THIS IS WHERE SUGGESTIONS APPEAR */}
+                                    {showStaffDropdown && filteredStaff.length > 0 && (
+                                        <div className={styles.autocompleteDropdown}>
+                                            {filteredStaff.map((staff) => (
+                                                <div
+                                                    key={staff._id}
+                                                    className={styles.autocompleteItem}
+                                                    onClick={() => selectStaffMember(staff)}
+                                                >
+                                                    <div className={styles.staffName}>{staff.name}</div>
+                                                    <div className={styles.staffDetails}>
+                                                        {staff.department && <span>{staff.department}</span>}
+                                                        {staff.department && staff.email && <span> • </span>}
+                                                        {staff.email && <span className={styles.staffEmail}>{staff.email}</span>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Department dropdown - auto-populated when staff is selected */}
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="recommendedByDepartment">Department</label>
+                                    <select
+                                        id="recommendedByDepartment"
+                                        value={newInvitee.recommendedBy?.department || ""}
+                                        onChange={(e) => updateRecommendedBy('department', e.target.value)}
+                                        className={styles.departmentSelect}
+                                    >
+                                        <option value="">Select or auto-filled from staff</option>
+                                        {DEPARTMENTS.map((dept) => (
+                                            <option key={dept} value={dept}>{dept}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
                             {/* Submit Button */}
@@ -418,7 +604,7 @@ const Invites = () => {
                                 </svg>
                             </div>
                             <h6>Quick Tip</h6>
-                            <p>Check for similar companies to avoid duplicate invitations.</p>
+                            <p>Start typing in the "Recommended By" field to see staff suggestions. The recommendation field helps track who suggested inviting this contractor.</p>
                         </div>
                     </div>
                 </div>

@@ -12,7 +12,7 @@
   background-color: var(--color-bg-white);
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ============================================
@@ -104,7 +104,7 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.formGroup input {
+.formGroup input, .formGroup select {
   width: 100%;
   padding: var(--spacing-md);
   border: 2px solid var(--color-border);
@@ -115,7 +115,7 @@
   font-family: var(--font-family-base);
 }
 
-.formGroup input:focus {
+.formGroup input:focus, .formGroup select:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(230, 117, 9, 0.1);
@@ -624,4 +624,106 @@
 .cancelButton:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+
+/* Add to your existing styles.module.css */
+
+.formDivider {
+    margin: 24px 0 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.formDivider span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.autocompleteDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 9999;
+    margin-top: 4px;
+}
+
+.autocompleteItem {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
+}
+
+.autocompleteItem:last-child {
+    border-bottom: none;
+}
+
+.autocompleteItem:hover {
+    background-color: #f9fafb;
+}
+
+.staffName {
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.staffDetails {
+    font-size: 12px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.staffEmail {
+    font-style: italic;
+}
+
+.formGroup {
+    position: relative;
+    flex: 1;
+}
+
+.departmentSelect {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.departmentSelect:hover {
+    border-color: #9ca3af;
+}
+
+.departmentSelect:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.searchingIndicator {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #6b7280;
+    font-style: italic;
 }
