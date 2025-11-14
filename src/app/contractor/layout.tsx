@@ -1,5 +1,6 @@
 'use client'
 import logo from "@/assets/images/logo.png"
+import useFirebaseReady from "@/hooks/useFirebaseReady"
 import { setUserData } from "@/redux/reducers/user"
 import { getProtected } from "@/requests/get"
 import { faCaretDown, faEnvelope, faUserCircle } from "@fortawesome/free-solid-svg-icons"
@@ -16,9 +17,12 @@ const Layout = ({ children }) => {
   const [showFloatingUserMenu, setShowFloatingUserMenu] = useState(false)
   const user = useSelector((state: any) => state.user.user)
   const dispatch = useDispatch()
+  const firebaseReady = useFirebaseReady()
+
   useEffect(() => {
+    if (!firebaseReady) return                          // ← PREVENT EARLY CALL
     getCurrentAuthState()
-  }, [])
+  }, [firebaseReady])
 
   const router = useRouter()
 

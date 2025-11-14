@@ -1,4 +1,5 @@
 'use client'
+import useFirebaseReady from '@/hooks/useFirebaseReady'
 import { getProtected } from '@/requests/get'
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
@@ -6,9 +7,12 @@ import { useEffect } from 'react'
 import styles from './page.module.css'
 
 export default function Home() {
+  const firebaseReady = useFirebaseReady()
+
   useEffect(() => {
+    if (!firebaseReady) return                          // ← PREVENT EARLY CALL
     getCurrentAuthState()
-  }, [])
+  }, [firebaseReady])
 
   const router = useRouter()
 
@@ -21,10 +25,7 @@ export default function Home() {
       } else if (currentAuthState.data.role === "Vendor") {
         router.push("/contractor/dashboard")
 
-
       } else if (currentAuthState.data.role !== "Vendor") {
-
-
         router.push("/staff/approvals")
 
         localStorage.setItem("role", "Staff")

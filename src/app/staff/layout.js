@@ -2,6 +2,7 @@
 import logo from "@/assets/images/logo.png";
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
 import Modal from "@/components/modal";
+import useFirebaseReady from "@/hooks/useFirebaseReady";
 import { setUserData } from "@/redux/reducers/user";
 import { getProtected } from "@/requests/get";
 import { postProtected } from "@/requests/post";
@@ -55,9 +56,12 @@ const Layout = ({ children }) => {
   }, [hasAdminPermissions]);
 
   // Effects
+  const firebaseReady = useFirebaseReady()
+
   useEffect(() => {
-    getCurrentAuthState();
-  }, []);
+    if (!firebaseReady) return                          // ← PREVENT EARLY CALL
+    getCurrentAuthState()
+  }, [firebaseReady]) 
 
   // Handlers
   const getCurrentAuthState = useCallback(async () => {

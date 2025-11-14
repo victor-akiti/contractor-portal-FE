@@ -1,104 +1,108 @@
-// src/redux/apis/staffApi.ts
-import { auth } from '@/lib/firebase'
-import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query/react'
-import { fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { getIdToken } from 'firebase/auth'
+// src/redux/apis/baseQueryWithReauth.ts
+import { auth } from '@/lib/firebase';
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { getIdToken } from 'firebase/auth';
 
-// Firebase token refresh logic
-let isRefreshing = false
-let refreshPromise: Promise<boolean> | null = null
+// Detect cookie (browser-only safeguard)
+const hasAuthCookie = () => {
+    if (typeof document === "undefined") return false; // SSR-safe
+    return document.cookie.includes("authToken=");
+};
+
+// === REFRESH LOGIC ===
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
 
 const handleTokenRefresh = async (): Promise<boolean> => {
-    if (isRefreshing) {
-        return refreshPromise!
-    }
-
-    isRefreshing = true
-    refreshPromise = performTokenRefresh()
+    if (isRefreshing) return refreshPromise!;
+    isRefreshing = true;
+    refreshPromise = performTokenRefresh();
 
     try {
-        const result = await refreshPromise
-        return result
+        return await refreshPromise;
     } finally {
-        isRefreshing = false
-        refreshPromise = null
+        isRefreshing = false;
+        refreshPromise = null;
     }
-}
+};
 
 const performTokenRefresh = async (): Promise<boolean> => {
     try {
-        const user = auth.currentUser
+        const user = auth.currentUser;
+        if (!user) return false;
 
-        if (!user) {
-            return false
-        }
-
-        const freshToken = await getIdToken(user, true)
+        const freshToken = await getIdToken(user, true);
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
             method: "PUT",
             headers: { token: freshToken },
             credentials: "include",
-        })
+        });
 
         if (response.ok) {
-            const result = await response.json()
-            if (result.status === "OK") {
-                return true
+            const result = await response.json();
+            return result.status === "OK";
+        }
+
+        return false;
+    } catch (error) {
+        console.error("Token refresh failed:", error);
+        return false;
+    }
+};
+
+// === LOGIN REDIRECT ===
+const redirectToLogin = (role?: string): void => {
+    if (!role || role === "Vendor" || role === "User") {
+        window.location.href = "/login";
+    } else {
+        window.location.href = "/login/staff";
+    }
+};
+
+// === BASE QUERY ===
+const baseQuery = fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+    credentials: "include",
+    prepareHeaders: async (headers, apiContext) => {
+        const cookieAvailable = hasAuthCookie();
+
+        // Only send Authorization when cookie is missing
+        if (!cookieAvailable) {
+            const user = auth.currentUser;
+            if (user) {
+                const token = await getIdToken(user);
+                if (token) headers.set("Authorization", `Bearer ${token}`);
             }
         }
 
-        console.error('Backend token update failed')
-        return false
+        // Pass through role if needed
+        const userRole = (apiContext.extra as any)?.userRole;
+        if (userRole) headers.set("User-Role", userRole);
 
-    } catch (error) {
-        console.error('Token refresh failed:', error)
-        return false
-    }
-}
-
-const redirectToLogin = (role?: string): void => {
-    if (!role || role === "Vendor" || role === "User") {
-        window.location.href = "/login"
-    } else {
-        window.location.href = "/login/staff"
-    }
-}
-
-// Base query with Firebase auth refresh
-const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
-    credentials: 'include',
-    prepareHeaders: (headers, { extra }) => {
-        const userRole = (extra as any)?.userRole
-        if (userRole) headers.set('User-Role', userRole)
-        return headers
+        return headers;
     },
-})
+});
 
+// === WRAP WITH TOKEN REAUTH ===
 export const baseQueryWithReauth: BaseQueryFn<
     string | FetchArgs,
     unknown,
-    FetchBaseQueryError & { userRole?: string }
+    FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-    const userRole = (extraOptions as any)?.userRole
-
-    let result = await baseQuery(args, api, extraOptions)
+    let result = await baseQuery(args, api, extraOptions);
 
     if (result.error && result.error.status === 401) {
-
-        const refreshSuccess = await handleTokenRefresh()
+        const refreshSuccess = await handleTokenRefresh();
 
         if (refreshSuccess) {
-            result = await baseQuery(args, api, extraOptions)
-
-            if (result.error && result.error.status === 401) {
-                redirectToLogin(userRole)
-            }
+            result = await baseQuery(args, api, extraOptions);
+            if (result.error && result.error.status === 401) redirectToLogin();
         } else {
-            redirectToLogin(userRole)
+            redirectToLogin();
         }
     }
 
-    return result
-}
+    return result;
+};

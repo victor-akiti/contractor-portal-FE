@@ -5,6 +5,21 @@ import { getIdToken } from "firebase/auth";
 let isRefreshing = false;
 let refreshPromise = null;
 
+// 🔐 Helper: build Authorization header (non-breaking, best-effort)
+const getAuthHeader = async () => {
+    try {
+        const user = auth.currentUser;
+        if (!user) return {};
+
+        // Do NOT force refresh on every request; let Firebase manage expiration
+        const token = await getIdToken(user);
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    } catch (error) {
+        console.error("Failed to build auth header:", error);
+        return {};
+    }
+};
+
 export const getPlain = async (route) => {
     try {
         const request = await fetch(route, {
@@ -13,36 +28,44 @@ export const getPlain = async (route) => {
                 "Content-Type": "application/json"
             }
         });
-        
+
         const result = await request.json();
         return result;
     } catch (error) {
-        console.error({error});
+        console.error({ error });
         throw error;
     }
-}
+};
 
 export const getProtected = async (route, role) => {
     try {
-        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
+        const baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`;
+
+        const authHeader = await getAuthHeader();
+
+        const request = await fetch(baseUrl, {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                ...authHeader, // 🔐 Fallback header, cookie remains primary
             },
             credentials: "include",
         });
 
         if (request.status === 401) {
-            
+
             // Attempt to refresh token
             const refreshSuccess = await handleTokenRefresh();
-            
+
             if (refreshSuccess) {
+                const retryAuthHeader = await getAuthHeader();
+
                 // Retry the original request
-                const retryRequest = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
+                const retryRequest = await fetch(baseUrl, {
                     method: "GET",
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        ...retryAuthHeader,
                     },
                     credentials: "include",
                 });
@@ -63,10 +86,10 @@ export const getProtected = async (route, role) => {
             throw new Error('Request failed');
         }
     } catch (error) {
-        console.error({error});
+        console.error({ error });
         throw error;
     }
-}
+};
 
 // Token refresh logic
 const handleTokenRefresh = async () => {
@@ -77,7 +100,7 @@ const handleTokenRefresh = async () => {
 
     isRefreshing = true;
     refreshPromise = performTokenRefresh();
-    
+
     try {
         const result = await refreshPromise;
         return result;
@@ -89,9 +112,7 @@ const handleTokenRefresh = async () => {
 
 const performTokenRefresh = async () => {
     try {
-        // const auth = getAuth();
         const user = auth.currentUser;
-        // debugger;
 
         if (!user) {
             return false;
@@ -99,8 +120,7 @@ const performTokenRefresh = async () => {
 
         // Firebase automatically handles refresh using its internal refreshToken
         const freshToken = await getIdToken(user, true);
-        
-        
+
         // Send fresh token to backend
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
             method: "PUT",
@@ -117,7 +137,7 @@ const performTokenRefresh = async () => {
 
         console.error('Backend token update failed');
         return false;
-        
+
     } catch (error) {
         console.error('Token refresh failed:', error);
         return false;
