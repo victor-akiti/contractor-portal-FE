@@ -1254,6 +1254,48 @@ const ViewVendorPage = () => {
                                                 </p>
                                             </div>
                                         </div>
+
+                                        {/* NEW: Display recommendedBy if it exists */}
+                                        {inviteDetails?.recommendedBy && (
+                                            <>
+                                                <div className={styles.fieldItem}>
+                                                    <div>
+                                                        <p className={styles.fieldData}>
+                                                            <label>{`Recommended By:`}</label>
+                                                            {
+                                                                <p>{inviteDetails.recommendedBy.name}</p>
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {inviteDetails.recommendedBy.department && (
+                                                    <div className={styles.fieldItem}>
+                                                        <div>
+                                                            <p className={styles.fieldData}>
+                                                                <label>{`Recommender's Department:`}</label>
+                                                                {
+                                                                    <p>{inviteDetails.recommendedBy.department}</p>
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {inviteDetails.recommendedBy.email && (
+                                                    <div className={styles.fieldItem}>
+                                                        <div>
+                                                            <p className={styles.fieldData}>
+                                                                <label>{`Recommender's Email:`}</label>
+                                                                {
+                                                                    <p>{inviteDetails.recommendedBy.email}</p>
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
 
                                     <hr />

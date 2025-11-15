@@ -11,18 +11,18 @@
 .inviteCard {
   background-color: var(--color-bg-white);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow: visible;
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); */
+  /* overflow: hidden; */
 }
 
 /* ============================================
    HEADER
    ============================================ */
 
-.inviteHeader {
+/* .inviteHeader { */
   /* background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); */
-  padding: var(--spacing-xl);
-}
+  /* padding: var(--spacing-xl); */
+/* } */
 
 .inviteHeader h5 {
   color: var(--color-text-secondary);
@@ -64,7 +64,10 @@
 .inviteContent {
   display: flex;
   gap: var(--spacing-xl);
-  padding: var(--spacing-xl);
+  /* padding: var(--spacing-xl); */
+  padding-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
+  height: 100%;
 }
 
 .formSection {
@@ -75,9 +78,12 @@
 .sidebarSection {
   flex: 1;
   min-width: 280px;
+  position: sticky;
+  top: 10px;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  height: max-content;
 }
 
 /* ============================================

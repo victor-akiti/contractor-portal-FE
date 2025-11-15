@@ -1,65 +1,31 @@
 'use client'
-<<<<<<< HEAD
-import logo from "@/assets/images/logo.png";
-import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
-import Modal from "@/components/modal";
-import useFirebaseReady from "@/hooks/useFirebaseReady";
-import { setUserData } from "@/redux/reducers/user";
-import { getProtected } from "@/requests/get";
-import { postProtected } from "@/requests/post";
-import { faCaretDown, faUserCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styles from "./styles/styles.module.css";
-=======
 import logo from "@/assets/images/logo.png"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import Modal from "@/components/modal"
-// import { useGetCurrentAuthStateQuery } from "@/redux/apis/staffApi"
-import { useAppDispatch, useAppSelector } from "@/redux/hooks"
+import useFirebaseReady from "@/hooks/useFirebaseReady"
 import { setUserData } from "@/redux/reducers/user"
+import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
-import { faBars, faCaretDown, faTimes, faUserCircle } from "@fortawesome/free-solid-svg-icons"
+
+import {
+  faBars,
+  faCaretDown,
+  faTimes,
+  faUserCircle
+} from "@fortawesome/free-solid-svg-icons"
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useCallback, useMemo, useState } from "react"
+
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
-/**
- * Staff Portal Layout with Collapsible Sidebar
- * 
- * Features:
- * - RTK Query for auth state
- * - Collapsible sidebar (desktop)
- * - Mobile-responsive hamburger menu
- * - Out of office modal
- * - User dropdown menu
- * - Active link highlighting
- */
-
-// Types
-// interface User {
-//   _id?: string
-//   name?: string
-//   email?: string
-//   role?: string
-//   outOfOffice?: boolean
-// }
-
-// interface MenuItem {
-//   href: string
-//   label: string
-//   adminOnly?: boolean
-// }
->>>>>>> 6bf6fa9 (feat: app refactor and update styling and implement rtk query)
-
-// Constants
+// -----------------------------------
+// CONSTANTS
+// -----------------------------------
 const ADMIN_ROLES = ["Admin", "HOD"]
 
 const MENU_ITEMS = [
@@ -72,102 +38,111 @@ const MENU_ITEMS = [
   { href: "/staff/settings", label: "Account Settings" },
 ]
 
-// interface LayoutProps {
-//   children: React.ReactNode
-// }
-
+// -----------------------------------
+// LAYOUT COMPONENT
+// -----------------------------------
 const Layout = ({ children }) => {
-  // State
+  // -----------------------------------
+  // HYDRATION FIX — rendered only on client
+  // -----------------------------------
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  
+
+  // -----------------------------------
+  // STATE
+  // -----------------------------------
   const [authenticated, setAuthenticated] = useState(false)
   const [updatingOutOfOffice, setUpdatingOutOfOffice] = useState(false)
   const [showFloatingUserMenu, setShowFloatingUserMenu] = useState(false)
   const [showOutOfOfficeModal, setShowOutOfOfficeModal] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  
-  // Hooks
-  const user = useAppSelector((state) => state.user.user) //as User
+
+  // -----------------------------------
+  // HOOKS
+  // -----------------------------------
+  const user = useSelector((state) => state.user.user)
   const router = useRouter()
   const pathname = usePathname()
-  const dispatch = useAppDispatch()
+  const dispatch = useDispatch()
+  const firebaseReady = useFirebaseReady()
 
-  // RTK Query
-  // const { data: authData, isLoading: isCheckingAuth, error: authError } = useGetCurrentAuthStateQuery()
-
-  // Memoized values
+  // -----------------------------------
+  // COMPUTED VALUES
+  // -----------------------------------
   const hasAdminPermissions = useMemo(() => {
     return user?.role ? ADMIN_ROLES.includes(user.role) : false
   }, [user?.role])
+
+  const filteredMenuItems = useMemo(() => {
+    return MENU_ITEMS.filter(item => !item.adminOnly || hasAdminPermissions)
+  }, [hasAdminPermissions])
 
   const isActiveMenu = useCallback((menuLink) => {
     return menuLink === pathname
   }, [pathname])
 
-  const filteredMenuItems = useMemo(() => {
-    return MENU_ITEMS.filter(item => 
-      !item.adminOnly || hasAdminPermissions
-    )
-  }, [hasAdminPermissions])
 
-  // Effects
-<<<<<<< HEAD
-  const firebaseReady = useFirebaseReady()
+  // -----------------------------------
+  // AUTH CHECK
+  // -----------------------------------
+  const getCurrentAuthState = useCallback(async () => {
+    try {
+      const currentAuthState = await getProtected(
+        "auth/current-auth-state",
+        "Amni Staff"
+      )
 
-  useEffect(() => {
-    if (!firebaseReady) return                          // ← PREVENT EARLY CALL
-    getCurrentAuthState()
-  }, [firebaseReady]) 
-=======
-  // useEffect(() => {
-  //   if (authData) {
-  //     const status = authData.status?.toUpperCase()
-      
-  //     if (status === "OK" && authData.data) {
-  //       dispatch(setUserData({ user: authData.data }))
+      if (currentAuthState?.status !== "Failed") {
+        dispatch(setUserData({ user: currentAuthState.data }))
         
-  //       if (authData.data.role === "Vendor") {
-  //         router.push("/contractor/dashboard")
-  //       } else {
-  //         setAuthenticated(true)
-          
-  //         // Show out of office modal if user is OOO
-  //         if (authData.data.outOfOffice) {
-  //           setShowOutOfOfficeModal(true)
-  //         }
-  //       }
-  //     } else {
-  //       console.error('Auth state check failed, redirecting to login')
-  //       router.push("/login/staff")
-  //     }
-  //   }
-  // }, [authData, dispatch, router])
+        if (currentAuthState.data.role === "Vendor") {
+          router.push("/contractor/dashboard")
+        } else {
+          setAuthenticated(true)
 
-  // useEffect(() => {
-  //   if (authError) {
-  //     console.error('Auth error:', authError)
-  //     router.push("/login/staff")
-  //   }
-  // }, [authError, router])
->>>>>>> 6bf6fa9 (feat: app refactor and update styling and implement rtk query)
+          if (currentAuthState.data.outOfOffice) {
+            setShowOutOfOfficeModal(true)
+          }
+        }
+      } else {
+        router.push("/login/staff")
+      }
+    } catch (error) {
+      console.error({ getCurrentAuthStateError: error })
+      router.push("/login/staff")
+    }
+  }, [dispatch, router])
 
-  // Handlers
+
+  // -----------------------------------
+  // WAIT FOR FIREBASE USER BEFORE AUTH CHECK
+  // -----------------------------------
+  useEffect(() => {
+    if (!firebaseReady) return
+    getCurrentAuthState()
+  }, [firebaseReady, getCurrentAuthState])
+
+
+
+  // -----------------------------------
+  // HANDLERS
+  // -----------------------------------
   const unsetOutOfOffice = useCallback(async () => {
     if (!user?.role) return
     
     setUpdatingOutOfOffice(true)
     try {
       const unsetOutOfOfficeRequest = await postProtected(
-        "user/outOfOffice/unset", 
-        {}, 
+        "user/outOfOffice/unset",
+        {},
         user.role
       )
-      
-      const status = unsetOutOfOfficeRequest.status?.toUpperCase()
-      
-      if (status === "OK") {
-        // Update user data locally
-        dispatch(setUserData({ 
-          user: { ...user, outOfOffice: false } 
+
+      if (unsetOutOfOfficeRequest.status === "OK") {
+        dispatch(setUserData({
+          user: { ...user, outOfOffice: false }
         }))
         setShowOutOfOfficeModal(false)
       }
@@ -178,50 +153,52 @@ const Layout = ({ children }) => {
     }
   }, [user, dispatch])
 
-  const toggleSidebar = useCallback(() => {
-    setSidebarCollapsed(prev => !prev)
-  }, [])
-
-  const toggleMobileSidebar = useCallback(() => {
-    setMobileSidebarOpen(prev => !prev)
-  }, [])
-
-  const closeMobileSidebar = useCallback(() => {
-    setMobileSidebarOpen(false)
-  }, [])
-
-  const toggleShowFloatingUserMenu = useCallback(() => {
+  const toggleSidebar = () => setSidebarCollapsed(prev => !prev)
+  const toggleMobileSidebar = () => setMobileSidebarOpen(prev => !prev)
+  const closeMobileSidebar = () => setMobileSidebarOpen(false)
+  const toggleShowFloatingUserMenu = () =>
     setShowFloatingUserMenu(prev => !prev)
-  }, [])
 
   const logUserOut = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`, {
-        credentials: 'include'
-      })
-      
-      if (response.ok) {
-        router.push("/login/staff")
-      }
+      await getProtected("auth/logout")
+      router.push("/login/staff")
     } catch (error) {
       console.error({ error })
     }
   }, [router])
 
-  const handleCloseOutOfOfficeModal = useCallback(() => {
-    setShowOutOfOfficeModal(false)
-  }, [])
 
-  // Render helpers
+
+  // -----------------------------------
+  // HYDRATION PREVENTION
+  // -----------------------------------
+  if (!mounted) {
+    return <div className={styles.layout}></div>
+  }
+
+  if (!authenticated) {
+    return <div className={styles.layout}></div>
+  }
+
+
+
+  // -----------------------------------
+  // RENDER HELPERS
+  // -----------------------------------
   const renderOutOfOfficeModal = () => (
     <Modal>
       <div className={styles.outOfOfficeDiv}>
         <h3>Out of Office</h3>
         <p>You are currently out-of-office. Set your account back to in office?</p>
         <div className={styles.outOfOfficeActionButtons}>
-          <button onClick={handleCloseOutOfOfficeModal} disabled={updatingOutOfOffice}>
+          <button
+            onClick={() => setShowOutOfOfficeModal(false)}
+            disabled={updatingOutOfOffice}
+          >
             Close
           </button>
+
           <button onClick={unsetOutOfOffice} disabled={updatingOutOfOffice}>
             Set as in office {updatingOutOfOffice && <ButtonLoadingIcon />}
           </button>
@@ -261,7 +238,7 @@ const Layout = ({ children }) => {
     <nav className={styles.nav}>
       <div className={styles.left}>
         {/* Mobile hamburger */}
-        <button 
+        <button
           className={styles.mobileMenuButton}
           onClick={toggleMobileSidebar}
           aria-label="Toggle mobile menu"
@@ -270,7 +247,7 @@ const Layout = ({ children }) => {
         </button>
 
         {/* Desktop sidebar toggle */}
-        <button 
+        <button
           className={styles.sidebarToggle}
           onClick={toggleSidebar}
           aria-label="Toggle sidebar"
@@ -279,12 +256,12 @@ const Layout = ({ children }) => {
         </button>
 
         <Link href="/staff/approvals">
-          <Image 
-            src={logo} 
-            width={30} 
-            height={30} 
-            style={{ width: "35px", height: "45px" }} 
-            alt="logo" 
+          <Image
+            src={logo}
+            width={30}
+            height={30}
+            style={{ width: "35px", height: "45px" }}
+            alt="logo"
           />
           <span>Contractor Portal</span>
         </Link>
@@ -292,13 +269,13 @@ const Layout = ({ children }) => {
 
       <div className={styles.right} onClick={toggleShowFloatingUserMenu}>
         <span>STAFF DASHBOARD</span>
-        <FontAwesomeIcon 
-          icon={faUserCircle} 
-          style={{ width: "20px", color: "#ffffff80", marginRight: "10px" }} 
+        <FontAwesomeIcon
+          icon={faUserCircle}
+          style={{ width: "20px", color: "#ffffff80", marginRight: "10px" }}
         />
-        <FontAwesomeIcon 
-          icon={faCaretDown} 
-          style={{ width: "10px", color: "#ffffff80" }} 
+        <FontAwesomeIcon
+          icon={faCaretDown}
+          style={{ width: "10px", color: "#ffffff80" }}
         />
       </div>
 
@@ -307,12 +284,13 @@ const Layout = ({ children }) => {
   )
 
   const renderSideMenu = () => (
-    <div 
-      className={`${styles.left} ${sidebarCollapsed ? styles.collapsed : ''} ${mobileSidebarOpen ? styles.mobileOpen : ''}`}
+    <div
+      className={`${styles.left} ${
+        sidebarCollapsed ? styles.collapsed : ""
+      } ${mobileSidebarOpen ? styles.mobileOpen : ""}`}
       data-sidebar="true"
     >
-      {/* Mobile close button */}
-      <button 
+      <button
         className={styles.mobileCloseButton}
         onClick={closeMobileSidebar}
         aria-label="Close menu"
@@ -330,25 +308,25 @@ const Layout = ({ children }) => {
           {item.label}
         </Link>
       ))}
+
       <hr />
     </div>
   )
 
   const renderContent = () => (
-    <div className={`${styles.content} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
+    <div
+      className={`${styles.content} ${
+        sidebarCollapsed ? styles.sidebarCollapsed : ""
+      }`}
+    >
       {renderSideMenu()}
-      <div className={styles.right}>
-        {children}
-      </div>
+      <div className={styles.right}>{children}</div>
     </div>
   )
 
-  // Loading state
-  // if (isCheckingAuth || !authenticated) {
-  //   return null
-  // }
-
-  // Main render
+  // -----------------------------------
+  // FINAL RENDER
+  // -----------------------------------
   return (
     <div>
       <div className={styles.layout}>
@@ -357,12 +335,10 @@ const Layout = ({ children }) => {
         {renderContent()}
       </div>
 
-      {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
-        <div 
+        <div
           className={styles.mobileOverlay}
           onClick={closeMobileSidebar}
-          aria-hidden="true"
         />
       )}
     </div>

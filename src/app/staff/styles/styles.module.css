@@ -4,18 +4,20 @@
 .layout {
   width: 100%;
   min-height: 100vh;
+  height: 100vh;
   background-color: #ffffff;
 }
 
 /* ===== .NAVIGATION ===== */
 .nav {
+  max-height: 70px;
   width: 100%;
   background-color: #343a40 !important;
   padding: 0.75rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
+  position: sticky !important;
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -260,6 +262,7 @@
 .content {
   display: flex;
   min-height: calc(100vh - 70px);
+  height: calc(100vh - 70px);
   transition: all 0.3s ease;
 }
 
@@ -275,6 +278,7 @@
   background-color: white;
   border-right: 1px solid #e0e0e0;
   padding: 1.5rem 0;
+  position: sticky;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
@@ -358,6 +362,8 @@
   padding: 1rem;
   overflow-x: hidden;
   transition: margin-left 0.3s ease;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
 @media (min-width: 768px) {
