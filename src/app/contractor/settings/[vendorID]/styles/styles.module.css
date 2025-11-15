@@ -1,89 +1,472 @@
+/* ============================================
+   VENDOR SETTINGS COMPONENT - MODERN DESIGN
+   ============================================ */
+
 .settings {
-  padding-top: 50px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  min-height: max-content;
 }
-.settings hr {
-  margin-top: 20px;
-  margin-bottom: 20px;
+
+.settingsHeader {
+  margin-bottom: var(--spacing-xl);
 }
-.settings h3 {
-  margin-bottom: 10px;
-}
-.settings table td {
-  padding-right: 20px;
-}
-.settings table td:nth-child(1) {
+
+.settingsTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
   font-weight: 600;
+  margin: 0 0 var(--spacing-md) 0;
 }
-.settings .actionButtonsDiv {
-  display: flex;
-  margin-top: 20px;
-  margin-bottom: 20px;
+
+.settingsDivider {
+  border: none;
+  border-top: 2px solid var(--color-border-light);
+  margin: var(--spacing-xl) 0;
+}
+
+/* ============================================
+   SETTINGS SECTION
+   ============================================ */
+
+.settingsSection {
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  border: 2px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: var(--spacing-xl);
+}
+
+.sectionTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-lg) 0;
   display: flex;
   align-items: center;
-  margin-top: 20px;
+  gap: var(--spacing-sm);
 }
-.settings .actionButtonsDiv button {
-  background-color: #e67509;
-  color: white;
-  border-style: none;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  margin-right: 20px;
-  padding: 7px;
+
+.sectionTitle svg {
+  color: var(--color-primary);
 }
-.settings .actionButtonsDiv button:nth-child(2) {
-  background-color: white;
-  color: #e67509;
+
+.sectionSubtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-md) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.settings .changePortalAdministratorModal {
-  background-color: white;
-  padding: 20px;
-  border-style: none;
-  border-radius: 5px;
+
+/* ============================================
+   ADMINISTRATOR INFO TABLE
+   ============================================ */
+
+.adminTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-lg);
+}
+
+.adminTable tr {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.adminTable tr:last-child {
+  border-bottom: none;
+}
+
+.adminTable td {
+  padding: var(--spacing-md) 0;
+}
+
+.adminTable td:first-child {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   width: 40%;
 }
-.settings .changePortalAdministratorModal form input {
-  width: 100%;
-  padding: 7px;
-  border-style: none;
-  border-radius: 5px;
-  border-style: solid;
-  border-color: #c7c7c7;
-  border-width: 1px;
-  margin-top: 20px;
-  margin-bottom: 20px;
+
+.adminTable td:last-child {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
 }
-.settings .changePortalAdministratorModal div input {
-  width: 100%;
-  padding: 10px;
-  border-style: none;
-  border-radius: 5px;
-  border-style: solid;
-  border-color: #c7c7c7;
-  border-width: 1px;
-  margin-top: 20px;
-}
-.settings .changePortalAdministratorModal .modalActionButtons {
+
+/* ============================================
+   ACTION BUTTONS
+   ============================================ */
+
+.actionButtonsDiv {
   display: flex;
-  justify-content: end;
-  margin-top: 20px;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
 }
-.settings .changePortalAdministratorModal .modalActionButtons button {
-  margin-left: 20px;
-  padding: 7px;
-  border-style: none;
-  border-radius: 5px;
-  color: white;
-  cursor: pointer;
+
+.actionButton {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family-base);
+  min-height: 44px;
 }
-.settings .changePortalAdministratorModal .modalActionButtons button:nth-child(1) {
-  background-color: #d7d7d7;
+
+.actionButtonPrimary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.3);
 }
-.settings .changePortalAdministratorModal .modalActionButtons button:nth-child(2) {
-  background-color: #e67509 !important;
-}/*# sourceMappingURL=styles.module.css.map */
+
+.actionButtonPrimary:hover {
+  box-shadow: 0 6px 16px rgba(230, 117, 9, 0.4);
+  transform: translateY(-2px);
+}
+
+.actionButtonSecondary {
+  background-color: var(--color-bg-white);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.actionButtonSecondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-bg-white);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+
+.changePortalAdministratorModal {
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  width: 90vw;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  color: var(--color-bg-white);
+}
+
+.modalTitle {
+  color: var(--color-bg-white);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.modalSubtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-sm);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalContent {
+  padding: var(--spacing-xl);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.modalFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.modalFormLabel {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.modalFormInput {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+  font-family: var(--font-family-base);
+}
+
+.modalFormInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(230, 117, 9, 0.1);
+}
+
+.modalFormInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.modalError {
+  margin-top: var(--spacing-md);
+}
+
+.modalSuccess {
+  margin-top: var(--spacing-md);
+}
+
+.modalActionButtons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: var(--color-bg-light);
+  border-top: 1px solid var(--color-border-light);
+  flex-wrap: wrap;
+}
+
+.modalButton {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 44px;
+}
+
+.modalButtonCancel {
+  background-color: var(--color-text-secondary);
+  color: var(--color-bg-white);
+}
+
+.modalButtonCancel:hover {
+  background-color: var(--color-text-primary);
+}
+
+.modalButtonSubmit {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.3);
+}
+
+.modalButtonSubmit:hover {
+  box-shadow: 0 6px 16px rgba(230, 117, 9, 0.4);
+  transform: translateY(-1px);
+}
+
+.modalButtonSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   INFO CARD
+   ============================================ */
+
+.infoCard {
+  background: linear-gradient(135deg, rgba(230, 117, 9, 0.05) 0%, rgba(230, 117, 9, 0.02) 100%);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-primary-light);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.infoIcon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary);
+}
+
+.infoText {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .settings {
+    max-width: 100%;
+    padding: var(--spacing-lg);
+  }
+
+  .settingsSection {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 768px) {
+  .settings {
+    padding: var(--spacing-md);
+  }
+
+  .settingsTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .settingsSection {
+    padding: var(--spacing-md);
+  }
+
+  .adminTable td:first-child {
+    width: 35%;
+  }
+
+  .actionButtonsDiv {
+    flex-direction: column;
+  }
+
+  .actionButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modalActionButtons {
+    flex-direction: column;
+  }
+
+  .modalButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .changePortalAdministratorModal {
+    width: 95vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .settingsTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-base);
+  }
+
+  .adminTable td {
+    display: block;
+    width: 100%;
+    padding: var(--spacing-xs) 0;
+  }
+
+  .adminTable td:first-child {
+    width: 100%;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  .adminTable td:last-child {
+    padding-bottom: var(--spacing-md);
+  }
+
+  .adminTable tr {
+    display: block;
+    padding: var(--spacing-md) 0;
+  }
+
+  .modalContent {
+    padding: var(--spacing-md);
+  }
+
+  .modalActionButtons {
+    padding: var(--spacing-md);
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settingsSection {
+  animation: fadeIn 0.3s ease;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.actionButton:focus-visible,
+.modalButton:focus-visible,
+.modalFormInput:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .settingsSection {
+    border-width: 3px;
+  }
+
+  .adminTable tr {
+    border-bottom-width: 2px;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .settings {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .actionButtonsDiv {
+    display: none;
+  }
+
+  .settingsSection {
+    border: 1px solid #000;
+    box-shadow: none;
+  }
+}

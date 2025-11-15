@@ -1,178 +1,617 @@
+/* ============================================
+   DASHBOARD COMPONENT - MODERN DESIGN
+   ============================================ */
+
 .dashboard {
-  padding-top: 50px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  min-height: 100vh;
 }
-.dashboard .updateCertificateModal {
-  background-color: white;
-  width: 30%;
-  padding: 20px;
+
+.dashboardHeader {
+  margin-bottom: var(--spacing-xl);
 }
-.dashboard .updateCertificateModal h3 {
-  margin: 0px;
-  margin-bottom: 20px;
+
+.dashboardTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-xs) 0;
 }
-.dashboard .updateCertificateModal .updateCertificateSuccessDiv {
-  justify-content: flex-start;
-}
-.dashboard .updateCertificateModal table tbody tr td {
-  padding: 10px;
-}
-.dashboard .updateCertificateModal table tbody tr td input {
-  padding: 10px;
-  border-style: none;
-  border-style: solid;
-  border-radius: 5px;
-  border-color: #d1d1d1;
-  border-width: 1px;
-}
-.dashboard .updateCertificateModal table tbody tr td:nth-child(1) {
-  font-weight: bold;
-}
-.dashboard .updateCertificateModal table tbody tr td:nth-child(2) {
-  color: #64676b;
-}
-.dashboard .updateCertificateModal > div {
-  display: flex;
-  justify-content: flex-end;
-}
-.dashboard .updateCertificateModal > div button {
-  margin-left: 20px;
-  padding: 8px;
-  border-radius: 5px;
-  cursor: pointer;
-  border-style: none;
-}
-.dashboard .updateCertificateModal > div button:nth-child(3) {
-  background-color: #e67509;
-  color: white;
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.loadingContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-.dashboard h3 {
-  color: #64676b;
-  font-size: 1.75rem;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  line-height: 1.2;
-  margin-top: 0;
-  width: 70%;
-  margin-left: auto;
-  margin-right: auto;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-}
-.dashboard .noCertificates {
-  padding: 10px;
-  background-color: #f3f3f3;
-  border-style: none;
-  border-radius: 10px;
-}
-.dashboard .noRegisteredCompaniesDiv {
-  padding: 10px;
-  background-color: #f3f3f3;
-}
-.dashboard .noRegisteredCompaniesDiv button {
-  color: #e67509;
-  background-color: rgba(0, 0, 0, 0);
-  border-style: none;
-  margin-top: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.dashboard > hr {
-  border-style: none;
-  border-top-style: solid;
-  border-top-color: #e0e0e0;
-  border-top-width: 1px;
-  width: 70%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 50px;
-  margin-bottom: 50px;
-}
-.dashboard .certificatesDiv table {
-  width: 100%;
-  margin-top: 10px;
-}
-.dashboard .certificatesDiv table thead {
-  background-color: #212529;
-  color: white;
-}
-.dashboard .certificatesDiv table thead td {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 10px;
-}
-.dashboard .certificatesDiv table tbody button {
-  border-style: none;
-  padding: 5px;
-  margin-right: 10px;
-  color: #e67509;
-  background-color: rgba(0, 0, 0, 0);
-  cursor: pointer;
-}
-.dashboard .certificatesDiv table tbody td {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-.dashboard .certificatesDiv table tbody tr td:nth-child(1), .dashboard .certificatesDiv table tbody tr td:nth-child(2) {
-  color: #64676b;
-  font-size: 15px;
-}
-.dashboard > div {
-  margin-top: 24px;
-  width: 70%;
-  margin-left: auto;
-  margin-right: auto;
-}
-.dashboard > div h5 {
-  margin-bottom: 1.5rem !important;
-  color: #64676b;
-  font-size: 1.25rem;
-  font-weight: 500;
-  line-height: 1.2;
-}
-.dashboard > div .companyApplicationDiv {
-  display: flex;
-  justify-content: space-between;
-  border-style: none;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #212529;
-  position: relative;
-  padding: 0.75rem 1.25rem;
-  background-color: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 10px;
-  margin-bottom: 20px;
-  align-items: center;
-}
-.dashboard > div .companyApplicationDiv a {
-  color: #e67509;
-  cursor: pointer;
-}
-.dashboard > div .companyApplicationDiv a:hover {
-  text-decoration: underline;
-}
-.dashboard > div .companyApplicationDiv div p:nth-child(1) {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #212529;
-  text-align: left;
-}
-.dashboard > div .companyApplicationDiv div p:nth-child(2) {
-  font-size: 0.875em;
-  font-weight: 400;
-  color: #212529;
-  line-height: 1.5;
-  margin-top: 10px;
+  min-height: 400px;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
-.actionItems a {
-  margin-left: 20px;
-}/*# sourceMappingURL=styles.module.css.map */
+.loadingContainer p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+
+.section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.sectionHeader {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sectionTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.sectionTitle svg {
+  color: var(--color-primary);
+}
+
+.divider {
+  border: none;
+  border-top: 2px solid var(--color-border-light);
+  margin: var(--spacing-2xl) 0;
+}
+
+/* ============================================
+   COMPANY CARDS
+   ============================================ */
+
+.companyCard {
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border: 2px solid var(--color-border);
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.companyCard:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.1);
+}
+
+.companyInfo {
+  flex: 1;
+  min-width: 250px;
+}
+
+.companyName {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-xs) 0;
+  text-transform: uppercase;
+}
+
+.companyStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-bg-light);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  margin-top: var(--spacing-xs);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+}
+
+.companyActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.actionLink {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+}
+
+.actionLink:hover {
+  background-color: var(--color-primary);
+  color: var(--color-bg-white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(230, 117, 9, 0.2);
+}
+
+.actionLinkPrimary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  border: none;
+}
+
+.actionLinkPrimary:hover {
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.4);
+}
+
+/* ============================================
+   EMPTY STATES
+   ============================================ */
+
+.emptyState {
+  background: linear-gradient(135deg, rgba(230, 117, 9, 0.05) 0%, rgba(230, 117, 9, 0.02) 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  text-align: center;
+  border: 2px dashed var(--color-border);
+}
+
+.emptyStateIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--spacing-md);
+  border-radius: 50%;
+  background-color: rgba(230, 117, 9, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.emptyStateTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.emptyStateText {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  margin: 0 0 var(--spacing-lg) 0;
+  line-height: 1.6;
+}
+
+.emptyStateButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.3);
+  text-decoration: none;
+}
+
+.emptyStateButton:hover {
+  box-shadow: 0 6px 16px rgba(230, 117, 9, 0.4);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   CERTIFICATES TABLE
+   ============================================ */
+
+.tableContainer {
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, #1a1d21 100%);
+}
+
+.table thead th {
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-align: left;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-bg-white);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(230, 117, 9, 0.02);
+}
+
+.table tbody td {
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+}
+
+.certificateType {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.expiryDate {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.expiryDateExpired {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.expiryDateExpiring {
+  color: var(--color-warning);
+  font-weight: 500;
+}
+
+.tableActions {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.tableButton {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.tableButton:hover {
+  background-color: var(--color-primary);
+  color: var(--color-bg-white);
+}
+
+.tableButtonView {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-secondary);
+}
+
+.tableButtonView:hover {
+  background-color: var(--color-text-secondary);
+  color: var(--color-bg-white);
+}
+
+/* ============================================
+   UPDATE CERTIFICATE MODAL
+   ============================================ */
+
+.updateCertificateModal {
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  color: var(--color-bg-white);
+}
+
+.modalTitle {
+  color: var(--color-bg-white);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0;
+}
+
+.modalContent {
+  padding: var(--spacing-xl);
+}
+
+.certificateDetailsTable {
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+.certificateDetailsTable tr {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.certificateDetailsTable tr:last-child {
+  border-bottom: none;
+}
+
+.certificateDetailsTable td {
+  padding: var(--spacing-md) 0;
+}
+
+.certificateDetailsTable td:first-child {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  width: 40%;
+}
+
+.certificateDetailsTable td:last-child {
+  color: var(--color-text-secondary);
+}
+
+.certificateDetailsTable input[type="date"] {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+  font-family: var(--font-family-base);
+}
+
+.certificateDetailsTable input[type="date"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(230, 117, 9, 0.1);
+}
+
+.modalError {
+  margin-bottom: var(--spacing-md);
+}
+
+.modalSuccess {
+  margin-bottom: var(--spacing-md);
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: var(--color-bg-light);
+  border-top: 1px solid var(--color-border-light);
+  flex-wrap: wrap;
+}
+
+.modalButton {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.modalButtonCancel {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+}
+
+.modalButtonCancel:hover {
+  background-color: var(--color-bg-white);
+  border-color: var(--color-text-secondary);
+}
+
+.modalButtonSecondary {
+  background-color: var(--color-text-secondary);
+  color: var(--color-bg-white);
+}
+
+.modalButtonSecondary:hover {
+  background-color: var(--color-text-primary);
+}
+
+.modalButtonPrimary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.3);
+}
+
+.modalButtonPrimary:hover {
+  box-shadow: 0 6px 16px rgba(230, 117, 9, 0.4);
+  transform: translateY(-1px);
+}
+
+.modalButtonPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .dashboard {
+    padding: var(--spacing-lg);
+  }
+
+  .tableContainer {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: var(--spacing-md);
+  }
+
+  .dashboardTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .companyCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .companyActions {
+    width: 100%;
+  }
+
+  .actionLink {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .modalButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .certificateDetailsTable td:first-child {
+    width: 35%;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboardTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .companyName {
+    font-size: var(--font-size-base);
+  }
+
+  .emptyState {
+    padding: var(--spacing-xl);
+  }
+
+  .emptyStateIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+
+  .tableActions {
+    flex-direction: column;
+  }
+
+  .tableButton {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.companyCard,
+.tableContainer,
+.emptyState {
+  animation: fadeIn 0.3s ease;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.actionLink:focus-visible,
+.tableButton:focus-visible,
+.modalButton:focus-visible,
+.emptyStateButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .dashboard {
+    padding: 0;
+  }
+
+  .companyActions,
+  .tableActions,
+  .modalActions {
+    display: none;
+  }
+}

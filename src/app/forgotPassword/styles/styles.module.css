@@ -1,108 +1,349 @@
-.forgotPassword {
+/* ============================================
+   FORGOT PASSWORD COMPONENT - MODERN DESIGN
+   ============================================ */
+
+.forgotPasswordContainer {
   width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f8f9fa;
-}
-.forgotPassword > div {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  color: #64676b;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  padding: var(--spacing-xl);
 }
-.forgotPassword h5 {
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  line-height: 1.2;
-  font-size: 1.25rem;
-}
-.forgotPassword .content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  word-wrap: break-word;
-  background-color: #fff;
-  background-clip: initial;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 0.25rem;
-  width: 150%;
-  padding: 1.5rem;
-  margin-top: 1rem;
-  align-items: center;
-  width: 20vw;
-}
-.forgotPassword .content h3 {
-  color: #64676b;
-  margin-bottom: 1.5rem !important;
-  font-size: 1.75rem;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  font-weight: 500;
-}
-.forgotPassword .content form {
+
+.forgotPasswordCard {
   width: 100%;
+  max-width: 480px;
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease;
 }
-.forgotPassword .content form > input {
-  display: block;
-  width: 100%;
-  height: calc(1.5em + 0.75rem + 2px);
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #ced4da;
-  border-radius: 0.25rem;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  margin-bottom: 0.5rem;
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.forgotPassword .content form > div {
-  display: block;
-  width: 100%;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-}
-.forgotPassword .content form > div label {
-  font-weight: 500;
-  margin-left: 10px;
-  color: black;
-}
-.forgotPassword .content button {
-  display: inline-block;
-  font-weight: 400;
-  color: #212529;
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.forgotPasswordHeader {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  padding: var(--spacing-xl);
   text-align: center;
-  vertical-align: middle;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-       user-select: none;
-  background-color: initial;
-  border: 1px solid rgba(0, 0, 0, 0);
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-radius: 0.25rem;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  color: #fff;
-  background-color: #29bd25;
-  border-color: #29bd25;
+  color: var(--color-bg-white);
+}
+
+.logo {
+  margin-bottom: var(--spacing-md);
+}
+
+.platformTitle {
+  color: var(--color-bg-white);
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ============================================
+   CONTENT SECTION
+   ============================================ */
+
+.forgotPasswordContent {
+  padding: var(--spacing-xl);
+}
+
+.formTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.formSubtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  margin: 0 0 var(--spacing-xl) 0;
+  line-height: 1.6;
+}
+
+/* ============================================
+   ERROR AND SUCCESS STATES
+   ============================================ */
+
+.errorContainer,
+.successContainer {
+  margin-bottom: var(--spacing-lg);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.successIcon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--spacing-md);
+  border-radius: 50%;
+  background-color: rgba(41, 189, 37, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-success);
+}
+
+/* ============================================
+   FORM STYLES
+   ============================================ */
+
+.forgotPasswordForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.formGroup input {
   width: 100%;
-  margin-bottom: 1.5rem;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-white);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  font-family: var(--font-family-base);
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(230, 117, 9, 0.1);
+}
+
+.formGroup input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.formGroup input:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.inputError {
+  border-color: var(--color-danger) !important;
+  background-color: rgba(220, 53, 69, 0.05) !important;
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+}
+
+/* ============================================
+   SUBMIT BUTTON
+   ============================================ */
+
+.submitButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  background: linear-gradient(135deg, var(--color-success) 0%, #1e9a1f 100%);
+  color: var(--color-bg-white);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: var(--spacing-md);
+  box-shadow: 0 4px 12px rgba(41, 189, 37, 0.3);
+  font-family: var(--font-family-base);
+  min-height: 48px;
+}
+
+.submitButton:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(41, 189, 37, 0.4);
+  transform: translateY(-2px);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.submitButton svg {
+  flex-shrink: 0;
+}
+
+/* ============================================
+   FOOTER LINKS
+   ============================================ */
+
+.footer {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-light);
 }
-.forgotPassword .content footer {
-  width: 100%;
+
+.footerText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
-.forgotPassword .content footer a {
-  margin-left: 5px;
-  color: #e67509;
-}/*# sourceMappingURL=styles.module.css.map */
+
+.footerLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.footerLink:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+.footerLink:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .forgotPasswordContainer {
+    padding: var(--spacing-md);
+  }
+
+  .forgotPasswordCard {
+    max-width: 100%;
+  }
+
+  .forgotPasswordHeader {
+    padding: var(--spacing-lg);
+  }
+
+  .platformTitle {
+    font-size: var(--font-size-base);
+  }
+
+  .forgotPasswordContent {
+    padding: var(--spacing-lg);
+  }
+
+  .formTitle {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .forgotPasswordHeader {
+    padding: var(--spacing-md);
+  }
+
+  .logo {
+    width: 60px;
+    height: 80px;
+  }
+
+  .forgotPasswordContent {
+    padding: var(--spacing-md);
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    text-align: center;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.submitButton:focus-visible,
+.footerLink:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .forgotPasswordContainer {
+    background: white;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

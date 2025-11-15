@@ -17,21 +17,25 @@ const ForgotPassword = () => {
     const [errorText, setErrorText] = useState("")
     const [sendingResetLink, setSendingResetLink] = useState(false)
     const [successMessage, setSuccessMessage] = useState("")
+    const [validationError, setValidationError] = useState(false)
     const router = useRouter()
 
-
     const updateEmailDetails = ({ field, value }: { field: any, value: any }) => {
-
         let tempLoginDetals = { ...email }
         tempLoginDetals[field] = value
         setEmail(tempLoginDetals)
+
+        // Clear validation error when user types
+        setValidationError(false)
     }
 
     const validateEmail = () => {
         if (!email.email) {
             setErrorText("Please enter your email address")
+            setValidationError(true)
         } else {
             setErrorText("")
+            setValidationError(false)
             sendPasswordResetLink()
         }
     }
@@ -39,6 +43,9 @@ const ForgotPassword = () => {
     const sendPasswordResetLink = async () => {
         try {
             setSendingResetLink(true)
+            setSuccessMessage("")
+            setErrorText("")
+
             const sendPasswordResetLinkRequest = await postProtected("auth/password/reset", { email }, null)
 
             setSendingResetLink(false)
@@ -50,43 +57,105 @@ const ForgotPassword = () => {
             }
         } catch (error) {
             console.error({ error });
+            setSendingResetLink(false)
+            setErrorText("An error occurred. Please try again.")
         }
     }
 
     return (
-        <div className={styles.forgotPassword}>
-            <div>
-                <Image src={logo} alt="logo" width={70} height={89} style={{ marginBottom: "1.5rem" }} />
+        <div className={styles.forgotPasswordContainer}>
+            <div className={styles.forgotPasswordCard}>
+                {/* Logo and Header */}
+                <div className={styles.forgotPasswordHeader}>
+                    <Image
+                        src={logo}
+                        alt="Amni Logo"
+                        width={70}
+                        height={90}
+                        className={styles.logo}
+                    />
+                    <h3 className={styles.platformTitle}>Amni Contractor Portal</h3>
+                </div>
 
-                <h5>Amni&#39;s Contractor Portal.</h5>
+                {/* Main Content */}
+                <div className={styles.forgotPasswordContent}>
+                    <h4 className={styles.formTitle}>Reset Your Password</h4>
+                    <p className={styles.formSubtitle}>
+                        Enter your email address and we'll send you a link to reset your password
+                    </p>
 
-                <div className={styles.content}>
-                    <h3>Forgot Password</h3>
+                    {/* Error Message */}
+                    {errorText && (
+                        <div className={styles.errorContainer}>
+                            <ErrorText text={errorText} />
+                        </div>
+                    )}
 
-                    {
-                        errorText && <ErrorText text={errorText} />
+                    {/* Success Message */}
+                    {successMessage && (
+                        <div className={styles.successContainer}>
+                            <div className={styles.successIcon}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                            <SuccessMessage message={successMessage} />
+                        </div>
+                    )}
 
-                    }
+                    {/* Form */}
+                    <form
+                        onSubmit={event => {
+                            event.preventDefault()
+                            validateEmail()
+                        }}
+                        className={styles.forgotPasswordForm}
+                    >
+                        <div className={styles.formGroup}>
+                            <label htmlFor="email">Email Address *</label>
+                            <input
+                                id="email"
+                                placeholder="Enter your email address"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                disabled={sendingResetLink}
+                                onChange={(event) => updateEmailDetails({
+                                    field: event.target.name,
+                                    value: event.target.value
+                                })}
+                                className={validationError ? styles.inputError : ''}
+                            />
+                        </div>
 
-                    {
-                        successMessage && <SuccessMessage message={successMessage} />
-                    }
-                    <form onSubmit={event => {
-                        event.preventDefault()
-                        validateEmail()
-                    }} onChange={(event: any) => updateEmailDetails({ field: event.target.name, value: event.target.value })}>
-                        <input placeholder="Email" name="email" />
-
-
-                        <button>Send Password Reset Link {sendingResetLink && <ButtonLoadingIcon />}</button>
+                        <button
+                            type="submit"
+                            disabled={sendingResetLink}
+                            className={styles.submitButton}
+                        >
+                            {sendingResetLink ? (
+                                <>
+                                    Sending Reset Link
+                                    <ButtonLoadingIcon />
+                                </>
+                            ) : (
+                                <>
+                                    Send Reset Link
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <path d="M2.5 7.5L10 2.5L17.5 7.5M2.5 7.5L10 12.5M2.5 7.5V12.5L10 17.5M17.5 7.5L10 12.5M17.5 7.5V12.5L10 17.5M10 12.5V17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </>
+                            )}
+                        </button>
                     </form>
 
-                    <footer>
-                        <span>Have an account?</span>
-
-
-                        <Link href={"/login"}>Login</Link>
-                    </footer>
+                    {/* Footer Links */}
+                    <div className={styles.footer}>
+                        <span className={styles.footerText}>Remember your password?</span>
+                        <Link href="/login" className={styles.footerLink}>
+                            Back to Login
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
