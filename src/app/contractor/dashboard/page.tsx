@@ -26,6 +26,8 @@ const Dashboard = () => {
     const [updateCertificateSuccess, setUpdateCertificateSuccess] = useState("")
     const user = useSelector((state: any) => state.user.user)
 
+    console.log({ user })
+
     useEffect(() => {
         fetchDashboardData()
     }, [])
