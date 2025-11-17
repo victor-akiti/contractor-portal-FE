@@ -42,7 +42,7 @@
    ============================================ */
 
 .statusMessage {
-  padding: var(--spacing-md) var(--spacing-xl);
+  padding: var(--spacing-md) 0px;
   animation: slideDown 0.3s ease;
 }
 
