@@ -77,7 +77,10 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter 
 
   return (
     <tr className={[styles.pendingL2Item, companyRecord.needsAttention ? styles.needsAttendionBackground : (index % 2 === 0 && styles.rowDarkBackground)].join(" ")}>
-      <td><Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toUpperCase()}</Link><p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p></td>
+      <td>
+        <Link href={`/staff/vendor/${companyRecord._id}`}>{String(companyRecord.companyName).toUpperCase()}</Link>
+        {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
+      </td>
       <td><p>{`Stage ${getCurrentStage()}`}</p></td>
       {shouldShowEndUsers(activeFilter) && <td>{getEndUserNames()}</td>}
       <td>{userCanViewActions() && <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS TO STAGE ${getNextStage()}`}</Link>}</td>
