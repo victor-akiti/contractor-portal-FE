@@ -1282,7 +1282,7 @@ const ViewVendorPage = () => {
                                                     </div>
                                                 )}
 
-                                                {inviteDetails.recommendedBy.email && (
+                                                {/* {inviteDetails.recommendedBy.email && (
                                                     <div className={styles.fieldItem}>
                                                         <div>
                                                             <p className={styles.fieldData}>
@@ -1293,7 +1293,7 @@ const ViewVendorPage = () => {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                )}
+                                                )} */}
                                             </>
                                         )}
                                     </div>
