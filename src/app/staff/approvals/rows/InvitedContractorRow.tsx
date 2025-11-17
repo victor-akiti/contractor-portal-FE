@@ -1,21 +1,21 @@
-import Link from 'next/link'
-import { useState } from 'react'
 import PrimaryColorSmallLoadingIcon from '@/components/primaryColorLoadingIcon'
 import { getProtected } from '@/requests/get'
+import Link from 'next/link'
+import { useState } from 'react'
 import styles from '../styles/styles.module.css'
 
-export default function InvitedContractorRow({inviteDetails, index, user, setInviteToArchiveObject, activeFilter, removeInviteFromExpired}:any){
+export default function InvitedContractorRow({ inviteDetails, index, user, setInviteToArchiveObject, activeFilter, removeInviteFromExpired }: any) {
   const inviteHasExpired = () => {
     const currentDate = new Date()
-    const expiryDate = inviteDetails?.expiry?._seconds ? new Date(inviteDetails.expiry._seconds*1000) : new Date(inviteDetails.expiry)
+    const expiryDate = inviteDetails?.expiry?._seconds ? new Date(inviteDetails.expiry._seconds * 1000) : new Date(inviteDetails.expiry)
     return currentDate.getTime() > expiryDate.getTime()
   }
-  const hasCnPPermissions = () => (["Admin","HOD","VRM","CnP Staff","Supervisor"].includes(user.role))
-  const getDateFromTimestamp = (timestamp:any) => {
+  const hasCnPPermissions = () => (["Admin", "HOD", "VRM", "CnP Staff", "Supervisor"].includes(user.role))
+  const getDateFromTimestamp = (timestamp: any) => {
     const date = new Date(timestamp); return date ? `${date.toDateString()}` : ""
   }
-  const getDateFromDateString = (dateString:any) => {
-    const date = dateString?._seconds ? new Date(dateString._seconds*1000) : new Date(dateString)
+  const getDateFromDateString = (dateString: any) => {
+    const date = dateString?._seconds ? new Date(dateString._seconds * 1000) : new Date(dateString)
     return date ? `${date.toDateString()}` : ""
   }
 
@@ -24,36 +24,59 @@ export default function InvitedContractorRow({inviteDetails, index, user, setInv
   const [renewing, setRenewing] = useState(false)
 
   const sendReminder = async () => {
-    try{
+    try {
       setSendReminderText("SENDING REMINDER")
       const res = await getProtected(`invites/remind/${inviteDetails._id}`, user.role)
-      if (res.status === "OK"){
+      if (res.status === "OK") {
         setSendReminderText("REMINDER SENT")
-        if (activeFilter === "Expired"){ removeInviteFromExpired(inviteDetails._id) }
+        if (activeFilter === "Expired") { removeInviteFromExpired(inviteDetails._id) }
       } else {
         setSendReminderText("SEND REMINDER")
       }
-    } catch(e){
+    } catch (e) {
       setSendReminderText("SEND REMINDER")
     }
   }
 
   const renewRequest = async () => {
-    try{
+    try {
       setRenewText("EXTENDING EXPIRY DATE...")
       const renewRes = await getProtected(`invites/renew/${inviteDetails._id}`, user.role)
-      if (renewRes.status === "OK"){
+      if (renewRes.status === "OK") {
         setRenewText("EXTENDED EXPIRY DATE")
       } else {
         setRenewText("EXTEND EXPIRY DATE")
       }
-    } catch(e){
+    } catch (e) {
       setRenewText("EXTEND EXPIRY DATE")
     }
   }
 
+  const getRecommendedBy = () => {
+    // Source 1 — recommendedBy on root invite
+    if (inviteDetails?.recommendedBy) {
+      return inviteDetails.recommendedBy;
+    }
+
+    // Source 2 — recommendedBy in last inviteHistory entry
+    if (inviteDetails?.inviteHistory?.length > 0) {
+      const last = inviteDetails.inviteHistory[inviteDetails.inviteHistory.length - 1];
+      if (last?.recommendedBy) return last.recommendedBy;
+
+      // Source 3 — recommendedBy nested under previousInvite
+      if (last?.previousInvite?.recommendedBy) {
+        return last.previousInvite.recommendedBy;
+      }
+    }
+
+    return null;
+  };
+
+  const recommended = getRecommendedBy();
+
+
   return (
-    <tr className={index%2===0 && styles.rowDarkBackground as any}>
+    <tr className={index % 2 === 0 && styles.rowDarkBackground as any}>
       <td>
         <p className={styles.contractorName}>{String(inviteDetails.companyName).toLocaleUpperCase()}</p>
       </td>
@@ -61,6 +84,12 @@ export default function InvitedContractorRow({inviteDetails, index, user, setInv
         <p>{`${inviteDetails.fname} ${inviteDetails.lname}`.toLocaleUpperCase()}</p>
         <p>{inviteDetails.vendorAppAdminProfile?.email ? inviteDetails.vendorAppAdminProfile?.email : inviteDetails.email}</p>
         <p>{inviteDetails?.phone?.number ? inviteDetails?.phone?.number : inviteDetails?.phone}</p>
+        {!!recommended && (
+          <p>
+            Recommended By: {recommended.name}
+            {recommended.department ? ` (${recommended.department})` : ""}
+          </p>
+        )}
       </td>
       <td className={styles.status}>
         {/* EXPIRED & UNUSED */}
@@ -97,7 +126,7 @@ export default function InvitedContractorRow({inviteDetails, index, user, setInv
         </>)}
 
         {(user.role === "Admin" || user.role === "HOD" || user.role === "VRM") && !inviteDetails.used && (
-          <p className={styles.deleteInviteText} onClick={()=> setInviteToArchiveObject(inviteDetails)}>Archive Invite</p>
+          <p className={styles.deleteInviteText} onClick={() => setInviteToArchiveObject(inviteDetails)}>Archive Invite</p>
         )}
         <p></p>
         <p></p>

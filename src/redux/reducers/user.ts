@@ -1,17 +1,29 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+
+// Define the user state interface
+interface UserState {
+    user: Record<string, any>
+}
+
+// Define the payload interface for setUserData
+interface SetUserDataPayload {
+    user: Record<string, any>
+}
 
 const userSlice = createSlice({
     name: 'user',
     initialState: {
         user: {}
-    },
+    } as UserState,
     reducers: {
-        setUserData: (state: any, payload: any) => {
-
-            state.user = payload?.payload?.user
+        // FIX: Proper PayloadAction type with explicit return type
+        setUserData: (state: UserState, action: PayloadAction<SetUserDataPayload>) => {
+            state.user = action.payload.user
+            // No return needed - Immer handles the mutation
         },
-        clearUserData: (state) => {
+        clearUserData: (state: UserState) => {
             state.user = {}
+            // No return needed - Immer handles the mutation
         }
     }
 })

@@ -1,45 +1,16 @@
 'use client'
-import useFirebaseReady from '@/hooks/useFirebaseReady'
-import { getProtected } from '@/requests/get'
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import styles from './page.module.css'
 
 export default function Home() {
-  const firebaseReady = useFirebaseReady()
+
+  const router = useRouter();
 
   useEffect(() => {
-    if (!firebaseReady) return                          // ← PREVENT EARLY CALL
-    getCurrentAuthState()
-  }, [firebaseReady])
-
-  const router = useRouter()
-
-  const getCurrentAuthState = async () => {
-    try {
-      const currentAuthState = await getProtected("auth/current-auth-state")
-
-      if (!currentAuthState || currentAuthState.status === "Failed") {
-        router.push("/login")
-      } else if (currentAuthState.data.role === "Vendor") {
-        router.push("/contractor/dashboard")
-
-      } else if (currentAuthState.data.role !== "Vendor") {
-        router.push("/staff/approvals")
-
-        localStorage.setItem("role", "Staff")
-        localStorage.setItem("user", JSON.stringify(currentAuthState.data))
-      } else {
-        router.push("/login");
-      }
-
-
-
-    } catch (error) {
-      console.error({ error });
-    }
-  }
+    router.push('/login');
+  }, [])
 
   return (
     <main className={styles.main}>

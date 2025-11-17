@@ -1,22 +1,32 @@
 'use client'
-import logo from "@/assets/images/logo.png";
-import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
-import Modal from "@/components/modal";
-import useFirebaseReady from "@/hooks/useFirebaseReady";
-import { setUserData } from "@/redux/reducers/user";
-import { getProtected } from "@/requests/get";
-import { postProtected } from "@/requests/post";
-import { faCaretDown, faUserCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styles from "./styles/styles.module.css";
+import logo from "@/assets/images/logo.png"
+import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import Modal from "@/components/modal"
+import useFirebaseReady from "@/hooks/useFirebaseReady"
+import { setUserData } from "@/redux/reducers/user"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
 
-// Constants
-const ADMIN_ROLES = ["Admin", "HOD"];
+import {
+  faBars,
+  faCaretDown,
+  faTimes,
+  faUserCircle
+} from "@fortawesome/free-solid-svg-icons"
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import Image from "next/image"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import styles from "./styles/styles.module.css"
+
+// -----------------------------------
+// CONSTANTS
+// -----------------------------------
+const ADMIN_ROLES = ["Admin", "HOD"]
 
 const MENU_ITEMS = [
   { href: "/staff/approvals", label: "Registration Approvals" },
@@ -26,121 +36,176 @@ const MENU_ITEMS = [
   { href: "/staff/forms", label: "Forms", adminOnly: true },
   { href: "/staff/userManagement", label: "Roles & User Management", adminOnly: true },
   { href: "/staff/settings", label: "Account Settings" },
-];
+]
 
+// -----------------------------------
+// LAYOUT COMPONENT
+// -----------------------------------
 const Layout = ({ children }) => {
-  // State
-  const [authenticated, setAuthenticated] = useState(false);
-  const [updatingOutOfOffice, setUpdatingOutOfOffice] = useState(false);
-  const [showFloatingUserMenu, setShowFloatingUserMenu] = useState(false);
+  // -----------------------------------
+  // HYDRATION FIX — rendered only on client
+  // -----------------------------------
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
   
-  // Hooks
-  const user = useSelector((state) => state.user.user);
-  const router = useRouter();
-  const pathname = usePathname();
-  const dispatch = useDispatch();
 
-  // Memoized values
-  const hasAdminPermissions = useMemo(() => {
-    return user?.role ? ADMIN_ROLES.includes(user.role) : false;
-  }, [user?.role]);
+  // -----------------------------------
+  // STATE
+  // -----------------------------------
+  const [authenticated, setAuthenticated] = useState(false)
+  const [updatingOutOfOffice, setUpdatingOutOfOffice] = useState(false)
+  const [showFloatingUserMenu, setShowFloatingUserMenu] = useState(false)
+  const [showOutOfOfficeModal, setShowOutOfOfficeModal] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
-  const isActiveMenu = useCallback((menuLink) => {
-    return menuLink === pathname;
-  }, [pathname]);
-
-  const filteredMenuItems = useMemo(() => {
-    return MENU_ITEMS.filter(item => 
-      !item.adminOnly || hasAdminPermissions
-    );
-  }, [hasAdminPermissions]);
-
-  // Effects
+  // -----------------------------------
+  // HOOKS
+  // -----------------------------------
+  const user = useSelector((state) => state.user.user)
+  const router = useRouter()
+  const pathname = usePathname()
+  const dispatch = useDispatch()
   const firebaseReady = useFirebaseReady()
 
-  useEffect(() => {
-    if (!firebaseReady) return                          // ← PREVENT EARLY CALL
-    getCurrentAuthState()
-  }, [firebaseReady]) 
+  // -----------------------------------
+  // COMPUTED VALUES
+  // -----------------------------------
+  const hasAdminPermissions = useMemo(() => {
+    return user?.role ? ADMIN_ROLES.includes(user.role) : false
+  }, [user?.role])
 
-  // Handlers
+  const filteredMenuItems = useMemo(() => {
+    return MENU_ITEMS.filter(item => !item.adminOnly || hasAdminPermissions)
+  }, [hasAdminPermissions])
+
+  const isActiveMenu = useCallback((menuLink) => {
+    return menuLink === pathname
+  }, [pathname])
+
+
+  // -----------------------------------
+  // AUTH CHECK
+  // -----------------------------------
   const getCurrentAuthState = useCallback(async () => {
     try {
-      const currentAuthState = await getProtected("auth/current-auth-state", "Amni Staff");
-      
+      const currentAuthState = await getProtected(
+        "auth/current-auth-state",
+        "Amni Staff"
+      )
+
       if (currentAuthState?.status !== "Failed") {
-        dispatch(setUserData({ user: currentAuthState.data }));
+        dispatch(setUserData({ user: currentAuthState.data }))
         
         if (currentAuthState.data.role === "Vendor") {
-          router.push("/contractor/dashboard");
+          router.push("/contractor/dashboard")
         } else {
-          setAuthenticated(true);
+          setAuthenticated(true)
+
+          if (currentAuthState.data.outOfOffice) {
+            setShowOutOfOfficeModal(true)
+          }
         }
       } else {
-        console.error('Auth state check failed, redirecting to login');
-        router.push("/login/staff");
+        router.push("/login/staff")
       }
     } catch (error) {
-      console.error({ getCurrentAuthStateError: error });
+      console.error({ getCurrentAuthStateError: error })
+      router.push("/login/staff")
     }
-  }, [dispatch, router]);
+  }, [dispatch, router])
 
+
+  // -----------------------------------
+  // WAIT FOR FIREBASE USER BEFORE AUTH CHECK
+  // -----------------------------------
+  useEffect(() => {
+    if (!firebaseReady) return
+    getCurrentAuthState()
+  }, [firebaseReady, getCurrentAuthState])
+
+
+
+  // -----------------------------------
+  // HANDLERS
+  // -----------------------------------
   const unsetOutOfOffice = useCallback(async () => {
-    if (!user?.role) return;
+    if (!user?.role) return
     
-    setUpdatingOutOfOffice(true);
+    setUpdatingOutOfOffice(true)
     try {
       const unsetOutOfOfficeRequest = await postProtected(
-        "user/outOfOffice/unset", 
-        {}, 
+        "user/outOfOffice/unset",
+        {},
         user.role
-      );
-      
+      )
+
       if (unsetOutOfOfficeRequest.status === "OK") {
-        await getCurrentAuthState();
+        dispatch(setUserData({
+          user: { ...user, outOfOffice: false }
+        }))
+        setShowOutOfOfficeModal(false)
       }
     } catch (error) {
-      console.error({ error });
+      console.error({ error })
     } finally {
-      setUpdatingOutOfOffice(false);
+      setUpdatingOutOfOffice(false)
     }
-  }, [user?.role, getCurrentAuthState]);
+  }, [user, dispatch])
 
-  const toggleShowFloatingUserMenu = useCallback(() => {
-    setShowFloatingUserMenu(prev => !prev);
-  }, []);
+  const toggleSidebar = () => setSidebarCollapsed(prev => !prev)
+  const toggleMobileSidebar = () => setMobileSidebarOpen(prev => !prev)
+  const closeMobileSidebar = () => setMobileSidebarOpen(false)
+  const toggleShowFloatingUserMenu = () =>
+    setShowFloatingUserMenu(prev => !prev)
 
   const logUserOut = useCallback(async () => {
     try {
-      const logUserOutRequest = await getProtected("auth/logout");
-      if (logUserOutRequest.status === "OK") {
-        router.push("/login/staff");
-      }
+      await getProtected("auth/logout")
+      router.push("/login/staff")
     } catch (error) {
-      console.error({ error });
+      console.error({ error })
     }
-  }, [router]);
+  }, [router])
 
-  const handleCloseOutOfOfficeModal = useCallback(() => {
-    // Implement close functionality if needed
-    // For now, this is a placeholder for the close button
-  }, []);
 
-  // Render helpers
+
+  // -----------------------------------
+  // HYDRATION PREVENTION
+  // -----------------------------------
+  if (!mounted) {
+    return <div className={styles.layout}></div>
+  }
+
+  if (!authenticated) {
+    return <div className={styles.layout}></div>
+  }
+
+
+
+  // -----------------------------------
+  // RENDER HELPERS
+  // -----------------------------------
   const renderOutOfOfficeModal = () => (
     <Modal>
       <div className={styles.outOfOfficeDiv}>
         <h3>Out of Office</h3>
         <p>You are currently out-of-office. Set your account back to in office?</p>
         <div className={styles.outOfOfficeActionButtons}>
-          <button onClick={handleCloseOutOfOfficeModal}>Close</button>
-          <button onClick={unsetOutOfOffice}>
+          <button
+            onClick={() => setShowOutOfOfficeModal(false)}
+            disabled={updatingOutOfOffice}
+          >
+            Close
+          </button>
+
+          <button onClick={unsetOutOfOffice} disabled={updatingOutOfOffice}>
             Set as in office {updatingOutOfOffice && <ButtonLoadingIcon />}
           </button>
         </div>
       </div>
     </Modal>
-  );
+  )
 
   const renderUserMenu = () => (
     <div className={styles.floatingUserMenu}>
@@ -167,18 +232,36 @@ const Layout = ({ children }) => {
         <p onClick={logUserOut}>Logout</p>
       </div>
     </div>
-  );
+  )
 
   const renderNavigation = () => (
-    <nav>
+    <nav className={styles.nav}>
       <div className={styles.left}>
+        {/* Mobile hamburger */}
+        <button
+          className={styles.mobileMenuButton}
+          onClick={toggleMobileSidebar}
+          aria-label="Toggle mobile menu"
+        >
+          <FontAwesomeIcon icon={faBars} />
+        </button>
+
+        {/* Desktop sidebar toggle */}
+        <button
+          className={styles.sidebarToggle}
+          onClick={toggleSidebar}
+          aria-label="Toggle sidebar"
+        >
+          <FontAwesomeIcon icon={sidebarCollapsed ? faBars : faTimes} />
+        </button>
+
         <Link href="/staff/approvals">
-          <Image 
-            src={logo} 
-            width={30} 
-            height={30} 
-            style={{ width: "35px", height: "45px" }} 
-            alt="logo" 
+          <Image
+            src={logo}
+            width={30}
+            height={30}
+            style={{ width: "35px", height: "45px" }}
+            alt="logo"
           />
           <span>Contractor Portal</span>
         </Link>
@@ -186,58 +269,80 @@ const Layout = ({ children }) => {
 
       <div className={styles.right} onClick={toggleShowFloatingUserMenu}>
         <span>STAFF DASHBOARD</span>
-        <FontAwesomeIcon 
-          icon={faUserCircle} 
-          style={{ width: "20px", color: "#ffffff80", marginRight: "10px" }} 
+        <FontAwesomeIcon
+          icon={faUserCircle}
+          style={{ width: "20px", color: "#ffffff80", marginRight: "10px" }}
         />
-        <FontAwesomeIcon 
-          icon={faCaretDown} 
-          style={{ width: "10px", color: "#ffffff80" }} 
+        <FontAwesomeIcon
+          icon={faCaretDown}
+          style={{ width: "10px", color: "#ffffff80" }}
         />
       </div>
 
       {showFloatingUserMenu && renderUserMenu()}
     </nav>
-  );
+  )
 
   const renderSideMenu = () => (
-    <div className={styles.left}>
+    <div
+      className={`${styles.left} ${
+        sidebarCollapsed ? styles.collapsed : ""
+      } ${mobileSidebarOpen ? styles.mobileOpen : ""}`}
+      data-sidebar="true"
+    >
+      <button
+        className={styles.mobileCloseButton}
+        onClick={closeMobileSidebar}
+        aria-label="Close menu"
+      >
+        <FontAwesomeIcon icon={faTimes} />
+      </button>
+
       {filteredMenuItems.map((item) => (
         <Link
           key={item.href}
           className={isActiveMenu(item.href) ? styles.active : undefined}
           href={item.href}
+          onClick={closeMobileSidebar}
         >
           {item.label}
         </Link>
       ))}
+
       <hr />
     </div>
-  );
+  )
 
   const renderContent = () => (
-    <div className={styles.content}>
+    <div
+      className={`${styles.content} ${
+        sidebarCollapsed ? styles.sidebarCollapsed : ""
+      }`}
+    >
       {renderSideMenu()}
-      <div className={styles.right}>
-        {children}
-      </div>
+      <div className={styles.right}>{children}</div>
     </div>
-  );
+  )
 
-  // Main render
-  if (!authenticated) {
-    return null;
-  }
-
+  // -----------------------------------
+  // FINAL RENDER
+  // -----------------------------------
   return (
     <div>
       <div className={styles.layout}>
-        {user?.outOfOffice && renderOutOfOfficeModal()}
+        {showOutOfOfficeModal && renderOutOfOfficeModal()}
         {renderNavigation()}
         {renderContent()}
       </div>
-    </div>
-  );
-};
 
-export default Layout;
+      {mobileSidebarOpen && (
+        <div
+          className={styles.mobileOverlay}
+          onClick={closeMobileSidebar}
+        />
+      )}
+    </div>
+  )
+}
+
+export default Layout

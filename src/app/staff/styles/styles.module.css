@@ -1,192 +1,503 @@
+/* Staff Layout Styles - Responsive with Collapsible Sidebar */
+
+/* ===== LAYOUT ===== */
 .layout {
-  min-width: 100vw;
+  width: 100%;
   min-height: 100vh;
-  background-color: white;
+  height: 100vh;
+  background-color: #ffffff;
 }
-.layout .floatingUserMenu {
-  position: absolute;
-  top: 100%;
-  right: 20px;
-  color: black;
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  align-items: start;
-  box-shadow: 0px 8px 8px 3px rgba(216, 216, 216, 0.75);
-  -webkit-box-shadow: 0px 8px 8px 3px rgba(216, 216, 216, 0.75);
-  -moz-box-shadow: 0px 8px 8px 3px rgba(216, 216, 216, 0.75);
-  z-index: 500;
-  font-size: 14px;
-  border-radius: 5px;
-  width: 150px;
-}
-.layout .floatingUserMenu hr {
+
+/* ===== .NAVIGATION ===== */
+.nav {
+  max-height: 70px;
   width: 100%;
-}
-.layout .floatingUserMenu .officeStatusDiv {
-  padding: 20px;
-}
-.layout .floatingUserMenu .officeStatusDiv p:nth-child(2) {
-  margin-bottom: 10px;
-}
-.layout .floatingUserMenu .officeStatusDiv .inOfficeText {
-  color: green;
-}
-.layout .floatingUserMenu .officeStatusDiv .outOfOfficeText {
-  color: red;
-}
-.layout .floatingUserMenu .officeStatusDiv button {
-  background-color: #e67509;
-  color: white;
-  border-style: none;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 7px;
-}
-.layout .floatingUserMenu .loggedInStatusDiv {
-  padding: 20px;
-}
-.layout .floatingUserMenu .loggedInStatusDiv p {
-  margin-bottom: 10px;
-}
-.layout .floatingUserMenu .loggedInStatusDiv span {
-  font-weight: bold;
-  color: #5b5b5b;
-}
-.layout .floatingUserMenu .logoutActionDiv {
-  flex-grow: 1;
-  width: 100%;
-}
-.layout .floatingUserMenu .logoutActionDiv p {
-  cursor: pointer;
-  padding: 10px;
-  padding-left: 20px;
-  margin: 0px;
-}
-.layout .floatingUserMenu .logoutActionDiv p:hover {
-  background-color: #d0d0d0;
-}
-.layout .outOfOfficeDiv {
-  background-color: white;
-  padding: 20px;
-  border-style: none;
-  border-radius: 5px;
-}
-.layout .outOfOfficeDiv .outOfOfficeActionButtons {
-  display: flex;
-  justify-content: end;
-  align-items: center;
-  margin-top: 20px;
-}
-.layout .outOfOfficeDiv .outOfOfficeActionButtons button {
-  background-color: #e67509;
-  color: white;
-  border-style: none;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  margin-left: 10px;
-  padding: 7px;
-}
-.layout .outOfOfficeDiv .outOfOfficeActionButtons button:nth-child(1) {
-  background-color: white;
-  color: #e67509;
-}
-.layout nav {
+  background-color: #343a40 !important;
+  padding: 0.75rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #343a40 !important;
+  position: sticky !important;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .nav {
+    padding: 1rem 1.5rem;
+  }
+}
+
+.nav .left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav .left a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
   color: white;
-  padding-top: 0.3rem;
-  padding-bottom: 0.3rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  position: relative;
-  height: 5rem;
+  font-weight: 500;
 }
-.layout nav > div {
+
+.nav .left a span {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nav .left a span {
+    display: inline;
+    font-size: 1.125rem;
+  }
+}
+
+.nav .right {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
   cursor: pointer;
+  position: relative;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
 }
-.layout nav .left {
-  padding-top: 0.3125rem;
-  padding-bottom: 0.3125rem;
-  margin-right: 1rem;
+
+.nav .right:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav .right span {
+  color: white;
+  font-weight: 500;
+  font-size: 0.75rem;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .nav .right span {
+    display: inline;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .nav .right span {
+    font-size: 1rem;
+  }
+}
+
+/* ===== SIDEBAR TOGGLE BUTTONS ===== */
+.sidebarToggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
   font-size: 1.25rem;
-  line-height: inherit;
-  white-space: nowrap;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
 }
-.layout nav .left a {
-  display: flex;
-  align-items: center;
+
+.sidebarToggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
-.layout nav .left span {
-  margin-left: 10px;
-  font-size: 1rem;
+
+@media (min-width: 768px) {
+  .sidebarToggle {
+    display: block;
+  }
 }
-.layout nav .right {
-  padding-right: 20px;
+
+.mobileMenuButton {
+  display: block;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
 }
-.layout nav .right span {
-  color: rgba(255, 255, 255, 0.5019607843);
-  padding-right: 0.5rem;
-  padding-left: 0.5rem;
+
+.mobileMenuButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
-.layout .content {
-  display: flex;
-  /* padding: 0 1.5rem; */
-  /* padding-bottom: 1.5rem; */
-  height: calc(100vh - 5rem);
-  /* border: red solid 8px; */
+
+@media (min-width: 768px) {
+  .mobileMenuButton {
+    display: none;
+  }
 }
-.layout .content .left {
-  padding-top: 2rem;
-  width: 16%;
-  max-width: 20rem;
-  min-width: max-content;
+
+.mobileCloseButton {
+  display: block;
+  background: none;
+  border: none;
+  color: #64676b;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.75rem;
+  align-self: flex-end;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobileCloseButton {
+    display: none;
+  }
+}
+
+/* ===== FLOATING USER MENU ===== */
+.floatingUserMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 240px;
+  z-index: 200;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@media (min-width: 640px) {
+  .floatingUserMenu {
+    min-width: 280px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.floatingUserMenu hr {
+  margin: 0;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+}
+
+.loggedInStatusDiv,
+.officeStatusDiv,
+.logoutActionDiv {
+  padding: 1rem;
+}
+
+.loggedInStatusDiv p,
+.officeStatusDiv p:first-child {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+.loggedInStatusDiv span {
+  font-weight: 600;
+  color: #212529;
+  font-size: 0.875rem;
+}
+
+.officeStatusDiv {
   display: flex;
   flex-direction: column;
-  padding-right: 1rem;
-  padding-left: 1rem;
-  background-color: #fefefe;
-  box-shadow: inset -1px 0px 0px 0px rgba(0, 0, 0, 0.1);
+  gap: 0.5rem;
 }
-.layout .content .left a {
-  padding: 1rem;
-  color: #e67509;
 
-  margin: 5px 0;
-  /* margin-bottom: 5px; */
+.officeStatusDiv .inOfficeText {
+  color: #155724;
+  font-weight: 500;
+  font-size: 0.875rem;
 }
-.layout .content .left a:hover {
-  background-color: #e6750920;
-  border-radius: 5px;
-  /* color: white; */
+
+.officeStatusDiv .outOfOfficeText {
+  color: #856404;
+  font-weight: 500;
+  font-size: 0.875rem;
 }
-.layout .content .left a.active {
-  color: #f4f4f4;
-  border-radius: 5px;
+
+.officeStatusDiv button {
+  padding: 0.5rem 0.75rem;
   background-color: #e67509;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-start;
+}
+
+.officeStatusDiv button:hover {
+  background-color: #e67509;
+}
+
+.logoutActionDiv p {
+  color: #dc3545;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.logoutActionDiv p:hover {
+  color: #c82333;
+  text-decoration: underline;
+}
+
+/* ===== CONTENT AREA ===== */
+.content {
+  display: flex;
+  min-height: calc(100vh - 70px);
+  height: calc(100vh - 70px);
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 767px) {
+  .content {
+    flex-direction: column;
+  }
+}
+
+/* ===== SIDEBAR ===== */
+.content .left {
+  width: 280px;
+  background-color: white;
+  border-right: 1px solid #e0e0e0;
+  padding: 1.5rem 0;
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  overflow-y: auto;
+}
+
+/* Mobile sidebar - hidden by default */
+@media (max-width: 767px) {
+  .content .left {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100vh;
+    z-index: 150;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    transition: left 0.3s ease;
+  }
+
+  .content .left.mobileOpen {
+    left: 0;
+  }
+}
+
+/* Desktop collapsed sidebar */
+@media (min-width: 768px) {
+  .content .left.collapsed {
+    width: 80px;
+  }
+
+  .content .left.collapsed a {
+    font-size: 0;
+    justify-content: center;
+    padding: 0.875rem;
+  }
+
+  .content .left.collapsed a::before {
+    content: "•";
+    font-size: 1.5rem;
+    color: #64676b;
+  }
+
+  .content .left.collapsed a.active::before {
+    color: #e67509;
+  }
+}
+
+.content .left a {
+  padding: 0.875rem 1.5rem;
+  color: #64676b;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.content .left a:hover {
+  background-color: #f8f9fa;
+  color: #e67509;
+  padding-left: 2rem;
+}
+
+.content .left a.active {
+  background-color: #f8f9fa;
+  color: #e67509;
+  border-left: 3px solid #e67509;
   font-weight: 600;
 }
-.layout .content .left hr {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  border-style: none;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: rgb(224, 224, 224);
+
+.content .left hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid #e0e0e0;
 }
-.layout .content .right {
-  padding-top: 2rem;
-  width: 80%;
-  box-sizing: border-box;
+
+/* ===== MAIN CONTENT ===== */
+.content .right {
+  flex: 1;
+  padding: 1rem;
+  overflow-x: hidden;
+  transition: margin-left 0.3s ease;
+  max-height: 100%;
   overflow-y: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}/*# sourceMappingURL=styles.module.css.map */
+}
+
+@media (min-width: 768px) {
+  .content .right {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content .right {
+    padding: 2rem;
+  }
+}
+
+/* When sidebar is collapsed on desktop */
+@media (min-width: 768px) {
+  .content.sidebarCollapsed .left {
+    width: 80px;
+  }
+}
+
+/* ===== MOBILE OVERLAY ===== */
+.mobileOverlay {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 140;
+  animation: fadeIn 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .mobileOverlay {
+    display: none;
+  }
+}
+
+/* ===== OUT OF OFFICE MODAL ===== */
+.outOfOfficeDiv {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  max-width: 500px;
+  width: 90%;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .outOfOfficeDiv {
+    padding: 2rem;
+  }
+}
+
+.outOfOfficeDiv h3 {
+  margin-bottom: 1rem;
+  color: #212529;
+  font-size: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .outOfOfficeDiv h3 {
+    font-size: 1.5rem;
+  }
+}
+
+.outOfOfficeDiv p {
+  margin-bottom: 1.5rem;
+  color: #64676b;
+  line-height: 1.5;
+  font-size: 0.9375rem;
+}
+
+@media (min-width: 768px) {
+  .outOfOfficeDiv p {
+    font-size: 1rem;
+  }
+}
+
+.outOfOfficeActionButtons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.outOfOfficeActionButtons button {
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+
+.outOfOfficeActionButtons button:first-child {
+  background-color: #6c757d;
+  color: white;
+}
+
+.outOfOfficeActionButtons button:first-child:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.outOfOfficeActionButtons button:last-child {
+  background-color: #e67509;
+  color: white;
+}
+
+.outOfOfficeActionButtons button:last-child:hover:not(:disabled) {
+  background-color: #e67509;
+}
+
+.outOfOfficeActionButtons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== UTILITY CLASSES ===== */
+@media print {
+  .nav,
+  .content .left {
+    display: none;
+  }
+
+  .content .right {
+    margin: 0;
+    padding: 0;
+  }
+}

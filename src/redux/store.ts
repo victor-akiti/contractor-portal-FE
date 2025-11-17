@@ -1,13 +1,15 @@
 // store/index.ts (your makeStore file)
 import { configureStore } from "@reduxjs/toolkit";
+import { authApi } from "./apis/authApi";
 import { staffApi } from "./apis/staffApi";
 import { userReducer } from "./reducers/user";
 
 export const makeStore = () => {
-    return configureStore ({
+    return configureStore({
         reducer: {
             user: userReducer,
-            // Add the RTK Query API reducer
+            // Add the RTK Query API reducers
+            [authApi.reducerPath]: authApi.reducer,
             [staffApi.reducerPath]: staffApi.reducer,
         },
         // Add the RTK Query middleware
@@ -17,7 +19,7 @@ export const makeStore = () => {
                     // Ignore RTK Query action types
                     ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
                 },
-            }).concat(staffApi.middleware),
+            }).concat(authApi.middleware, staffApi.middleware),
     })
 }
 

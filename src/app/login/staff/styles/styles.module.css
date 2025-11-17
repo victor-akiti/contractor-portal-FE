@@ -1,62 +1,301 @@
-.staffLogin {
+/* ============================================
+   STAFF LOGIN COMPONENT - MODERN DESIGN
+   ============================================ */
+
+.staffLoginContainer {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  background-color: #f8f9fa;
+  padding: var(--spacing-xl);
 }
-.staffLogin > div {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  word-wrap: break-word;
-  background-color: #fff;
-  background-clip: initial;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 0.25rem;
-  width: 30%;
-  padding-left: 15px;
-  padding-right: 15px;
+
+.staffLoginCard {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease forwards;
+  animation-iteration-count: 1;
+  opacity: 0;
 }
-.staffLogin .staffLoginContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.staffLogin .staffLoginContent h4 {
-  color: #64676b;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  line-height: 1.2;
-  margin-top: 24px;
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.staffLoginHeader {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  padding: var(--spacing-xl);
   text-align: center;
+  color: var(--color-bg-white);
 }
-.staffLogin .staffLoginContent h5 {
-  color: #64676b;
-  margin-bottom: 1.5rem;
-  font-size: 1.25rem;
-  font-weight: 500;
+
+.logo {
+  margin-bottom: var(--spacing-md);
 }
-.staffLogin .staffLoginContent h6 {
-  color: #64676b;
-  font-size: 1rem;
+
+.platformTitle {
+  color: var(--color-bg-white);
+  font-size: var(--font-size-lg);
   font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ============================================
+   CONTENT SECTION
+   ============================================ */
+
+.staffLoginContent {
+  padding: var(--spacing-xl);
+}
+
+.staffTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
   text-align: center;
+  margin: 0 0 var(--spacing-sm) 0;
 }
-.staffLogin .staffLoginContent button {
-  width: 200px;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  font-size: 1.25rem;
+
+.staffSubtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  margin: 0 0 var(--spacing-xl) 0;
+  line-height: 1.6;
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+
+.errorContainer {
+  margin-bottom: var(--spacing-lg);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.errorMessage {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--color-danger);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(220, 53, 69, 0.3);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  font-weight: 500;
   line-height: 1.5;
-  border-radius: 0.3rem;
-  color: #fff;
-  background-color: #f57710;
-  border-color: #f57710;
-  border-style: none;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-}/*# sourceMappingURL=styles.module.css.map */
+}
+
+/* ============================================
+   LOGIN BUTTON
+   ============================================ */
+
+.loginButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: var(--spacing-md);
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.3);
+  font-family: var(--font-family-base);
+  min-height: 48px;
+}
+
+.loginButton:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(230, 117, 9, 0.4);
+  transform: translateY(-2px);
+}
+
+.loginButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.loginButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loginButton svg {
+  flex-shrink: 0;
+}
+
+/* ============================================
+   INFO SECTION
+   ============================================ */
+
+.infoSection {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.infoCard {
+  background: linear-gradient(135deg, rgba(230, 117, 9, 0.05) 0%, rgba(230, 117, 9, 0.02) 100%);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-primary-light);
+}
+
+.infoIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-bg-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--spacing-sm);
+}
+
+.infoText {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .staffLoginContainer {
+    padding: var(--spacing-md);
+  }
+
+  .staffLoginCard {
+    max-width: 100%;
+  }
+
+  .staffLoginHeader {
+    padding: var(--spacing-lg);
+  }
+
+  .platformTitle {
+    font-size: var(--font-size-base);
+  }
+
+  .staffLoginContent {
+    padding: var(--spacing-lg);
+  }
+
+  .staffTitle {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .staffLoginHeader {
+    padding: var(--spacing-md);
+  }
+
+  .logo {
+    width: 60px;
+    height: 80px;
+  }
+
+  .staffLoginContent {
+    padding: var(--spacing-md);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.loginButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .staffLoginContainer {
+    background: white;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   BACKWARD COMPATIBILITY
+   Keeping old class names for reference
+   ============================================ */
+
+/* Legacy classes - can be removed once fully migrated */
+.staffLogin {
+  /* Use .staffLoginContainer instead */
+}
+
+.staffLogin > div {
+  /* Use .staffLoginCard instead */
+}
+
+.staffLogin .staffLoginContent {
+  /* Use .staffLoginContent instead */
+}

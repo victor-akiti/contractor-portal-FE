@@ -11,8 +11,41 @@ import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
+interface Certificate {
+    _id: string;
+    label: string;
+    expiryDate: string;
+    url: string;
+    updateCode: string;
+}
+
+interface Company {
+    _id: string;
+    companyName: string;
+    vendor: string;
+    flags: {
+        stage: string;
+        status: string;
+        submitted: boolean;
+    };
+}
+
+interface DashboardData {
+    companies: Company[];
+    expiringCertificates: Certificate[];
+    expiredCertificates: Certificate[];
+    files: any[];
+}
+
+/**
+ * CONTRACTOR DASHBOARD (MODERNIZED)
+ * - Company registration overview
+ * - Certificate expiry tracking
+ * - Elegant, responsive design
+ * - 100% backward-compatible with existing functionality
+ */
 const Dashboard = () => {
-    const [dashboardData, setDashboardData] = useState({
+    const [dashboardData, setDashboardData] = useState<DashboardData>({
         companies: [],
         expiringCertificates: [],
         expiredCertificates: [],
@@ -39,31 +72,20 @@ const Dashboard = () => {
             if (fetchDashboardDataRequest.status === "OK") {
                 setFetchedDashboardData(true)
                 setFetchingDashboardData(false)
-                let tempDashboardData = { ...dashboardData }
-                tempDashboardData = fetchDashboardDataRequest.data
-                setDashboardData(tempDashboardData)
-            } else {
-
+                setDashboardData(fetchDashboardDataRequest.data)
             }
-
         } catch (error) {
-            console.error({ error });
-
+            console.error({ error })
+            setFetchingDashboardData(false)
         }
     }
 
-
-    const setCertificateToUpdate = (certificate, certificateCategory, certificateIndex) => {
-
-        let tempCertificateToUpdate = { ...selectedCertificate }
-        tempCertificateToUpdate = { ...certificate, certificateCategory, certificateIndex }
-        setSelectedCertificate(tempCertificateToUpdate)
+    const setCertificateToUpdate = (certificate: Certificate, certificateCategory: string, certificateIndex: number) => {
+        setSelectedCertificate({ ...certificate, certificateCategory, certificateIndex })
     }
 
-    const setNewCertificate = newCertificate => {
-        let tempSelectedCertificate = { ...selectedCertificate }
-        tempSelectedCertificate["newCertificate"] = newCertificate
-        setSelectedCertificate(tempSelectedCertificate)
+    const setNewCertificate = (newCertificate: any) => {
+        setSelectedCertificate({ ...selectedCertificate, newCertificate })
     }
 
     const validateNewCertificate = () => {
@@ -78,32 +100,38 @@ const Dashboard = () => {
     const updateCertificate = async () => {
         try {
             setUpdatingCertificate(true)
-            const updateCertificateRequest = await putProtected(`companies/certificates/${selectedCertificate._id}`, selectedCertificate, user.role)
+            const updateCertificateRequest = await putProtected(
+                `companies/certificates/${selectedCertificate._id}`,
+                selectedCertificate,
+                user.role
+            )
             setUpdatingCertificate(false)
+
             if (updateCertificateRequest.status === "OK") {
                 setUpdateCertificateSuccess("Certificate updated successfully!")
-
             } else {
                 setUpdateCertificateError(updateCertificateRequest.error.message)
             }
         } catch (error) {
-            console.error({ error });
-
+            console.error({ error })
+            setUpdatingCertificate(false)
+            setUpdateCertificateError("An error occurred while updating the certificate")
         }
     }
 
-    const setNewCertificateExpiry = expiryDate => {
-        const tempSelectedCertificate = { ...selectedCertificate }
-        tempSelectedCertificate.newCertificate["expiryDate"] = expiryDate
-        setSelectedCertificate(tempSelectedCertificate)
+    const setNewCertificateExpiry = (expiryDate: string) => {
+        setSelectedCertificate({
+            ...selectedCertificate,
+            newCertificate: {
+                ...selectedCertificate.newCertificate,
+                expiryDate
+            }
+        })
     }
 
     const closeUploader = () => {
-        let tempSelectedCertificate = { ...selectedCertificate }
-        tempSelectedCertificate = {}
-        setSelectedCertificate(tempSelectedCertificate)
+        setSelectedCertificate({})
         setUpdateCertificateError("")
-
 
         if (updateCertificateSuccess) {
             fetchDashboardData()
@@ -112,256 +140,321 @@ const Dashboard = () => {
     }
 
     const backToFileSelection = () => {
-        let tempSelectedCertificate = { ...selectedCertificate }
-        delete tempSelectedCertificate.newCertificate
-        setSelectedCertificate(tempSelectedCertificate)
+        const { newCertificate, ...rest } = selectedCertificate
+        setSelectedCertificate(rest)
     }
-
-    const makeMigrationRequest = async () => {
-        try {
-            let makeMigrationRequestReq = getProtected("migrations/companies", user.role)
-        } catch (error) {
-            console.error({ error });
-
-        }
-    }
-
-
 
     return (
         <div className={styles.dashboard}>
-            <h3>Your Dashboard</h3>
+            {/* Header */}
+            <div className={styles.dashboardHeader}>
+                <h3 className={styles.dashboardTitle}>Your Dashboard</h3>
+            </div>
 
+            {/* Loading State */}
+            {fetchingDashboardData && (
+                <div className={styles.loadingContainer}>
+                    <ButtonLoadingIcon />
+                    <p>Loading your dashboard...</p>
+                </div>
+            )}
 
+            {/* Main Content */}
+            {!fetchingDashboardData && (
+                <>
+                    {/* File Uploader Modal */}
+                    {Object.values(selectedCertificate).length > 0 && !selectedCertificate.newCertificate && (
+                        <Modal>
+                            <FileUploader
+                                closeUploader={closeUploader}
+                                label={selectedCertificate.label}
+                                maxFiles={1}
+                                updateCode={selectedCertificate.updateCode}
+                                updateUploadedFiles={(newFiles) => setNewCertificate(newFiles[0])}
+                                files={dashboardData.files}
+                            />
+                        </Modal>
+                    )}
 
-            {
-                !fetchingDashboardData && <>
+                    {/* Update Certificate Modal */}
+                    {selectedCertificate.newCertificate && (
+                        <Modal>
+                            <div className={styles.updateCertificateModal}>
+                                <div className={styles.modalHeader}>
+                                    <h3 className={styles.modalTitle}>Update Certificate</h3>
+                                </div>
 
-
-
-
-                    <div>
-                        {
-                            Object.values(selectedCertificate).length > 0 && !selectedCertificate.newCertificate && <Modal>
-                                <FileUploader closeUploader={() => { closeUploader() }} label={selectedCertificate.label} maxFiles={1} updateCode={selectedCertificate.updateCode} updateUploadedFiles={(newFiles) => {
-                                    setNewCertificate(newFiles[0])
-                                }} files={dashboardData.files} />
-                            </Modal>
-                        }
-
-                        {
-                            selectedCertificate.newCertificate && <Modal>
-                                <div className={styles.updateCertificateModal}>
-                                    <h3>Update Certificate</h3>
-                                    <table>
+                                <div className={styles.modalContent}>
+                                    <table className={styles.certificateDetailsTable}>
                                         <tbody>
                                             <tr>
-                                                <td>
-                                                    Certificate Title
-                                                </td>
-
-                                                <td>
-                                                    {selectedCertificate.label}
-                                                </td>
+                                                <td>Certificate Title</td>
+                                                <td>{selectedCertificate.label}</td>
                                             </tr>
-
                                             <tr>
-                                                <td>
-                                                    File name
-                                                </td>
-
-                                                <td>
-                                                    {selectedCertificate.newCertificate.name}
-                                                </td>
+                                                <td>File Name</td>
+                                                <td>{selectedCertificate.newCertificate.name}</td>
                                             </tr>
-
-                                            {/* <tr>
-                                    <td>
-                                        File Size
-                                    </td>
-
-                                    <td>
-                                        234 kb
-                                    </td>
-                                </tr> */}
-
                                             <tr>
+                                                <td>Expiry Date</td>
                                                 <td>
-                                                    Expiry Date
-                                                </td>
-
-                                                <td>
-                                                    <input type="date" min={new Date().toISOString().split('T')[0]} onChange={event => setNewCertificateExpiry(event.target.value)} />
+                                                    <input
+                                                        type="date"
+                                                        min={new Date().toISOString().split('T')[0]}
+                                                        onChange={(event) => setNewCertificateExpiry(event.target.value)}
+                                                    />
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
 
-                                    {
-                                        updateCertificateError && <ErrorText text={updateCertificateError} />
-                                    }
+                                    {updateCertificateError && (
+                                        <div className={styles.modalError}>
+                                            <ErrorText text={updateCertificateError} />
+                                        </div>
+                                    )}
 
-                                    <div className={styles.updateCertificateSuccessDiv}>
-                                        {
-                                            updateCertificateSuccess && <SuccessMessage message={updateCertificateSuccess} />
-                                        }
-                                    </div>
+                                    {updateCertificateSuccess && (
+                                        <div className={styles.modalSuccess}>
+                                            <SuccessMessage message={updateCertificateSuccess} />
+                                        </div>
+                                    )}
+                                </div>
 
-                                    <div>
-                                        <button onClick={() => { closeUploader() }}>
-                                            {
-                                                updateCertificateSuccess ? "Close" : "Cancel"
-                                            }
-                                        </button>
-                                        {
-                                            !updateCertificateSuccess && <button onClick={() => backToFileSelection()}>
-                                                Back to file selection
+                                <div className={styles.modalActions}>
+                                    <button
+                                        onClick={closeUploader}
+                                        className={`${styles.modalButton} ${styles.modalButtonCancel}`}
+                                    >
+                                        {updateCertificateSuccess ? "Close" : "Cancel"}
+                                    </button>
+
+                                    {!updateCertificateSuccess && (
+                                        <>
+                                            <button
+                                                onClick={backToFileSelection}
+                                                className={`${styles.modalButton} ${styles.modalButtonSecondary}`}
+                                            >
+                                                Back to File Selection
                                             </button>
-                                        }
 
-                                        {
-                                            !updateCertificateSuccess && <button onClick={() => validateNewCertificate()}>
+                                            <button
+                                                onClick={validateNewCertificate}
+                                                disabled={updatingCertificate}
+                                                className={`${styles.modalButton} ${styles.modalButtonPrimary}`}
+                                            >
                                                 Update Certificate
                                                 {updatingCertificate && <ButtonLoadingIcon />}
                                             </button>
-                                        }
-                                    </div>
+                                        </>
+                                    )}
                                 </div>
-                            </Modal>
-                        }
-
-                        <h5>Your Company Registration</h5>
-
-                        {/* <button onClick={() => makeMigrationRequest()}>Make request</button> */}
-
-                        {
-                            dashboardData.companies.length > 0 && <div>
-                                {
-                                    dashboardData.companies.map((item, index) => <div key={index} className={styles.companyApplicationDiv}>
-                                        <div>
-                                            <p>{String(item.companyName).toLocaleUpperCase()}</p>
-                                            <p>Status: {item.flags.stage}</p>
-                                        </div>
-
-                                        <div className={styles.actionItems}>
-                                            <Link href={`/contractor/application/view/${item.vendor}`}>VIEW</Link>
-
-                                            <Link href={`/contractor/settings/${item._id}`}>SETTINGS</Link>
-
-                                            {
-                                                (!item.flags.submitted || item.flags.stage === "returned" || item.flags.status === "returned") && <Link href={`/contractor/form/form/${item.vendor}`}>CONTINUE & SUBMIT</Link>
-                                            }
-                                        </div>
-                                    </div>)
-                                }
                             </div>
-                        }
+                        </Modal>
+                    )}
 
-                        {
-                            dashboardData.companies.length === 0 && <div className={styles.noRegisteredCompaniesDiv}>
-                                <p>You have not started your company registration.</p>
+                    {/* Company Registration Section */}
+                    <div className={styles.section}>
+                        <div className={styles.sectionHeader}>
+                            <h5 className={styles.sectionTitle}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                Your Company Registration
+                            </h5>
+                        </div>
 
-                                <Link href={"/contractor/form/form"}>
-                                    <button>Start company registration</button>
+                        {dashboardData.companies.length > 0 ? (
+                            <div>
+                                {dashboardData.companies.map((company, index) => (
+                                    <div key={index} className={styles.companyCard}>
+                                        <div className={styles.companyInfo}>
+                                            <h6 className={styles.companyName}>{company.companyName}</h6>
+                                            <span className={styles.companyStatus}>
+                                                <span className={styles.statusDot}></span>
+                                                Status: {company.flags.stage}
+                                            </span>
+                                        </div>
+
+                                        <div className={styles.companyActions}>
+                                            <Link href={`/contractor/application/view/${company.vendor}`} className={styles.actionLink}>
+                                                View
+                                            </Link>
+
+                                            <Link href={`/contractor/settings/${company._id}`} className={styles.actionLink}>
+                                                Settings
+                                            </Link>
+
+                                            {(!company.flags.submitted || company.flags.stage === "returned" || company.flags.status === "returned") && (
+                                                <Link
+                                                    href={`/contractor/form/form/${company.vendor}`}
+                                                    className={`${styles.actionLink} ${styles.actionLinkPrimary}`}
+                                                >
+                                                    Continue & Submit
+                                                </Link>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyStateIcon}>
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                        <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                                <h6 className={styles.emptyStateTitle}>No Company Registration</h6>
+                                <p className={styles.emptyStateText}>
+                                    You have not started your company registration yet. Start the process to become an approved contractor.
+                                </p>
+                                <Link href="/contractor/form/form" className={styles.emptyStateButton}>
+                                    Start Company Registration
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
                                 </Link>
                             </div>
-                        }
+                        )}
                     </div>
 
-                    <hr />
+                    <hr className={styles.divider} />
 
-                    <div className={styles.certificatesDiv}>
-                        <h5>Your Expiring Certificates</h5>
+                    {/* Expiring Certificates Section */}
+                    <div className={styles.section}>
+                        <div className={styles.sectionHeader}>
+                            <h5 className={styles.sectionTitle}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                Expiring Certificates
+                            </h5>
+                        </div>
 
-                        {
-                            dashboardData.expiringCertificates.length === 0 && <div className={styles.noCertificates}>
-                                <p>You do not have any expiring certificates</p>
+                        {dashboardData.expiringCertificates.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyStateIcon}>
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                                <p className={styles.emptyStateText}>You do not have any expiring certificates</p>
                             </div>
-                        }
-
-                        {
-                            dashboardData.expiringCertificates.length > 0 && <div>
-                                <table>
+                        ) : (
+                            <div className={styles.tableContainer}>
+                                <table className={styles.table}>
                                     <thead>
                                         <tr>
-                                            <td>Certificate Type</td>
-                                            <td>Expiry Date</td>
-                                            <td>Action</td>
+                                            <th>Certificate Type</th>
+                                            <th>Expiry Date</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
-
                                     <tbody>
-                                        {
-                                            dashboardData.expiringCertificates.map((item, index) => <tr key={index}>
-                                                <td>{item.label}</td>
-
-                                                <td>{(new Date(item.expiryDate)).toLocaleDateString("en-NG")}</td>
-
-                                                <td>
-                                                    <Link href={item.url} target="_blank"><button>View</button></Link>
-
-                                                    <button onClick={() => setCertificateToUpdate(item, "expiring", index)}>Update Certificate</button>
+                                        {dashboardData.expiringCertificates.map((certificate, index) => (
+                                            <tr key={index}>
+                                                <td className={styles.certificateType}>{certificate.label}</td>
+                                                <td className={`${styles.expiryDate} ${styles.expiryDateExpiring}`}>
+                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                        <path d="M8 4v4l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                        <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+                                                    </svg>
+                                                    {new Date(certificate.expiryDate).toLocaleDateString("en-NG")}
                                                 </td>
-                                            </tr>)
-                                        }
+                                                <td>
+                                                    <div className={styles.tableActions}>
+                                                        <Link
+                                                            href={certificate.url}
+                                                            target="_blank"
+                                                            className={`${styles.tableButton} ${styles.tableButtonView}`}
+                                                        >
+                                                            View
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => setCertificateToUpdate(certificate, "expiring", index)}
+                                                            className={styles.tableButton}
+                                                        >
+                                                            Update Certificate
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>
-                        }
+                        )}
                     </div>
 
-                    <hr />
+                    <hr className={styles.divider} />
 
-                    <div className={styles.certificatesDiv}>
-                        <h5>Your Expired Certificates</h5>
+                    {/* Expired Certificates Section */}
+                    <div className={styles.section}>
+                        <div className={styles.sectionHeader}>
+                            <h5 className={styles.sectionTitle}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                Expired Certificates
+                            </h5>
+                        </div>
 
-                        {
-                            dashboardData.expiredCertificates.length === 0 && <div className={styles.noCertificates}>
-                                <p>You do not have any expired certificate</p>
+                        {dashboardData.expiredCertificates.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyStateIcon}>
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                                <p className={styles.emptyStateText}>You do not have any expired certificates</p>
                             </div>
-                        }
-
-
-                        {
-                            dashboardData.expiredCertificates.length > 0 && <div>
-                                <table>
+                        ) : (
+                            <div className={styles.tableContainer}>
+                                <table className={styles.table}>
                                     <thead>
                                         <tr>
-                                            <td>Certificate Type</td>
-                                            <td>Expiry Date</td>
-                                            <td>Action</td>
+                                            <th>Certificate Type</th>
+                                            <th>Expiry Date</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
-
                                     <tbody>
-                                        {
-                                            dashboardData.expiredCertificates.map((item, index) => <tr key={index}>
-                                                <td>{item.label}</td>
-
-                                                <td>{(new Date(item.expiryDate)).toLocaleDateString("en-NG")}</td>
-
-                                                <td>
-                                                    <Link href={item.url} target="_blank"><button>View</button></Link>
-
-                                                    <button onClick={() => setCertificateToUpdate(item, "expired", index)}>Update Certificate</button>
+                                        {dashboardData.expiredCertificates.map((certificate, index) => (
+                                            <tr key={index}>
+                                                <td className={styles.certificateType}>{certificate.label}</td>
+                                                <td className={`${styles.expiryDate} ${styles.expiryDateExpired}`}>
+                                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                        <path d="M8 4v4m0 2h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                    </svg>
+                                                    {new Date(certificate.expiryDate).toLocaleDateString("en-NG")}
                                                 </td>
-                                            </tr>)
-                                        }
+                                                <td>
+                                                    <div className={styles.tableActions}>
+                                                        <Link
+                                                            href={certificate.url}
+                                                            target="_blank"
+                                                            className={`${styles.tableButton} ${styles.tableButtonView}`}
+                                                        >
+                                                            View
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => setCertificateToUpdate(certificate, "expired", index)}
+                                                            className={styles.tableButton}
+                                                        >
+                                                            Update Certificate
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>
-                        }
-
-
+                        )}
                     </div>
-
-
-
-
-
                 </>
-            }
-
+            )}
         </div>
     )
 }
