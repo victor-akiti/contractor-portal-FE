@@ -1247,9 +1247,20 @@ const ViewVendorPage = () => {
                                         <div className={styles.fieldItem}>
                                             <div>
                                                 <p className={styles.fieldData}>
-                                                    <label>{`Invited by:`}</label>
+                                                    <label>{`Invited By:`}</label>
                                                     {
                                                         <p>{inviteDetails?.name}</p>
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.fieldItem}>
+                                            <div>
+                                                <p className={styles.fieldData}>
+                                                    <label>{`Invited At:`}</label>
+                                                    {
+                                                        <p>{new Date(inviteDetails?.invitedAt)?.toLocaleString("en-GB")}</p>
                                                     }
                                                 </p>
                                             </div>
@@ -1322,6 +1333,17 @@ const ViewVendorPage = () => {
                                                     <label>{`Email:`}</label>
                                                     {
                                                         <p>{currentPortalAdministrator?.email}</p>
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.fieldItem}>
+                                            <div>
+                                                <p className={styles.fieldData}>
+                                                    <label>{`Phone:`}</label>
+                                                    {
+                                                        <p>{currentPortalAdministrator?.phone}</p>
                                                     }
                                                 </p>
                                             </div>
