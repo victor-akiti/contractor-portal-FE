@@ -7,6 +7,7 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;
+  color: var(--form-label-color);
 }
 .selectFile > div {
   display: flex;
@@ -21,30 +22,31 @@
   border-style: none;
   border-style: dashed;
   border-width: 2px;
-  border-color: rgb(167, 167, 167);
+  border-color: var(--form-file-border);
   padding: 40px;
   border-radius: 10px;
   width: 100%;
 }
 .selectFile > div > div p {
   font-size: 14px;
+  color: var(--form-input-text);
 }
 .selectFile > div > div .allowedFormatsText {
   font-size: 13px;
   margin-bottom: 10px;
-  color: rgb(147, 147, 147);
+  color: var(--form-file-text-muted);
 }
 .selectFile > div > div button {
-  background-color: black;
+  background-color: var(--form-button-bg);
   padding: 10px;
   border-style: none;
-  color: white;
+  color: var(--form-button-text);
   border-radius: 10px;
   cursor: pointer;
 }
 
 .selectFile:hover {
-  background-color: rgb(225, 225, 225);
+  background-color: var(--form-hover-bg);
   cursor: pointer;
   padding: 10px;
   border-style: none;
@@ -52,7 +54,7 @@
 }
 
 .highlighted {
-  background-color: rgb(225, 225, 225);
+  background-color: var(--form-highlight-bg);
   cursor: pointer;
   padding: 10px;
   border-style: none;
@@ -68,6 +70,7 @@
 }
 .uploadedFilesList > div label:nth-child(1) {
   padding-top: 10px;
+  color: var(--form-label-color);
 }
 .uploadedFilesList > div a {
   margin-left: 20px;
@@ -81,17 +84,21 @@
 }
 .uploadedFilesList > div div div input {
   margin-left: 10px;
+  background-color: var(--form-input-bg);
+  color: var(--form-input-text);
+  border-color: var(--form-input-border);
 }
 .uploadedFilesList > div:nth-child(1) {
   margin-top: 10px;
 }
 .uploadedFilesList > p {
   font-size: 14px;
-  color: gray;
+  color: var(--form-label-color);
 }
 
 .fieldLabel {
   font-weight: 600;
+  color: var(--form-label-color);
 }
 
 .requiredIcon {

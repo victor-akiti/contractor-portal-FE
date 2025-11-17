@@ -96,6 +96,20 @@
   
   /* Transitions */
   --transition-base: 0.15s ease-in-out;
+
+  /* Form Components - Light Mode */
+  --form-input-bg: #ffffff;
+  --form-input-border: rgb(211, 211, 211);
+  --form-input-text: #212529;
+  --form-hover-bg: rgb(225, 225, 225);
+  --form-highlight-bg: rgb(225, 225, 225);
+  --form-label-color: gray;
+  --form-button-bg: black;
+  --form-button-text: white;
+  --form-section-border: #d7d7d7;
+  --form-file-border: rgb(167, 167, 167);
+  --form-file-text-muted: rgb(147, 147, 147);
+  --form-multiselect-item-bg: rgb(237, 237, 237);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -128,6 +142,35 @@
     --callout-border-rgb: 108, 108, 108;
     --card-rgb: 100, 100, 100;
     --card-border-rgb: 200, 200, 200;
+
+    /* Form Components - Dark Mode */
+    --form-input-bg: #2a2a2a;
+    --form-input-border: #4a4a4a;
+    --form-input-text: #e0e0e0;
+    --form-hover-bg: #3a3a3a;
+    --form-highlight-bg: #3a3a3a;
+    --form-label-color: #b0b0b0;
+    --form-button-bg: #e67509;
+    --form-button-text: white;
+    --form-section-border: #4a4a4a;
+    --form-file-border: #6a6a6a;
+    --form-file-text-muted: #8a8a8a;
+    --form-multiselect-item-bg: #3a3a3a;
+
+    /* Update design tokens for dark mode */
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #b0b0b0;
+    --color-text-muted: #8a8a8a;
+    --color-text-light: #c0c0c0;
+
+    --color-bg-white: #1a1a1a;
+    --color-bg-light: #2a2a2a;
+    --color-bg-gray: #3a3a3a;
+    --color-bg-dark: rgba(255, 255, 255, 0.051);
+    --color-bg-highlight: #4a3520;
+
+    --color-border: #4a4a4a;
+    --color-border-light: #3a3a3a;
   }
 }
 
