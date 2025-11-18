@@ -256,6 +256,72 @@ html.dark-mode {
   color-scheme: dark;
 }
 
+/* Dark mode text color overrides for hardcoded colors */
+@media (prefers-color-scheme: dark) {
+  html:not(.light-mode) {
+    /* Override body text color */
+    color: var(--color-text-primary);
+  }
+
+  /* Override hardcoded dark text colors in labels - use muted color */
+  html:not(.light-mode) label {
+    color: var(--color-text-muted);
+  }
+
+  /* Override hardcoded dark text colors in tables */
+  html:not(.light-mode) td,
+  html:not(.light-mode) th {
+    color: var(--color-text-primary);
+  }
+}
+
+html.dark-mode {
+  /* Override body text color */
+  color: var(--color-text-primary);
+}
+
+/* Override hardcoded dark text colors in labels - use muted color */
+html.dark-mode label {
+  color: var(--color-text-muted);
+}
+
+/* Override hardcoded dark text colors in tables */
+html.dark-mode td,
+html.dark-mode th {
+  color: var(--color-text-primary);
+}
+
+/* Form inputs in dark mode - ensure they stay legible */
+@media (prefers-color-scheme: dark) {
+  html:not(.light-mode) input,
+  html:not(.light-mode) textarea,
+  html:not(.light-mode) select {
+    background-color: var(--color-bg-white);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+  }
+
+  html:not(.light-mode) input::placeholder,
+  html:not(.light-mode) textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.7;
+  }
+}
+
+html.dark-mode input,
+html.dark-mode textarea,
+html.dark-mode select {
+  background-color: var(--color-bg-white);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+html.dark-mode input::placeholder,
+html.dark-mode textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
 /* Global keyframes for CSS Modules */
 @keyframes spin {
   from { transform: rotate(0deg); }

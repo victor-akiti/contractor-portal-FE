@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import './globals.css';
+import './dark-mode-overrides.css';
 import ReduxProvider from './reduxProvider';
 import { ThemeProvider } from '@/context/ThemeContext';
 
