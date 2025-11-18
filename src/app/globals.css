@@ -96,6 +96,20 @@
   
   /* Transitions */
   --transition-base: 0.15s ease-in-out;
+
+  /* Form Components - Light Mode */
+  --form-input-bg: #ffffff;
+  --form-input-border: rgb(211, 211, 211);
+  --form-input-text: #212529;
+  --form-hover-bg: rgb(225, 225, 225);
+  --form-highlight-bg: rgb(225, 225, 225);
+  --form-label-color: gray;
+  --form-button-bg: black;
+  --form-button-text: white;
+  --form-section-border: #d7d7d7;
+  --form-file-border: rgb(167, 167, 167);
+  --form-file-text-muted: rgb(147, 147, 147);
+  --form-multiselect-item-bg: rgb(237, 237, 237);
 }
 
 
