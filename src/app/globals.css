@@ -57,6 +57,7 @@
   --color-text-secondary: #64676b;
   --color-text-muted: #878787;
   --color-text-light: #495057;
+  --color-text-heading: #64676b;
   
   --color-bg-white: #ffffff;
   --color-bg-light: #f6f6f6;
@@ -135,6 +136,7 @@
     --color-text-secondary: #e9ecef;
     --color-text-muted: #adb5bd;
     --color-text-light: #dee2e6;
+    --color-text-heading: #6c757d;
 
     --color-bg-white: #1a1d21;
     --color-bg-light: #212529;
@@ -182,6 +184,7 @@ html.dark-mode {
   --color-text-secondary: #e9ecef;
   --color-text-muted: #adb5bd;
   --color-text-light: #dee2e6;
+  --color-text-heading: #6c757d;
 
   --color-bg-white: #1a1d21;
   --color-bg-light: #212529;
@@ -234,7 +237,7 @@ a {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #64676b;
+  color: var(--color-text-heading);
   font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
 }
 
@@ -246,37 +249,11 @@ h4, h5, h6 {
   html:not(.light-mode) {
     color-scheme: dark;
   }
-
-  :root:not(.light-mode) h1,
-  :root:not(.light-mode) h2,
-  :root:not(.light-mode) h3,
-  :root:not(.light-mode) h4,
-  :root:not(.light-mode) h5,
-  :root:not(.light-mode) h6 {
-    color: #e9ecef;
-  }
-
-  :root:not(.light-mode) label {
-    color: #adb5bd;
-  }
 }
 
 /* Class-based dark mode overrides */
 html.dark-mode {
   color-scheme: dark;
-}
-
-html.dark-mode h1,
-html.dark-mode h2,
-html.dark-mode h3,
-html.dark-mode h4,
-html.dark-mode h5,
-html.dark-mode h6 {
-  color: #e9ecef;
-}
-
-html.dark-mode label {
-  color: #adb5bd;
 }
 
 /* Global keyframes for CSS Modules */
