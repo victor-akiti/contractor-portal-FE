@@ -1267,7 +1267,7 @@ const ViewVendorPage = () => {
                                         </div>
 
                                         {/* NEW: Display recommendedBy if it exists */}
-                                        {inviteDetails?.recommendedBy && (
+                                        {inviteDetails?.recommendedBy?.name && (
                                             <>
                                                 <div className={styles.fieldItem}>
                                                     <div>
@@ -1343,7 +1343,11 @@ const ViewVendorPage = () => {
                                                 <p className={styles.fieldData}>
                                                     <label>{`Phone:`}</label>
                                                     {
-                                                        <p>{currentPortalAdministrator?.phone}</p>
+                                                        <p>{
+                                                            typeof currentPortalAdministrator?.phone === "string"
+                                                                ? currentPortalAdministrator?.phone
+                                                                : currentPortalAdministrator?.phone?.internationalNumber
+                                                        }</p>
                                                     }
                                                 </p>
                                             </div>
