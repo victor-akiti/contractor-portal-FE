@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import './globals.css';
 import ReduxProvider from './reduxProvider';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,12 +16,14 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <ReduxProvider>
-        <body className={inter.className}>
-          {children}
-        </body>
-        <ToastContainer />
-      </ReduxProvider>
+      <ThemeProvider>
+        <ReduxProvider>
+          <body className={inter.className}>
+            {children}
+          </body>
+          <ToastContainer />
+        </ReduxProvider>
+      </ThemeProvider>
     </html>
   )
 }

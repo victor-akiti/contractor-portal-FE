@@ -1,5 +1,6 @@
 'use client'
 import logo from "@/assets/images/logo.png"
+import { ThemeToggle } from "@/components/ThemeToggle"
 import { setUserData } from "@/redux/reducers/user"
 import { getProtected } from "@/requests/get"
 import { faCaretDown, faEnvelope, faUserCircle } from "@fortawesome/free-solid-svg-icons"
@@ -138,6 +139,9 @@ const Layout = ({ children }: LayoutProps) => {
 
         <div className={styles.navRight}>
           <Link href="/contractor/dashboard" className={styles.navDashboardText}>DASHBOARD</Link>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Messages Button */}
           <Link href="/contractor/messages" className={styles.navIconButton}>

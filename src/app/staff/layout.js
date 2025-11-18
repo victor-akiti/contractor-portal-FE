@@ -2,6 +2,7 @@
 import logo from "@/assets/images/logo.png"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import Modal from "@/components/modal"
+import { ThemeToggle } from "@/components/ThemeToggle"
 import useFirebaseReady from "@/hooks/useFirebaseReady"
 import { setUserData } from "@/redux/reducers/user"
 import { getProtected } from "@/requests/get"
@@ -267,16 +268,19 @@ const Layout = ({ children }) => {
         </Link>
       </div>
 
-      <div className={styles.right} onClick={toggleShowFloatingUserMenu}>
+      <div className={styles.right}>
         <span>STAFF DASHBOARD</span>
-        <FontAwesomeIcon
-          icon={faUserCircle}
-          style={{ width: "20px", color: "#ffffff80", marginRight: "10px" }}
-        />
-        <FontAwesomeIcon
-          icon={faCaretDown}
-          style={{ width: "10px", color: "#ffffff80" }}
-        />
+        <ThemeToggle />
+        <div onClick={toggleShowFloatingUserMenu} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+          <FontAwesomeIcon
+            icon={faUserCircle}
+            style={{ width: "20px", color: "#ffffff80", marginRight: "10px" }}
+          />
+          <FontAwesomeIcon
+            icon={faCaretDown}
+            style={{ width: "10px", color: "#ffffff80" }}
+          />
+        </div>
       </div>
 
       {showFloatingUserMenu && renderUserMenu()}
