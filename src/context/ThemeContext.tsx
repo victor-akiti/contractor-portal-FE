@@ -20,23 +20,22 @@ export const useTheme = () => {
 }
 
 /**
- * Determines if it's night time based on the current hour
- * Night mode is active between 6 PM (18:00) and 6 AM (06:00)
+ * Detects system dark mode preference
  */
-const isNightTime = (): boolean => {
-  const hour = new Date().getHours()
-  return hour >= 18 || hour < 6
+const getSystemDarkMode = (): boolean => {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
 /**
  * Gets the effective theme based on the theme setting
  * - 'light': Always light mode
  * - 'dark': Always dark mode
- * - 'auto': Determined by time of day
+ * - 'auto': Determined by system preference
  */
 const getEffectiveTheme = (theme: Theme): 'light' | 'dark' => {
   if (theme === 'auto') {
-    return isNightTime() ? 'dark' : 'light'
+    return getSystemDarkMode() ? 'dark' : 'light'
   }
   return theme
 }
@@ -53,7 +52,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setEffectiveTheme(getEffectiveTheme(initialTheme))
   }, [])
 
-  // Update effective theme when theme changes or time changes
+  // Update effective theme when theme changes or system preference changes
   useEffect(() => {
     const updateEffectiveTheme = () => {
       const newEffectiveTheme = getEffectiveTheme(theme)
@@ -71,10 +70,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     updateEffectiveTheme()
 
-    // If theme is 'auto', check every minute if time of day changed
+    // If theme is 'auto', listen for system dark mode changes
     if (theme === 'auto') {
-      const interval = setInterval(updateEffectiveTheme, 60000) // Check every minute
-      return () => clearInterval(interval)
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      const handleChange = () => updateEffectiveTheme()
+
+      // Modern browsers
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange)
+        return () => mediaQuery.removeEventListener('change', handleChange)
+      } else {
+        // Fallback for older browsers
+        mediaQuery.addListener(handleChange)
+        return () => mediaQuery.removeListener(handleChange)
+      }
     }
   }, [theme])
 
