@@ -123,8 +123,8 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                 tempVendorData.referenceCheck = approvalData.dueDiligence.referenceCheck
             }
 
-            if (approvalData.dueDiligence.exposedPersons && approvalData.dueDiligence.exposedPersons.length > 0) {
-                tempVendorData.exposedPersons = approvalData.dueDiligence.exposedPersons
+            if (approvalData.dueDiligence?.exposedPersons && approvalData.dueDiligence?.exposedPersons.length > 0) {
+                tempVendorData.exposedPersons = approvalData.dueDiligence?.exposedPersons
             } else {
                 tempVendorData.exposedPersons = [{
                     flagged: false,
@@ -231,17 +231,17 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     const addExposedPerson = () => {
         //Validate most recent exposed person before adding another
 
-        const exposedPersonError = validateExposedPerson(vendorDueDiligenceData.exposedPersons[vendorDueDiligenceData.exposedPersons.length - 1])
+        const exposedPersonError = validateExposedPerson(vendorDueDiligenceData?.exposedPersons[vendorDueDiligenceData?.exposedPersons.length - 1])
 
         if (exposedPersonError) {
-            return showExposedPersonError("You have to fill all the required fields for this exposed person before adding another", vendorDueDiligenceData.exposedPersons.length - 1)
+            return showExposedPersonError("You have to fill all the required fields for this exposed person before adding another", vendorDueDiligenceData?.exposedPersons.length - 1)
         } else {
             hideExposedPersonError()
         }
 
         let tempVendorDueDiligence = { ...vendorDueDiligenceData }
 
-        tempVendorDueDiligence.exposedPersons.push({
+        tempVendorDueDiligence?.exposedPersons.push({
             flagged: false,
             flagMessage: "",
             finding: [],
@@ -317,7 +317,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
             let tempVendorData = { ...vendorDueDiligenceData }
 
-            tempVendorData.exposedPersons = tempVendorData.exposedPersons.filter((item, personIndex) => personIndex !== index)
+            tempVendorData.exposedPersons = tempVendorData?.exposedPersons.filter((item, personIndex) => personIndex !== index)
 
             setVendorDueDiligenceData(tempVendorData)
         } catch (error) {
@@ -411,8 +411,8 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
             return false
         }
 
-        for (let index = 0; index < vendorDueDiligenceData.exposedPersons.length; index++) {
-            const element = vendorDueDiligenceData.exposedPersons[index];
+        for (let index = 0; index < vendorDueDiligenceData?.exposedPersons.length; index++) {
+            const element = vendorDueDiligenceData?.exposedPersons[index];
             if (validateExposedPerson(element)) {
                 return false
             }
@@ -614,7 +614,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                         <p>For each director, shareholder and former director or shareholder of the contractor (from the CAC documents) please perform a google search to see if the person is a politically exposed person, involved in politics or involved with politicians or involved in court cases or scandal. For each person, if anything is found, flag for the HOD to review and enter a note. Also for each person put the search results into one word document, pdf and upload.</p>
 
                         {
-                            vendorDueDiligenceData.exposedPersons.map((item, index) => <div className={styles.exposedPersonContainerDiv} key={index}>
+                            vendorDueDiligenceData?.exposedPersons.map((item, index) => <div className={styles.exposedPersonContainerDiv} key={index}>
                                 <div>
                                     <form onChange={(event: any) => updateExposedPersonsField(event.target.name, event.target.value, index)}>
                                         <div className={styles.exposedPersonItem}>
@@ -623,7 +623,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                                                 <p>{`Person ${index + 1}`}</p>
 
                                                 {
-                                                    vendorDueDiligenceData.exposedPersons.length > 1 && <Image src={closeIcon} alt="remove exposed person" width={15} height={15} style={{ cursor: "pointer" }} onClick={() => removeExposedPerson(item, index)} />
+                                                    vendorDueDiligenceData?.exposedPersons.length > 1 && <Image src={closeIcon} alt="remove exposed person" width={15} height={15} style={{ cursor: "pointer" }} onClick={() => removeExposedPerson(item, index)} />
                                                 }
                                             </div>
 
@@ -634,7 +634,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                                             </select>
 
                                             {
-                                                vendorDueDiligenceData.exposedPersons[index].entityType === "company" && <div className={styles.companyDetailsDiv}>
+                                                vendorDueDiligenceData?.exposedPersons[index].entityType === "company" && <div className={styles.companyDetailsDiv}>
                                                     <div>
                                                         <label>Company Name<span>*</span></label>
                                                         <input name="companyName" defaultValue={item.companyName} />
@@ -648,7 +648,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                                             }
 
                                             {
-                                                vendorDueDiligenceData.exposedPersons[index].entityType === "individual" && <div className={styles.individualDetailsDiv}>
+                                                vendorDueDiligenceData?.exposedPersons[index].entityType === "individual" && <div className={styles.individualDetailsDiv}>
                                                     <div>
                                                         <label>Title<span>*</span></label>
                                                         <select name="title" >
@@ -672,7 +672,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
                                             <div className={styles.roleDiv}>
                                                 {
-                                                    vendorDueDiligenceData.exposedPersons[index].entityType === "individual" && <div>
+                                                    vendorDueDiligenceData?.exposedPersons[index].entityType === "individual" && <div>
                                                         <label>Other Names</label>
                                                         <input name="otherName" defaultValue={item.otherName} />
                                                     </div>
@@ -694,17 +694,17 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
 
                                     {
-                                        !vendorDueDiligenceData.exposedPersons[index].flagged && <button className={styles.flagButton} onClick={() => toggleFlagForHODReview("exposedPersons", !vendorDueDiligenceData.exposedPersons[index].flagged, index)}>Flag for HOD review</button>
+                                        !vendorDueDiligenceData?.exposedPersons[index].flagged && <button className={styles.flagButton} onClick={() => toggleFlagForHODReview("exposedPersons", !vendorDueDiligenceData?.exposedPersons[index].flagged, index)}>Flag for HOD review</button>
                                     }
 
                                     {
-                                        vendorDueDiligenceData.exposedPersons[index].flagged && <div className={styles.flagEntryDiv}>
-                                            <button onClick={() => toggleFlagForHODReview("exposedPersons", !vendorDueDiligenceData.exposedPersons[index].flagged, index)}>UNFLAG</button>
+                                        vendorDueDiligenceData?.exposedPersons[index].flagged && <div className={styles.flagEntryDiv}>
+                                            <button onClick={() => toggleFlagForHODReview("exposedPersons", !vendorDueDiligenceData?.exposedPersons[index].flagged, index)}>UNFLAG</button>
 
                                             <div>
-                                                <textarea onChange={event => updateFlagMessage("exposedPersons", event.target.value, index)} rows={5} placeholder="Type your notes here" defaultValue={vendorDueDiligenceData.exposedPersons[index].flagMessage}></textarea>
+                                                <textarea onChange={event => updateFlagMessage("exposedPersons", event.target.value, index)} rows={5} placeholder="Type your notes here" defaultValue={vendorDueDiligenceData?.exposedPersons[index].flagMessage}></textarea>
                                                 {
-                                                    !vendorDueDiligenceData.exposedPersons[index].flagMessage && <Image src={alertIcon} alt="alert" width={20} height={20} />
+                                                    !vendorDueDiligenceData?.exposedPersons[index].flagMessage && <Image src={alertIcon} alt="alert" width={20} height={20} />
                                                 }
 
                                             </div>
@@ -716,14 +716,14 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                                             <h5>Upload Findings<span>*</span></h5>
 
                                             {
-                                                (Array.isArray(vendorDueDiligenceData.exposedPersons[index].finding) && vendorDueDiligenceData.exposedPersons[index].finding.length === 0) && <>
+                                                (Array.isArray(vendorDueDiligenceData?.exposedPersons[index].finding) && vendorDueDiligenceData?.exposedPersons[index].finding.length === 0) && <>
                                                     <p>Upload a screenshot of the CAC website listing.</p>
                                                     <button onClick={() => { setFieldToUploadFor("exposedPersons", index) }}>UPLOAD</button>
                                                 </>
                                             }
 
                                             {
-                                                (Array.isArray(vendorDueDiligenceData.exposedPersons[index].finding) && vendorDueDiligenceData.exposedPersons[index].finding.length > 0) && <div className={styles.actionButtons}>
+                                                (Array.isArray(vendorDueDiligenceData?.exposedPersons[index].finding) && vendorDueDiligenceData?.exposedPersons[index].finding.length > 0) && <div className={styles.actionButtons}>
                                                     <button onClick={() => { setFieldToUploadFor("exposedPersons", index) }}>Change</button>
                                                     <button className={styles.clearButton} onClick={() => clearUploadedField("exposedPersons", currentUpload.index)}>Clear</button>
 
@@ -738,7 +738,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
                                         </div>
 
-                                        <button className={!validateExposedPerson(item) ? styles.activeButton : styles.inactiveButton} onClick={() => saveExposedPerson(vendorDueDiligenceData.exposedPersons[index], index)}>{vendorDueDiligenceData.exposedPersons[index]._id ? "UPDATE PERSON" : "SAVE PERSON"}</button>
+                                        <button className={!validateExposedPerson(item) ? styles.activeButton : styles.inactiveButton} onClick={() => saveExposedPerson(vendorDueDiligenceData?.exposedPersons[index], index)}>{vendorDueDiligenceData?.exposedPersons[index]._id ? "UPDATE PERSON" : "SAVE PERSON"}</button>
                                     </div>
 
                                     {

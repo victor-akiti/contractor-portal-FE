@@ -1028,7 +1028,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
                                         <tbody>
                                             {
-                                                approvalData.dueDiligence.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <tr className={index / 2 == 0 && styles.darkBackground} key={index}>
+                                                approvalData.dueDiligence?.exposedPersons && approvalData.dueDiligence?.exposedPersons.map((item, index) => <tr className={index / 2 == 0 && styles.darkBackground} key={index}>
                                                     <td>
                                                         {item.entityType === "individual" ? "Individual" : "Company"}
                                                     </td>
@@ -1103,7 +1103,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     <h5>Search on current (and any former) Directors and Shareholders</h5>
 
                                     {
-                                        approvalData?.dueDiligence?.exposedPersons && approvalData.dueDiligence.exposedPersons.map((item, index) => <div key={index}>
+                                        approvalData?.dueDiligence?.exposedPersons && approvalData.dueDiligence?.exposedPersons.map((item, index) => <div key={index}>
                                             <p>{`Person ${index + 1} : ${item.companyName ? item.companyName : item.firstName + " " + item.lastName} - ${item.role === "Both" ? "Director & Shareholder" : item.role}`}</p>
                                             <Link href={approvalData?.dueDiligence?.exposedPersons[index]?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
                                         </div>)
