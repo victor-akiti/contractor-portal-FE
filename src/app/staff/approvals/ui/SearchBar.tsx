@@ -45,7 +45,7 @@ export default function SearchBar({ isLoading, onQuery, onFilterChange, filterPa
       <label>Quick Search</label>
       <div className={styles.searchFilterDiv} ref={resultRef}>
         <input
-          placeholder="Type company name..."
+          placeholder="Type Company Name or Email..."
           value={query}
           onFocus={handleFocus}
           onChange={(e) => { setQuery(e.target.value); }}
