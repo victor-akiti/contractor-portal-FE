@@ -69,7 +69,10 @@ const Login = () => {
             setErrorText("Please enter your email address")
         } else if (!loginDetails.password) {
             setErrorText("Please enter your password")
-        } else {
+        } else if (loginDetails?.email?.includes("amni.com")) {
+            setErrorText("Please use your registered contractor email to login")
+        }
+        else {
             setErrorText("")
             // Toggle between implementations
             // logUserInWithEmailAndPassword() // Original implementation
