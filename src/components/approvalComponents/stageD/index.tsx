@@ -609,7 +609,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
 
                     <div className={[styles.exposedPersonsDiv, styles.dueDiligenceCheckDiv].join(" ")}>
-                        <h3>Exposed Person Check</h3>
+                        <h3>Exposed Person/Shareholder Check</h3>
 
                         <p>For each director, shareholder and former director or shareholder of the contractor (from the CAC documents) please perform a google search to see if the person is a politically exposed person, involved in politics or involved with politicians or involved in court cases or scandal. For each person, if anything is found, flag for the HOD to review and enter a note. Also for each person put the search results into one word document, pdf and upload.</p>
 
