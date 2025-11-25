@@ -1,24 +1,36 @@
-import useDebounce from '@/hooks/useDebounce'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import styles from '../styles/styles.module.css'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import useDebounce from "@/hooks/useDebounce";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import styles from "../styles/styles.module.css";
 
 interface Props {
-  onQuery: (q: string) => void
-  onFilterChange: (v: any) => void
-  results: any[]
-  resultRef: any
-  searchOpen?: boolean
-  filterParam?: string
-  setSearchOpen?: () => void
-  vendorIsPending: (v: any) => boolean
-  getNextStage: (v: any) => string
-  capitalizeWord: (w: string) => string
-  isLoading?: boolean
+  onQuery: (q: string) => void;
+  onFilterChange: (v: any) => void;
+  results: any[];
+  resultRef: any;
+  searchOpen?: boolean;
+  filterParam?: string;
+  setSearchOpen?: () => void;
+  vendorIsPending: (v: any) => boolean;
+  getNextStage: (v: any) => string;
+  capitalizeWord: (w: string) => string;
+  isLoading?: boolean;
 }
 
-export default function SearchBar({ isLoading, onQuery, onFilterChange, filterParam, results, resultRef, setSearchOpen, searchOpen: externalSearchOpen, vendorIsPending, getNextStage, capitalizeWord }: Props) {
-
+export default function SearchBar({
+  isLoading,
+  onQuery,
+  onFilterChange,
+  filterParam,
+  results,
+  resultRef,
+  setSearchOpen,
+  searchOpen: externalSearchOpen,
+  vendorIsPending,
+  getNextStage,
+  capitalizeWord,
+}: Props) {
   const [query, setQuery] = useState("");
   const [internalSearchOpen, setInternalSearchOpen] = useState(false);
   const debounceSearch = useDebounce(query, 300);
@@ -38,7 +50,7 @@ export default function SearchBar({ isLoading, onQuery, onFilterChange, filterPa
     if (debounceSearch?.length > 0) {
       debounceSearch?.length > 1 && debounceSearch === query && onQuery(debounceSearch);
     }
-  }, [debounceSearch, searchOpen, filterParam])
+  }, [debounceSearch, searchOpen, filterParam]);
 
   return (
     <>
@@ -48,7 +60,9 @@ export default function SearchBar({ isLoading, onQuery, onFilterChange, filterPa
           placeholder="Type Company Name or Email..."
           value={query}
           onFocus={handleFocus}
-          onChange={(e) => { setQuery(e.target.value); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+          }}
         />
         <select onChange={(e) => onFilterChange(e.target.value)}>
           <option value={"all"}>All Registered Vendors</option>
@@ -61,23 +75,37 @@ export default function SearchBar({ isLoading, onQuery, onFilterChange, filterPa
         </select>
         {query?.length > 0 && results && searchOpen && (
           <div className={styles.searchResultsDiv}>
-            {query?.length < 2 ? <p className={styles.noSearchResults}>{query?.length < 2 ? "Enter a longer query..." : "No results found"}</p> :
-              isLoading ? <div className={styles.loadingSpinnerSmall}></div> :
-                results?.length > 0 ? results.map((item: any, idx: number) => (
-                  <div key={idx} className={styles.searchResultItem}>
-                    <div className={styles.searchResultMetaData}>
-                      <p>{String(item.companyName).toUpperCase()}</p>
-                      <p>{capitalizeWord(String(item?.flags?.status))}</p>
-                    </div>
-                    <div className={styles.searchResultsActionButtons}>
-                      <Link href={`/staff/vendor/${item?._id}`}><button>VIEW</button></Link>
-                      {vendorIsPending(item) && <Link href={`/staff/approvals/${item?._id}`}><button>{`Process to ${getNextStage(item)}`}</button></Link>}
-                    </div>
+            {query?.length < 2 ? (
+              <p className={styles.noSearchResults}>
+                {query?.length < 2 ? "Enter a longer query..." : "No results found"}
+              </p>
+            ) : isLoading ? (
+              <div className={styles.loadingSpinnerSmall}></div>
+            ) : results?.length > 0 ? (
+              results.map((item: any, idx: number) => (
+                <div key={idx} className={styles.searchResultItem}>
+                  <div className={styles.searchResultMetaData}>
+                    <p>{String(item.companyName).toUpperCase()}</p>
+                    <p>{capitalizeWord(String(item?.flags?.status))}</p>
                   </div>
-                )) : <div className={styles.noSearchResults}>No results found</div>}
+                  <div className={styles.searchResultsActionButtons}>
+                    <Link href={`/staff/vendor/${item?._id}`}>
+                      <button>VIEW</button>
+                    </Link>
+                    {vendorIsPending(item) && (
+                      <Link href={`/staff/approvals/${item?._id}`}>
+                        <button>{`Process to ${getNextStage(item)}`}</button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.noSearchResults}>No results found</div>
+            )}
           </div>
         )}
       </div>
     </>
-  )
+  );
 }

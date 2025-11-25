@@ -54,10 +54,25 @@ const StaffLogin = () => {
         throw new Error("Sign-in succeeded but Firebase returned no user.");
       }
 
-      // 2) Get Firebase Identity Token
-      const firebaseToken = await getIdToken(result.user);
+      const user = result.user;
 
-      // 3) Verify token with backend (sets cookie)
+      // 2) FORCE REMOVE EMAIL/PASSWORD PROVIDER IF IT EXISTS
+      const providers = user.providerData.map((p) => p.providerId);
+      console.log({ providers });
+
+      if (providers.includes("password")) {
+        try {
+          await user.unlink("password");
+          // console.log("🔥 Removed email/password provider for:", user.email);
+        } catch (unlinkError) {
+          console.warn("Could not unlink password provider:", unlinkError);
+        }
+      }
+
+      // 3) Get Firebase Identity Token
+      const firebaseToken = await getIdToken(user);
+
+      // 4) Verify token with backend (sets cookie)
       const verificationResult = await verifyStaffToken({
         token: firebaseToken,
       }).unwrap();
@@ -66,9 +81,7 @@ const StaffLogin = () => {
         dispatch(setUserData({ user: verificationResult.data.user }));
         router.push("/staff/approvals");
       } else {
-        setErrorMessage(
-          verificationResult.error?.message || "Authentication failed"
-        );
+        setErrorMessage(verificationResult.error?.message || "Authentication failed");
       }
     } catch (error) {
       console.error("Sign in error:", error);
@@ -109,16 +122,8 @@ const StaffLogin = () => {
         <div className={styles.staffLoginCard}>
           {/* Logo and Header */}
           <div className={styles.staffLoginHeader}>
-            <Image
-              src={logo}
-              alt="Amni Logo"
-              width={70}
-              height={90}
-              className={styles.logo}
-            />
-            <h3 className={styles.platformTitle}>
-              Amni Contractor Registration Portal
-            </h3>
+            <Image src={logo} alt="Amni Logo" width={70} height={90} className={styles.logo} />
+            <h3 className={styles.platformTitle}>Amni Contractor Registration Portal</h3>
           </div>
 
           {/* Main Content */}
@@ -136,11 +141,7 @@ const StaffLogin = () => {
             )}
 
             {/* Login Button */}
-            <button
-              onClick={signIn}
-              disabled={isLoading}
-              className={styles.loginButton}
-            >
+            <button onClick={signIn} disabled={isLoading} className={styles.loginButton}>
               {isLoading ? (
                 <>
                   Signing in
@@ -156,26 +157,10 @@ const StaffLogin = () => {
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <path
-                      d="M9.5 2H2V9.5H9.5V2Z"
-                      fill="currentColor"
-                      fillOpacity="0.9"
-                    />
-                    <path
-                      d="M18 2H10.5V9.5H18V2Z"
-                      fill="currentColor"
-                      fillOpacity="0.9"
-                    />
-                    <path
-                      d="M9.5 10.5H2V18H9.5V10.5Z"
-                      fill="currentColor"
-                      fillOpacity="0.9"
-                    />
-                    <path
-                      d="M18 10.5H10.5V18H18V10.5Z"
-                      fill="currentColor"
-                      fillOpacity="0.9"
-                    />
+                    <path d="M9.5 2H2V9.5H9.5V2Z" fill="currentColor" fillOpacity="0.9" />
+                    <path d="M18 2H10.5V9.5H18V2Z" fill="currentColor" fillOpacity="0.9" />
+                    <path d="M9.5 10.5H2V18H9.5V10.5Z" fill="currentColor" fillOpacity="0.9" />
+                    <path d="M18 10.5H10.5V18H18V10.5Z" fill="currentColor" fillOpacity="0.9" />
                   </svg>
                 </>
               )}
