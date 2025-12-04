@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getL2PendingStage } from "../ApprovalsContainer";
+import { getL2PendingStage } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 export default function ParkRequestedRow({
   index,
