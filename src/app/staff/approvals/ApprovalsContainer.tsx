@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 "use client";
 
 import downIconBlack from "@/assets/images/downIconBlack.svg";
@@ -50,7 +51,15 @@ import ParkRequestedRow from "./rows/ParkRequestedRow";
 import PendingL2Row from "./rows/PendingL2Row";
 import ReturnedRow from "./rows/ReturnedRow";
 
-const approvalStages = ["A", "B", "C", "D", "E", "F"]; // "G"];
+import {
+  APPROVAL_STAGES as approvalStages,
+  getL2PendingStage,
+  getNextStageFromFlags,
+  getStageFromFlags,
+  shouldShowEndUsers,
+} from "./stageHelpers";
+
+// const approvalStages = ["A", "B", "C", "D", "E", "F"]; // "G"];
 
 function useOutsideClick(ref: React.RefObject<HTMLElement>, onClickOut: () => void) {
   useEffect(() => {
@@ -67,21 +76,21 @@ function useOutsideClick(ref: React.RefObject<HTMLElement>, onClickOut: () => vo
   }, [ref, onClickOut]);
 }
 
-export const getL2PendingStage = (flags: any) => {
-  if (!flags.level && !flags?.approvals?.level) return "A";
-  if (flags?.approvals?.level === 1) return "B";
-  if (flags?.approvals?.level === 2) return "C";
-  if (flags?.approvals?.level === 3) return "D";
-  if (flags?.approvals?.level === 4) return "E";
-  if (flags?.approvals?.level === 5) return "F";
-  if (flags?.approvals?.level === 6) return "G";
-  if (flags?.approvals?.level === 7) return "H";
-  return "NA";
-};
+// export const getL2PendingStage = (flags: any) => {
+//   if (!flags.level && !flags?.approvals?.level) return "A";
+//   if (flags?.approvals?.level === 1) return "B";
+//   if (flags?.approvals?.level === 2) return "C";
+//   if (flags?.approvals?.level === 3) return "D";
+//   if (flags?.approvals?.level === 4) return "E";
+//   if (flags?.approvals?.level === 5) return "F";
+//   if (flags?.approvals?.level === 6) return "G";
+//   if (flags?.approvals?.level === 7) return "H";
+//   return "NA";
+// };
 
-export const shouldShowEndUsers = (activeFilter: string) => {
-  return activeFilter === "C" || activeFilter === "E";
-};
+// export const shouldShowEndUsers = (activeFilter: string) => {
+//   return activeFilter === "C" || activeFilter === "E";
+// };
 
 export default function ApprovalsContainer() {
   const prefetchTab = usePrefetchApprovals("getCompaniesByTab");
@@ -172,7 +181,7 @@ export default function ApprovalsContainer() {
   const {
     data: countsData,
     isLoading: countsLoading,
-    error: countsError,
+    // error: countsError,
   } = useGetApprovalCountsQuery(user?.role || "", {
     skip: !user?.role,
   });
@@ -180,7 +189,7 @@ export default function ApprovalsContainer() {
   const {
     data: tabDataRTK,
     isLoading: tabLoading,
-    error: tabError,
+    // error: tabError,
     isFetching: tabFetching,
   } = useGetCompaniesByTabQuery(
     { tab: activeTab, userRole: user?.role || "" },
@@ -192,7 +201,7 @@ export default function ApprovalsContainer() {
   const {
     data: invitesDataRTK,
     isLoading: invitesLoading,
-    error: invitesError,
+    // error: invitesError,
     isFetching: invitesFetching,
   } = useGetInvitesQuery(
     { filter: "All", userRole: user?.role || "" },
@@ -450,27 +459,40 @@ export default function ApprovalsContainer() {
   const filterL2Companies = (stage: string) => {
     const full = tabData["pending-l2"]?.companies || fixedApprovals.pendingL2 || [];
     const temp = { ...approvals };
-    const arr: any[] = [];
+
     if (stage === "All") {
       temp.pendingL2 = full;
-      setApprovals(temp);
-      return;
+    } else {
+      temp.pendingL2 = full.filter(el => getStageFromFlags(el.flags) === stage);
     }
-    const push = (el: any) => arr.push(el);
-    for (const el of full) {
-      const lv = el?.flags?.level;
-      const ap = el?.flags?.approvals?.level;
-      if (stage === "A" && !lv && !ap) push(el);
-      if (stage === "B" && (lv === 1 || (!lv && ap === 1))) push(el);
-      if (stage === "C" && (lv === 2 || (!lv && ap === 2))) push(el);
-      if (stage === "D" && (lv === 3 || (!lv && ap === 3))) push(el);
-      if (stage === "E" && (lv === 4 || (!lv && ap === 4))) push(el);
-      if (stage === "F" && (lv === 5 || (!lv && ap === 5))) push(el);
-      if (stage === "G" && (lv === 6 || (!lv && ap === 6))) push(el);
-    }
-    temp.pendingL2 = arr;
+
     setApprovals(temp);
   };
+
+  // const filterL2Companies = (stage: string) => {
+  //   const full = tabData["pending-l2"]?.companies || fixedApprovals.pendingL2 || [];
+  //   const temp = { ...approvals };
+  //   const arr: any[] = [];
+  //   if (stage === "All") {
+  //     temp.pendingL2 = full;
+  //     setApprovals(temp);
+  //     return;
+  //   }
+  //   const push = (el: any) => arr.push(el);
+  //   for (const el of full) {
+  //     const lv = el?.flags?.level;
+  //     const ap = el?.flags?.approvals?.level;
+  //     if (stage === "A" && !lv && !ap) push(el);
+  //     if (stage === "B" && (lv === 1 || (!lv && ap === 1))) push(el);
+  //     if (stage === "C" && (lv === 2 || (!lv && ap === 2))) push(el);
+  //     if (stage === "D" && (lv === 3 || (!lv && ap === 3))) push(el);
+  //     if (stage === "E" && (lv === 4 || (!lv && ap === 4))) push(el);
+  //     if (stage === "F" && (lv === 5 || (!lv && ap === 5))) push(el);
+  //     if (stage === "G" && (lv === 6 || (!lv && ap === 6))) push(el);
+  //   }
+  //   temp.pendingL2 = arr;
+  //   setApprovals(temp);
+  // };
 
   const filterInvitedCompaniesByNameOrEmail = (name: string) => {
     const temp = { ...approvals };
@@ -516,10 +538,10 @@ export default function ApprovalsContainer() {
       const temp = { ...approvals };
       temp.invites = temp.invites.filter((i: any) => i._id !== inviteToArchive._id);
       setApprovals(temp);
-    } catch (e) { }
+    } catch (e) { console.error(e); }
   };
 
-  const removeInviteFromExpiredList = (inviteID: string) => { };
+  const removeInviteFromExpiredList = (inviteID: string) => { console.log({ inviteID }) };
 
   const getFilterParam = (currentSearchFilter: string) => {
     let filterParam = "all";
@@ -593,19 +615,21 @@ export default function ApprovalsContainer() {
     });
 
   const getNextStage = (companyRecord: any) => {
-    if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) return "B";
-    if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1)
-      return "C";
-    if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2)
-      return "D";
-    if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3)
-      return "E";
-    if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4)
-      return "F";
-    if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5)
-      return "G";
-    if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6)
-      return "H";
+    return getNextStageFromFlags(companyRecord?.flags);
+
+    // if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) return "B";
+    // if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1)
+    //   return "C";
+    // if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2)
+    //   return "D";
+    // if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3)
+    //   return "E";
+    // if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4)
+    //   return "F";
+    // if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5)
+    //   return "G";
+    // if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6)
+    //   return "H";
   };
 
   const approveParkRequest = async (vendorID: string) => {
@@ -698,7 +722,7 @@ export default function ApprovalsContainer() {
   };
   const cancelRevertToL2 = () => setReturnToL2Data(null);
 
-  const filterL3Companies = (filter: string) => { };
+  const filterL3Companies = (filter: string) => { console.log("Filtering L3 companies by:", filter); };
 
   const showSortIcons = (index: number) => {
     if (activeTab === "invited") return false;
@@ -808,7 +832,7 @@ export default function ApprovalsContainer() {
     return dateSortAscending ? upIconBlack : downIconBlack;
   };
 
-  const vendorIsPending = (vendorData: any) => vendorData?.flags?.status === "pending";
+  // const vendorIsPending = (vendorData: any) => vendorData?.flags?.status === "pending";
   const userIsCnPStaff = () =>
     user?.role === "C and P Staff" ||
     user?.role === "Admin" ||
@@ -1400,7 +1424,7 @@ export default function ApprovalsContainer() {
             activeFilter={activeFilter}
             onInviteFilter={filterInvites}
             onNameOrEmailFilter={filterInvitedCompaniesByNameOrEmail}
-            approvalStages={approvalStages}
+            approvalStages={[...approvalStages]}
             l3Filters={l3Filters}
             activeL3Filter={activeL3Filter}
             setActiveFilter={setActiveFilter}
@@ -1470,7 +1494,7 @@ export default function ApprovalsContainer() {
                     companyRecord={item}
                     index={index}
                     user={user}
-                    revertToL2={(vendorID: string) => setDataForReturnToL2(item._id, "parked")}
+                    revertToL2={(vendorID: string) => { console.log({ vendorID }); setDataForReturnToL2(item._id, "parked") }}
                   />
                 ))}
               {activeTab === "returned" &&
