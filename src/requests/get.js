@@ -1,4 +1,4 @@
-import { auth } from '@/lib/firebase';
+import { auth } from "@/lib/firebase";
 import { getIdToken } from "firebase/auth";
 
 // Simple refresh state management
@@ -7,147 +7,146 @@ let refreshPromise = null;
 
 // 🔐 Helper: build Authorization header (non-breaking, best-effort)
 const getAuthHeader = async () => {
-    try {
-        const user = auth.currentUser;
-        if (!user) return {};
+  try {
+    const user = auth.currentUser;
+    if (!user) return {};
 
-        // Do NOT force refresh on every request; let Firebase manage expiration
-        const token = await getIdToken(user);
-        return token ? { Authorization: `Bearer ${token}` } : {};
-    } catch (error) {
-        console.error("Failed to build auth header:", error);
-        return {};
-    }
+    // Do NOT force refresh on every request; let Firebase manage expiration
+    const token = await getIdToken(user);
+    console.log({ token });
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch (error) {
+    console.error("Failed to build auth header:", error);
+    return {};
+  }
 };
 
 export const getPlain = async (route) => {
-    try {
-        const request = await fetch(route, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
+  try {
+    const request = await fetch(route, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-        const result = await request.json();
-        return result;
-    } catch (error) {
-        console.error({ error });
-        throw error;
-    }
+    const result = await request.json();
+    return result;
+  } catch (error) {
+    console.error({ error });
+    throw error;
+  }
 };
 
 export const getProtected = async (route, role) => {
-    try {
-        const baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`;
+  try {
+    const baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`;
 
-        const authHeader = await getAuthHeader();
+    const authHeader = await getAuthHeader();
 
-        const request = await fetch(baseUrl, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                ...authHeader, // 🔐 Fallback header, cookie remains primary
-            },
-            credentials: "include",
+    const request = await fetch(baseUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader, // 🔐 Fallback header, cookie remains primary
+      },
+      credentials: "include",
+    });
+
+    if (request.status === 401) {
+      // Attempt to refresh token
+      const refreshSuccess = await handleTokenRefresh();
+
+      if (refreshSuccess) {
+        const retryAuthHeader = await getAuthHeader();
+
+        // Retry the original request
+        const retryRequest = await fetch(baseUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...retryAuthHeader,
+          },
+          credentials: "include",
         });
 
-        if (request.status === 401) {
-
-            // Attempt to refresh token
-            const refreshSuccess = await handleTokenRefresh();
-
-            if (refreshSuccess) {
-                const retryAuthHeader = await getAuthHeader();
-
-                // Retry the original request
-                const retryRequest = await fetch(baseUrl, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...retryAuthHeader,
-                    },
-                    credentials: "include",
-                });
-
-                if (retryRequest.ok) {
-                    const result = await retryRequest.json();
-                    return result;
-                } else {
-                    redirectToLogin(role);
-                }
-            } else {
-                redirectToLogin(role);
-            }
-        } else if (request.ok) {
-            const result = await request.json();
-            return result;
+        if (retryRequest.ok) {
+          const result = await retryRequest.json();
+          return result;
         } else {
-            throw new Error('Request failed');
+          redirectToLogin(role);
         }
-    } catch (error) {
-        console.error({ error });
-        throw error;
+      } else {
+        redirectToLogin(role);
+      }
+    } else if (request.ok) {
+      const result = await request.json();
+      return result;
+    } else {
+      throw new Error("Request failed");
     }
+  } catch (error) {
+    console.error({ error });
+    throw error;
+  }
 };
 
 // Token refresh logic
 const handleTokenRefresh = async () => {
-    // Prevent multiple simultaneous refresh attempts
-    if (isRefreshing) {
-        return refreshPromise;
-    }
+  // Prevent multiple simultaneous refresh attempts
+  if (isRefreshing) {
+    return refreshPromise;
+  }
 
-    isRefreshing = true;
-    refreshPromise = performTokenRefresh();
+  isRefreshing = true;
+  refreshPromise = performTokenRefresh();
 
-    try {
-        const result = await refreshPromise;
-        return result;
-    } finally {
-        isRefreshing = false;
-        refreshPromise = null;
-    }
+  try {
+    const result = await refreshPromise;
+    return result;
+  } finally {
+    isRefreshing = false;
+    refreshPromise = null;
+  }
 };
 
 const performTokenRefresh = async () => {
-    try {
-        const user = auth.currentUser;
+  try {
+    const user = auth.currentUser;
 
-        if (!user) {
-            return false;
-        }
-
-        // Firebase automatically handles refresh using its internal refreshToken
-        const freshToken = await getIdToken(user, true);
-
-        // Send fresh token to backend
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
-            method: "PUT",
-            headers: { token: freshToken },
-            credentials: "include",
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            if (result.status === "OK") {
-                return true;
-            }
-        }
-
-        console.error('Backend token update failed');
-        return false;
-
-    } catch (error) {
-        console.error('Token refresh failed:', error);
-        return false;
+    if (!user) {
+      return false;
     }
+
+    // Firebase automatically handles refresh using its internal refreshToken
+    const freshToken = await getIdToken(user, true);
+
+    // Send fresh token to backend
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
+      method: "PUT",
+      headers: { token: freshToken },
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result.status === "OK") {
+        return true;
+      }
+    }
+
+    console.error("Backend token update failed");
+    return false;
+  } catch (error) {
+    console.error("Token refresh failed:", error);
+    return false;
+  }
 };
 
 const redirectToLogin = (role) => {
-    if (!role || role === "Vendor" || role === "User") {
-        // window.location.href = "/login";
-    } else {
-        // window.location.href = "/login/staff";
-    }
+  if (!role || role === "Vendor" || role === "User") {
+    // window.location.href = "/login";
+  } else {
+    // window.location.href = "/login/staff";
+  }
 };
