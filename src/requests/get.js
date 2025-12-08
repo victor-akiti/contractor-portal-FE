@@ -9,6 +9,7 @@ let refreshPromise = null;
 const getAuthHeader = async () => {
   try {
     const user = auth.currentUser;
+    console.log({ user, auth });
     if (!user) return {};
 
     // Do NOT force refresh on every request; let Firebase manage expiration

@@ -1,15 +1,15 @@
-'use client'
-import logo from "@/assets/images/logo.png"
-import { setUserData } from "@/redux/reducers/user"
-import { getProtected } from "@/requests/get"
-import { faCaretDown, faEnvelope, faUserCircle } from "@fortawesome/free-solid-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import styles from "./styles/styles.module.css"
+"use client";
+import logo from "@/assets/images/logo.png";
+import { setUserData } from "@/redux/reducers/user";
+import { getProtected } from "@/requests/get";
+import { faCaretDown, faEnvelope, faUserCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import styles from "./styles/styles.module.css";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,93 +24,107 @@ interface LayoutProps {
  * - 100% backward-compatible with existing functionality
  */
 const Layout = ({ children }: LayoutProps) => {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [showFloatingUserMenu, setShowFloatingUserMenu] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const [authenticated, setAuthenticated] = useState(false);
+  const [showFloatingUserMenu, setShowFloatingUserMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const user = useSelector((state: any) => state.user.user)
-  const dispatch = useDispatch()
-  const router = useRouter()
+  const user = useSelector((state: any) => state.user.user);
+  const dispatch = useDispatch();
+  const router = useRouter();
 
   useEffect(() => {
-    getCurrentAuthState()
-  }, [])
+    getCurrentAuthState();
+  }, []);
 
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowFloatingUserMenu(false)
+        setShowFloatingUserMenu(false);
       }
-    }
+    };
 
     if (showFloatingUserMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showFloatingUserMenu])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showFloatingUserMenu]);
 
   const getCurrentAuthState = async () => {
     try {
-      setIsLoading(true)
-      const currentAuthState = await getProtected("auth/current-auth-state")
-
-      console.log({ currentAuthState })
+      setIsLoading(true);
+      const currentAuthState = await getProtected("auth/current-auth-state");
 
       if (!currentAuthState || currentAuthState.status === "Failed") {
-        router.push("/login")
+        router.push("/login");
       } else {
         if (currentAuthState.data.role !== "Vendor") {
-          router.push("/staff/approvals")
+          router.push("/login/staff");
         } else {
-          dispatch(setUserData({ user: currentAuthState.data }))
-          setAuthenticated(true)
+          dispatch(setUserData({ user: currentAuthState.data }));
+          setAuthenticated(true);
         }
       }
     } catch (error) {
-      console.error({ error })
-      router.push("/login")
+      console.error({ error });
+      router.push("/login");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const toggleFloatingUserMenu = () => {
-    setShowFloatingUserMenu(!showFloatingUserMenu)
-  }
+    setShowFloatingUserMenu(!showFloatingUserMenu);
+  };
 
   const logUserOut = async () => {
     try {
-      const logUserOutRequest = await getProtected(`auth/logout`)
+      const logUserOutRequest = await getProtected(`auth/logout`);
       if (logUserOutRequest.status === "OK") {
-        router.push("/login/")
+        router.push("/login/");
       }
     } catch (error) {
-      console.error({ error })
+      console.error({ error });
     }
-  }
+  };
 
   // Loading state
   if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
         <svg className={styles.loadingSpinner} width="40" height="40" viewBox="0 0 40 40">
-          <circle cx="20" cy="20" r="18" fill="none" stroke="#e67509" strokeWidth="4" strokeDasharray="90 150" strokeLinecap="round">
-            <animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="1s" repeatCount="indefinite" />
+          <circle
+            cx="20"
+            cy="20"
+            r="18"
+            fill="none"
+            stroke="#e67509"
+            strokeWidth="4"
+            strokeDasharray="90 150"
+            strokeLinecap="round"
+          >
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 20 20"
+              to="360 20 20"
+              dur="1s"
+              repeatCount="indefinite"
+            />
           </circle>
         </svg>
         <p className={styles.loadingText}>Loading...</p>
       </div>
-    )
+    );
   }
 
   // Authenticated layout
   if (!authenticated) {
-    return null
+    return null;
   }
 
   return (
@@ -137,7 +151,9 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
 
         <div className={styles.navRight}>
-          <Link href="/contractor/dashboard" className={styles.navDashboardText}>DASHBOARD</Link>
+          <Link href="/contractor/dashboard" className={styles.navDashboardText}>
+            DASHBOARD
+          </Link>
 
           {/* Messages Button */}
           <Link href="/contractor/messages" className={styles.navIconButton}>
@@ -145,7 +161,7 @@ const Layout = ({ children }: LayoutProps) => {
           </Link>
 
           {/* User Menu Button */}
-          <div style={{ position: 'relative' }} ref={menuRef}>
+          <div style={{ position: "relative" }} ref={menuRef}>
             <button
               onClick={toggleFloatingUserMenu}
               className={styles.navIconButton}
@@ -179,8 +195,8 @@ const Layout = ({ children }: LayoutProps) => {
 
                 <button
                   onClick={() => {
-                    setShowFloatingUserMenu(false)
-                    logUserOut()
+                    setShowFloatingUserMenu(false);
+                    logUserOut();
                   }}
                   className={`${styles.menuItem} ${styles.logoutItem}`}
                   role="menuitem"
@@ -201,12 +217,17 @@ const Layout = ({ children }: LayoutProps) => {
       {/* Footer */}
       <footer className={styles.footer}>
         <p className={styles.footerText}>
-          ©Copyright 2024 Amni International Petroleum Development Company. Please ensure to read the
-          <Link href="/" className={styles.footerLink}> Terms & Conditions</Link> for using this application.
+          ©Copyright 2024 Amni International Petroleum Development Company. Please ensure to read
+          the
+          <Link href="/" className={styles.footerLink}>
+            {" "}
+            Terms & Conditions
+          </Link>{" "}
+          for using this application.
         </p>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;
