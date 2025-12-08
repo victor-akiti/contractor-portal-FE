@@ -36,6 +36,7 @@ export interface AuthResponse {
         message: string;
     };
     message?: string;
+    firebaseCustomToken?: string;
 }
 
 export interface LoginRequest {
