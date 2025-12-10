@@ -121,12 +121,9 @@ const Login = () => {
                 const customToken = result.firebaseCustomToken;
                 const customSignIn = await signInWithCustomToken(auth, customToken);
 
-                console.log({ customToken, customSignIn });
-
                 dispatch(setUserData({ user: result.data.user }));
                 router.push("contractor/dashboard");
             } else {
-                console.log({ result });
                 setErrorText(result.error?.message || "Login failed");
                 setLoggingIn(false);
             }

@@ -1,6 +1,6 @@
 import moment from "moment";
 import Link from "next/link";
-import { getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers } from "../stageHelpers";
+import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 
 export default function PendingL2Row({ index, companyRecord, user, activeFilter }: any) {
@@ -16,21 +16,22 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter 
   };
 
   const userCanViewActions = () => {
+
     if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
       return canProcess();
     }
     if (user.role === "Admin" || user.role === "HOD" || user.role === "Executive Approver")
       return true;
     if (user.role === "User") return false;
-    if (companyRecord?.flags?.level === 2 && companyRecord.currentEndUsers.includes(user._id))
+    if (deriveLevel(companyRecord?.flags) === 2 && companyRecord.currentEndUsers.includes(user._id))
       return true;
-    if (user.role === "VRM" && (!companyRecord?.flags?.level || companyRecord?.flags?.level === 3))
+    if (user.role === "VRM" && (!companyRecord?.flags?.level || deriveLevel(companyRecord?.flags) === 3))
       return true;
-    if (user.role === "CO" && (!companyRecord?.flags?.level || companyRecord?.flags?.level === 2))
+    if (user.role === "CO" && (!companyRecord?.flags?.level || deriveLevel(companyRecord?.flags) === 2))
       return true;
     if (
-      (user.role === "GM" || user.role === "supervisor") &&
-      (!companyRecord?.flags?.level || companyRecord?.flags?.level === 4)
+      (user.role === "GM" || user.role?.toLowerCase() === "supervisor") &&
+      (!companyRecord?.flags?.level || deriveLevel(companyRecord?.flags) === 4)
     )
       return true;
     return false;

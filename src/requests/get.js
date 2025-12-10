@@ -9,12 +9,10 @@ let refreshPromise = null;
 const getAuthHeader = async () => {
   try {
     const user = auth.currentUser;
-    console.log({ user, auth });
     if (!user) return {};
 
     // Do NOT force refresh on every request; let Firebase manage expiration
     const token = await getIdToken(user);
-    console.log({ token });
     return token ? { Authorization: `Bearer ${token}` } : {};
   } catch (error) {
     console.error("Failed to build auth header:", error);

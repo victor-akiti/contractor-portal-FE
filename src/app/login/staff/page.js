@@ -58,12 +58,10 @@ const StaffLogin = () => {
 
       // 2) FORCE REMOVE EMAIL/PASSWORD PROVIDER IF IT EXISTS
       const providers = user.providerData.map((p) => p.providerId);
-      console.log({ providers });
 
       if (providers.includes("password")) {
         try {
           await user.unlink("password");
-          // console.log("🔥 Removed email/password provider for:", user.email);
         } catch (unlinkError) {
           console.warn("Could not unlink password provider:", unlinkError);
         }

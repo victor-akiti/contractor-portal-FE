@@ -550,7 +550,7 @@ export default function ApprovalsContainer() {
     } catch (e) { console.error(e); }
   };
 
-  const removeInviteFromExpiredList = (inviteID: string) => { console.log({ inviteID }) };
+  const removeInviteFromExpiredList = (inviteID: string) => { console.info({ inviteID }) };
 
   const getFilterParam = (currentSearchFilter: string) => {
     let filterParam = "all";
@@ -731,7 +731,7 @@ export default function ApprovalsContainer() {
   };
   const cancelRevertToL2 = () => setReturnToL2Data(null);
 
-  const filterL3Companies = (filter: string) => { console.log("Filtering L3 companies by:", filter); };
+  const filterL3Companies = (filter: string) => { console.info("Filtering L3 companies by:", filter); };
 
   const showSortIcons = (index: number) => {
     if (activeTab === "invited") return false;
@@ -1503,7 +1503,7 @@ export default function ApprovalsContainer() {
                     companyRecord={item}
                     index={index}
                     user={user}
-                    revertToL2={(vendorID: string) => { console.log({ vendorID }); setDataForReturnToL2(item._id, "parked") }}
+                    revertToL2={(vendorID: string) => { setDataForReturnToL2(item._id, "parked") }}
                   />
                 ))}
               {activeTab === "returned" &&

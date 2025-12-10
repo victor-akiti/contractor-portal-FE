@@ -1127,7 +1127,7 @@ const ViewVendorPage = () => {
                                             ].find((x) => {
                                                 const level =
                                                     approvalData?.flags?.approvals?.level || approvalData?.flags?.level;
-                                                console.log({ level });
+
                                                 return x.value === level;
                                             })?.label
                                         }

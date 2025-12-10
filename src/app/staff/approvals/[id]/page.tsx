@@ -160,7 +160,7 @@ const Approval = () => {
             setVendorID(vendorID)
 
             if (fetchVendorDataRequest.status === "OK") {
-                let tempVendorData = { ...vendorData }
+                const tempVendorData = { ...vendorData }
                 tempVendorData.approvalData = fetchVendorDataRequest.data.approvalData
                 tempVendorData.pages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages
                 setVendorData(tempVendorData)

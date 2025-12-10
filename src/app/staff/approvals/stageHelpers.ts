@@ -4,7 +4,7 @@
 export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F", "G"] as const;
 export type ApprovalStage = (typeof APPROVAL_STAGES)[number];
 
-const deriveLevel = (flags: any): number => {
+export const deriveLevel = (flags: any): number => {
     // 🔑 Single source of truth:
     // Prefer flags.approvals.level if present (new shape),
     // else fallback to flags.level (old shape), else 0 (Stage A).
