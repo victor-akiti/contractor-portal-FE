@@ -57,6 +57,9 @@ import {
   getNextStageFromFlags,
   getStageFromFlags,
   shouldShowEndUsers,
+  shouldShowUnchecked,
+  shouldShowUnverified,
+  shouldShowVerified,
 } from "./stageHelpers";
 
 // const approvalStages = ["A", "B", "C", "D", "E", "F"]; // "G"];
@@ -161,11 +164,17 @@ export default function ApprovalsContainer() {
   const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"];
 
   const tableHeaders: any = {
-    invited: ["Company Name", "User Details", "Status"],
-    inProgress: ["Contractor Name", "Last Contractor Update"],
+    invited: ["Invited Name", "User Details", "Status"],
+    inProgress: ["Contractor Name (unchecked)", "Last Contractor Update"],
     pendingL2: shouldShowEndUsers(activeFilter)
-      ? ["Contractor Name", "Approval Stage", "End Users", "Action", "Last Contractor Update"]
-      : ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+      ? ["Contractor Name (unverified)", "Approval Stage", "End Users", "Action", "Last Contractor Update"]
+      : shouldShowUnchecked(activeFilter)
+        ? ["Contractor Name (unchecked)", "Approval Stage", "Action", "Last Contractor Update"]
+        : shouldShowUnverified(activeFilter)
+          ? ["Contractor Name (unverified)", "Approval Stage", "Action", "Last Contractor Update"]
+          : shouldShowVerified(activeFilter)
+            ? ["Contractor Name (verified)", "Approval Stage", "Action", "Last Contractor Update"]
+            : ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     l3: ["Contractor Name", "Action", "Last Contractor Update"],
     completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],

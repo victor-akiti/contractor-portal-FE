@@ -115,9 +115,7 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter 
       {shouldShowEndUsers(activeFilter) && <td>{getEndUserNames()}</td>}
       <td>
         {userCanViewActions() && (
-          <Link
-            href={`/staff/approvals/${companyRecord._id}`}
-          >{`PROCESS TO STAGE ${nextStage}`}</Link>
+          <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${nextStage}`}</Link>
         )}
       </td>
       <td>

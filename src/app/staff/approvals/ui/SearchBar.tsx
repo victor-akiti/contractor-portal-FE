@@ -94,7 +94,7 @@ export default function SearchBar({
                     </Link>
                     {vendorIsPending(item) && (
                       <Link href={`/staff/approvals/${item?._id}`}>
-                        <button>{`Process to ${getNextStage(item)}`}</button>
+                        <button>{`Process ${getNextStage(item)}`}</button>
                       </Link>
                     )}
                   </div>

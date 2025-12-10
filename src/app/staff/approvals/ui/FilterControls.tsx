@@ -93,7 +93,7 @@ export default function FilterControls({
             setActiveFilter(stage)
             filterL2Companies(stage)
           },
-          `Stage ${stage}${getFilterCount(stage)}`
+          `Completed Stage ${stage}${getFilterCount(stage)}`
         )
       )}
     </div>

@@ -873,7 +873,7 @@ const Approvals = () => {
                         </Link>
                         {vendorIsPending(item) && (
                           <Link href={`/staff/approvals/${item?._id}`}>
-                            <button>{`Process to ${getNextStage(item)}`}</button>
+                            <button>{`Process ${getNextStage(item)}`}</button>
                           </Link>
                         )}
                       </div>
@@ -1174,7 +1174,7 @@ const PendingL2Item = ({ index, companyRecord, user, selectedVendors, toggleVend
         {userCanViewActions() && (
           <Link
             href={`/staff/approvals/${companyRecord._id}`}
-          >{`PROCESS TO STAGE ${getNextStage()}`}</Link>
+          >{`PROCESS STAGE ${getNextStage()}`}</Link>
         )}
         {/* {
                     companyRecord.endUsers && Array.isArray(companyRecord.endUsers) && companyRecord.endUsers.length > 0 && <>

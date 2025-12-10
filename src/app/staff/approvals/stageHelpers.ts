@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 // src/pages/staff/approvals/stageHelpers.ts
 
-export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F",] as const;
+export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F", "G"] as const;
 export type ApprovalStage = (typeof APPROVAL_STAGES)[number];
 
 const deriveLevel = (flags: any): number => {
@@ -31,4 +31,19 @@ export const getL2PendingStage = (flags: any): ApprovalStage => {
 // Your previous rule for when to show End Users
 export const shouldShowEndUsers = (activeFilter: string): boolean => {
     return activeFilter === "C" || activeFilter === "E";
+};
+
+
+// Your previous rule for when to show End Users
+export const shouldShowUnverified = (activeFilter: string): boolean => {
+    return activeFilter === "B" || activeFilter === "C" || activeFilter === "D";
+};
+
+export const shouldShowUnchecked = (activeFilter: string): boolean => {
+    return activeFilter === "A";
+};
+
+// Your previous rule for when to show End Users
+export const shouldShowVerified = (activeFilter: string): boolean => {
+    return activeFilter === "E" || activeFilter === "F" || activeFilter === "G";
 };
