@@ -30,7 +30,7 @@ export const getL2PendingStage = (flags: any): ApprovalStage => {
 
 // Your previous rule for when to show End Users
 export const shouldShowEndUsers = (activeFilter: string): boolean => {
-    return activeFilter === "C" || activeFilter === "E";
+    return activeFilter === "C"
 };
 
 
