@@ -14,15 +14,15 @@ import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
 type User = {
-    firstName?: String,
-    lastName?: String,
-    department?: String,
-    email?: String,
-    login?: String,
-    name?: String,
-    role?: String,
+    firstName?: string,
+    lastName?: string,
+    department?: string,
+    email?: string,
+    login?: string,
+    name?: string,
+    role?: string,
     isOutOfOffice?: boolean,
-    _id?: String
+    _id?: string
 }
 
 function useOutsideClick(ref, onClickOut, deps = []) {
@@ -173,14 +173,14 @@ const Users = () => {
     }
 
     const showSuccessMessages = (option, message) => {
-        let tempSuccessMessages = { ...successMessages }
+        const tempSuccessMessages = { ...successMessages }
         tempSuccessMessages[option] = message
         setOptionToUpdate("")
 
         setSuccessMessages(tempSuccessMessages)
 
         setTimeout(() => {
-            let tempSuccessMessages = { ...successMessages }
+            const tempSuccessMessages = { ...successMessages }
             tempSuccessMessages[option] = ""
 
             setSuccessMessages(tempSuccessMessages)
@@ -273,7 +273,7 @@ const Users = () => {
         const value = event.target.value
 
 
-        let tempNewEndUser = { ...newEndUser }
+        const tempNewEndUser = { ...newEndUser }
         tempNewEndUser[field] = value
         setNewEndUser(tempNewEndUser)
     }
@@ -357,7 +357,7 @@ const Users = () => {
     }
 
     const removeUserAccount = async () => {
-        let tempRemovingUserAccountState = { ...removingUserAccountState }
+        const tempRemovingUserAccountState = { ...removingUserAccountState }
         tempRemovingUserAccountState.status = "removing"
         setRemovingUserAccountState(tempRemovingUserAccountState)
 
@@ -365,7 +365,7 @@ const Users = () => {
             const removeUserAccountRequest = await deleteProtected(`user/${userAccountToRemove._id}`, {}, user.role)
             if (removeUserAccountRequest.status === "OK") {
                 getAllStaff()
-                let tempRemovingUserAccountState = { ...removingUserAccountState }
+                const tempRemovingUserAccountState = { ...removingUserAccountState }
                 tempRemovingUserAccountState.status = "success"
                 tempRemovingUserAccountState.message = "User has been removed successfully"
                 setRemovingUserAccountState(tempRemovingUserAccountState)
@@ -377,7 +377,7 @@ const Users = () => {
                     closeRemoveUserModal()
                 }, 3000)
             } else {
-                let tempRemovingUserAccountState = { ...removingUserAccountState }
+                const tempRemovingUserAccountState = { ...removingUserAccountState }
                 tempRemovingUserAccountState.status = "error"
                 tempRemovingUserAccountState.message = removeUserAccountRequest.error.message
                 setRemovingUserAccountState(tempRemovingUserAccountState)

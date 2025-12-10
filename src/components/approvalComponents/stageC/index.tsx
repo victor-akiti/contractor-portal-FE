@@ -97,7 +97,7 @@ const StageC = () => {
 
 
             if (fetchVendorDataRequest.status === "OK") {
-                let tempVendorData = { ...vendorData }
+                const tempVendorData = { ...vendorData }
                 tempVendorData.approvalData = fetchVendorDataRequest.data.approvalData
                 tempVendorData.pages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages
                 setVendorData(tempVendorData)
@@ -303,6 +303,7 @@ const StageC = () => {
                         }
                     </div>
                 }
+                break;
             case "multiSelectText":
                 return <div className={styles.fieldItem}>
                     <p className={styles.fieldData}>
@@ -348,8 +349,8 @@ const StageC = () => {
 
 
     const getExpiringAndExpiredCertificates = (pages) => {
-        let tempExpiringCertificates = []
-        let tempExpiredCertificates = []
+        const tempExpiringCertificates = []
+        const tempExpiredCertificates = []
 
         pages.forEach((page, pageIndex) => {
             page.sections.forEach((section, sectionIndex) => {
@@ -377,7 +378,7 @@ const StageC = () => {
 
 
     const toggleHideSectionRemarks = (pageIndex, sectionIndex) => {
-        let tempSectionRemarksToShow = { ...sectionRemarksToShow }
+        const tempSectionRemarksToShow = { ...sectionRemarksToShow }
 
         if (!tempSectionRemarksToShow[pageIndex]) {
             tempSectionRemarksToShow[pageIndex] = []
@@ -422,7 +423,7 @@ const StageC = () => {
 
         setTimeout(() => {
             router.push("/staff/approvals")
-        }, 5000)
+        }, 4000)
     }
 
 
@@ -433,7 +434,7 @@ const StageC = () => {
         if (!selectedServices.some(item => {
             return item._id === service._id
         })) {
-            let tempSelectedServices = [...selectedServices]
+            const tempSelectedServices = [...selectedServices]
             tempSelectedServices.push(service)
             setSelectedServices(tempSelectedServices)
         }

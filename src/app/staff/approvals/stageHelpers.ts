@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 // src/pages/staff/approvals/stageHelpers.ts
 
-export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F", "G"] as const;
+export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F"] as const;
 export type ApprovalStage = (typeof APPROVAL_STAGES)[number];
 
 export const deriveLevel = (flags: any): number => {
@@ -18,9 +18,9 @@ export const getStageFromFlags = (flags: any): ApprovalStage => {
     return APPROVAL_STAGES[level] || "A";
 };
 
-export const getNextStageFromFlags = (flags: any): ApprovalStage | undefined => {
+export const getNextStageFromFlags = (flags: any): ApprovalStage | "L3" | undefined => {
     const level = deriveLevel(flags);
-    return APPROVAL_STAGES[level + 1];
+    return APPROVAL_STAGES[level + 1] ?? "L3";
 };
 
 // Used by export logic
