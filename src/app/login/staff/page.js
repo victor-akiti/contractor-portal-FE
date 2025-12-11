@@ -14,6 +14,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { defaultFirebaseError, firebaseErrorMap } from "../../../utilities/firebaseErrorMap";
 import styles from "./styles/styles.module.css";
 
 /**
@@ -84,26 +85,21 @@ const StaffLogin = () => {
     } catch (error) {
       console.error("Sign in error:", error);
 
-      let message = "Sign in failed.";
+      let message = defaultFirebaseError;
+      
+      // Firebase Auth errors always carry a numeric/slug code
+      if (error?.code && firebaseErrorMap[error.code]) {
+        message = firebaseErrorMap[error.code];
+      }
 
-      if (error?.data?.error?.message) {
+      // Backend errors from RTK Query
+      else if (error?.data?.error?.message) {
         message = error.data.error.message;
-      } else if (error?.message) {
+      }
+
+      // Any unexpected plain message
+      else if (error?.message) {
         message = error.message;
-      } else if (error?.code) {
-        switch (error.code) {
-          case "auth/popup-closed-by-user":
-            message = "Sign-in popup was closed";
-            break;
-          case "auth/network-request-failed":
-            message = "Network error. Check your connection.";
-            break;
-          case "auth/unauthorized-domain":
-            message = "This domain is not authorized for OAuth";
-            break;
-          default:
-            message = error.code;
-        }
       }
 
       setErrorMessage(message);
