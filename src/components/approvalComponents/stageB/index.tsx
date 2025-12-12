@@ -125,7 +125,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
     }
 
     const addCategoryToSelectedCategories = (category) => {
-        let tempSelectedCategories = [...selectedCategories]
+        const tempSelectedCategories = [...selectedCategories]
 
         //Check if category is already selected
         if (tempSelectedCategories.some(selectedCategory => selectedCategory.category === category.category)) {
@@ -367,8 +367,8 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
     }
 
     const getExpiringAndExpiredCertificates = (pages) => {
-        let tempExpiringCertificates = []
-        let tempExpiredCertificates = []
+        const tempExpiringCertificates = []
+        const tempExpiredCertificates = []
 
         pages.forEach((page, pageIndex) => {
             page.sections.forEach((section, sectionIndex) => {
@@ -396,7 +396,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
 
 
     const toggleSectionApproval = (pageIndex, sectionIndex) => {
-        let tempPages = [...pages]
+        const tempPages = [...pages]
         if (tempPages[pageIndex].sections[sectionIndex]["approved"]) {
             tempPages[pageIndex].sections[sectionIndex]["approved"] = false
         } else {
@@ -419,14 +419,14 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
     }
 
     const openAddRemarkModal = (pageIndex, sectionIndex) => {
-        let tempSectionToRemarkOn = { ...sectionToRemarkOn }
+        const tempSectionToRemarkOn = { ...sectionToRemarkOn }
         tempSectionToRemarkOn["pageIndex"] = pageIndex
         tempSectionToRemarkOn["sectionIndex"] = sectionIndex
         setSectionToRemarkOn(tempSectionToRemarkOn)
     }
 
     const openAddCommentModal = (pageIndex, sectionIndex) => {
-        let tempSectionToCommentOn = { ...sectionToCommentOn }
+        const tempSectionToCommentOn = { ...sectionToCommentOn }
         tempSectionToCommentOn["pageIndex"] = pageIndex
         tempSectionToCommentOn["sectionIndex"] = sectionIndex
         setSectionToCommentOn(tempSectionToCommentOn)
@@ -436,7 +436,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
         if (!remark) {
             return
         }
-        let tempPages = [...pages]
+        const tempPages = [...pages]
 
 
         if (!tempPages[pageIndex].sections[sectionIndex].remarks) {
@@ -458,7 +458,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
         }
         setPages(tempPages)
 
-        let tempNewRemarks = { ...newRemarks }
+        const tempNewRemarks = { ...newRemarks }
 
         if (!tempNewRemarks[pages[pageIndex].pageTitle]) {
             tempNewRemarks[pages[pageIndex].pageTitle] = {}
@@ -489,7 +489,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
     const addCommentToSection = (pageIndex, sectionIndex, comment) => {
 
 
-        let tempPages = [...pages]
+        const tempPages = [...pages]
 
 
 
@@ -516,7 +516,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
 
         setPages(tempPages)
 
-        let tempNewComments = { ...newComments }
+        const tempNewComments = { ...newComments }
 
         if (!tempNewComments[pages[pageIndex].pageTitle]) {
             tempNewComments[pages[pageIndex].pageTitle] = {}
@@ -542,7 +542,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
     }
 
     const toggleHideSectionRemarks = (pageIndex, sectionIndex) => {
-        let tempSectionRemarksToShow = { ...sectionRemarksToShow }
+        const tempSectionRemarksToShow = { ...sectionRemarksToShow }
 
         if (!tempSectionRemarksToShow[pageIndex]) {
             tempSectionRemarksToShow[pageIndex] = []
@@ -601,7 +601,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
 
     const validateSectionApproval = (remarks) => {
         let approvedAllSections = true
-        let unapprovedSectionsWithoutRemarks = []
+        const unapprovedSectionsWithoutRemarks = []
 
         // pages.forEach((item, index) => {
         //     item.sections.forEach((sectionItem, sectionIndex) => {
@@ -623,7 +623,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
                     if (!section.approved) {
                         approvedAllSections = false
 
-                        let remarksForValidation = remarks ? remarks : newRemarks
+                        const remarksForValidation = remarks ? remarks : newRemarks
 
 
 
@@ -672,6 +672,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
         ]));
     };
 
+    const [isProcessing, setIsProcessing] = useState(false);
     const processToStageC = async () => {
         try {
             setItemBeingUpdated("approve")
@@ -760,7 +761,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
         if (!selectedEndUsers.some(item => {
             return item._id === endUser._id
         })) {
-            let tempSelectedEndUsers = [...selectedEndUsers]
+            const tempSelectedEndUsers = [...selectedEndUsers]
             tempSelectedEndUsers.push(endUser)
             setSelectedEndUsers(tempSelectedEndUsers)
         }
@@ -1216,7 +1217,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
 
                                     {
                                         selectedEndUsers.length > 0 && <div className={styles.actionButtons}>
-                                            <button onClick={() => { processToStageC() }}>CONFIRM APPROVAL STAGE C</button>
+                                            <button disabled={itemBeingUpdated === "approve"} onClick={() => { processToStageC() }}>CONFIRM APPROVAL STAGE C {itemBeingUpdated === "approve" && <ButtonLoadingIcon />}</button>
                                             <button onClick={() => setCurrentApprovalStatus("select endusers")}>CANCEL</button>
                                         </div>
                                     }

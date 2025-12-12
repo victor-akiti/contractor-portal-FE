@@ -708,11 +708,11 @@ const StageC = () => {
 
 
                     {
-                        approvalChoice === "approve" && <button onClick={() => { processToStageD() }}>CONFIRM YOUR APPROVAL {itemBeingUpdated === "approve" && <ButtonLoadingIcon />}</button>
+                        approvalChoice === "approve" && <button disabled={itemBeingUpdated === "approve"} onClick={() => { processToStageD() }}>CONFIRM YOUR APPROVAL {itemBeingUpdated === "approve" && <ButtonLoadingIcon />}</button>
                     }
 
                     {
-                        approvalChoice === "complete" && <button onClick={() => { setShowSetReasonForHoldModal(true) }}>SUBMIT {itemBeingUpdated === "approve" && <ButtonLoadingIcon />}</button>
+                        approvalChoice === "complete" && <button disabled={itemBeingUpdated === "complete"} onClick={() => { setShowSetReasonForHoldModal(true) }}>SUBMIT {itemBeingUpdated === "complete" && <ButtonLoadingIcon />}</button>
                     }
                 </div>
             }

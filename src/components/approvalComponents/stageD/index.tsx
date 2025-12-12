@@ -22,7 +22,7 @@ type Finding = {
 }
 type ExposedPerson = {
     _id?: string,
-    flagged?: Boolean,
+    flagged?: boolean,
     flagMessage?: string,
     finding?: Finding[],
     entityType?: string,
@@ -32,29 +32,29 @@ type ExposedPerson = {
     otherName?: string,
     companyName?: string,
     role?: string,
-    entryValid?: Boolean,
+    entryValid?: boolean,
     registrationNumber?: string
 }
 
 type DueDiligenceData = {
     registrationCheck: {
-        flagged?: Boolean,
+        flagged?: boolean,
         flagMessage?: string,
         finding?: Finding[],
-        entryValid?: Boolean
+        entryValid?: boolean
     },
     exposedPersons: ExposedPerson[],
     internetCheck: {
-        flagged?: Boolean,
+        flagged?: boolean,
         flagMessage?: string,
         finding?: Finding[],
-        entryValid?: Boolean
+        entryValid?: boolean
     },
     referenceCheck: {
-        flagged?: Boolean,
+        flagged?: boolean,
         flagMessage?: string,
         finding?: Finding[],
-        entryValid?: Boolean
+        entryValid?: boolean
     }
 }
 
@@ -110,7 +110,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
         if (approvalData.dueDiligence) {
 
 
-            let tempVendorData = { ...vendorDueDiligenceData }
+            const tempVendorData = { ...vendorDueDiligenceData }
             if (approvalData.dueDiligence.registrationCheck) {
                 tempVendorData.registrationCheck = approvalData.dueDiligence.registrationCheck
             }
@@ -145,7 +145,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }, [approvalData])
 
     const toggleFlagForHODReview = (field, newValue, index) => {
-        let tempVendorDueDiligence = { ...vendorDueDiligenceData }
+        const tempVendorDueDiligence = { ...vendorDueDiligenceData }
 
         if (field === "exposedPersons") {
             tempVendorDueDiligence.exposedPersons[index].flagged = newValue
@@ -157,7 +157,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }
 
     const updateFlagMessage = (field, message, index) => {
-        let tempVendorDueDiligence = { ...vendorDueDiligenceData }
+        const tempVendorDueDiligence = { ...vendorDueDiligenceData }
 
         if (field === "exposedPersons") {
             tempVendorDueDiligence.exposedPersons[index].flagMessage = message
@@ -169,7 +169,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }
 
     const setFieldToUploadFor = (field, index) => {
-        let tempCurrentUpload = { ...currentUpload }
+        const tempCurrentUpload = { ...currentUpload }
 
         if (field === "exposedPersons") {
             tempCurrentUpload.field = field
@@ -193,7 +193,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }
 
     const updateUploadedField = (field, fileData, index) => {
-        let tempVendorDueDiligence = { ...vendorDueDiligenceData }
+        const tempVendorDueDiligence = { ...vendorDueDiligenceData }
 
         if (field === "exposedPersons") {
             tempVendorDueDiligence.exposedPersons[index].finding = fileData
@@ -207,7 +207,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }
 
     const clearUploadedField = (field, index) => {
-        let tempVendorDueDiligence = { ...vendorDueDiligenceData }
+        const tempVendorDueDiligence = { ...vendorDueDiligenceData }
 
         if (field === "exposedPersons") {
             tempVendorDueDiligence.exposedPersons[index].finding = []
@@ -221,7 +221,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }
 
     const updateExposedPersonsField = (field, value, index) => {
-        let tempVendorDueDiligence = { ...vendorDueDiligenceData }
+        const tempVendorDueDiligence = { ...vendorDueDiligenceData }
 
         tempVendorDueDiligence.exposedPersons[index][field] = value
 
@@ -239,7 +239,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
             hideExposedPersonError()
         }
 
-        let tempVendorDueDiligence = { ...vendorDueDiligenceData }
+        const tempVendorDueDiligence = { ...vendorDueDiligenceData }
 
         tempVendorDueDiligence?.exposedPersons.push({
             flagged: false,
@@ -271,13 +271,13 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
             if (saveExposedPersonRequest.status === "OK") {
                 if (saveExposedPersonRequest.data._id) {
-                    let tempVendorData = { ...vendorDueDiligenceData }
+                    const tempVendorData = { ...vendorDueDiligenceData }
                     tempVendorData.exposedPersons[index]["_id"] = saveExposedPersonRequest.data._id
                     setVendorDueDiligenceData(tempVendorData)
                 }
 
             } else {
-                let tempPageErrors = { ...pageErrors }
+                const tempPageErrors = { ...pageErrors }
                 tempPageErrors["submission"] = saveExposedPersonRequest.error.message
                 setPageErrors(tempPageErrors)
             }
@@ -315,7 +315,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                 }
             }
 
-            let tempVendorData = { ...vendorDueDiligenceData }
+            const tempVendorData = { ...vendorDueDiligenceData }
 
             tempVendorData.exposedPersons = tempVendorData?.exposedPersons.filter((item, personIndex) => personIndex !== index)
 
@@ -364,14 +364,14 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
     }
 
     const showExposedPersonError = (message, index) => {
-        let tempPageErrors = { ...pageErrors }
+        const tempPageErrors = { ...pageErrors }
         tempPageErrors.exposedPerson.index = index
         tempPageErrors.exposedPerson.message = message
         setPageErrors(tempPageErrors)
     }
 
     const hideExposedPersonError = () => {
-        let tempPageErrors = { ...pageErrors }
+        const tempPageErrors = { ...pageErrors }
         tempPageErrors.exposedPerson.index = null
         tempPageErrors.exposedPerson.message = null
         setPageErrors(tempPageErrors)
@@ -397,7 +397,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
 
     const allSectionsValidated = () => {
-        let allValidated = false
+        const allValidated = false
 
         if (!sectionValidated(vendorDueDiligenceData.internetCheck)) {
             return false
@@ -455,7 +455,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                 }, 3000)
 
             } else {
-                let tempPageErrors = { ...pageErrors }
+                const tempPageErrors = { ...pageErrors }
                 tempPageErrors.submission = processToStageERequest.error.message
             }
         } catch (error) {
@@ -835,7 +835,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
                             <div>
                                 <button onClick={() => setShowFinishSection(false)}>CANCEL</button>
-                                <button onClick={() => processToStageE()}>SUBMIT {approvalStatus === "approving" && <ButtonLoadingIcon />}</button>
+                                <button disabled={approvalStatus === "approving"} onClick={() => processToStageE()}>SUBMIT {approvalStatus === "approving" && <ButtonLoadingIcon />}</button>
                             </div>
                         </div>
                     }

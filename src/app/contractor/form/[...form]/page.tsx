@@ -357,7 +357,7 @@ const NewCompanyRegistration = () => {
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "multiSelectText") {
-                    if (field.required && field.value.length === 0) {
+                    if (field.required && field.value?.length === 0) {
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required and you have to enter at least one value")
                     } else {
@@ -370,7 +370,7 @@ const NewCompanyRegistration = () => {
                     if (field.label === "Upload CAC/BN Form 1") {
 
                         //@ts-ignore
-                        if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration" && field.value.length === 0) {
+                        if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration" && field.value?.length === 0) {
                             isValidated = false
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                         } else {
@@ -380,7 +380,7 @@ const NewCompanyRegistration = () => {
                         }
                     } else if (field.label === "Upload CAC Form 2A" || field.label === "Upload CAC Form 7") {
                         //@ts-ignore
-                        if (registrationForm.form.pages[0].sections[0].fields[1].value === "Company Registration" && field.value.length === 0) {
+                        if (registrationForm.form.pages[0].sections[0].fields[1].value === "Company Registration" && field.value?.length === 0) {
                             isValidated = false
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                         } else {
@@ -388,7 +388,7 @@ const NewCompanyRegistration = () => {
                             setFieldValid(pageIndex, sectionIndex, fieldIndex)
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
-                    } else if (field.required && field.value.length === 0) {
+                    } else if (field.required && field.value?.length === 0) {
 
                         isValidated = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
@@ -396,7 +396,7 @@ const NewCompanyRegistration = () => {
                         let certificateIsNotValid = false
 
                         if (field.hasExpiryDate) {
-                            for (let index = 0; index < field.value.length; index++) {
+                            for (let index = 0; index < field.value?.length; index++) {
                                 const element = field.value[index];
 
                                 if (field.isACertificate && field.hasExpiryDate && !element.expiryDate) {

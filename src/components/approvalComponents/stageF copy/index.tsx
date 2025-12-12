@@ -69,7 +69,7 @@ const StageX = () => {
 
 
             if (fetchVendorDataRequest.status === "OK") {
-                let tempVendorData = { ...vendorData }
+                const tempVendorData = { ...vendorData }
                 tempVendorData.approvalData = fetchVendorDataRequest.data.approvalData
                 tempVendorData.pages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages
                 setVendorData(tempVendorData)
@@ -129,7 +129,7 @@ const StageX = () => {
     }
 
     const addCategoryToSelectedCategories = (category) => {
-        let tempSelectedCategories = [...selectedCategories]
+        const tempSelectedCategories = [...selectedCategories]
 
         //Check if category is already selected
         if (tempSelectedCategories.some(selectedCategory => selectedCategory.category === category.category)) {
@@ -297,12 +297,13 @@ const StageX = () => {
                         }
                     </div>
                 }
+                break;
             case "multiSelectText":
                 return <div className={styles.fieldItem}>
                     <p className={styles.fieldData}>
                         <label>{`${field.label}:`}</label>
                         {
-                            field.value.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
+                            field.value?.length > 0 && <p className={styles.multiSelectTextValues}>{field?.value?.map((item, index) => <p key={index}>{item.label}</p>)}</p>
                         }
                     </p>
                 </div>
@@ -344,8 +345,8 @@ const StageX = () => {
 
 
     const getExpiringAndExpiredCertificates = (pages) => {
-        let tempExpiringCertificates = []
-        let tempExpiredCertificates = []
+        const tempExpiringCertificates = []
+        const tempExpiredCertificates = []
 
         pages.forEach((page, pageIndex) => {
             page.sections.forEach((section, sectionIndex) => {
@@ -374,7 +375,7 @@ const StageX = () => {
 
 
     const toggleHideSectionRemarks = (pageIndex, sectionIndex) => {
-        let tempSectionRemarksToShow = { ...sectionRemarksToShow }
+        const tempSectionRemarksToShow = { ...sectionRemarksToShow }
 
         if (!tempSectionRemarksToShow[pageIndex]) {
             tempSectionRemarksToShow[pageIndex] = []
@@ -441,7 +442,7 @@ const StageX = () => {
             if (approveRequest.status === "OK") {
                 updateUpdateStatus("park action success", "Vendor application parked")
 
-                let tempApprovalData = { ...approvalData }
+                const tempApprovalData = { ...approvalData }
                 tempApprovalData.flags.status = "parked"
                 setApprovalData(tempApprovalData)
             } else {
@@ -461,7 +462,7 @@ const StageX = () => {
             if (revertRequest.status === "OK") {
                 updateUpdateStatus("park action success", "Park request declined. Vendor has been moved back to pending L2.")
 
-                let tempApprovalData = { ...approvalData }
+                const tempApprovalData = { ...approvalData }
                 tempApprovalData.flags.status = "pending"
                 setApprovalData(tempApprovalData)
             } else {
@@ -497,7 +498,7 @@ const StageX = () => {
     //   }
 
     const updateUpdateStatus = (status, message = "") => {
-        let tempUpdateStatus = { ...updateStatus }
+        const tempUpdateStatus = { ...updateStatus }
         tempUpdateStatus.status = status
         tempUpdateStatus.message = message
         setUpdateStatus(tempUpdateStatus)
