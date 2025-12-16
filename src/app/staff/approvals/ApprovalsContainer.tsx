@@ -175,7 +175,7 @@ export default function ApprovalsContainer() {
           : shouldShowVerified(activeFilter)
             ? ["Contractor Name (verified)", "Approval Stage", "Action", "Last Contractor Update"]
             : ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
-    l3: ["Contractor Name", "Action", "Last Contractor Update"],
+    l3: ["Contractor Name (verified)", "Action", "Last Contractor Update"],
     completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Action"],
