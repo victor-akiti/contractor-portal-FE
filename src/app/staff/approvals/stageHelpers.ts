@@ -36,7 +36,7 @@ export const shouldShowEndUsers = (activeFilter: string): boolean => {
 
 // Your previous rule for when to show End Users
 export const shouldShowUnverified = (activeFilter: string): boolean => {
-    return activeFilter === "B" || activeFilter === "C" || activeFilter === "D";
+    return activeFilter === "E" || activeFilter === "B" || activeFilter === "C" || activeFilter === "D";
 };
 
 export const shouldShowUnchecked = (activeFilter: string): boolean => {
@@ -45,5 +45,5 @@ export const shouldShowUnchecked = (activeFilter: string): boolean => {
 
 // Your previous rule for when to show End Users
 export const shouldShowVerified = (activeFilter: string): boolean => {
-    return activeFilter === "E" || activeFilter === "F" || activeFilter === "G";
+    return activeFilter === "F" || activeFilter === "G";
 };
