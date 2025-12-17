@@ -1,7 +1,7 @@
 import moment from "moment";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
-export default function CompletedL2Row({ index, companyRecord, revertToL2, user }: any) {
+export default function CompletedL2Row({ index, companyRecord, revertToL2, user, togglePriority }: any) {
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
       return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
@@ -11,6 +11,12 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user 
     if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
   };
   const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
+
+  const userCanTogglePriority = () => {
+    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
+    return allowedRoles.includes(user?.role);
+  };
+
   const getCurrentStage = () => {
     const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0; // fallback
 
@@ -52,6 +58,23 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user 
       <td>
         {hasAdminPermissions(user.role) && (
           <a onClick={() => revertToL2(companyRecord.vendor)}>REVERT TO PENDING L2</a>
+        )}
+        {togglePriority && userCanTogglePriority() && (
+          <>
+            <br />
+            <a
+              onClick={() =>
+                togglePriority(
+                  companyRecord._id,
+                  !companyRecord?.flags?.isPriority,
+                  companyRecord.companyName
+                )
+              }
+              style={{ fontSize: "0.85em", cursor: "pointer" }}
+            >
+              {companyRecord?.flags?.isPriority ? "DEPRIORITISE" : "PRIORITISE"}
+            </a>
+          </>
         )}
       </td>
       <td>

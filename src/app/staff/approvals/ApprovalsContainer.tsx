@@ -27,6 +27,7 @@ import {
   useRenewInviteMutation,
   useRevertToL2Mutation,
   useSendReminderMutation,
+  useTogglePriorityMutation,
 } from "@/redux/features/approvalSlice";
 
 // Extracted UI
@@ -39,6 +40,7 @@ import SearchBar from "./ui/SearchBar";
 // Extracted Modals
 import ArchiveInviteModal from "./modals/ArchiveInviteModal";
 import ExportModal from "./modals/ExportModal";
+import PriorityToggleModal from "./modals/PriorityToggleModal";
 import RevertToL2Modal from "./modals/RevertToL2Modal";
 
 // Extracted Rows
@@ -108,6 +110,7 @@ export default function ApprovalsContainer() {
   const [currentSearchFilter, setCurrentSearchFilter] = useState("all");
   const [actionProgress, setActionProgress] = useState("");
   const [returnToL2Data, setReturnToL2Data] = useState<any>(null);
+  const [priorityToggleData, setPriorityToggleData] = useState<any>(null);
   const [l3Filters, setL3Filters] = useState([
     "All",
     "Healthy",
@@ -248,6 +251,7 @@ export default function ApprovalsContainer() {
   const [archiveInviteMutation] = useArchiveInviteMutation();
   const [sendReminderMutation] = useSendReminderMutation();
   const [renewInviteMutation] = useRenewInviteMutation();
+  const [togglePriorityMutation] = useTogglePriorityMutation();
 
   // Compute loading state
   const fetchingContractors = countsLoading;
@@ -722,6 +726,27 @@ export default function ApprovalsContainer() {
     }
   };
 
+  const confirmPriorityToggle = async () => {
+    if (!priorityToggleData) return;
+    setActionProgress("processing");
+    try {
+      await togglePriorityMutation({
+        companyId: priorityToggleData.companyID,
+        isPriority: priorityToggleData.isPriority,
+        userRole: user.role
+      }).unwrap();
+
+      setActionProgress("success");
+      toast.success(`Contractor ${priorityToggleData.isPriority ? 'prioritised' : 'deprioritised'} successfully`);
+      cancelPriorityToggle();
+      removeFIP();
+    } catch (e: any) {
+      setActionProgress("error");
+      toast.error(e?.data?.message || `Failed to ${priorityToggleData.isPriority ? 'prioritise' : 'deprioritise'} contractor`);
+      console.error({ e });
+    }
+  };
+
   const removeFIP = () => {
     setTimeout(() => setActionProgress(""), 4000);
   };
@@ -730,6 +755,12 @@ export default function ApprovalsContainer() {
     setReturnToL2Data({ vendorID, from });
   };
   const cancelRevertToL2 = () => setReturnToL2Data(null);
+
+  const setDataForPriorityToggle = (companyID: string, isPriority: boolean, companyName: string) => {
+    setActionProgress("");
+    setPriorityToggleData({ companyID, isPriority, companyName });
+  };
+  const cancelPriorityToggle = () => setPriorityToggleData(null);
 
   const filterL3Companies = (filter: string) => { console.info("Filtering L3 companies by:", filter); };
 
@@ -1363,6 +1394,16 @@ export default function ApprovalsContainer() {
         />
       )}
 
+      {priorityToggleData && (
+        <PriorityToggleModal
+          actionProgress={actionProgress}
+          onConfirm={confirmPriorityToggle}
+          onCancel={cancelPriorityToggle}
+          isPriority={priorityToggleData.isPriority}
+          companyName={priorityToggleData.companyName}
+        />
+      )}
+
       {showExportModal && (
         <ExportModal
           exportOptions={exportOptions}
@@ -1472,7 +1513,15 @@ export default function ApprovalsContainer() {
                 ))}
               {activeTab === "in-progress" &&
                 displayRows?.map((item: any, index: number) => (
-                  <InProgressRow key={index} companyRecord={item} index={index} />
+                  <InProgressRow
+                    key={index}
+                    companyRecord={item}
+                    index={index}
+                    user={user}
+                    togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
+                      setDataForPriorityToggle(companyID, isPriority, companyName)
+                    }
+                  />
                 ))}
               {activeTab === "pending-l2" &&
                 displayRows?.map((item: any, index: number) => {
@@ -1483,6 +1532,9 @@ export default function ApprovalsContainer() {
                       index={index}
                       user={user}
                       activeFilter={activeFilter}
+                      togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
+                        setDataForPriorityToggle(companyID, isPriority, companyName)
+                      }
                     />
                   );
                 })}
@@ -1494,6 +1546,9 @@ export default function ApprovalsContainer() {
                     index={index}
                     user={user}
                     revertToL2={(vendorID: string) => setDataForReturnToL2(vendorID, "l3")}
+                    togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
+                      setDataForPriorityToggle(companyID, isPriority, companyName)
+                    }
                   />
                 ))}
               {activeTab === "completed-l2" &&
@@ -1504,11 +1559,22 @@ export default function ApprovalsContainer() {
                     index={index}
                     user={user}
                     revertToL2={(vendorID: string) => { setDataForReturnToL2(item._id, "parked") }}
+                    togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
+                      setDataForPriorityToggle(companyID, isPriority, companyName)
+                    }
                   />
                 ))}
               {activeTab === "returned" &&
                 displayRows?.map((item: any, index: number) => (
-                  <ReturnedRow key={index} companyRecord={item} index={index} />
+                  <ReturnedRow
+                    key={index}
+                    companyRecord={item}
+                    index={index}
+                    user={user}
+                    togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
+                      setDataForPriorityToggle(companyID, isPriority, companyName)
+                    }
+                  />
                 ))}
               {activeTab === "park-requests" &&
                 displayRows &&
@@ -1520,6 +1586,9 @@ export default function ApprovalsContainer() {
                     approveParkRequest={() => approveParkRequest(item._id)}
                     declineParkRequest={() => declineParkRequest(item._id)}
                     user={user}
+                    togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
+                      setDataForPriorityToggle(companyID, isPriority, companyName)
+                    }
                   />
                 ))}
             </DataTable>

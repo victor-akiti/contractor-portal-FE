@@ -1,14 +1,20 @@
 import { staffApi } from "../apis/staffApi";
 
-// Helper function to sort by company name with needsAttention first
+// Helper function to sort by priority, then needsAttention, then company name
 const sortByCompanyName = (array: any[]) => {
     if (!Array.isArray(array)) return array;
     return [...array].sort((a, b) => {
-        // First, sort by needsAttention (true comes first)
+        // First, sort by priority (true comes first) - handles undefined gracefully
+        const aPriority = a.flags?.isPriority || false;
+        const bPriority = b.flags?.isPriority || false;
+        if (aPriority && !bPriority) return -1;
+        if (!aPriority && bPriority) return 1;
+
+        // Second, sort by needsAttention (true comes first)
         if (a.needsAttention && !b.needsAttention) return -1;
         if (!a.needsAttention && b.needsAttention) return 1;
 
-        // Within each group (needsAttention or not), sort alphabetically by company name
+        // Within each group, sort alphabetically by company name
         return String(a.companyName || '').toLowerCase().localeCompare(String(b.companyName || '').toLowerCase());
     });
 };
@@ -238,6 +244,27 @@ export const approvalSlice = staffApi.injectEndpoints({
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
+        // POST /approvals/priority/:companyID
+        togglePriority: builder.mutation<any, { companyId: string; isPriority: boolean; userRole: string }>({
+            query: ({ companyId, isPriority }) => ({
+                url: `approvals/priority/${companyId}`,
+                method: 'POST',
+                body: { isPriority },
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'pending-l2' },
+                    { type: 'Tab', id: 'l3' },
+                    { type: 'Tab', id: 'completed-l2' },
+                    { type: 'Tab', id: 'in-progress' },
+                    { type: 'Tab', id: 'returned' },
+                    { type: 'Tab', id: 'park-requests' },
+                    'All Companies'
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
     }),
     overrideExisting: true,
 })
@@ -256,6 +283,7 @@ export const {
     useArchiveInviteMutation,
     useSendReminderMutation,
     useRenewInviteMutation,
+    useTogglePriorityMutation,
     usePrefetch: usePrefetchApprovals,
     useGetAllCompaniesQuery
 } = approvalSlice

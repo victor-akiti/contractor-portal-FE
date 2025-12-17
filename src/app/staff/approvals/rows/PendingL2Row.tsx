@@ -3,7 +3,7 @@ import Link from "next/link";
 import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 
-export default function PendingL2Row({ index, companyRecord, user, activeFilter }: any) {
+export default function PendingL2Row({ index, companyRecord, user, activeFilter, togglePriority }: any) {
   const canProcess = () => {
     if (
       companyRecord?.currentEndUsers &&
@@ -35,6 +35,11 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter 
     )
       return true;
     return false;
+  };
+
+  const userCanTogglePriority = () => {
+    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
+    return allowedRoles.includes(user?.role);
   };
   // const getCurrentStage = () => {
   //   const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0; // fallback
@@ -117,6 +122,23 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter 
       <td>
         {userCanViewActions() && (
           <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${nextStage}`}</Link>
+        )}
+        {togglePriority && userCanTogglePriority() && (
+          <>
+            <br />
+            <a
+              onClick={() =>
+                togglePriority(
+                  companyRecord._id,
+                  !companyRecord?.flags?.isPriority,
+                  companyRecord.companyName
+                )
+              }
+              style={{ fontSize: "0.85em", cursor: "pointer" }}
+            >
+              {companyRecord?.flags?.isPriority ? "DEPRIORITISE" : "PRIORITISE"}
+            </a>
+          </>
         )}
       </td>
       <td>

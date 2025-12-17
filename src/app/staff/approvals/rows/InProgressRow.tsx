@@ -1,6 +1,11 @@
 import moment from "moment";
 import styles from "../styles/styles.module.css";
-export default function InProgressRow({ index, companyRecord }: any) {
+export default function InProgressRow({ index, companyRecord, togglePriority, user }: any) {
+  const userCanTogglePriority = () => {
+    if (!user) return false;
+    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
+    return allowedRoles.includes(user?.role);
+  };
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
       return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
@@ -15,6 +20,23 @@ export default function InProgressRow({ index, companyRecord }: any) {
     <tr className={[styles.inProgressItem, index % 2 === 0 && styles.rowDarkBackground].join(" ")}>
       <td>
         <a>{companyRecord?.companyName}</a>
+        {togglePriority && userCanTogglePriority() && (
+          <>
+            {" - "}
+            <a
+              onClick={() =>
+                togglePriority(
+                  companyRecord._id,
+                  !companyRecord?.flags?.isPriority,
+                  companyRecord.companyName
+                )
+              }
+              style={{ fontSize: "0.85em", cursor: "pointer" }}
+            >
+              {companyRecord?.flags?.isPriority ? "[Deprioritise]" : "[Prioritise]"}
+            </a>
+          </>
+        )}
         {/* <p>{companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>

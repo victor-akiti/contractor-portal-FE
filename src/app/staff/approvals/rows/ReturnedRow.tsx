@@ -1,7 +1,12 @@
 import moment from "moment";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
-export default function ReturnedRow({ index, companyRecord }: any) {
+export default function ReturnedRow({ index, companyRecord, togglePriority, user }: any) {
+  const userCanTogglePriority = () => {
+    if (!user) return false;
+    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
+    return allowedRoles.includes(user?.role);
+  };
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
       return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
@@ -50,6 +55,23 @@ export default function ReturnedRow({ index, companyRecord }: any) {
       </td>
       <td>
         <Link href={`/staff/vendor/${companyRecord._id}`}>VIEW</Link>
+        {togglePriority && userCanTogglePriority() && (
+          <>
+            <br />
+            <a
+              onClick={() =>
+                togglePriority(
+                  companyRecord._id,
+                  !companyRecord?.flags?.isPriority,
+                  companyRecord.companyName
+                )
+              }
+              style={{ fontSize: "0.85em", cursor: "pointer" }}
+            >
+              {companyRecord?.flags?.isPriority ? "DEPRIORITISE" : "PRIORITISE"}
+            </a>
+          </>
+        )}
       </td>
       <td>
         <p>{moment(getLastUpdated()).format("LL")}</p>
