@@ -21,14 +21,16 @@ The Amni Contractor Portal is a Next.js application that provides:
 
 ## Documentation
 
-### User Documentation
+### For AMNI C&P Staff
 
-Choose the guide that matches your role:
+- **[C&P Staff User Manual](CP_STAFF_MANUAL.md)** - Complete guide for internal staff using the approval system
 
-- **[Complete User Manual](USER_MANUAL.md)** - Comprehensive guide for all users
-- **[Contractor Quick Start Guide](CONTRACTOR_QUICK_START.md)** - For vendors/contractors registering with Amni
-- **[Staff Quick Start Guide](STAFF_QUICK_START.md)** - For internal staff reviewing applications
-- **[Administrator Quick Start Guide](ADMIN_QUICK_START.md)** - For system administrators
+This manual covers:
+- Inviting contractors to register
+- Reviewing and approving applications
+- Understanding the 7-stage approval workflow (A→B→C→D→E→F→L3)
+- Role-based permissions and responsibilities
+- Daily tasks and best practices
 
 ### For Developers
 
