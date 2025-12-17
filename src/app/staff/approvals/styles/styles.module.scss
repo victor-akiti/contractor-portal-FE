@@ -846,3 +846,227 @@
 .needsAttendionBackground {
     background-color: #ffe0c6;
 }
+
+// Priority Toggle Modal Styles
+.priorityToggleModal {
+    background-color: white;
+    padding: 32px;
+    border-radius: 12px;
+    max-width: 520px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+    .modalHeader {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 14px;
+
+        .iconWrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+
+            &.prioritise {
+                background: linear-gradient(135deg, rgba(230, 117, 9, 0.15) 0%, rgba(255, 165, 0, 0.15) 100%);
+                color: $primaryColor;
+            }
+
+            &.deprioritise {
+                background-color: rgba(108, 117, 125, 0.12);
+                color: #64676b;
+            }
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 1.55rem;
+            font-weight: 600;
+            color: #212529;
+            font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif;
+        }
+    }
+
+    .modalBody {
+        margin-bottom: 24px;
+
+        .companyName {
+            font-weight: 600;
+            color: $primaryColor;
+            font-size: 1.08rem;
+            margin-bottom: 14px;
+            padding: 12px;
+            background-color: rgba(230, 117, 9, 0.06);
+            border-radius: 6px;
+            border-left: 3px solid $primaryColor;
+        }
+
+        .description {
+            color: #64676b;
+            font-size: 0.97rem;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .confirmText {
+            color: #212529;
+            font-weight: 600;
+            margin-top: 18px;
+            font-size: 0.95rem;
+        }
+    }
+
+    .modalActions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 26px;
+
+        button {
+            padding: 11px 26px;
+            border-style: none;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 110px;
+            font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif;
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            &.confirmButton {
+                background-color: $primaryColor;
+                color: white;
+
+                &:hover {
+                    background-color: darken($primaryColor, 8%);
+                }
+
+                &:disabled {
+                    background-color: #ccc;
+                    cursor: not-allowed;
+                    transform: none;
+                    box-shadow: none;
+                }
+            }
+
+            &.cancelButton {
+                background-color: #f1f3f5;
+                color: #495057;
+
+                &:hover {
+                    background-color: #e9ecef;
+                }
+            }
+        }
+    }
+}
+
+// Priority Badge Indicator
+.priorityBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 4px;
+    margin-left: 10px;
+    vertical-align: middle;
+    box-shadow: 0 2px 6px rgba(230, 117, 9, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+
+    &::before {
+        content: "⭐";
+        margin-right: 4px;
+        font-size: 11px;
+    }
+}
+
+// Priority Action Button
+.priorityActionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background-color: transparent;
+    border: 1.5px solid $primaryColor;
+    color: $primaryColor;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 8px;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif;
+
+    &:hover {
+        background-color: $primaryColor;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(230, 117, 9, 0.35);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &.deprioritise {
+        border-color: #6c757d;
+        color: #6c757d;
+
+        &:hover {
+            background-color: #6c757d;
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.35);
+        }
+    }
+
+    svg, .icon {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+// Priority Action Link (for inline use)
+.priorityActionLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.82em;
+    font-weight: 600;
+    cursor: pointer;
+    color: $primaryColor;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    padding: 5px 10px;
+    border-radius: 5px;
+
+    &:hover {
+        background-color: rgba(230, 117, 9, 0.1);
+        color: darken($primaryColor, 10%);
+    }
+
+    &.deprioritise {
+        color: #6c757d;
+
+        &:hover {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: darken(#6c757d, 10%);
+        }
+    }
+}

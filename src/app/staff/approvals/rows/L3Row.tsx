@@ -23,6 +23,9 @@ export default function L3Row({ index, companyRecord, revertToL2, user, togglePr
         <Link href={`/staff/vendor/${companyRecord._id}`}>
           {String(companyRecord.companyName).toUpperCase()}
         </Link>
+        {companyRecord?.flags?.isPriority && (
+          <span className={styles.priorityBadge}>Priority</span>
+        )}
         {/* <p>
           {String(
             companyRecord?.vendorAppAdminProfile?.email
@@ -38,7 +41,8 @@ export default function L3Row({ index, companyRecord, revertToL2, user, togglePr
         {togglePriority && userCanTogglePriority() && (
           <>
             <br />
-            <a
+            <button
+              className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
               onClick={() =>
                 togglePriority(
                   companyRecord._id,
@@ -46,10 +50,19 @@ export default function L3Row({ index, companyRecord, revertToL2, user, togglePr
                   companyRecord.companyName
                 )
               }
-              style={{ fontSize: "0.85em", cursor: "pointer" }}
             >
-              {companyRecord?.flags?.isPriority ? "DEPRIORITISE" : "PRIORITISE"}
-            </a>
+              {companyRecord?.flags?.isPriority ? (
+                <>
+                  <span className={styles.icon}>🔻</span>
+                  <span>Deprioritise</span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.icon}>⭐</span>
+                  <span>Prioritise</span>
+                </>
+              )}
+            </button>
           </>
         )}
       </td>

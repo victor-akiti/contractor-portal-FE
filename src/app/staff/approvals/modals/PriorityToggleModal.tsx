@@ -15,24 +15,59 @@ export default function PriorityToggleModal({
   companyName: string;
 }) {
   const action = isPriority ? "Prioritise" : "Deprioritise";
+  const actionVerb = isPriority ? "prioritised" : "deprioritised";
   const description = isPriority
-    ? "This will mark the contractor as priority and move them to the top of the list."
-    : "This will remove the priority status from the contractor.";
+    ? "This contractor will be marked as priority and appear near the top of your approval lists, making them easier to track and process."
+    : "This contractor will no longer be marked as priority and will appear in standard order within approval lists.";
+
+  const icon = isPriority ? "⭐" : "🔻";
+  const iconClass = isPriority ? styles.prioritise : styles.deprioritise;
 
   return (
     <Modal>
-      <div className={styles.revertToL2Div}>
-        <h3>{action} Contractor</h3>
-        <p>
-          {companyName ? `${companyName}: ` : ""}
-          {description}
-        </p>
-        <p>Proceed?</p>
-        <div>
-          {actionProgress !== "processing" && (
-            <button onClick={onConfirm}>{action}</button>
+      <div className={styles.priorityToggleModal}>
+        <div className={styles.modalHeader}>
+          <div className={`${styles.iconWrapper} ${iconClass}`}>
+            {icon}
+          </div>
+          <h3>{action} Contractor</h3>
+        </div>
+
+        <div className={styles.modalBody}>
+          {companyName && (
+            <div className={styles.companyName}>
+              {companyName}
+            </div>
           )}
-          <button onClick={onCancel}>Cancel</button>
+          <p className={styles.description}>{description}</p>
+          <p className={styles.confirmText}>
+            Are you sure you want to proceed?
+          </p>
+        </div>
+
+        <div className={styles.modalActions}>
+          <button
+            className={styles.cancelButton}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          {actionProgress !== "processing" && (
+            <button
+              className={styles.confirmButton}
+              onClick={onConfirm}
+            >
+              {action}
+            </button>
+          )}
+          {actionProgress === "processing" && (
+            <button
+              className={styles.confirmButton}
+              disabled
+            >
+              Processing...
+            </button>
+          )}
         </div>
       </div>
     </Modal>

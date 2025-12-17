@@ -113,6 +113,9 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
         <Link href={`/staff/vendor/${companyRecord._id}`}>
           {String(companyRecord.companyName).toUpperCase()}
         </Link>
+        {companyRecord?.flags?.isPriority && (
+          <span className={styles.priorityBadge}>Priority</span>
+        )}
         {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
@@ -126,7 +129,8 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
         {togglePriority && userCanTogglePriority() && (
           <>
             <br />
-            <a
+            <button
+              className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
               onClick={() =>
                 togglePriority(
                   companyRecord._id,
@@ -134,10 +138,19 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
                   companyRecord.companyName
                 )
               }
-              style={{ fontSize: "0.85em", cursor: "pointer" }}
             >
-              {companyRecord?.flags?.isPriority ? "DEPRIORITISE" : "PRIORITISE"}
-            </a>
+              {companyRecord?.flags?.isPriority ? (
+                <>
+                  <span className={styles.icon}>🔻</span>
+                  <span>Deprioritise</span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.icon}>⭐</span>
+                  <span>Prioritise</span>
+                </>
+              )}
+            </button>
           </>
         )}
       </td>

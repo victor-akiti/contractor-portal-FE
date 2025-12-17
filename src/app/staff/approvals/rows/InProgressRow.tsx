@@ -20,10 +20,14 @@ export default function InProgressRow({ index, companyRecord, togglePriority, us
     <tr className={[styles.inProgressItem, index % 2 === 0 && styles.rowDarkBackground].join(" ")}>
       <td>
         <a>{companyRecord?.companyName}</a>
+        {companyRecord?.flags?.isPriority && (
+          <span className={styles.priorityBadge}>Priority</span>
+        )}
         {togglePriority && userCanTogglePriority() && (
           <>
-            {" - "}
-            <a
+            <br />
+            <button
+              className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
               onClick={() =>
                 togglePriority(
                   companyRecord._id,
@@ -31,10 +35,19 @@ export default function InProgressRow({ index, companyRecord, togglePriority, us
                   companyRecord.companyName
                 )
               }
-              style={{ fontSize: "0.85em", cursor: "pointer" }}
             >
-              {companyRecord?.flags?.isPriority ? "[Deprioritise]" : "[Prioritise]"}
-            </a>
+              {companyRecord?.flags?.isPriority ? (
+                <>
+                  <span className={styles.icon}>🔻</span>
+                  <span>Deprioritise</span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.icon}>⭐</span>
+                  <span>Prioritise</span>
+                </>
+              )}
+            </button>
           </>
         )}
         {/* <p>{companyRecord?.contractorDetails?.email}</p> */}
