@@ -10,9 +10,6 @@
 3. [Inviting Contractors](#inviting-contractors)
 4. [Registration Approvals](#registration-approvals)
 5. [Approval Workflow & Stages](#approval-workflow--stages)
-6. [Daily Tasks](#daily-tasks)
-7. [Common Actions](#common-actions)
-8. [Troubleshooting](#troubleshooting)
 
 ---
 
