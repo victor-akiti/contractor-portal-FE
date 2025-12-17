@@ -15,8 +15,8 @@ The Amni Contractor Portal is a Next.js application that provides:
 - **Framework**: Next.js 14 (React 18, TypeScript)
 - **State Management**: Redux Toolkit with RTK Query
 - **Authentication**: Firebase
-- **Styling**: Tailwind CSS
-- **Rich Text**: TipTap, React Quill
+- **Styling**: CSS Module
+- **Rich Text**: React Quill
 - **PDF Generation**: React PDF Renderer, Puppeteer
 
 ## Documentation
