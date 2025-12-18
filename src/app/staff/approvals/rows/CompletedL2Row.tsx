@@ -1,6 +1,7 @@
 import moment from "moment";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
+
 export default function CompletedL2Row({ index, companyRecord, revertToL2, user, togglePriority }: any) {
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
@@ -10,12 +11,8 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user,
       return new Date(companyRecord.approvalActivityHistory[0].date).toISOString();
     if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
   };
-  const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
 
-  const userCanTogglePriority = () => {
-    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
-    return allowedRoles.includes(user?.role);
-  };
+  const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
 
   const getCurrentStage = () => {
     const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0; // fallback
@@ -41,30 +38,34 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user,
   };
 
   return (
-    <tr className={[styles.completedL2Item, index % 2 === 0 && styles.rowDarkBackground].join(" ")}>
+    <tr
+      className={[
+        styles.completedL2Item,
+        companyRecord.needsAttention
+          ? styles.needsAttendionBackground
+          : index % 2 === 0 && styles.rowDarkBackground,
+      ].join(" ")}
+    >
       <td>
-        <Link href={`/staff/vendor/${companyRecord._id}`}>
-          {String(companyRecord.companyName).toUpperCase()}
-        </Link>
-        {companyRecord?.flags?.isPriority && (
-          <span className={styles.priorityBadge}>Priority</span>
-        )}
-        {/* <p>
-          {companyRecord?.vendorAppAdminProfile?.email
-            ? companyRecord?.vendorAppAdminProfile?.email
-            : companyRecord?.contractorDetails?.email}
-        </p> */}
+        <div className={styles.companyNameContainer}>
+          <Link href={`/staff/vendor/${companyRecord._id}`}>
+            {String(companyRecord.companyName).toUpperCase()}
+          </Link>
+          {companyRecord?.flags?.isPriority && (
+            <span className={styles.priorityBadge}>Priority</span>
+          )}
+        </div>
+        {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
-        <p>{`Stage ${getCurrentStage()}`}</p>
+        <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
       </td>
       <td>
-        {hasAdminPermissions(user.role) && (
-          <a onClick={() => revertToL2(companyRecord.vendor)}>REVERT TO PENDING L2</a>
-        )}
-        {togglePriority && userCanTogglePriority() && (
-          <>
-            <br />
+        <div className={styles.actionsContainer}>
+          {hasAdminPermissions(user.role) && (
+            <a onClick={() => revertToL2(companyRecord.vendor)}>REVERT TO PENDING L2</a>
+          )}
+          {/* {togglePriority && userCanTogglePriority(user) && (
             <button
               className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
               onClick={() =>
@@ -87,11 +88,11 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user,
                 </>
               )}
             </button>
-          </>
-        )}
+          )} */}
+        </div>
       </td>
       <td>
-        <p>{moment(getLastUpdated()).format("LL")}</p>
+        <p className={styles.dateDisplay}>{moment(getLastUpdated()).format("LL")}</p>
       </td>
     </tr>
   );

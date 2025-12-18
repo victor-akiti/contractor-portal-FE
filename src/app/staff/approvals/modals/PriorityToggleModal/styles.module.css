@@ -1,0 +1,293 @@
+/* ============================================
+   PRIORITY TOGGLE MODAL - ELEGANT DESIGN
+   ============================================ */
+
+.priorityModal {
+  background-color: var(--color-bg-white);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  width: min(480px, 90vw);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s ease;
+}
+
+/* Modal Header with Icon */
+.priorityModalHeader {
+  padding: var(--spacing-xl);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.priorityModalIcon {
+  display: none;
+  font-size: 40px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.priorityModalHeaderContent {
+  flex: 1;
+}
+
+.priorityModalTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--color-bg-white);
+}
+
+/* Modal Body */
+.priorityModalBody {
+  padding: var(--spacing-xl);
+}
+
+.priorityModalCompanyName {
+  background: linear-gradient(135deg, rgba(230, 117, 9, 0.1) 0%, rgba(230, 117, 9, 0.05) 100%);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.priorityModalCompanyName p {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.priorityModalDescription {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.priorityModalConfirmation {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-base);
+}
+
+/* Modal Footer */
+.priorityModalFooter {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: var(--color-bg-light);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.priorityModalButton {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.priorityModalCancelButton {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+}
+
+.priorityModalCancelButton:hover {
+  background-color: var(--color-bg-white);
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.priorityModalConfirmButton {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.3);
+}
+
+.priorityModalConfirmButton:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(230, 117, 9, 0.4);
+  transform: translateY(-1px);
+}
+
+.priorityModalConfirmButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.priorityModalConfirmButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.priorityModalButtonIcon {
+  font-size: var(--font-size-lg);
+}
+
+/* Deprioritise variant */
+.priorityModal.deprioritise .priorityModalHeader {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+}
+
+.priorityModal.deprioritise .priorityModalCompanyName {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.1) 0%, rgba(108, 117, 125, 0.05) 100%);
+  border-left-color: #6c757d;
+}
+
+.priorityModal.deprioritise .priorityModalConfirmButton {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.priorityModal.deprioritise .priorityModalConfirmButton:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4);
+}
+
+/* ============================================
+   PRIORITY BADGE - ENHANCED
+   ============================================ */
+
+.priorityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #856404;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: 12px;
+  margin-left: var(--spacing-sm);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  animation: priorityPulse 2s ease-in-out infinite;
+}
+
+.priorityBadge::before {
+  content: "⭐";
+  font-size: 12px;
+}
+
+@keyframes priorityPulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.5);
+  }
+}
+
+/* ============================================
+   PRIORITY ACTION BUTTON - REFINED
+   ============================================ */
+
+.priorityActionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-bg-white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: var(--spacing-sm);
+  box-shadow: 0 2px 8px rgba(230, 117, 9, 0.2);
+}
+
+.priorityActionButton:hover {
+  box-shadow: 0 4px 12px rgba(230, 117, 9, 0.3);
+  transform: translateY(-1px);
+}
+
+.priorityActionButton:active {
+  transform: translateY(0);
+}
+
+.priorityActionButton .icon {
+  font-size: var(--font-size-base);
+  line-height: 1;
+}
+
+.priorityActionButton.deprioritise {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
+}
+
+.priorityActionButton.deprioritise:hover {
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .priorityModal {
+    width: 95vw;
+  }
+
+  .priorityModalHeader {
+    padding: var(--spacing-lg);
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .priorityModalIcon {
+    font-size: 40px;
+  }
+
+  .priorityModalBody {
+    padding: var(--spacing-lg);
+  }
+
+  .priorityModalFooter {
+    flex-direction: column-reverse;
+    gap: var(--spacing-sm);
+  }
+
+  .priorityModalButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .priorityActionButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .priorityModal,
+  .priorityModalButton,
+  .priorityActionButton,
+  .priorityBadge {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.priorityModalButton:focus-visible,
+.priorityActionButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { userCanTogglePriority } from "../page";
 import { getL2PendingStage } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 export default function ParkRequestedRow({
@@ -10,11 +11,6 @@ export default function ParkRequestedRow({
   togglePriority,
 }: any) {
   const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
-
-  const userCanTogglePriority = () => {
-    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
-    return allowedRoles.includes(user?.role);
-  };
 
   return (
     <tr
@@ -50,7 +46,7 @@ export default function ParkRequestedRow({
             <a onClick={() => declineParkRequest(companyRecord._id)}>REJECT PARK REQUEST</a>
           </>
         )}
-        {togglePriority && userCanTogglePriority() && (
+        {togglePriority && userCanTogglePriority(user) && (
           <>
             <br />
             <button

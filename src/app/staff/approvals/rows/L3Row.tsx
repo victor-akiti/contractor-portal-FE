@@ -1,5 +1,6 @@
 import moment from "moment";
 import Link from "next/link";
+import { userCanTogglePriority } from "../page";
 import styles from "../styles/styles.module.css";
 export default function L3Row({ index, companyRecord, revertToL2, user, togglePriority }: any) {
   const getLastUpdated = () => {
@@ -11,11 +12,6 @@ export default function L3Row({ index, companyRecord, revertToL2, user, togglePr
     if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
   };
   const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
-
-  const userCanTogglePriority = () => {
-    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
-    return allowedRoles.includes(user?.role);
-  };
 
   return (
     <tr className={[styles.l3Item, index % 2 === 0 && styles.rowDarkBackground].join(" ")}>
@@ -38,7 +34,7 @@ export default function L3Row({ index, companyRecord, revertToL2, user, togglePr
         {hasAdminPermissions(user.role) && (
           <a onClick={() => revertToL2(companyRecord.vendor)}>MOVE TO L2</a>
         )}
-        {togglePriority && userCanTogglePriority() && (
+        {togglePriority && userCanTogglePriority(user) && (
           <>
             <br />
             <button

@@ -1,12 +1,10 @@
 import moment from "moment";
 import Link from "next/link";
+import { userCanTogglePriority } from "../page";
 import styles from "../styles/styles.module.css";
+
 export default function ReturnedRow({ index, companyRecord, togglePriority, user }: any) {
-  const userCanTogglePriority = () => {
-    if (!user) return false;
-    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
-    return allowedRoles.includes(user?.role);
-  };
+
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
       return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
@@ -15,6 +13,7 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
       return new Date(companyRecord.approvalActivityHistory[0].date).toISOString();
     if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
   };
+
   const getCurrentStage = () => {
     const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0; // fallback
 
@@ -32,35 +31,39 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
       case 5:
         return "F";
       case 6:
-        return "G";
+        return "L3"; // G
       default:
         return "A";
     }
   };
 
   return (
-    <tr className={[styles.returnedItem, index % 2 === 0 && styles.rowDarkBackground].join(" ")}>
+    <tr
+      className={[
+        styles.returnedItem,
+        companyRecord.needsAttention
+          ? styles.needsAttendionBackground
+          : index % 2 === 0 && styles.rowDarkBackground,
+      ].join(" ")}
+    >
       <td>
-        <Link href={`/staff/vendor/${companyRecord._id}`}>
-          {String(companyRecord.companyName).toUpperCase()}
-        </Link>
-        {companyRecord?.flags?.isPriority && (
-          <span className={styles.priorityBadge}>Priority</span>
-        )}
-        {/* <p>
-          {companyRecord?.vendorAppAdminProfile?.email
-            ? companyRecord?.vendorAppAdminProfile?.email
-            : companyRecord?.contractorDetails?.email}
-        </p> */}
+        <div className={styles.companyNameContainer}>
+          <Link href={`/staff/vendor/${companyRecord._id}`}>
+            {String(companyRecord.companyName).toUpperCase()}
+          </Link>
+          {companyRecord?.flags?.isPriority && (
+            <span className={styles.priorityBadge}>Priority</span>
+          )}
+        </div>
+        {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
-        <p>{`Stage ${getCurrentStage()}`}</p>
+        <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
       </td>
       <td>
-        <Link href={`/staff/vendor/${companyRecord._id}`}>VIEW</Link>
-        {togglePriority && userCanTogglePriority() && (
-          <>
-            <br />
+        <div className={styles.actionsContainer}>
+          <Link href={`/staff/vendor/${companyRecord._id}`}>VIEW</Link>
+          {togglePriority && userCanTogglePriority(user) && (
             <button
               className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
               onClick={() =>
@@ -83,11 +86,11 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
                 </>
               )}
             </button>
-          </>
-        )}
+          )}
+        </div>
       </td>
       <td>
-        <p>{moment(getLastUpdated()).format("LL")}</p>
+        <p className={styles.dateDisplay}>{moment(getLastUpdated()).format("LL")}</p>
       </td>
     </tr>
   );

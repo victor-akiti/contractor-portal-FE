@@ -1,5 +1,6 @@
 import moment from "moment";
 import Link from "next/link";
+import { userCanTogglePriority } from "../page";
 import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 
@@ -16,7 +17,6 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
   };
 
   const userCanViewActions = () => {
-
     if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
       return canProcess();
     }
@@ -36,49 +36,6 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
       return true;
     return false;
   };
-
-  const userCanTogglePriority = () => {
-    const allowedRoles = ["Admin", "HOD", "IT Admin", "C&P Admin", "C and P Staff"];
-    return allowedRoles.includes(user?.role);
-  };
-  // const getCurrentStage = () => {
-  //   const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0; // fallback
-
-  //   switch (level) {
-  //     case 0:
-  //       return "A";
-  //     case 1:
-  //       return "B";
-  //     case 2:
-  //       return "C";
-  //     case 3:
-  //       return "D";
-  //     case 4:
-  //       return "E";
-  //     case 5:
-  //       return "F";
-  //     case 6:
-  //       return "G";
-  //     default:
-  //       return "A";
-  //   }
-  // };
-
-  // const getNextStage = () => {
-  //   if (!companyRecord?.flags?.approvals?.level && !companyRecord?.flags?.level) return "B";
-  //   if (companyRecord?.flags?.level === 1 || companyRecord?.flags?.approvals?.level === 1)
-  //     return "C";
-  //   if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2)
-  //     return "D";
-  //   if (companyRecord?.flags?.level === 3 || companyRecord?.flags?.approvals?.level === 3)
-  //     return "E";
-  //   if (companyRecord?.flags?.level === 4 || companyRecord?.flags?.approvals?.level === 4)
-  //     return "F";
-  //   if (companyRecord?.flags?.level === 5 || companyRecord?.flags?.approvals?.level === 5)
-  //     return "G";
-  //   if (companyRecord?.flags?.level === 6 || companyRecord?.flags?.approvals?.level === 6)
-  //     return "H";
-  // };
 
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
@@ -110,25 +67,26 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
       ].join(" ")}
     >
       <td>
-        <Link href={`/staff/vendor/${companyRecord._id}`}>
-          {String(companyRecord.companyName).toUpperCase()}
-        </Link>
-        {companyRecord?.flags?.isPriority && (
-          <span className={styles.priorityBadge}>Priority</span>
-        )}
+        <div className={styles.companyNameContainer}>
+          <Link href={`/staff/vendor/${companyRecord._id}`}>
+            {String(companyRecord.companyName).toUpperCase()}
+          </Link>
+          {companyRecord?.flags?.isPriority && (
+            <span className={styles.priorityBadge}>Priority</span>
+          )}
+        </div>
         {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
-        <p>{`Stage ${currentStage}`}</p>
+        <span className={styles.stageBadge}>{`Stage ${currentStage}`}</span>
       </td>
       {shouldShowEndUsers(activeFilter) && <td>{getEndUserNames()}</td>}
       <td>
-        {userCanViewActions() && (
-          <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${nextStage}`}</Link>
-        )}
-        {togglePriority && userCanTogglePriority() && (
-          <>
-            <br />
+        <div className={styles.actionsContainer}>
+          {userCanViewActions() && (
+            <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${nextStage}`}</Link>
+          )}
+          {togglePriority && userCanTogglePriority(user) && (
             <button
               className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
               onClick={() =>
@@ -151,11 +109,11 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
                 </>
               )}
             </button>
-          </>
-        )}
+          )}
+        </div>
       </td>
       <td>
-        <p>{moment(getLastUpdated()).format("LL")}</p>
+        <p className={styles.dateDisplay}>{moment(getLastUpdated()).format("LL")}</p>
       </td>
     </tr>
   );
