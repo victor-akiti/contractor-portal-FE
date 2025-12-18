@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { userCanTogglePriority } from "../page";
 import { getL2PendingStage } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
@@ -9,7 +8,6 @@ export default function ParkRequestedRow({
   approveParkRequest,
   declineParkRequest,
   user,
-  togglePriority,
 }: any) {
   const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
 
@@ -47,7 +45,7 @@ export default function ParkRequestedRow({
             <a onClick={() => declineParkRequest(companyRecord._id)}>REJECT PARK REQUEST</a>
           </>
         )}
-        {togglePriority && userCanTogglePriority(user) && (
+        {/* {togglePriority && userCanTogglePriority(user) && (
           <>
             <br />
             <button
@@ -73,7 +71,7 @@ export default function ParkRequestedRow({
               )}
             </button>
           </>
-        )}
+        )} */}
       </td>
     </tr>
   );

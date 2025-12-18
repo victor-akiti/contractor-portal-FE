@@ -3,7 +3,7 @@ import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
 
-export default function CompletedL2Row({ index, companyRecord, revertToL2, user, togglePriority }: any) {
+export default function CompletedL2Row({ index, companyRecord, revertToL2, user }: any) {
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
       return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();

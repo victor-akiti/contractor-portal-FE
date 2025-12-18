@@ -1,9 +1,9 @@
 import moment from "moment";
 import Link from "next/link";
-import { userCanTogglePriority } from "../page";
 import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
+import { userCanTogglePriority } from "../utils";
 
 export default function PendingL2Row({ index, companyRecord, user, activeFilter, togglePriority }: any) {
   const canProcess = () => {

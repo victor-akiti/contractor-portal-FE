@@ -1,8 +1,8 @@
 import moment from "moment";
 import Link from "next/link";
-import { userCanTogglePriority } from "../page";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
+import { userCanTogglePriority } from "../utils";
 
 export default function ReturnedRow({ index, companyRecord, togglePriority, user }: any) {
 
