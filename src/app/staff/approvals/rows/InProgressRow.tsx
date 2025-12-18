@@ -1,5 +1,6 @@
 import moment from "moment";
 import styles from "../styles/styles.module.css";
+import PriorityBadge from "../ui/PriorityBadge";
 
 export default function InProgressRow({ index, companyRecord, togglePriority, user }: any) {
 
@@ -27,7 +28,7 @@ export default function InProgressRow({ index, companyRecord, togglePriority, us
         <div className={styles.companyNameContainer}>
           <span>{companyRecord?.companyName}</span>
           {companyRecord?.flags?.isPriority && (
-            <span className={styles.priorityBadge}>Priority</span>
+            <PriorityBadge />
           )}
         </div>
         {/* {togglePriority && userCanTogglePriority(user) && (

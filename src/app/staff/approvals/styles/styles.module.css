@@ -1287,10 +1287,14 @@
   font-size: var(--font-size-base);
 }
 
-/* ============================================
-   PRIORITY BADGE - ENHANCED
-   ============================================ */
-
+/*
+  ============================================
+  PRIORITY
+  BADGE
+  WITH
+  TOOLTIP
+  ============================================
+  */
 .priorityBadge {
   display: inline-flex;
   align-items: center;
@@ -1304,13 +1308,17 @@
   margin-left: var(--spacing-sm);
   box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
   animation: priorityPulse 2s ease-in-out infinite;
+  position: relative;
+  cursor: help;
 }
 
+/* Star icon before the text */
 .priorityBadge::before {
   content: "⭐";
   font-size: 12px;
 }
 
+/* Pulse animation for the badge */
 @keyframes priorityPulse {
   0%,
   100% {
@@ -1318,6 +1326,90 @@
   }
   50% {
     box-shadow: 0 2px 12px rgba(255, 215, 0, 0.5);
+  }
+}
+
+/* ============================================
+   TOOLTIP
+   ============================================ */
+
+.priorityBadge[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background-color: var(--color-bg-light);
+  color: var(--color-bg-black);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  z-index: 1000;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  line-height: 1.5;
+}
+
+/* Show tooltip on hover and focus */
+.priorityBadge[data-tooltip]:hover::after,
+.priorityBadge[data-tooltip]:focus::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Focus state for keyboard accessibility */
+.priorityBadge:focus {
+  outline: 2px solid rgba(255, 215, 0, 0.8);
+  outline-offset: 2px;
+}
+
+/* Add slight delay to prevent accidental triggers */
+.priorityBadge[data-tooltip]:hover::after {
+  transition-delay: 0.2s;
+}
+
+.priorityBadge[data-tooltip]:not(:hover)::after {
+  transition-delay: 0s;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Show tooltip below on mobile */
+  .priorityBadge[data-tooltip]::after {
+    bottom: auto;
+    top: calc(100% + 10px);
+    transform: translateX(-50%) translateY(8px);
+    white-space: normal;
+    max-width: 220px;
+    text-align: center;
+  }
+
+  .priorityBadge[data-tooltip]:hover::after,
+  .priorityBadge[data-tooltip]:focus::after {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .priorityBadge {
+    animation: none;
+  }
+
+  .priorityBadge[data-tooltip]::after {
+    transition: opacity 0.1s ease;
   }
 }
 

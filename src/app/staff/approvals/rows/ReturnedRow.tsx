@@ -2,6 +2,7 @@ import moment from "moment";
 import Link from "next/link";
 import { userCanTogglePriority } from "../page";
 import styles from "../styles/styles.module.css";
+import PriorityBadge from "../ui/PriorityBadge";
 
 export default function ReturnedRow({ index, companyRecord, togglePriority, user }: any) {
 
@@ -52,7 +53,7 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
             {String(companyRecord.companyName).toUpperCase()}
           </Link>
           {companyRecord?.flags?.isPriority && (
-            <span className={styles.priorityBadge}>Priority</span>
+            <PriorityBadge />
           )}
         </div>
         {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}

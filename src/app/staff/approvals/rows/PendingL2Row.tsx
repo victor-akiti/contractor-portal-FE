@@ -3,6 +3,7 @@ import Link from "next/link";
 import { userCanTogglePriority } from "../page";
 import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
+import PriorityBadge from "../ui/PriorityBadge";
 
 export default function PendingL2Row({ index, companyRecord, user, activeFilter, togglePriority }: any) {
   const canProcess = () => {
@@ -72,7 +73,7 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
             {String(companyRecord.companyName).toUpperCase()}
           </Link>
           {companyRecord?.flags?.isPriority && (
-            <span className={styles.priorityBadge}>Priority</span>
+            <PriorityBadge />
           )}
         </div>
         {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
