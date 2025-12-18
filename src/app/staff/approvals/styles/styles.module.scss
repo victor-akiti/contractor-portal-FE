@@ -847,76 +847,95 @@
     background-color: #ffe0c6;
 }
 
-// Priority Toggle Modal Styles
+// Priority Toggle Modal Styles - Elegant Design
 .priorityToggleModal {
-    background-color: white;
-    padding: 32px;
-    border-radius: 12px;
-    max-width: 520px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+    padding: 36px 40px;
+    border-radius: 16px;
+    max-width: 540px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+    position: relative;
+
+    // Ensure white background is solid
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        border-radius: 16px;
+        z-index: -1;
+    }
 
     .modalHeader {
         display: flex;
         align-items: center;
-        margin-bottom: 20px;
-        gap: 14px;
+        margin-bottom: 24px;
+        gap: 16px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
 
         .iconWrapper {
-            width: 50px;
-            height: 50px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
             &.prioritise {
-                background: linear-gradient(135deg, rgba(230, 117, 9, 0.15) 0%, rgba(255, 165, 0, 0.15) 100%);
-                color: $primaryColor;
+                background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
+                color: white;
             }
 
             &.deprioritise {
-                background-color: rgba(108, 117, 125, 0.12);
-                color: #64676b;
+                background: linear-gradient(135deg, #90A4AE 0%, #78909C 100%);
+                color: white;
             }
         }
 
         h3 {
             margin: 0;
-            font-size: 1.55rem;
-            font-weight: 600;
-            color: #212529;
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: #1a1a1a;
             font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif;
+            letter-spacing: -0.5px;
         }
     }
 
     .modalBody {
-        margin-bottom: 24px;
+        margin-bottom: 28px;
 
         .companyName {
-            font-weight: 600;
-            color: $primaryColor;
-            font-size: 1.08rem;
-            margin-bottom: 14px;
-            padding: 12px;
-            background-color: rgba(230, 117, 9, 0.06);
-            border-radius: 6px;
-            border-left: 3px solid $primaryColor;
+            font-weight: 700;
+            color: #1a1a1a;
+            font-size: 1.15rem;
+            margin-bottom: 18px;
+            padding: 16px 18px;
+            background: linear-gradient(135deg, rgba(230, 117, 9, 0.08) 0%, rgba(255, 152, 0, 0.05) 100%);
+            border-radius: 8px;
+            border-left: 4px solid $primaryColor;
+            box-shadow: 0 2px 8px rgba(230, 117, 9, 0.08);
         }
 
         .description {
-            color: #64676b;
-            font-size: 0.97rem;
-            line-height: 1.6;
-            margin-bottom: 8px;
+            color: #5a6169;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 10px;
         }
 
         .confirmText {
-            color: #212529;
+            color: #2c3338;
             font-weight: 600;
-            margin-top: 18px;
-            font-size: 0.95rem;
+            margin-top: 20px;
+            font-size: 0.98rem;
         }
     }
 
@@ -924,149 +943,152 @@
         display: flex;
         justify-content: flex-end;
         gap: 12px;
-        margin-top: 26px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
 
         button {
-            padding: 11px 26px;
+            padding: 12px 28px;
             border-style: none;
-            border-radius: 7px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            min-width: 110px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 120px;
             font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif;
 
             &:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            }
+
+            &:active {
+                transform: translateY(0);
             }
 
             &.confirmButton {
-                background-color: $primaryColor;
+                background: linear-gradient(135deg, $primaryColor 0%, darken($primaryColor, 5%) 100%);
                 color: white;
+                box-shadow: 0 4px 12px rgba(230, 117, 9, 0.25);
 
                 &:hover {
-                    background-color: darken($primaryColor, 8%);
+                    background: linear-gradient(135deg, darken($primaryColor, 5%) 0%, darken($primaryColor, 10%) 100%);
+                    box-shadow: 0 6px 20px rgba(230, 117, 9, 0.35);
                 }
 
                 &:disabled {
-                    background-color: #ccc;
+                    background: #d1d5db;
                     cursor: not-allowed;
                     transform: none;
                     box-shadow: none;
+                    opacity: 0.6;
                 }
             }
 
             &.cancelButton {
-                background-color: #f1f3f5;
+                background-color: #f8f9fa;
                 color: #495057;
+                border: 1px solid #dee2e6;
 
                 &:hover {
                     background-color: #e9ecef;
+                    border-color: #ced4da;
                 }
             }
         }
     }
 }
 
-// Priority Badge Indicator
+// Professional Status Badge Indicator
 .priorityBadge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    gap: 4px;
+    background: linear-gradient(135deg, #FFB300 0%, #FF6F00 100%);
     color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 7px;
-    border-radius: 4px;
-    margin-left: 10px;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-left: 12px;
     vertical-align: middle;
-    box-shadow: 0 2px 6px rgba(230, 117, 9, 0.35);
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.4);
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.8px;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+
+    // Subtle shine effect
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+        border-radius: 12px 12px 0 0;
+    }
 
     &::before {
         content: "⭐";
-        margin-right: 4px;
         font-size: 11px;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
     }
 }
 
-// Priority Action Button
+// Elegant Priority Action Button
 .priorityActionButton {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 7px 14px;
-    background-color: transparent;
-    border: 1.5px solid $primaryColor;
+    padding: 8px 16px;
+    background-color: white;
+    border: 2px solid $primaryColor;
     color: $primaryColor;
-    border-radius: 6px;
-    font-size: 0.78rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     text-transform: uppercase;
-    letter-spacing: 0.4px;
-    margin-top: 8px;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif;
+    box-shadow: 0 2px 6px rgba(230, 117, 9, 0.15);
 
     &:hover {
-        background-color: $primaryColor;
+        background: linear-gradient(135deg, $primaryColor 0%, darken($primaryColor, 5%) 100%);
         color: white;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(230, 117, 9, 0.35);
+        box-shadow: 0 6px 16px rgba(230, 117, 9, 0.35);
+        border-color: darken($primaryColor, 5%);
     }
 
     &:active {
         transform: translateY(0);
+        box-shadow: 0 3px 8px rgba(230, 117, 9, 0.3);
     }
 
     &.deprioritise {
-        border-color: #6c757d;
-        color: #6c757d;
+        border-color: #78909C;
+        color: #546E7A;
+        box-shadow: 0 2px 6px rgba(120, 144, 156, 0.15);
 
         &:hover {
-            background-color: #6c757d;
+            background: linear-gradient(135deg, #78909C 0%, #607D8B 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.35);
+            box-shadow: 0 6px 16px rgba(120, 144, 156, 0.35);
+            border-color: #607D8B;
         }
     }
 
     svg, .icon {
         width: 14px;
         height: 14px;
-    }
-}
-
-// Priority Action Link (for inline use)
-.priorityActionLink {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.82em;
-    font-weight: 600;
-    cursor: pointer;
-    color: $primaryColor;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    padding: 5px 10px;
-    border-radius: 5px;
-
-    &:hover {
-        background-color: rgba(230, 117, 9, 0.1);
-        color: darken($primaryColor, 10%);
-    }
-
-    &.deprioritise {
-        color: #6c757d;
-
-        &:hover {
-            background-color: rgba(108, 117, 125, 0.1);
-            color: darken(#6c757d, 10%);
-        }
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
     }
 }
