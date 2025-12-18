@@ -1,6 +1,5 @@
 import moment from "moment";
 import Link from "next/link";
-import { userCanTogglePriority } from "../page";
 import styles from "../styles/styles.module.css";
 export default function L3Row({ index, companyRecord, revertToL2, user, togglePriority }: any) {
   const getLastUpdated = () => {
@@ -30,36 +29,9 @@ export default function L3Row({ index, companyRecord, revertToL2, user, togglePr
           )}
         </p> */}
       </td>
-      <td>
+      <td className={styles.actionsContainer}>
         {hasAdminPermissions(user.role) && (
           <a onClick={() => revertToL2(companyRecord.vendor)}>MOVE TO L2</a>
-        )}
-        {togglePriority && userCanTogglePriority(user) && (
-          <>
-            <br />
-            <button
-              className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
-              onClick={() =>
-                togglePriority(
-                  companyRecord._id,
-                  !companyRecord?.flags?.isPriority,
-                  companyRecord.companyName
-                )
-              }
-            >
-              {companyRecord?.flags?.isPriority ? (
-                <>
-                  <span className={styles.icon}>🔻</span>
-                  <span>Deprioritise</span>
-                </>
-              ) : (
-                <>
-                  <span className={styles.icon}>⭐</span>
-                  <span>Prioritise</span>
-                </>
-              )}
-            </button>
-          </>
         )}
       </td>
       <td>

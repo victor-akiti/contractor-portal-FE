@@ -1,5 +1,4 @@
 import moment from "moment";
-import { userCanTogglePriority } from "../page";
 import styles from "../styles/styles.module.css";
 
 export default function InProgressRow({ index, companyRecord, togglePriority, user }: any) {
@@ -31,7 +30,7 @@ export default function InProgressRow({ index, companyRecord, togglePriority, us
             <span className={styles.priorityBadge}>Priority</span>
           )}
         </div>
-        {togglePriority && userCanTogglePriority(user) && (
+        {/* {togglePriority && userCanTogglePriority(user) && (
           <button
             className={`${styles.priorityActionButton} ${companyRecord?.flags?.isPriority ? styles.deprioritise : ""}`}
             onClick={() =>
@@ -54,7 +53,7 @@ export default function InProgressRow({ index, companyRecord, togglePriority, us
               </>
             )}
           </button>
-        )}
+        )} */}
         {/* <p>{companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
