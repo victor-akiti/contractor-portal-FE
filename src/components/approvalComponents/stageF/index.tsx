@@ -629,6 +629,29 @@ const StageF = () => {
             }
 
             {
+                approvalData?.approvalActivityHistory && approvalData.approvalActivityHistory.length > 0 && !actionResponse.actionResponseCode && <div className={styles.approvalHistoryDiv}>
+                    <h4>Approval History</h4>
+
+                    <div className={styles.approvalHistoryList}>
+                        {
+                            approvalData.approvalActivityHistory.map((approval, index) => (
+                                <div key={index} className={styles.approvalHistoryItem}>
+                                    <div className={styles.stageColumn}>
+                                        <span className={styles.stageLabel}>Stage:</span>
+                                        <span className={styles.stageValue}>{approval.stage || `Level ${approval.level || 'N/A'}`}</span>
+                                    </div>
+                                    <div className={styles.approverColumn}>
+                                        <span className={styles.approverLabel}>Approver:</span>
+                                        <span className={styles.approverValue}>{approval.userName || approval.approver || 'Unknown'}</span>
+                                    </div>
+                                </div>
+                            ))
+                        }
+                    </div>
+                </div>
+            }
+
+            {
                 actionResponse.actionResponseCode === 1 && <div className={styles.allApprovedDiv}>
                     <h4>{actionResponse.title}</h4>
 

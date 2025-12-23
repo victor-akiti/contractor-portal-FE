@@ -164,6 +164,64 @@
     margin-bottom: 20px;
 }
 
+.approvalHistoryDiv {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    margin-bottom: 20px;
+
+    h4 {
+        margin-bottom: 15px;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .approvalHistoryList {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .approvalHistoryItem {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            gap: 30px;
+
+            .stageColumn,
+            .approverColumn {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .stageLabel,
+            .approverLabel {
+                font-weight: 500;
+                color: #6c757d;
+                font-size: 14px;
+            }
+
+            .stageValue {
+                color: #212529;
+                font-weight: 600;
+                padding: 4px 10px;
+                background-color: #e7f3ff;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+
+            .approverValue {
+                color: #212529;
+                font-size: 14px;
+            }
+        }
+    }
+}
+
 .allApprovedDiv {
     color: #155724;
     background-color: #d4edda;
