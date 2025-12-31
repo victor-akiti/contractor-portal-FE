@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from "react";
-import Modal from "@/components/modal";
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
 import ErrorText from "@/components/errorText";
+import Modal from "@/components/modal";
 import SuccessMessage from "@/components/successMessage";
 import { putProtected } from "@/requests/put";
+import { useState } from "react";
 import styles from "./styles/styles.module.css";
 
 interface UpdateCompanyNameProps {
@@ -13,6 +13,7 @@ interface UpdateCompanyNameProps {
     currentName: string;
     userRole: string;
     onUpdate: (data: any) => void;
+    onRefetch?: () => void;
     onRefetch?: () => void;
 }
 
@@ -143,13 +144,13 @@ const UpdateCompanyName = ({ companyId, currentName, userRole, onUpdate, onRefet
 
                             {error && (
                                 <div className={styles.messageContainer}>
-                                    <ErrorText>{error}</ErrorText>
+                                    <ErrorText text={error} />
                                 </div>
                             )}
 
                             {success && (
                                 <div className={styles.messageContainer}>
-                                    <SuccessMessage>{success}</SuccessMessage>
+                                    <SuccessMessage message={success} />
                                 </div>
                             )}
 
