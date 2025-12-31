@@ -636,18 +636,18 @@ const StageF = () => {
 
                     // Map level numbers to stage names and descriptions
                     const stageInfo = [
-                        { name: 'A', description: 'Initial Application Review' },
-                        { name: 'B', description: 'Insurance Officer Verification' },
-                        { name: 'C', description: 'End User Assignment & Verification' },
-                        { name: 'D', description: 'VRM Approval' },
-                        { name: 'E', description: 'HOD Approval' },
-                        { name: 'F', description: 'Executive Approval' }
+                        { name: 'A to B', description: 'Initial Application Review' },
+                        { name: 'B to C', description: 'Supervisor Review' },
+                        { name: 'C to D', description: 'End User Assignment & Review' },
+                        { name: 'D to E', description: 'Due Diligence' },
+                        { name: 'E to F', description: 'HOD Final Review' },
+                        // { name: 'F', description: 'Executive Approval' }
                     ];
 
                     // Collect all level approvals (level0, level1, etc.)
                     for (let i = 0; i <= 5; i++) {
                         const levelKey = `level${i}`;
-                        if (approvals[levelKey] && approvals[levelKey].approved) {
+                        if (approvals[levelKey] && approvals[levelKey].approved && i < 5) {
                             levelApprovals.push({
                                 level: i,
                                 stage: stageInfo[i]?.name || `Level ${i}`,
