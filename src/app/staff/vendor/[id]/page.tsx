@@ -975,6 +975,7 @@ const ViewVendorPage = () => {
                             currentName={approvalData.companyName}
                             userRole={user?.user?.role}
                             onUpdate={handleCompanyNameUpdate}
+                            onRefetch={() => fetchVendorData(vendorID)}
                         />
                     )}
                 </h1>

@@ -13,9 +13,10 @@ interface UpdateCompanyNameProps {
     currentName: string;
     userRole: string;
     onUpdate: (data: any) => void;
+    onRefetch?: () => void;
 }
 
-const UpdateCompanyName = ({ companyId, currentName, userRole, onUpdate }: UpdateCompanyNameProps) => {
+const UpdateCompanyName = ({ companyId, currentName, userRole, onUpdate, onRefetch }: UpdateCompanyNameProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newName, setNewName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -46,15 +47,20 @@ const UpdateCompanyName = ({ companyId, currentName, userRole, onUpdate }: Updat
                 userRole
             );
 
-            if (response.success) {
-                setSuccess("Company name updated successfully");
+            if (response.status === "OK" && response.data) {
+                setSuccess(response.data.message || "Company name updated successfully");
 
                 // Call parent component's update handler
                 onUpdate({
-                    companyName: response.companyName,
-                    companyNameUpdatedByAmni: response.companyNameUpdatedByAmni,
-                    previousCompanyName: response.previousCompanyName
+                    companyName: response.data.companyName,
+                    companyNameUpdatedByAmni: response.data.companyNameUpdatedByAmni,
+                    previousCompanyName: response.data.previousCompanyName
                 });
+
+                // Refetch vendor data to update the UI with badge
+                if (onRefetch) {
+                    onRefetch();
+                }
 
                 // Close modal after a brief delay to show success message
                 setTimeout(() => {
@@ -62,8 +68,10 @@ const UpdateCompanyName = ({ companyId, currentName, userRole, onUpdate }: Updat
                     setNewName("");
                     setSuccess("");
                 }, 1500);
+            } else if (response.status === "Failed") {
+                setError(response.error?.message || "Failed to update company name");
             } else {
-                setError(response.error || "Failed to update company name");
+                setError("An unexpected error occurred");
             }
         } catch (err: any) {
             setError(err.message || "An error occurred while updating company name");
