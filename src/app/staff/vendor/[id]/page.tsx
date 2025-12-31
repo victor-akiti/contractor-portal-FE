@@ -941,10 +941,8 @@ const ViewVendorPage = () => {
         const role = user?.user?.role;
         return (
             role === "Admin" ||
+            // role === "Supervisor" ||
             role === "HOD" ||
-            role === "IT Admin" ||
-            role === "C&P Admin" ||
-            role === "C and P Staff" ||
             role === "VRM"
         );
     };
