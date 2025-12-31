@@ -79,7 +79,7 @@ const StageF = () => {
     const fetchVendorData = async (vendorID) => {
         setVendorID(vendorID)
         try {
-            const fetchVendorDataRequest = await getProtected(`companies//approval-data/${vendorID}`, user.role)
+            const fetchVendorDataRequest = await getProtected(`companies/approval-data/${vendorID}`, user.role)
 
 
 
