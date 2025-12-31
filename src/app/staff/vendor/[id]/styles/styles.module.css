@@ -1,3 +1,15 @@
+.companyNameBadge {
+  display: inline-block;
+  background-color: #e8f4fd;
+  color: #0066cc;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+
 .modifyContractorModal {
   background-color: white;
   padding: 20px;

@@ -12,6 +12,7 @@ import ErrorText from "@/components/errorText";
 import Modal from "@/components/modal";
 import SuccessMessage from "@/components/successMessage";
 import Tabs from "@/components/tabs";
+import UpdateCompanyName from "@/components/updateCompanyName";
 import { getProtected } from "@/requests/get";
 import { postProtected } from "@/requests/post";
 import { putProtected } from "@/requests/put";
@@ -935,10 +936,48 @@ const ViewVendorPage = () => {
         return section.fields.some(field => hasFieldValue(field));
     }
 
+    // Check if user has permission to edit company name
+    const canEditCompanyName = () => {
+        const role = user?.user?.role;
+        return (
+            role === "Admin" ||
+            role === "HOD" ||
+            role === "IT Admin" ||
+            role === "C&P Admin" ||
+            role === "C and P Staff" ||
+            role === "VRM"
+        );
+    };
+
+    // Handle company name update callback
+    const handleCompanyNameUpdate = (data: any) => {
+        setApprovalData((prev: any) => ({
+            ...prev,
+            companyName: data.companyName,
+            flags: {
+                ...prev.flags,
+                companyNameUpdatedByAmni: data.companyNameUpdatedByAmni,
+            },
+        }));
+    };
+
     return (
         <div>
             <div className={styles.approvalHeader}>
-                <h1>{approvalData.companyName}</h1>
+                <h1>
+                    {approvalData.companyName}
+                    {approvalData.flags?.companyNameUpdatedByAmni && (
+                        <span className={styles.companyNameBadge}>Updated by AMNI</span>
+                    )}
+                    {canEditCompanyName() && approvalData.companyName && (
+                        <UpdateCompanyName
+                            companyId={vendorID}
+                            currentName={approvalData.companyName}
+                            userRole={user?.user?.role}
+                            onUpdate={handleCompanyNameUpdate}
+                        />
+                    )}
+                </h1>
 
                 <div className={styles.vendorPageActions}>
                     <Link href={`/staff/approvals/${vendorID}`}>OPEN IN APPROVAL VIEW</Link>
