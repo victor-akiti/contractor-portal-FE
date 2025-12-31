@@ -629,26 +629,50 @@ const StageF = () => {
             }
 
             {
-                approvalData?.approvalActivityHistory && approvalData.approvalActivityHistory.length > 0 && !actionResponse.actionResponseCode && <div className={styles.approvalHistoryDiv}>
-                    <h4>Approval History</h4>
+                approvalData?.flags?.approvals && !actionResponse.actionResponseCode && (() => {
+                    // Extract all level approvals from the approvals object
+                    const approvals = approvalData.flags.approvals;
+                    const levelApprovals = [];
 
-                    <div className={styles.approvalHistoryList}>
-                        {
-                            approvalData.approvalActivityHistory.map((approval, index) => (
-                                <div key={index} className={styles.approvalHistoryItem}>
-                                    <div className={styles.stageColumn}>
-                                        <span className={styles.stageLabel}>Stage:</span>
-                                        <span className={styles.stageValue}>{approval.stage || `Level ${approval.level || 'N/A'}`}</span>
-                                    </div>
-                                    <div className={styles.approverColumn}>
-                                        <span className={styles.approverLabel}>Approver:</span>
-                                        <span className={styles.approverValue}>{approval.userName || approval.approver || 'Unknown'}</span>
-                                    </div>
-                                </div>
-                            ))
+                    // Map level numbers to stage names
+                    const stageNames = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+                    // Collect all level approvals (level0, level1, etc.)
+                    for (let i = 0; i <= 5; i++) {
+                        const levelKey = `level${i}`;
+                        if (approvals[levelKey] && approvals[levelKey].approved) {
+                            levelApprovals.push({
+                                level: i,
+                                stage: stageNames[i] || `Level ${i}`,
+                                approver: approvals[levelKey].approver,
+                                date: approvals[levelKey].date
+                            });
                         }
-                    </div>
-                </div>
+                    }
+
+                    // Only show if there are approvals
+                    if (levelApprovals.length === 0) return null;
+
+                    return (
+                        <div className={styles.approvalHistoryDiv}>
+                            <h4>Approval History</h4>
+                            <div className={styles.approvalHistoryList}>
+                                {levelApprovals.map((approval, index) => (
+                                    <div key={index} className={styles.approvalHistoryItem}>
+                                        <div className={styles.stageColumn}>
+                                            <span className={styles.stageLabel}>Stage:</span>
+                                            <span className={styles.stageValue}>{approval.stage}</span>
+                                        </div>
+                                        <div className={styles.approverColumn}>
+                                            <span className={styles.approverLabel}>Approver:</span>
+                                            <span className={styles.approverValue}>{approval.approver?.name || 'Unknown'}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })()
             }
 
             {
