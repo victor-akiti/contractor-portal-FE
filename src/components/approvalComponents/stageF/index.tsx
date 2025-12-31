@@ -634,8 +634,15 @@ const StageF = () => {
                     const approvals = approvalData.flags.approvals;
                     const levelApprovals = [];
 
-                    // Map level numbers to stage names
-                    const stageNames = ['A', 'B', 'C', 'D', 'E', 'F'];
+                    // Map level numbers to stage names and descriptions
+                    const stageInfo = [
+                        { name: 'A', description: 'Initial Application Review' },
+                        { name: 'B', description: 'Insurance Officer Verification' },
+                        { name: 'C', description: 'End User Assignment & Verification' },
+                        { name: 'D', description: 'VRM Approval' },
+                        { name: 'E', description: 'HOD Approval' },
+                        { name: 'F', description: 'Executive Approval' }
+                    ];
 
                     // Collect all level approvals (level0, level1, etc.)
                     for (let i = 0; i <= 5; i++) {
@@ -643,7 +650,8 @@ const StageF = () => {
                         if (approvals[levelKey] && approvals[levelKey].approved) {
                             levelApprovals.push({
                                 level: i,
-                                stage: stageNames[i] || `Level ${i}`,
+                                stage: stageInfo[i]?.name || `Level ${i}`,
+                                description: stageInfo[i]?.description || '',
                                 approver: approvals[levelKey].approver,
                                 date: approvals[levelKey].date
                             });
@@ -662,6 +670,9 @@ const StageF = () => {
                                         <div className={styles.stageColumn}>
                                             <span className={styles.stageLabel}>Stage:</span>
                                             <span className={styles.stageValue}>{approval.stage}</span>
+                                        </div>
+                                        <div className={styles.descriptionColumn}>
+                                            <span className={styles.descriptionValue}>{approval.description}</span>
                                         </div>
                                         <div className={styles.approverColumn}>
                                             <span className={styles.approverLabel}>Approver:</span>
