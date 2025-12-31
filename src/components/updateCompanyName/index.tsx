@@ -14,7 +14,6 @@ interface UpdateCompanyNameProps {
     userRole: string;
     onUpdate: (data: any) => void;
     onRefetch?: () => void;
-    onRefetch?: () => void;
 }
 
 const UpdateCompanyName = ({ companyId, currentName, userRole, onUpdate, onRefetch }: UpdateCompanyNameProps) => {
