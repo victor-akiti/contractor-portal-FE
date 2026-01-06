@@ -656,7 +656,7 @@ const ViewVendorPage = () => {
 
         if (value === "") {
             updateEndUserResponses("error", "Please select a replacement end user.");
-        } else if (approvalData.currentEndUsers.includes(value)) {
+        } else if (approvalData?.currentEndUsers?.includes(value)) {
             updateEndUserResponses(
                 "error",
                 "End user already exists for this contractor application. Please select a different end user.",
@@ -693,7 +693,7 @@ const ViewVendorPage = () => {
             );
 
             if (replaceEndUserRequest.status === "OK") {
-                const { currentEndUsers, updatedEndUsersList } = replaceEndUserRequest.data;
+                const { currentEndUsers = [], updatedEndUsersList } = replaceEndUserRequest.data;
 
                 const tempApprovalData = { ...approvalData };
                 tempApprovalData.currentEndUsers = updatedEndUsersList;
@@ -1072,7 +1072,7 @@ const ViewVendorPage = () => {
                                                     ))}
                                                 </select>
 
-                                                <button>
+                                                <button type="submit">
                                                     Add {endUserAction.status === "adding" && <ButtonLoadingIcon />}
                                                 </button>
                                             </div>
