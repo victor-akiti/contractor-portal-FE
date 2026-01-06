@@ -203,6 +203,9 @@ const ViewVendorPage = () => {
     };
 
     const getFieldItemComponent = (field, index, section) => {
+        // Don't render if field has no value
+        if (!hasFieldValue(field)) return null;
+
         switch (field.type) {
             case "shortText":
                 return (
@@ -915,6 +918,23 @@ const ViewVendorPage = () => {
         setCurrentCertificateHistory(tempCurrentCertificateHistory);
     };
 
+    // Helper function to check if a field has a meaningful value
+    const hasFieldValue = (field) => {
+        if (field.value === null || field.value === undefined) return false;
+        if (typeof field.value === "string" && field.value.trim() === "") return false;
+        if (Array.isArray(field.value) && field.value.length === 0) return false;
+        if (typeof field.value === "object" && !Array.isArray(field.value)) {
+            // Check for empty objects, but allow objects with properties (like phone numbers)
+            if (Object.keys(field.value).length === 0) return false;
+        }
+        return true;
+    }
+
+    // Helper function to check if section has any displayable data
+    const sectionHasData = (section) => {
+        return section.fields.some(field => hasFieldValue(field));
+    }
+
     return (
         <div>
             <div className={styles.approvalHeader}>
@@ -1431,7 +1451,7 @@ const ViewVendorPage = () => {
                         {pages.map((item, index) => (
                             <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
                                 {item.sections.map((sectionItem, sectionIndex) => {
-                                    if (!sectionItem.hideOnApproval) {
+                                    if (!sectionItem.hideOnApproval && sectionHasData(sectionItem)) {
                                         return (
                                             <div key={sectionIndex} className={styles.sectionItem}>
                                                 <div>
