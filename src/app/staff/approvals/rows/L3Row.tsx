@@ -1,7 +1,6 @@
 import moment from "moment";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
-import PriorityBadge from "../ui/PriorityBadge";
 export default function L3Row({ index, companyRecord, revertToL2, user, togglePriority }: any) {
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
@@ -19,9 +18,9 @@ export default function L3Row({ index, companyRecord, revertToL2, user, togglePr
         <Link href={`/staff/vendor/${companyRecord._id}`}>
           {String(companyRecord.companyName).toUpperCase()}
         </Link>
-        {companyRecord?.flags?.isPriority && (
+        {/* {companyRecord?.flags?.isPriority && (
           <PriorityBadge />
-        )}
+        )} */}
         {/* <p>
           {String(
             companyRecord?.vendorAppAdminProfile?.email
