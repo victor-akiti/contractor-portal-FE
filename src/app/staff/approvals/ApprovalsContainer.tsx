@@ -39,7 +39,6 @@ import SearchBar from "./ui/SearchBar";
 
 // Extracted Modals
 import ArchiveInviteModal from "./modals/ArchiveInviteModal";
-import ExportModal from "./modals/ExportModal";
 import PriorityToggleModal from "./modals/PriorityToggleModal";
 import RevertToL2Modal from "./modals/RevertToL2Modal";
 
@@ -56,6 +55,7 @@ import ReturnedRow from "./rows/ReturnedRow";
 import {
   APPROVAL_STAGES as approvalStages,
   getL2PendingStage,
+  getNameVerificationStatus,
   getNextStageFromFlags,
   getStageFromFlags,
   shouldShowEndUsers,
@@ -1269,6 +1269,7 @@ export default function ApprovalsContainer() {
         sheet: "Vendors List",
         columns: [
           { label: "Company Name", value: "companyName" },
+          { label: "Name Verification Status", value: (row: any) => getNameVerificationStatus(row) },
           { label: "Stage", value: "stage" },
           { label: "L2 Stage", value: "l2Stage" },
           { label: "Pending L2 Stage", value: "l2PendingStage" },
@@ -1355,6 +1356,107 @@ export default function ApprovalsContainer() {
     setShowExportModal(false);
   };
 
+  // Simplified export function - exports ALL vendors with one click
+  const exportAllVendors = () => {
+    const registeredVendors: any[] = [];
+
+    // Add all In Progress vendors
+    if (fixedApprovals.inProgress?.length > 0) {
+      registeredVendors.push(
+        ...fixedApprovals.inProgress.map((i: any) => ({
+          ...i,
+          stage: "In Progress",
+          portalAdminName: i.contractorDetails?.name,
+          portalAdminEmail: i.contractorDetails?.email,
+          portalAdminPhone:
+            typeof i.contractorDetails?.phone === "string"
+              ? i.contractorDetails?.phone
+              : i.contractorDetails?.phone?.internationalNumber ||
+              i.contractorDetails?.phone?.nationalNumber,
+        }))
+      );
+    }
+
+    // Add all L3 vendors
+    if (fixedApprovals.l3?.length > 0) {
+      registeredVendors.push(
+        ...fixedApprovals.l3.map((i: any) => ({
+          ...i,
+          stage: "L3",
+        }))
+      );
+    }
+
+    // Add all Returned vendors
+    if (fixedApprovals.returned?.length > 0) {
+      registeredVendors.push(
+        ...fixedApprovals.returned.map((i: any) => ({
+          ...i,
+          l2Stage: "Returned",
+          stage: "L2",
+          portalAdminName: i.contractorDetails?.name,
+          portalAdminEmail: i.contractorDetails?.email,
+          portalAdminPhone:
+            typeof i.contractorDetails?.phone === "string"
+              ? i.contractorDetails?.phone
+              : i.contractorDetails?.phone?.internationalNumber ||
+              i.contractorDetails?.phone?.nationalNumber,
+        }))
+      );
+    }
+
+    // Add all Completed L2 vendors
+    if (fixedApprovals.completedL2?.length > 0) {
+      registeredVendors.push(
+        ...fixedApprovals.completedL2.map((i: any) => ({
+          ...i,
+          l2Stage: "Completed",
+          stage: "L2",
+          portalAdminName: i.contractorDetails?.name,
+          portalAdminEmail: i.contractorDetails?.email,
+          portalAdminPhone:
+            typeof i.contractorDetails?.phone === "string"
+              ? i.contractorDetails?.phone
+              : i.contractorDetails?.phone?.internationalNumber ||
+              i.contractorDetails?.phone?.nationalNumber,
+        }))
+      );
+    }
+
+    // Add all Pending L2 vendors
+    if (fixedApprovals.pendingL2?.length > 0) {
+      registeredVendors.push(
+        ...fixedApprovals.pendingL2.map((item: any) => ({
+          ...item,
+          l2PendingStage: getL2PendingStage(item.flags),
+          l2Stage: "Pending",
+          stage: "L2",
+          portalAdminName: item.contractorDetails?.name,
+          portalAdminEmail: item.contractorDetails?.email,
+          portalAdminPhone:
+            typeof item.contractorDetails?.phone === "string"
+              ? item.contractorDetails?.phone
+              : item.contractorDetails?.phone?.internationalNumber ||
+              item.contractorDetails?.phone?.nationalNumber,
+        }))
+      );
+    }
+
+    // Check if there's data to export
+    if (!registeredVendors || registeredVendors.length === 0) {
+      toast.info("No vendor records available to export.");
+      return;
+    }
+
+    // Sort alphabetically
+    const sortedVendors = sortListAlphabetically(registeredVendors);
+
+    // Export to Excel
+    exportRegisteredVendorsToExcel(sortedVendors);
+
+    toast.success(`Successfully exported ${sortedVendors.length} vendors!`);
+  };
+
   const getdisplayRows = () => {
     // If tab hasn't finished its first load yet, return []
     if (!tabData[activeTab]?.loaded) return [];
@@ -1404,21 +1506,6 @@ export default function ApprovalsContainer() {
         />
       )}
 
-      {showExportModal && (
-        <ExportModal
-          exportOptions={exportOptions}
-          updateExportOptions={updateExportOptions}
-          toggleExportOptions={toggleExportOptions}
-          exportVendorSearchResults={exportVendorSearchResults}
-          addVendorToSelectedList={addVendorToSelectedList}
-          selectedVendorsToExport={selectedVendorsToExport}
-          removeVendorFromSelectedVendorsToExport={removeVendorFromSelectedVendorsToExport}
-          exportContractors={exportContractors}
-          closeExportModal={closeExportModal}
-          findVendorsByName={findVendorsByName}
-        />
-      )}
-
       <header>
         <h3>C&P Officer Dashboard</h3>
         <h5>Registration Approvals</h5>
@@ -1457,7 +1544,24 @@ export default function ApprovalsContainer() {
       {!fetchingContractors && (
         <>
           <div className={styles.exportToExcelDiv}>
-            <button onClick={() => setShowExportModal(true)}>Export to Excel</button>
+            <button className={styles.exportAllButton} onClick={exportAllVendors}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Export All Vendors
+            </button>
           </div>
 
           <ApprovalsTabs

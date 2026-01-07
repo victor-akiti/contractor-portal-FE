@@ -208,21 +208,55 @@
 .approvals .exportToExcelDiv {
   display: flex;
   justify-content: flex-end;
-  margin: var(--spacing-xs) 0;
+  margin: var(--spacing-md) 0 var(--spacing-lg) 0;
 }
 
-.approvals .exportToExcelDiv button {
-  padding: var(--spacing-md);
+.approvals .exportAllButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
   border: none;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-primary);
-  color: var(--color-bg-white);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-family-base);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
+  letter-spacing: 0.3px;
 }
 
-.approvals .exportToExcelDiv button:hover {
-  background-color: var(--color-primary-dark);
+.approvals .exportAllButton:hover {
+  background: linear-gradient(135deg, #0052a3 0%, #003d7a 100%);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35);
+  transform: translateY(-1px);
+}
+
+.approvals .exportAllButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.25);
+}
+
+.approvals .exportAllButton svg {
+  transition: transform 0.3s ease;
+}
+
+.approvals .exportAllButton:hover svg {
+  transform: translateY(2px);
+}
+
+.approvals .exportAllButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.approvals .exportAllButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2), 0 4px 12px rgba(0, 102, 204, 0.35);
 }
 
 /* ============================================

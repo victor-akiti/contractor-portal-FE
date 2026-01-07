@@ -47,3 +47,28 @@ export const shouldShowUnchecked = (activeFilter: string): boolean => {
 export const shouldShowVerified = (activeFilter: string): boolean => {
     return activeFilter === "F" || activeFilter === "G";
 };
+
+// Helper function to get name verification status for export
+export const getNameVerificationStatus = (company: any): string => {
+    // Determine verification status based on stage and flags
+    if (company.stage === "L3") {
+        return "Verified";
+    }
+
+    if (company.stage === "L2") {
+        const stage = getStageFromFlags(company.flags);
+        if (stage === "A") {
+            return "Unchecked";
+        } else if (stage === "F" || stage === "G") {
+            return "Verified";
+        } else {
+            return "Unverified";
+        }
+    }
+
+    if (company.stage === "In Progress") {
+        return "Unchecked";
+    }
+
+    return "N/A";
+};
