@@ -19,6 +19,7 @@ import styles from "./styles/styles.module.css";
 import {
   useApproveParkRequestMutation,
   useArchiveInviteMutation,
+  useGetAllCompaniesQuery,
   useGetApprovalCountsQuery,
   useGetCompaniesByTabQuery,
   useGetInvitesQuery,
@@ -896,6 +897,7 @@ export default function ApprovalsContainer() {
   const [selectedVendorsToExportIDs, setSelectedVendorsToExportIDs] = useState<string[]>([]);
   const [vendorsToExport, setVendorsToExport] = useState<any[]>([]);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [isExportingAll, setIsExportingAll] = useState(false);
 
   const updateExportOptions = (option: string, value: any) =>
     setExportOptions((p: any) => ({ ...p, [option]: value }));
@@ -1356,14 +1358,25 @@ export default function ApprovalsContainer() {
     setShowExportModal(false);
   };
 
-  // Simplified export function - exports ALL vendors with one click
-  const exportAllVendors = () => {
-    const registeredVendors: any[] = [];
+  // Export current tab data
+  const exportCurrentTab = () => {
+    let dataToExport: any[] = [];
+    let tabName = "";
 
-    // Add all In Progress vendors
-    if (fixedApprovals.inProgress?.length > 0) {
-      registeredVendors.push(
-        ...fixedApprovals.inProgress.map((i: any) => ({
+    switch (activeTab) {
+      case "invited":
+        dataToExport = fixedApprovals.invites || [];
+        tabName = "Invited Vendors";
+        if (dataToExport.length > 0) {
+          exportExcelFile(dataToExport);
+          toast.success(`Successfully exported ${dataToExport.length} invited vendors!`);
+        } else {
+          toast.info("No invited vendors to export.");
+        }
+        return;
+
+      case "in-progress":
+        dataToExport = (fixedApprovals.inProgress || []).map((i: any) => ({
           ...i,
           stage: "In Progress",
           portalAdminName: i.contractorDetails?.name,
@@ -1373,60 +1386,12 @@ export default function ApprovalsContainer() {
               ? i.contractorDetails?.phone
               : i.contractorDetails?.phone?.internationalNumber ||
               i.contractorDetails?.phone?.nationalNumber,
-        }))
-      );
-    }
+        }));
+        tabName = "In Progress";
+        break;
 
-    // Add all L3 vendors
-    if (fixedApprovals.l3?.length > 0) {
-      registeredVendors.push(
-        ...fixedApprovals.l3.map((i: any) => ({
-          ...i,
-          stage: "L3",
-        }))
-      );
-    }
-
-    // Add all Returned vendors
-    if (fixedApprovals.returned?.length > 0) {
-      registeredVendors.push(
-        ...fixedApprovals.returned.map((i: any) => ({
-          ...i,
-          l2Stage: "Returned",
-          stage: "L2",
-          portalAdminName: i.contractorDetails?.name,
-          portalAdminEmail: i.contractorDetails?.email,
-          portalAdminPhone:
-            typeof i.contractorDetails?.phone === "string"
-              ? i.contractorDetails?.phone
-              : i.contractorDetails?.phone?.internationalNumber ||
-              i.contractorDetails?.phone?.nationalNumber,
-        }))
-      );
-    }
-
-    // Add all Completed L2 vendors
-    if (fixedApprovals.completedL2?.length > 0) {
-      registeredVendors.push(
-        ...fixedApprovals.completedL2.map((i: any) => ({
-          ...i,
-          l2Stage: "Completed",
-          stage: "L2",
-          portalAdminName: i.contractorDetails?.name,
-          portalAdminEmail: i.contractorDetails?.email,
-          portalAdminPhone:
-            typeof i.contractorDetails?.phone === "string"
-              ? i.contractorDetails?.phone
-              : i.contractorDetails?.phone?.internationalNumber ||
-              i.contractorDetails?.phone?.nationalNumber,
-        }))
-      );
-    }
-
-    // Add all Pending L2 vendors
-    if (fixedApprovals.pendingL2?.length > 0) {
-      registeredVendors.push(
-        ...fixedApprovals.pendingL2.map((item: any) => ({
+      case "pending-l2":
+        dataToExport = (fixedApprovals.pendingL2 || []).map((item: any) => ({
           ...item,
           l2PendingStage: getL2PendingStage(item.flags),
           l2Stage: "Pending",
@@ -1438,23 +1403,141 @@ export default function ApprovalsContainer() {
               ? item.contractorDetails?.phone
               : item.contractorDetails?.phone?.internationalNumber ||
               item.contractorDetails?.phone?.nationalNumber,
-        }))
-      );
+        }));
+        tabName = "Pending L2";
+        break;
+
+      case "l3":
+        dataToExport = (fixedApprovals.l3 || []).map((i: any) => ({
+          ...i,
+          stage: "L3",
+        }));
+        tabName = "L3";
+        break;
+
+      case "completed-l2":
+        dataToExport = (fixedApprovals.completedL2 || []).map((i: any) => ({
+          ...i,
+          l2Stage: "Completed",
+          stage: "L2",
+          portalAdminName: i.contractorDetails?.name,
+          portalAdminEmail: i.contractorDetails?.email,
+          portalAdminPhone:
+            typeof i.contractorDetails?.phone === "string"
+              ? i.contractorDetails?.phone
+              : i.contractorDetails?.phone?.internationalNumber ||
+              i.contractorDetails?.phone?.nationalNumber,
+        }));
+        tabName = "Completed L2";
+        break;
+
+      case "returned":
+        dataToExport = (fixedApprovals.returned || []).map((i: any) => ({
+          ...i,
+          l2Stage: "Returned",
+          stage: "L2",
+          portalAdminName: i.contractorDetails?.name,
+          portalAdminEmail: i.contractorDetails?.email,
+          portalAdminPhone:
+            typeof i.contractorDetails?.phone === "string"
+              ? i.contractorDetails?.phone
+              : i.contractorDetails?.phone?.internationalNumber ||
+              i.contractorDetails?.phone?.nationalNumber,
+        }));
+        tabName = "Returned";
+        break;
+
+      case "park-requests":
+        dataToExport = (fixedApprovals.parkRequested || []).map((i: any) => ({
+          ...i,
+          stage: "Park Request",
+        }));
+        tabName = "Park Requests";
+        break;
+
+      default:
+        toast.info("No data available for this tab.");
+        return;
     }
 
-    // Check if there's data to export
-    if (!registeredVendors || registeredVendors.length === 0) {
-      toast.info("No vendor records available to export.");
+    if (!dataToExport || dataToExport.length === 0) {
+      toast.info(`No ${tabName} vendors to export.`);
       return;
     }
 
-    // Sort alphabetically
-    const sortedVendors = sortListAlphabetically(registeredVendors);
-
-    // Export to Excel
+    const sortedVendors = sortListAlphabetically(dataToExport);
     exportRegisteredVendorsToExcel(sortedVendors);
+    toast.success(`Successfully exported ${sortedVendors.length} ${tabName} vendors!`);
+  };
 
-    toast.success(`Successfully exported ${sortedVendors.length} vendors!`);
+  // Export all vendors - fetches all data from API
+  const exportAllVendors = async () => {
+    setIsExportingAll(true);
+    toast.info("Loading all vendor data...");
+
+    try {
+      // Fetch all companies from the API
+      const response = await getProtected("companies/approvals/all", user?.role);
+
+      if (response.status !== "OK" || !response.data?.companies) {
+        toast.error("Failed to load vendor data");
+        setIsExportingAll(false);
+        return;
+      }
+
+      const allCompanies = response.data.companies;
+
+      if (!allCompanies || allCompanies.length === 0) {
+        toast.info("No vendor records available to export.");
+        setIsExportingAll(false);
+        return;
+      }
+
+      // Map companies to export format with proper stage information
+      const registeredVendors: any[] = allCompanies.map((company: any) => {
+        const baseData = {
+          ...company,
+          portalAdminName: company.contractorDetails?.name,
+          portalAdminEmail: company.contractorDetails?.email,
+          portalAdminPhone:
+            typeof company.contractorDetails?.phone === "string"
+              ? company.contractorDetails?.phone
+              : company.contractorDetails?.phone?.internationalNumber ||
+              company.contractorDetails?.phone?.nationalNumber,
+        };
+
+        // Determine stage based on flags
+        if (company.flags?.stage === "l3" || company.flags?.status === "l3") {
+          return { ...baseData, stage: "L3" };
+        } else if (company.flags?.stage === "pending" || company.flags?.status === "pending") {
+          return {
+            ...baseData,
+            stage: "L2",
+            l2Stage: "Pending",
+            l2PendingStage: getL2PendingStage(company.flags),
+          };
+        } else if (company.flags?.stage === "completed" || company.flags?.status === "completed") {
+          return { ...baseData, stage: "L2", l2Stage: "Completed" };
+        } else if (company.flags?.stage === "returned" || company.flags?.status === "returned") {
+          return { ...baseData, stage: "L2", l2Stage: "Returned" };
+        } else {
+          return { ...baseData, stage: "In Progress" };
+        }
+      });
+
+      // Sort alphabetically
+      const sortedVendors = sortListAlphabetically(registeredVendors);
+
+      // Export to Excel
+      exportRegisteredVendorsToExcel(sortedVendors);
+
+      toast.success(`Successfully exported ${sortedVendors.length} vendors!`);
+    } catch (error) {
+      console.error("Export all error:", error);
+      toast.error("Failed to export vendor data");
+    } finally {
+      setIsExportingAll(false);
+    }
   };
 
   const getdisplayRows = () => {
@@ -1543,12 +1626,17 @@ export default function ApprovalsContainer() {
 
       {!fetchingContractors && (
         <>
-          <div className={styles.exportToExcelDiv}>
-            <button className={styles.exportAllButton} onClick={exportAllVendors}>
+          <div className={styles.exportButtonGroup}>
+            <button
+              className={styles.exportCurrentTab}
+              onClick={exportCurrentTab}
+              disabled={currentTabLoading || !tabData[activeTab]?.loaded}
+              title="Export data from the current tab"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -1560,7 +1648,53 @@ export default function ApprovalsContainer() {
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              Export All Vendors
+              Export Current Tab
+            </button>
+
+            <button
+              className={styles.exportAllButton}
+              onClick={exportAllVendors}
+              disabled={isExportingAll}
+              title="Load and export all vendor data"
+            >
+              {isExportingAll ? (
+                <>
+                  <svg
+                    className={styles.spinner}
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                  Loading Data...
+                </>
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Export All Data
+                </>
+              )}
             </button>
           </div>
 
