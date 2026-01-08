@@ -59,7 +59,7 @@ export const getNameVerificationStatus = (company: any): string => {
         const stage = getStageFromFlags(company.flags);
         if (stage === "A") {
             return "Unchecked";
-        } else if (stage === "F" || stage === "G") {
+        } else if (stage === "F") { // || stage === "G"
             return "Verified";
         } else {
             return "Unverified";
