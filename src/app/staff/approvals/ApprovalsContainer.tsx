@@ -1470,68 +1470,185 @@ export default function ApprovalsContainer() {
     toast.success(`Successfully exported ${sortedVendors.length} ${tabName} vendors!`);
   };
 
-  // Export all vendors - fetches all data from API
+  // Export all vendors - smart caching with parallel fetching
   const exportAllVendors = async () => {
     setIsExportingAll(true);
-    toast.info("Loading all vendor data...");
 
     try {
-      // Fetch all companies from the API
-      const response = await getProtected("companies/approvals/all", user?.role);
+      // Step 1: Check what data we already have cached
+      const cachedData: any = {
+        inProgress: fixedApprovals.inProgress || [],
+        pendingL2: fixedApprovals.pendingL2 || [],
+        l3: fixedApprovals.l3 || [],
+        completedL2: fixedApprovals.completedL2 || [],
+        returned: fixedApprovals.returned || [],
+        parkRequested: fixedApprovals.parkRequested || [],
+      };
 
-      if (response.status !== "OK" || !response.data?.companies) {
-        toast.error("Failed to load vendor data");
-        setIsExportingAll(false);
-        return;
+      // Step 2: Identify which tabs need fetching
+      const tabsToFetch: Array<{ key: string; endpoint: string }> = [];
+
+      if (cachedData.inProgress.length === 0) {
+        tabsToFetch.push({ key: "inProgress", endpoint: "companies/approvals/in-progress" });
+      }
+      if (cachedData.pendingL2.length === 0) {
+        tabsToFetch.push({ key: "pendingL2", endpoint: "companies/approvals/pending-l2" });
+      }
+      if (cachedData.l3.length === 0) {
+        tabsToFetch.push({ key: "l3", endpoint: "companies/approvals/l3" });
+      }
+      if (cachedData.completedL2.length === 0) {
+        tabsToFetch.push({ key: "completedL2", endpoint: "companies/approvals/completed-l2" });
+      }
+      if (cachedData.returned.length === 0) {
+        tabsToFetch.push({ key: "returned", endpoint: "companies/approvals/returned" });
+      }
+      if (cachedData.parkRequested.length === 0) {
+        tabsToFetch.push({ key: "parkRequested", endpoint: "companies/approvals/park-requests" });
       }
 
-      const allCompanies = response.data.companies;
+      // Step 3: Show progress toast
+      if (tabsToFetch.length > 0) {
+        toast.info(`Loading ${tabsToFetch.length} missing tab${tabsToFetch.length > 1 ? "s" : ""}...`);
+      } else {
+        toast.info("Using cached data...");
+      }
 
-      if (!allCompanies || allCompanies.length === 0) {
+      // Step 4: Fetch missing tabs in parallel
+      const fetchPromises = tabsToFetch.map(async ({ key, endpoint }) => {
+        try {
+          const response = await getProtected(endpoint, user?.role);
+          if (response.status === "OK" && response.data?.companies) {
+            return { key, data: response.data.companies };
+          }
+          return { key, data: [] };
+        } catch (error) {
+          console.error(`Failed to fetch ${key}:`, error);
+          return { key, data: [] };
+        }
+      });
+
+      const fetchedResults = await Promise.all(fetchPromises);
+
+      // Step 5: Merge fetched data with cached data
+      fetchedResults.forEach(({ key, data }) => {
+        cachedData[key] = data;
+      });
+
+      // Step 6: Aggregate all data with proper formatting
+      const registeredVendors: any[] = [];
+
+      // Add In Progress vendors
+      if (cachedData.inProgress.length > 0) {
+        registeredVendors.push(
+          ...cachedData.inProgress.map((i: any) => ({
+            ...i,
+            stage: "In Progress",
+            portalAdminName: i.contractorDetails?.name,
+            portalAdminEmail: i.contractorDetails?.email,
+            portalAdminPhone:
+              typeof i.contractorDetails?.phone === "string"
+                ? i.contractorDetails?.phone
+                : i.contractorDetails?.phone?.internationalNumber ||
+                i.contractorDetails?.phone?.nationalNumber,
+          }))
+        );
+      }
+
+      // Add L3 vendors
+      if (cachedData.l3.length > 0) {
+        registeredVendors.push(
+          ...cachedData.l3.map((i: any) => ({
+            ...i,
+            stage: "L3",
+          }))
+        );
+      }
+
+      // Add Returned vendors
+      if (cachedData.returned.length > 0) {
+        registeredVendors.push(
+          ...cachedData.returned.map((i: any) => ({
+            ...i,
+            l2Stage: "Returned",
+            stage: "L2",
+            portalAdminName: i.contractorDetails?.name,
+            portalAdminEmail: i.contractorDetails?.email,
+            portalAdminPhone:
+              typeof i.contractorDetails?.phone === "string"
+                ? i.contractorDetails?.phone
+                : i.contractorDetails?.phone?.internationalNumber ||
+                i.contractorDetails?.phone?.nationalNumber,
+          }))
+        );
+      }
+
+      // Add Completed L2 vendors
+      if (cachedData.completedL2.length > 0) {
+        registeredVendors.push(
+          ...cachedData.completedL2.map((i: any) => ({
+            ...i,
+            l2Stage: "Completed",
+            stage: "L2",
+            portalAdminName: i.contractorDetails?.name,
+            portalAdminEmail: i.contractorDetails?.email,
+            portalAdminPhone:
+              typeof i.contractorDetails?.phone === "string"
+                ? i.contractorDetails?.phone
+                : i.contractorDetails?.phone?.internationalNumber ||
+                i.contractorDetails?.phone?.nationalNumber,
+          }))
+        );
+      }
+
+      // Add Pending L2 vendors
+      if (cachedData.pendingL2.length > 0) {
+        registeredVendors.push(
+          ...cachedData.pendingL2.map((item: any) => ({
+            ...item,
+            l2PendingStage: getL2PendingStage(item.flags),
+            l2Stage: "Pending",
+            stage: "L2",
+            portalAdminName: item.contractorDetails?.name,
+            portalAdminEmail: item.contractorDetails?.email,
+            portalAdminPhone:
+              typeof item.contractorDetails?.phone === "string"
+                ? item.contractorDetails?.phone
+                : item.contractorDetails?.phone?.internationalNumber ||
+                item.contractorDetails?.phone?.nationalNumber,
+          }))
+        );
+      }
+
+      // Add Park Requested vendors
+      if (cachedData.parkRequested.length > 0) {
+        registeredVendors.push(
+          ...cachedData.parkRequested.map((i: any) => ({
+            ...i,
+            stage: "Park Request",
+          }))
+        );
+      }
+
+      // Step 7: Check if there's data to export
+      if (!registeredVendors || registeredVendors.length === 0) {
         toast.info("No vendor records available to export.");
         setIsExportingAll(false);
         return;
       }
 
-      // Map companies to export format with proper stage information
-      const registeredVendors: any[] = allCompanies.map((company: any) => {
-        const baseData = {
-          ...company,
-          portalAdminName: company.contractorDetails?.name,
-          portalAdminEmail: company.contractorDetails?.email,
-          portalAdminPhone:
-            typeof company.contractorDetails?.phone === "string"
-              ? company.contractorDetails?.phone
-              : company.contractorDetails?.phone?.internationalNumber ||
-              company.contractorDetails?.phone?.nationalNumber,
-        };
-
-        // Determine stage based on flags
-        if (company.flags?.stage === "l3" || company.flags?.status === "l3") {
-          return { ...baseData, stage: "L3" };
-        } else if (company.flags?.stage === "pending" || company.flags?.status === "pending") {
-          return {
-            ...baseData,
-            stage: "L2",
-            l2Stage: "Pending",
-            l2PendingStage: getL2PendingStage(company.flags),
-          };
-        } else if (company.flags?.stage === "completed" || company.flags?.status === "completed") {
-          return { ...baseData, stage: "L2", l2Stage: "Completed" };
-        } else if (company.flags?.stage === "returned" || company.flags?.status === "returned") {
-          return { ...baseData, stage: "L2", l2Stage: "Returned" };
-        } else {
-          return { ...baseData, stage: "In Progress" };
-        }
-      });
-
-      // Sort alphabetically
+      // Step 8: Sort and export
       const sortedVendors = sortListAlphabetically(registeredVendors);
-
-      // Export to Excel
       exportRegisteredVendorsToExcel(sortedVendors);
 
-      toast.success(`Successfully exported ${sortedVendors.length} vendors!`);
+      const cachedCount = tabsToFetch.length === 0 ? registeredVendors.length : registeredVendors.length - fetchedResults.reduce((sum, r) => sum + r.data.length, 0);
+      const fetchedCount = fetchedResults.reduce((sum, r) => sum + r.data.length, 0);
+
+      toast.success(
+        tabsToFetch.length > 0
+          ? `Successfully exported ${sortedVendors.length} vendors! (${cachedCount} cached, ${fetchedCount} fetched)`
+          : `Successfully exported ${sortedVendors.length} vendors from cache!`
+      );
     } catch (error) {
       console.error("Export all error:", error);
       toast.error("Failed to export vendor data");
