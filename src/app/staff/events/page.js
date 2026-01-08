@@ -135,7 +135,7 @@ const Events = () => {
 
     return (
         <div className={styles.events}>
-            <h2>Events</h2>
+            <h1 className="pageTitle">Events</h1>
 
             <div className={styles.searchDiv}>
                 <input placeholder="Search event logs" onChange={event => searchEvents(event.target.value)} ref={searchInputRef} />

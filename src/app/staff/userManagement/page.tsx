@@ -636,7 +636,7 @@ const Users = () => {
             }
 
 
-            <h2>User Management</h2>
+            <h1 className="pageTitle">User Management</h1>
 
             <div className={styles.tab}>
                 <header>

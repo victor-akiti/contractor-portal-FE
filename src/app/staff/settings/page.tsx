@@ -237,7 +237,7 @@ const AccountSettings = () => {
                 </Modal>
             }
 
-            <h2>Account Settings</h2>
+            <h1 className="pageTitle">Account Settings</h1>
 
             <div className={styles.settingsSection}>
                 <h3>Out Of Office Settings</h3>

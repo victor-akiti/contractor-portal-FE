@@ -250,7 +250,7 @@ const VendorSettings = () => {
 
             {/* Header */}
             <div className={styles.settingsHeader}>
-                <h1 className={styles.settingsTitle}>Settings</h1>
+                <h1 className="pageTitle">Settings</h1>
             </div>
 
             <hr className={styles.settingsDivider} />

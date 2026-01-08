@@ -231,7 +231,7 @@ const Tasks = () => {
                     </div>
                 </Modal>
             }
-            <h2>Job Categories</h2>
+            <h1 className="pageTitle">Job Categories</h1>
 
 
             <div className={styles.tab}>

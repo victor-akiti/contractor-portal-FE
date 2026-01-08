@@ -148,7 +148,7 @@ const Dashboard = () => {
         <div className={styles.dashboard}>
             {/* Header */}
             <div className={styles.dashboardHeader}>
-                <h3 className={styles.dashboardTitle}>Your Dashboard</h3>
+                <h1 className="pageTitle">Your Dashboard</h1>
             </div>
 
             {/* Loading State */}

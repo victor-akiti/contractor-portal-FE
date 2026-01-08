@@ -132,7 +132,7 @@ const Forms = () => {
 
     return (
         <div className={styles.forms}>
-            <h1>Forms</h1>
+            <h1 className="pageTitle">Forms</h1>
 
             {
                 Object.entries(formToDelete).length > 0 &&
