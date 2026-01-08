@@ -19,7 +19,6 @@ import styles from "./styles/styles.module.css";
 import {
   useApproveParkRequestMutation,
   useArchiveInviteMutation,
-  useGetAllCompaniesQuery,
   useGetApprovalCountsQuery,
   useGetCompaniesByTabQuery,
   useGetInvitesQuery,
@@ -28,7 +27,7 @@ import {
   useRenewInviteMutation,
   useRevertToL2Mutation,
   useSendReminderMutation,
-  useTogglePriorityMutation,
+  useTogglePriorityMutation
 } from "@/redux/features/approvalSlice";
 
 // Extracted UI
@@ -36,7 +35,6 @@ import ApprovalsTabs from "./ui/ApprovalsTabs";
 import DataTable from "./ui/DataTable";
 import FilterControls from "./ui/FilterControls";
 import FloatingControls from "./ui/FloatingControls";
-import SearchBar from "./ui/SearchBar";
 
 // Extracted Modals
 import ArchiveInviteModal from "./modals/ArchiveInviteModal";
@@ -64,6 +62,7 @@ import {
   shouldShowUnverified,
   shouldShowVerified,
 } from "./stageHelpers";
+import SearchBar from "./ui/SearchBar";
 
 // const approvalStages = ["A", "B", "C", "D", "E", "F"]; // "G"];
 
@@ -1707,42 +1706,26 @@ export default function ApprovalsContainer() {
       )}
 
       <header>
-        <h3>C&P Officer Dashboard</h3>
+        {/* <h3>C&P Officer Dashboard</h3> */}
         <h5>Registration Approvals</h5>
-        {!fetchingContractors && activeTab !== "invited" && (
-          <SearchBar
-            onQuery={searchVendors}
-            isLoading={isLazySearchLoading}
-            onFilterChange={setCurrentSearchFilter}
-            results={searchQueryResults}
-            filterParam={getFilterParam(currentSearchFilter)}
-            resultRef={searchResultRef}
-            searchOpen={searchOpen}
-            setSearchOpen={() => setSearchOpen(true)}
-            vendorIsPending={(v: any) => v?.flags?.status === "pending"}
-            getNextStage={getNextStage}
-            capitalizeWord={capitalizeWord}
-          />
-        )}
-      </header>
 
-      {Object.values(inviteToArchive)?.length > 0 && (
-        <ArchiveInviteModal
-          archivingInvite={archivingInvite}
-          archiveStatusMessages={archiveStatusMessages}
-          onArchive={archiveInvite}
-          onClose={unsetInviteToArchiveObject}
-        />
-      )}
+        <div className={styles.headerControls}>
+          {!fetchingContractors && activeTab !== "invited" && (
+            <SearchBar
+              onQuery={searchVendors}
+              isLoading={isLazySearchLoading}
+              onFilterChange={setCurrentSearchFilter}
+              results={searchQueryResults}
+              filterParam={getFilterParam(currentSearchFilter)}
+              resultRef={searchResultRef}
+              searchOpen={searchOpen}
+              setSearchOpen={() => setSearchOpen(true)}
+              vendorIsPending={(v: any) => v?.flags?.status === "pending"}
+              getNextStage={getNextStage}
+              capitalizeWord={capitalizeWord}
+            />
 
-      {fetchingContractors && (
-        <div className={styles.loading}>
-          <Loading message="Fetching Contractors..." />
-        </div>
-      )}
-
-      {!fetchingContractors && (
-        <>
+          )}
           <div className={styles.exportButtonGroup}>
             <button
               className={styles.exportCurrentTab}
@@ -1814,6 +1797,26 @@ export default function ApprovalsContainer() {
               )}
             </button>
           </div>
+        </div>
+      </header>
+
+      {Object.values(inviteToArchive)?.length > 0 && (
+        <ArchiveInviteModal
+          archivingInvite={archivingInvite}
+          archiveStatusMessages={archiveStatusMessages}
+          onArchive={archiveInvite}
+          onClose={unsetInviteToArchiveObject}
+        />
+      )}
+
+      {fetchingContractors && (
+        <div className={styles.loading}>
+          <Loading message="Fetching Contractors..." />
+        </div>
+      )}
+
+      {!fetchingContractors && (
+        <>
 
           <ApprovalsTabs
             TabsComponent={Tabs}

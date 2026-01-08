@@ -53,7 +53,7 @@ export default function SearchBar({
   }, [debounceSearch, searchOpen, filterParam]);
 
   return (
-    <>
+    <div>
       <label>Quick Search</label>
       <div className={styles.searchFilterDiv} ref={resultRef}>
         <input
@@ -106,6 +106,6 @@ export default function SearchBar({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

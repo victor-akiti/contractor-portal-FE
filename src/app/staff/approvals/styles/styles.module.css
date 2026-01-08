@@ -9,7 +9,7 @@
    HEADER SECTION
    ============================================ */
 .approvals header {
-  width: 50%;
+  width: 100%;
   margin-bottom: var(--spacing-2xl);
 }
 
@@ -34,6 +34,15 @@
   margin-bottom: var(--spacing-sm);
   font-weight: 500;
   font-family: var(--font-family-base);
+}
+
+.approvals header .headerControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  row-gap: 0px;
 }
 
 /* ============================================
@@ -83,6 +92,13 @@
   transition:
     border-color var(--transition-base),
     box-shadow var(--transition-base);
+}
+
+.approvals header .searchFilterDiv input:focus,
+.approvals header .searchFilterDiv select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  /* box-shadow: 0 0 0 0.25rem rgba(230, 117, 9, 0.25); */
 }
 
 /* ============================================
