@@ -231,16 +231,16 @@
 /* Export Current Tab Button - Secondary Style */
 .approvals .exportCurrentTab {
   background: #ffffff;
-  color: #0066cc;
-  border: 2px solid #0066cc;
-  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.15);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 2px 6px #4f4f4f26;
 }
 
 .approvals .exportCurrentTab:hover:not(:disabled) {
-  background: #f0f7ff;
-  border-color: #0052a3;
-  color: #0052a3;
-  box-shadow: 0 3px 10px rgba(0, 102, 204, 0.25);
+  background: #efefef;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  /* box-shadow: 0 3px 10px rgba(0, 102, 204, 0.25); */
   transform: translateY(-1px);
 }
 
@@ -251,20 +251,19 @@
 
 /* Export All Data Button - Primary Style */
 .approvals .exportAllButton {
-  background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
 }
 
 .approvals .exportAllButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0052a3 0%, #003d7a 100%);
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35);
+  /* box-shadow: 0 4px 12px var(--color-primary); */
   transform: translateY(-1px);
 }
 
 .approvals .exportAllButton:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.25);
+  box-shadow: 0 2px 6px var(--color-primary);
 }
 
 /* Icon animations */
@@ -297,12 +296,16 @@
 /* Focus states for accessibility */
 .approvals .exportCurrentTab:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2), 0 2px 6px rgba(0, 102, 204, 0.15);
+  box-shadow:
+    0 0 0 3px rgba(0, 102, 204, 0.2),
+    0 2px 6px rgba(0, 102, 204, 0.15);
 }
 
 .approvals .exportAllButton:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2), 0 4px 12px rgba(0, 102, 204, 0.35);
+  box-shadow:
+    0 0 0 3px rgba(0, 102, 204, 0.2),
+    0 4px 12px rgba(0, 102, 204, 0.35);
 }
 
 /* Loading spinner animation */
