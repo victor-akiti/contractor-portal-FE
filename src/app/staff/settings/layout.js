@@ -1,5 +1,5 @@
 export const metadata = {
-    title: 'Account Settings | AMNI Vendor Registration Portal',
+    title: 'Account Settings | AMNI Contractor Portal',
   };
 
   const Layout = ({children}) => {

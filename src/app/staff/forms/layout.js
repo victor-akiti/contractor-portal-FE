@@ -1,5 +1,5 @@
 export const metadata = {
-    title: 'Forms | AMNI Vendor Registration Portal',
+    title: 'Forms | AMNI Contractor Portal',
   };
 
   const Layout = ({children}) => {

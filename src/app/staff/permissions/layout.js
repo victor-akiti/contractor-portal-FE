@@ -1,5 +1,5 @@
 export const metadata = {
-    title: 'Roles and User Management | AMNI Vendor Registration Portal',
+    title: 'Permissions | AMNI Contractor Portal',
   };
 
   const Layout = ({children}) => {
