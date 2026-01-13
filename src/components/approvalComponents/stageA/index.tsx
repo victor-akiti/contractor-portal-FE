@@ -285,6 +285,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                         }
                     </div>
                 }
+                break;
             case "multiSelectText":
                 return <div className={styles.fieldItem}>
                     <p className={styles.fieldData}>
@@ -294,7 +295,6 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                         }
                     </p>
                 </div>
-
 
 
         }
@@ -1088,8 +1088,12 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                     }
 
                     {
+                        !approvedAll && !applicationProcessed && <p className={styles.holdSection}>Recommend this application for hold by C&P Supervisor. The application will remain at L2 till the supervisor says otherwise. <button disabled={itemBeingUpdated === "hold"} onClick={() => setShowSetReasonForHoldModal(true)}>PROCEED {itemBeingUpdated === "hold" && <ButtonLoadingIconPrimary />}</button> </p>
+                    }
+
+                    {
                         (unaprovedSectionsWithNoRemarks.length > 0 && !applicationProcessed) && <div className={styles.unapprovedSectionsDiv}>
-                            <p>The following unapproved sections have no notes for the vendor. Ved are required to inform the vendor what they need to add/modify in the relevant section:</p>
+                            <p>The following unapproved sections have no notes for the vendor. It are required to inform the vendor what they need to add/modify in the relevant section:</p>
 
                             {
                                 unaprovedSectionsWithNoRemarks.map((item, index) => <p key={index}>{item}</p>)
@@ -1099,6 +1103,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                         </div>
                     }
 
+
                     {
                         (!approvedAll && unaprovedSectionsWithNoRemarks.length === 0 && !applicationProcessed) && <div className={styles.notApprovedDiv}>
                             <p>You have NOT approved all the items in the list for <span className={styles.companyName}>{approvalData?.companyName}</span>. Do not forget to comment on the items you have NOT approved.</p>
@@ -1107,7 +1112,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
 
                             <p className={styles.actionText}>1. Send automated email to applicant. This will move the company out of the registration process till the applicant corrects and re-submits. <button disabled={itemBeingUpdated === "return"} onClick={() => returnToContractor()}>PROCEED {itemBeingUpdated === "return" && <ButtonLoadingIconPrimary />}</button></p>
 
-                            <p className={styles.actionText}>2. Recommend this application for hold by C&P Supervisor. The application will remain at L2 till the supervisor says otherwise. <button disabled={itemBeingUpdated === "hold"} onClick={() => setShowSetReasonForHoldModal(true)}>PROCEED {itemBeingUpdated === "hold" && <ButtonLoadingIconPrimary />}</button> </p>
+                            {/* <p className={styles.actionText}>2. Recommend this application for hold by C&P Supervisor. The application will remain at L2 till the supervisor says otherwise. <button disabled={itemBeingUpdated === "hold"} onClick={() => setShowSetReasonForHoldModal(true)}>PROCEED {itemBeingUpdated === "hold" && <ButtonLoadingIconPrimary />}</button> </p> */}
                         </div>
                     }
 

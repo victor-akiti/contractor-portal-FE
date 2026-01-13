@@ -422,7 +422,7 @@ const StageC = () => {
         setItemBeingUpdated("hold")
 
         try {
-            const recommendForHoldRequest = await postProtected(`approvals/hold/direct/${vendorID}`, {
+            const recommendForHoldRequest = await postProtected(`approvals/hold/recommend/${vendorID}`, {
                 reason
             }, user.role)
 

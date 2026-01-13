@@ -299,6 +299,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
                         }
                     </div>
                 }
+                break;
             case "multiSelectText":
                 return <div className={styles.fieldItem}>
                     <p className={styles.fieldData}>
@@ -729,13 +730,13 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
         }, 5000)
     }
 
-    const recommendForHold = async (reason) => {
+    const directParkContractor = async (reason) => {
 
         setItemBeingUpdated("hold")
         setNoApprovalErrorMessage("")
 
         try {
-            const recommendForHoldRequest = await postProtected(`approvals/hold/recommend/${vendorID}`, {
+            const recommendForHoldRequest = await postProtected(`approvals/hold/direct/${vendorID}`, {
                 pages,
                 newRemarks,
                 stage: 0,
@@ -909,9 +910,9 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
                     <div className={styles.recommendForHoldModal}>
                         <form onSubmit={e => {
                             e.preventDefault()
-                            recommendForHold(e.target[0].value)
+                            directParkContractor(e.target[0].value)
                         }}>
-                            <h3>Recommend application for hold</h3>
+                            <h3>Park application</h3>
 
                             <p>Please include a reason why this application should be held</p>
 
@@ -919,7 +920,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
 
                             <div>
                                 <button type="button" onClick={() => setShowSetReasonForHoldModal(false)}>Cancel</button>
-                                <button>Recommend for hold {itemBeingUpdated === "hold" && <ButtonLoadingIcon />}</button>
+                                <button>Park Application {itemBeingUpdated === "hold" && <ButtonLoadingIcon />}</button>
                             </div>
                         </form>
                     </div>
@@ -1135,6 +1136,10 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
 
                     {
                         noApprovalErrorMessage && <ErrorText text={noApprovalErrorMessage} />
+                    }
+
+                    {
+                        !approvedAll && !applicationProcessed && <p className={styles.holdSection}>Recommend this application for hold by C&P Supervisor. The application will remain at L2 till the supervisor says otherwise. <button disabled={itemBeingUpdated === "hold"} onClick={() => setShowSetReasonForHoldModal(true)}>PROCEED {itemBeingUpdated === "hold" && <ButtonLoadingIconPrimary />}</button> </p>
                     }
 
                     {
