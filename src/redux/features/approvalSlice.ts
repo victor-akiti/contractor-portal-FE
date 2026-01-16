@@ -265,6 +265,37 @@ export const approvalSlice = staffApi.injectEndpoints({
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
+        sendReturnedReminders: builder.mutation<any, { vendorIds: string[]; userRole: string }>({
+            query: ({ vendorIds }) => ({
+                url: `approvals/reminders/bulk`,
+                method: 'POST',
+                body: { vendorIds },
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'returned' },
+                    { type: 'Tab', id: 'in-progress' },
+                    'All Companies'
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+        // POST /approvals/reminder/:vendorID - Send single reminder to returned contractor
+        sendSingleReturnedReminder: builder.mutation<any, { vendorId: string; userRole: string }>({
+            query: ({ vendorId }) => ({
+                url: `approvals/reminder/${vendorId}`,
+                method: 'POST',
+            }),
+            invalidatesTags: (result, error) =>
+                error ? [] : [
+                    'Counts',
+                    { type: 'Tab', id: 'returned' },
+                    { type: 'Tab', id: 'in-progress' },
+                    'All Companies'
+                ],
+            extraOptions: (arg) => ({ userRole: arg.userRole }),
+        }),
+
     }),
     overrideExisting: true,
 })
@@ -285,7 +316,9 @@ export const {
     useRenewInviteMutation,
     useTogglePriorityMutation,
     usePrefetch: usePrefetchApprovals,
-    useGetAllCompaniesQuery
+    useGetAllCompaniesQuery,
+    useSendReturnedRemindersMutation,
+    useSendSingleReturnedReminderMutation,
 } = approvalSlice
 
 export default approvalSlice

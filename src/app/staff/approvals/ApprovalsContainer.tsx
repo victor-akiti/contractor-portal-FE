@@ -1682,6 +1682,19 @@ export default function ApprovalsContainer() {
 
   const displayRows = useMemo(getdisplayRows, [activeTab, approvals]);
 
+
+  // Select Vendors for targeted actions
+  const [selectedVendors, setSelectedVendors] = useState<any[]>([]);
+  const isSelectedVendors = selectedVendors.length > 0;
+
+  const toggleSelectVendor = (vendor: any) => {
+    if (selectedVendors.find((v) => v._id === vendor._id)) {
+      setSelectedVendors(prev => prev.filter((v) => v._id !== vendor._id));
+    } else {
+      setSelectedVendors(prev => [...prev, vendor]);
+    }
+  }
+
   // Render
   return (
     <div className={styles.approvals}>
@@ -1851,6 +1864,8 @@ export default function ApprovalsContainer() {
             </div>
           ) : (
             <DataTable
+              selectedVendors={selectedVendors}
+              setSelectedVendors={setSelectedVendors}
               headers={getActiveTable()}
               onHeaderClick={getSortToPerform}
               showSortIcons={showSortIcons}
@@ -1922,18 +1937,25 @@ export default function ApprovalsContainer() {
                     }
                   />
                 ))}
-              {activeTab === "returned" &&
-                displayRows?.map((item: any, index: number) => (
-                  <ReturnedRow
-                    key={index}
-                    companyRecord={item}
-                    index={index}
-                    user={user}
-                    togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
-                      setDataForPriorityToggle(companyID, isPriority, companyName)
-                    }
-                  />
-                ))}
+              {activeTab === "returned" && (
+                tabData["returned"]?.loaded ?
+                  displayRows?.map((item: any, index: number) => (
+                    <ReturnedRow
+                      key={index}
+                      companyRecord={item}
+                      index={index}
+                      user={user}
+                      togglePriority={(companyID: string, isPriority: boolean, companyName: string) =>
+                        setDataForPriorityToggle(companyID, isPriority, companyName)
+                      }
+                      isChecked={selectedVendors.find((v) => v._id === item._id) ? true : false}
+                      onCheckChange={() => toggleSelectVendor(item)}
+                    />
+                  )) : (<div className={styles.loading}>
+                    <Loading message="Loading Returned companies..." />
+                  </div>)
+              )}
+
               {activeTab === "park-requests" &&
                 displayRows &&
                 displayRows?.map((item: any, index: number) => (
