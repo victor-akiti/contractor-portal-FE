@@ -114,8 +114,8 @@ export const approvalSlice = staffApi.injectEndpoints({
         }),
 
         /* =========================
-               MUTATIONS
-               ========================= */
+                   MUTATIONS
+                   ========================= */
 
         // POST /approvals/process/:vendorId (for all approval stages)
         processApproval: builder.mutation<
