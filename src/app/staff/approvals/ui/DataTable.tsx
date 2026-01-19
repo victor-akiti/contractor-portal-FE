@@ -1,19 +1,19 @@
-import { useSendReturnedRemindersMutation } from '@/redux/features/approvalSlice';
-import { useAppSelector } from '@/redux/hooks';
-import React, { useState } from 'react';
-import { BiBell, BiCheckCircle, BiErrorCircle, BiInfoCircle, BiX } from 'react-icons/bi';
-import styles from '../styles/styles.module.css';
-import modalStyles from './Modal.module.css';
+import { useSendReturnedRemindersMutation } from "@/redux/features/approvalSlice";
+import { useAppSelector } from "@/redux/hooks";
+import React, { useState } from "react";
+import { BiBell, BiCheckCircle, BiErrorCircle, BiInfoCircle, BiX } from "react-icons/bi";
+import styles from "../styles/styles.module.css";
+import modalStyles from "./Modal.module.css";
 
 interface Props {
-  headers: string[]
-  onHeaderClick: (index: number) => void
-  showSortIcons: (index: number) => boolean
-  getIcon: (index: number) => any
-  ImageComponent: React.ComponentType<any>
-  children: React.ReactNode
-  selectedVendors: any[]
-  setSelectedVendors?: React.Dispatch<React.SetStateAction<any[]>>
+  headers: string[];
+  onHeaderClick: (index: number) => void;
+  showSortIcons: (index: number) => boolean;
+  getIcon: (index: number) => any;
+  ImageComponent: React.ComponentType<any>;
+  children: React.ReactNode;
+  selectedVendors: any[];
+  setSelectedVendors?: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 interface BulkResult {
@@ -41,7 +41,7 @@ interface ConfirmModalProps {
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
-  type?: 'info' | 'warning' | 'danger';
+  type?: "info" | "warning" | "danger";
 }
 
 function ConfirmModal({
@@ -50,10 +50,10 @@ function ConfirmModal({
   message,
   onConfirm,
   onCancel,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = "Confirm",
+  cancelText = "Cancel",
   isLoading = false,
-  type = 'info'
+  type = "info",
 }: ConfirmModalProps) {
   if (!isOpen) return null;
 
@@ -75,11 +75,7 @@ function ConfirmModal({
         </div>
 
         <div className={modalStyles.modalFooter}>
-          <button
-            className={modalStyles.cancelButton}
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <button className={modalStyles.cancelButton} onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </button>
           <button
@@ -87,7 +83,7 @@ function ConfirmModal({
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : confirmText}
+            {isLoading ? "Processing..." : confirmText}
           </button>
         </div>
       </div>
@@ -101,27 +97,20 @@ interface ResultModalProps {
   title: string;
   message: string;
   onClose: () => void;
-  type: 'success' | 'error' | 'info';
+  type: "success" | "error" | "info";
   details?: string[];
 }
 
-function ResultModal({
-  isOpen,
-  title,
-  message,
-  onClose,
-  type,
-  details
-}: ResultModalProps) {
+function ResultModal({ isOpen, title, message, onClose, type, details }: ResultModalProps) {
   if (!isOpen) return null;
 
   const getIcon = () => {
     switch (type) {
-      case 'success':
+      case "success":
         return <BiCheckCircle size={48} />;
-      case 'error':
+      case "error":
         return <BiErrorCircle size={48} />;
-      case 'info':
+      case "info":
         return <BiInfoCircle size={48} />;
       default:
         return <BiInfoCircle size={48} />;
@@ -139,15 +128,15 @@ function ResultModal({
         </div>
 
         <div className={modalStyles.modalBody}>
-          <div className={`${modalStyles.iconContainer} ${modalStyles[type]}`}>
-            {getIcon()}
-          </div>
+          <div className={`${modalStyles.iconContainer} ${modalStyles[type]}`}>{getIcon()}</div>
           <p className={modalStyles.mainMessage}>{message}</p>
 
           {details && details.length > 0 && (
             <div className={modalStyles.detailsList}>
               {details.map((detail, index) => (
-                <p key={index} className={modalStyles.detailItem}>{detail}</p>
+                <p key={index} className={modalStyles.detailItem}>
+                  {detail}
+                </p>
               ))}
             </div>
           )}
@@ -172,31 +161,26 @@ export default function DataTable({
   ImageComponent,
   children,
   selectedVendors,
-  setSelectedVendors
+  setSelectedVendors,
 }: Props) {
   const renderHeader = (header: string, index: number) => {
-    const hasSortIcon = showSortIcons(index)
+    const hasSortIcon = showSortIcons(index);
 
     return (
       <td key={index}>
         <div
           className={styles.tableHeading}
           onClick={() => onHeaderClick(index)}
-          style={{ cursor: hasSortIcon ? 'pointer' : 'default' }}
+          style={{ cursor: hasSortIcon ? "pointer" : "default" }}
         >
           {hasSortIcon && (
-            <ImageComponent
-              src={getIcon(index)}
-              alt="sort icon"
-              width={15}
-              height={15}
-            />
+            <ImageComponent src={getIcon(index)} alt="sort icon" width={15} height={15} />
           )}
           <p>{header}</p>
         </div>
       </td>
-    )
-  }
+    );
+  };
 
   const user = useAppSelector((state: any) => state?.user?.user);
   const [sendReminders, { isLoading: isSendingReminders }] = useSendReturnedRemindersMutation();
@@ -209,23 +193,23 @@ export default function DataTable({
     onConfirm: () => void;
   }>({
     isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => { }
+    title: "",
+    message: "",
+    onConfirm: () => { },
   });
 
   const [resultModal, setResultModal] = useState<{
     isOpen: boolean;
     title: string;
     message: string;
-    type: 'success' | 'error' | 'info';
+    type: "success" | "error" | "info";
     details?: string[];
   }>({
     isOpen: false,
-    title: '',
-    message: '',
-    type: 'info',
-    details: []
+    title: "",
+    message: "",
+    type: "info",
+    details: [],
   });
 
   // Modal helper functions
@@ -234,41 +218,41 @@ export default function DataTable({
       isOpen: true,
       title,
       message,
-      onConfirm
+      onConfirm,
     });
   };
 
   const closeConfirmModal = () => {
     setConfirmModal({
       isOpen: false,
-      title: '',
-      message: '',
-      onConfirm: () => { }
+      title: "",
+      message: "",
+      onConfirm: () => { },
     });
   };
 
   const showResult = (
     title: string,
     message: string,
-    type: 'success' | 'error' | 'info',
-    details?: string[]
+    type: "success" | "error" | "info",
+    details?: string[],
   ) => {
     setResultModal({
       isOpen: true,
       title,
       message,
       type,
-      details
+      details,
     });
   };
 
   const closeResultModal = () => {
     setResultModal({
       isOpen: false,
-      title: '',
-      message: '',
-      type: 'info',
-      details: []
+      title: "",
+      message: "",
+      type: "info",
+      details: [],
     });
   };
 
@@ -277,14 +261,14 @@ export default function DataTable({
     if (selectedVendors.length === 0) {
       return {
         valid: false,
-        message: "Please select at least one contractor"
+        message: "Please select at least one contractor",
       };
     }
 
     if (selectedVendors.length > 50) {
       return {
         valid: false,
-        message: "Cannot send reminders to more than 50 contractors at once"
+        message: "Cannot send reminders to more than 50 contractors at once",
       };
     }
 
@@ -298,26 +282,26 @@ export default function DataTable({
     // All successful
     if (failed.length === 0) {
       return {
-        message: `Successfully sent reminders to all ${successful.length} contractor${successful.length > 1 ? 's' : ''}`,
-        details: undefined
+        message: `Successfully sent reminders to all ${successful.length} contractor${successful.length > 1 ? "s" : ""}`,
+        details: undefined,
       };
     }
 
     // All failed
     if (successful.length === 0) {
       return {
-        message: 'Failed to send all reminders',
-        details: failed.map(f => `${f.companyName || f.id}: ${f.reason}`)
+        message: "Failed to send all reminders",
+        details: failed.map((f) => `${f.companyName || f.id}: ${f.reason}`),
       };
     }
 
     // Mixed results
     return {
-      message: `Successfully sent reminders to ${successful.length} contractor${successful.length > 1 ? 's' : ''}`,
+      message: `Successfully sent reminders to ${successful.length} contractor${successful.length > 1 ? "s" : ""}`,
       details: [
         `${failed.length} failed:`,
-        ...failed.map(f => `${f.companyName || f.id}: ${f.reason}`)
-      ]
+        ...failed.map((f) => `${f.companyName || f.id}: ${f.reason}`),
+      ],
     };
   };
 
@@ -325,7 +309,7 @@ export default function DataTable({
   const handleSendReminders = async () => {
     try {
       // Extract vendor IDs
-      const vendorIds = selectedVendors.map(v => v._id);
+      const vendorIds = selectedVendors.map((v) => v._id);
 
       // Send reminders
       const response = await sendReminders({ vendorIds, userRole: user?.role }).unwrap();
@@ -336,15 +320,22 @@ export default function DataTable({
       // Format and show result
       if (response.data) {
         const { message, details } = formatResultDetails(response.data);
-        const type = response.data.failed.length === 0 ? 'success' :
-          response.data.successful.length === 0 ? 'error' : 'info';
+        const type =
+          response.data.failed.length === 0
+            ? "success"
+            : response.data.successful.length === 0
+              ? "error"
+              : "info";
 
         showResult(
-          type === 'success' ? 'Reminders Sent' :
-            type === 'error' ? 'Failed to Send Reminders' : 'Partial Success',
+          type === "success"
+            ? "Reminders Sent"
+            : type === "error"
+              ? "Failed to Send Reminders"
+              : "Partial Success",
           message,
           type,
-          details
+          details,
         );
 
         // Clear selections on success
@@ -352,14 +343,13 @@ export default function DataTable({
           setSelectedVendors([]);
         }
       }
-
     } catch (error: any) {
-      console.error('Error sending reminders:', error);
+      console.error("Error sending reminders:", error);
       closeConfirmModal();
       showResult(
-        'Error',
-        error?.data?.message || 'Failed to send reminders. Please try again.',
-        'error'
+        "Error",
+        error?.data?.message || "Failed to send reminders. Please try again.",
+        "error",
       );
     }
   };
@@ -368,15 +358,15 @@ export default function DataTable({
     // Validate
     const validation = validateBulkAction();
     if (!validation.valid) {
-      showResult('Validation Error', validation.message, 'error');
+      showResult("Validation Error", validation.message, "error");
       return;
     }
 
     // Show confirmation
     showConfirmation(
-      'Send Reminders',
-      `Are you sure you want to send reminders to ${selectedVendors.length} contractor${selectedVendors.length > 1 ? 's' : ''}?`,
-      handleSendReminders
+      "Send Reminders",
+      `Are you sure you want to send reminders to ${selectedVendors.length} contractor${selectedVendors.length > 1 ? "s" : ""}?`,
+      handleSendReminders,
     );
   };
 
@@ -384,19 +374,18 @@ export default function DataTable({
     <>
       <table>
         <thead>
-          <tr>
-            {headers.map(renderHeader)}
-          </tr>
+          <tr>{headers.map(renderHeader)}</tr>
 
           {selectedVendors.length > 0 && (
             <div className={styles.selectedCountRow}>
               <div>
                 <div>
                   {selectedVendors.length} selected
-
                   <button
                     className={styles.clearSelectionButton}
-                    onClick={() => { setSelectedVendors?.([]) }}
+                    onClick={() => {
+                      setSelectedVendors?.([]);
+                    }}
                   >
                     <BiX size={18} color="white" />
                   </button>
@@ -407,7 +396,7 @@ export default function DataTable({
                   className={styles.sendReminderButton}
                   disabled={isSendingReminders}
                 >
-                  <BiBell size={18} /> {isSendingReminders ? 'Sending...' : 'Send Reminder'}
+                  <BiBell size={18} /> {isSendingReminders ? "Sending..." : "Send Reminder"}
                 </button>
               </div>
             </div>
@@ -438,5 +427,5 @@ export default function DataTable({
         onClose={closeResultModal}
       />
     </>
-  )
+  );
 }

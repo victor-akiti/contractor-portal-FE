@@ -15,23 +15,24 @@ const sortByCompanyName = (array: any[]) => {
         if (!aPriority && bPriority) return 1;
 
         // Within each group, sort alphabetically by company name
-        return String(a.companyName || '').toLowerCase().localeCompare(String(b.companyName || '').toLowerCase());
+        return String(a.companyName || "")
+            .toLowerCase()
+            .localeCompare(String(b.companyName || "").toLowerCase());
     });
 };
 
 export const approvalSlice = staffApi.injectEndpoints({
     endpoints: (builder) => ({
-
         // GET /companies/approvals/counts
         getApprovalCounts: builder.query<any, string>({
-            query: () => ({ url: 'companies/approvals/counts', method: 'GET' }),
-            providesTags: ['Counts'],
+            query: () => ({ url: "companies/approvals/counts", method: "GET" }),
+            providesTags: ["Counts"],
             extraOptions: (role: string) => ({ userRole: role }),
         }),
 
         // GET /companies/approvals/all
         getAllCompanies: builder.query<any, { userRole: string }>({
-            query: () => ({ url: `companies/approvals/all`, method: 'GET' }),
+            query: () => ({ url: `companies/approvals/all`, method: "GET" }),
             providesTags: ["All Companies"],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
             transformResponse: (response: any) => {
@@ -40,8 +41,8 @@ export const approvalSlice = staffApi.injectEndpoints({
                         ...response,
                         data: {
                             ...response.data,
-                            companies: sortByCompanyName(response.data.companies)
-                        }
+                            companies: sortByCompanyName(response.data.companies),
+                        },
                     };
                 }
                 return response;
@@ -50,8 +51,8 @@ export const approvalSlice = staffApi.injectEndpoints({
 
         // GET /companies/approvals/:tab
         getCompaniesByTab: builder.query<any, { tab: string; userRole: string }>({
-            query: ({ tab }) => ({ url: `companies/approvals/${tab}`, method: 'GET' }),
-            providesTags: (r, e, arg) => [{ type: 'Tab', id: arg.tab }],
+            query: ({ tab }) => ({ url: `companies/approvals/${tab}`, method: "GET" }),
+            providesTags: (r, e, arg) => [{ type: "Tab", id: arg.tab }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
             transformResponse: (response: any) => {
                 if (response?.data?.companies) {
@@ -59,8 +60,8 @@ export const approvalSlice = staffApi.injectEndpoints({
                         ...response,
                         data: {
                             ...response.data,
-                            companies: sortByCompanyName(response.data.companies)
-                        }
+                            companies: sortByCompanyName(response.data.companies),
+                        },
                     };
                 }
                 return response;
@@ -71,9 +72,9 @@ export const approvalSlice = staffApi.injectEndpoints({
         getInvites: builder.query<any, { filter: string; userRole: string }>({
             query: ({ filter }) => ({
                 url: `companies/invites?filter=${encodeURIComponent(filter === "All" ? "all" : filter)}`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: (r, e, arg) => [{ type: 'Tab', id: 'invited:' + arg.filter }],
+            providesTags: (r, e, arg) => [{ type: "Tab", id: "invited:" + arg.filter }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
             transformResponse: (response: any) => {
                 if (response?.data?.invites) {
@@ -81,8 +82,8 @@ export const approvalSlice = staffApi.injectEndpoints({
                         ...response,
                         data: {
                             ...response.data,
-                            invites: sortByCompanyName(response.data.invites)
-                        }
+                            invites: sortByCompanyName(response.data.invites),
+                        },
                     };
                 }
                 return response;
@@ -93,9 +94,9 @@ export const approvalSlice = staffApi.injectEndpoints({
         searchCompanies: builder.query<any, { query: string; filter: string; userRole: string }>({
             query: ({ query, filter }) => ({
                 url: `companies/search?query=${encodeURIComponent(query)}&filter=${encodeURIComponent(filter)}`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: (r, e, arg) => [{ type: 'Search', id: `${arg.query}-${arg.filter}` }],
+            providesTags: (r, e, arg) => [{ type: "Search", id: `${arg.query}-${arg.filter}` }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
             keepUnusedDataFor: 60,
             transformResponse: (response: any) => {
@@ -104,8 +105,8 @@ export const approvalSlice = staffApi.injectEndpoints({
                         ...response,
                         data: {
                             ...response.data,
-                            companies: sortByCompanyName(response.data.companies)
-                        }
+                            companies: sortByCompanyName(response.data.companies),
+                        },
                     };
                 }
                 return response;
@@ -113,37 +114,42 @@ export const approvalSlice = staffApi.injectEndpoints({
         }),
 
         /* =========================
-           MUTATIONS
-           ========================= */
+               MUTATIONS
+               ========================= */
 
         // POST /approvals/process/:vendorId (for all approval stages)
-        processApproval: builder.mutation<any, {
-            vendorId: string;
-            data: {
-                pages?: any;
-                selectedEndUsers?: any;
-                selectedServices?: any;
-                siteVisitRequired?: boolean;
-                dueDiligence?: any;
-                hodRemarkForEA?: any;
-            };
-            userRole: string;
-        }>({
+        processApproval: builder.mutation<
+            any,
+            {
+                vendorId: string;
+                data: {
+                    pages?: any;
+                    selectedEndUsers?: any;
+                    selectedServices?: any;
+                    siteVisitRequired?: boolean;
+                    dueDiligence?: any;
+                    hodRemarkForEA?: any;
+                };
+                userRole: string;
+            }
+        >({
             query: ({ vendorId, data }) => ({
                 url: `approvals/process/${vendorId}`,
-                method: 'POST',
+                method: "POST",
                 body: data,
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'pending-l2' },
-                    { type: 'Tab', id: 'l3' },
-                    { type: 'Tab', id: 'completed-l2' },
-                    { type: 'Tab', id: 'in-progress' },
-                    { type: 'Tab', id: 'returned' },
-                    { type: 'Tab', id: 'park-requests' }
-                ],
+                error
+                    ? []
+                    : [
+                        "Counts",
+                        { type: "Tab", id: "pending-l2" },
+                        { type: "Tab", id: "l3" },
+                        { type: "Tab", id: "completed-l2" },
+                        { type: "Tab", id: "in-progress" },
+                        { type: "Tab", id: "returned" },
+                        { type: "Tab", id: "park-requests" },
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
@@ -151,17 +157,19 @@ export const approvalSlice = staffApi.injectEndpoints({
         revertToL2: builder.mutation<any, { vendorId: string; from: string; userRole: string }>({
             query: ({ vendorId, from }) => ({
                 url: `approvals/revert/l2/${vendorId}`,
-                method: 'POST',
+                method: "POST",
                 body: { from },
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'pending-l2' },
-                    { type: 'Tab', id: 'l3' },
-                    { type: 'Tab', id: 'completed-l2' },
-                    { type: 'Tab', id: 'park-requests' }
-                ],
+                error
+                    ? []
+                    : [
+                        "Counts",
+                        { type: "Tab", id: "pending-l2" },
+                        { type: "Tab", id: "l3" },
+                        { type: "Tab", id: "completed-l2" },
+                        { type: "Tab", id: "park-requests" },
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
@@ -169,14 +177,12 @@ export const approvalSlice = staffApi.injectEndpoints({
         approveParkRequest: builder.mutation<any, { vendorId: string; userRole: string }>({
             query: ({ vendorId }) => ({
                 url: `approvals/hold/approve/${vendorId}`,
-                method: 'GET',
+                method: "GET",
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'park-requests' },
-                    { type: 'Tab', id: 'completed-l2' }
-                ],
+                error
+                    ? []
+                    : ["Counts", { type: "Tab", id: "park-requests" }, { type: "Tab", id: "completed-l2" }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
@@ -184,33 +190,32 @@ export const approvalSlice = staffApi.injectEndpoints({
         declineParkRequest: builder.mutation<any, { vendorId: string; userRole: string }>({
             query: ({ vendorId }) => ({
                 url: `approvals/hold/cancel/${vendorId}`,
-                method: 'GET',
+                method: "GET",
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'park-requests' }
-                ],
+                error ? [] : ["Counts", { type: "Tab", id: "park-requests" }],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
         // POST /invites/archive
         archiveInvite: builder.mutation<any, { inviteData: any; userRole: string }>({
             query: ({ inviteData }) => ({
-                url: 'invites/archive',
-                method: 'POST',
+                url: "invites/archive",
+                method: "POST",
                 body: inviteData,
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'invited:all' },
-                    { type: 'Tab', id: 'invited:All' },
-                    { type: 'Tab', id: 'invited:Active' },
-                    { type: 'Tab', id: 'invited:Expired' },
-                    { type: 'Tab', id: 'invited:Used' },
-                    { type: 'Tab', id: 'invited:Archived' }
-                ],
+                error
+                    ? []
+                    : [
+                        "Counts",
+                        { type: "Tab", id: "invited:all" },
+                        { type: "Tab", id: "invited:All" },
+                        { type: "Tab", id: "invited:Active" },
+                        { type: "Tab", id: "invited:Expired" },
+                        { type: "Tab", id: "invited:Used" },
+                        { type: "Tab", id: "invited:Archived" },
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
@@ -218,13 +223,15 @@ export const approvalSlice = staffApi.injectEndpoints({
         sendReminder: builder.mutation<any, { inviteId: string; userRole: string }>({
             query: ({ inviteId }) => ({
                 url: `invites/remind/${inviteId}`,
-                method: 'GET',
+                method: "GET",
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    { type: 'Tab', id: 'invited:all' },
-                    { type: 'Tab', id: 'invited:All' }
-                ],
+                error
+                    ? []
+                    : [
+                        { type: "Tab", id: "invited:all" },
+                        { type: "Tab", id: "invited:All" },
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
@@ -232,73 +239,83 @@ export const approvalSlice = staffApi.injectEndpoints({
         renewInvite: builder.mutation<any, { inviteId: string; userRole: string }>({
             query: ({ inviteId }) => ({
                 url: `invites/renew/${inviteId}`,
-                method: 'GET',
+                method: "GET",
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    { type: 'Tab', id: 'invited:all' },
-                    { type: 'Tab', id: 'invited:All' },
-                    { type: 'Tab', id: 'invited:Active' },
-                    { type: 'Tab', id: 'invited:Expired' }
-                ],
+                error
+                    ? []
+                    : [
+                        { type: "Tab", id: "invited:all" },
+                        { type: "Tab", id: "invited:All" },
+                        { type: "Tab", id: "invited:Active" },
+                        { type: "Tab", id: "invited:Expired" },
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
         // POST /approvals/priority/:companyID
-        togglePriority: builder.mutation<any, { companyId: string; isPriority: boolean; userRole: string }>({
+        togglePriority: builder.mutation<
+            any,
+            { companyId: string; isPriority: boolean; userRole: string }
+        >({
             query: ({ companyId, isPriority }) => ({
                 url: `approvals/priority/${companyId}`,
-                method: 'POST',
+                method: "POST",
                 body: { isPriority },
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'pending-l2' },
-                    { type: 'Tab', id: 'l3' },
-                    { type: 'Tab', id: 'completed-l2' },
-                    { type: 'Tab', id: 'in-progress' },
-                    { type: 'Tab', id: 'returned' },
-                    { type: 'Tab', id: 'park-requests' },
-                    'All Companies'
-                ],
+                error
+                    ? []
+                    : [
+                        "Counts",
+                        { type: "Tab", id: "pending-l2" },
+                        { type: "Tab", id: "l3" },
+                        { type: "Tab", id: "completed-l2" },
+                        { type: "Tab", id: "in-progress" },
+                        { type: "Tab", id: "returned" },
+                        { type: "Tab", id: "park-requests" },
+                        "All Companies",
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
 
         sendReturnedReminders: builder.mutation<any, { vendorIds: string[]; userRole: string }>({
             query: ({ vendorIds }) => ({
                 url: `approvals/reminders/bulk`,
-                method: 'POST',
+                method: "POST",
                 body: { vendorIds },
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'returned' },
-                    { type: 'Tab', id: 'in-progress' },
-                    'All Companies'
-                ],
+                error
+                    ? []
+                    : [
+                        "Counts",
+                        { type: "Tab", id: "returned" },
+                        { type: "Tab", id: "in-progress" },
+                        "All Companies",
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
         // POST /approvals/reminder/:vendorID - Send single reminder to returned contractor
         sendSingleReturnedReminder: builder.mutation<any, { vendorId: string; userRole: string }>({
             query: ({ vendorId }) => ({
                 url: `approvals/reminder/${vendorId}`,
-                method: 'POST',
+                method: "POST",
             }),
             invalidatesTags: (result, error) =>
-                error ? [] : [
-                    'Counts',
-                    { type: 'Tab', id: 'returned' },
-                    { type: 'Tab', id: 'in-progress' },
-                    'All Companies'
-                ],
+                error
+                    ? []
+                    : [
+                        "Counts",
+                        { type: "Tab", id: "returned" },
+                        { type: "Tab", id: "in-progress" },
+                        "All Companies",
+                    ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
         }),
-
     }),
     overrideExisting: true,
-})
+});
 
 // Export hooks from the slice - this works in Vite
 export const {
@@ -319,6 +336,6 @@ export const {
     useGetAllCompaniesQuery,
     useSendReturnedRemindersMutation,
     useSendSingleReturnedReminderMutation,
-} = approvalSlice
+} = approvalSlice;
 
-export default approvalSlice
+export default approvalSlice;
