@@ -1711,6 +1711,9 @@
 
 .legendIcon {
   font-size: var(--font-size-lg);
+  color: var(--color-primary);
+  font-weight: 200;
+  padding: 0px;
 }
 
 .chevron {
