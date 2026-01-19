@@ -1,4 +1,5 @@
 import styles from '../styles/styles.module.css'
+import StageLegend from './StageLegend'
 
 interface Props {
   userIsCnPStaff: boolean
@@ -120,12 +121,15 @@ export default function FilterControls({
   }
 
   return (
-    <div className={styles.inviteFilters}>
-      {userIsCnPStaff && <label>Filter: </label>}
+    <>
+      {activeTab === "pending-l2" && userIsCnPStaff && <StageLegend />}
+      <div className={styles.inviteFilters}>
+        {userIsCnPStaff && <label>Filter: </label>}
 
-      {activeTab === "invited" && renderInviteFilters()}
-      {activeTab === "pending-l2" && userIsCnPStaff && renderPendingL2Filters()}
-      {activeTab === "l3" && renderL3Filters()}
-    </div>
+        {activeTab === "invited" && renderInviteFilters()}
+        {activeTab === "pending-l2" && userIsCnPStaff && renderPendingL2Filters()}
+        {activeTab === "l3" && renderL3Filters()}
+      </div>
+    </>
   )
 }

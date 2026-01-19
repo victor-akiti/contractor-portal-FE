@@ -4,7 +4,24 @@ import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
 import { userCanTogglePriority } from "../utils";
 
-export default function ReturnedRow({ index, companyRecord, togglePriority, user }: any) {
+interface ReturnedRowProps {
+  index: number;
+  companyRecord: any; // We can type this better later
+  togglePriority?: (id: string, isPriority: boolean, companyName: string) => void;
+  user: any;
+  // New checkbox props (optional for backward compatibility)
+  isChecked?: boolean;
+  onCheckChange?: (id: string, checked: boolean) => void;
+}
+
+export default function ReturnedRow({
+  index,
+  companyRecord,
+  togglePriority,
+  user,
+  isChecked = false,
+  onCheckChange
+}: ReturnedRowProps) {
 
   const getLastUpdated = () => {
     if (companyRecord.lastUpdate)
@@ -16,7 +33,7 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
   };
 
   const getCurrentStage = () => {
-    const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0; // fallback
+    const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0;
 
     switch (level) {
       case 0:
@@ -32,9 +49,15 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
       case 5:
         return "F";
       case 6:
-        return "L3"; // G
+        return "L3";
       default:
         return "A";
+    }
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onCheckChange) {
+      onCheckChange(companyRecord._id, e.target.checked);
     }
   };
 
@@ -47,7 +70,17 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
           : index % 2 === 0 && styles.rowDarkBackground,
       ].join(" ")}
     >
-      <td>
+
+      <td className={styles.checkboxCell}>
+        {onCheckChange && (
+          <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={handleCheckboxChange}
+            aria-label={`Select ${companyRecord.companyName}`}
+            className={styles.rowCheckbox}
+          />
+        )}
         <div className={styles.companyNameContainer}>
           <Link href={`/staff/vendor/${companyRecord._id}`}>
             {String(companyRecord.companyName).toUpperCase()}
@@ -56,7 +89,6 @@ export default function ReturnedRow({ index, companyRecord, togglePriority, user
             <PriorityBadge />
           )}
         </div>
-        {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
         <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
