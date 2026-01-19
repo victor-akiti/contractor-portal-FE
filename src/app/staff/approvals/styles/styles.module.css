@@ -1678,6 +1678,143 @@
 .approvals table tbody tr.needsAttendionBackground:hover {
   background-color: rgba(230, 117, 9, 0.15);
 }
+
+/* ============================================
+   STAGE LEGEND
+   ============================================ */
+.stageLegend {
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.legendToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease;
+}
+
+.legendToggle:hover {
+  background-color: var(--color-bg-light);
+}
+
+.legendIcon {
+  font-size: var(--font-size-lg);
+}
+
+.chevron {
+  margin-left: auto;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.legendContent {
+  padding: 0 var(--spacing-md) var(--spacing-md);
+  border-top: 1px solid var(--color-border-light);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.legendGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.legendItem {
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-light);
+  transition: all 0.2s ease;
+}
+
+.legendItem:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 2px 6px rgba(230, 117, 9, 0.1);
+  transform: translateY(-2px);
+}
+
+.legendHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.legendStage {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: var(--color-primary);
+  color: var(--color-bg-white);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.legendStatus {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+}
+
+.statusUnchecked {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.statusUnverified {
+  background-color: #cfe2ff;
+  border-color: #0d6efd;
+  color: #084298;
+}
+
+.statusVerified {
+  background-color: #d1e7dd;
+  border-color: #198754;
+  color: #0f5132;
+}
+
+.legendTitle {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.legendDescription {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
 .checkboxCell {
   display: flex;
   align-items: center;
