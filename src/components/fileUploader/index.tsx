@@ -13,7 +13,7 @@ import ErrorText from "../errorText"
 import Tabs from "../tabs"
 import styles from "./styles/styles.module.css"
 
-const FileUploader = ({ updateUploadedFiles, updateCode, closeUploader, maxFiles, files, label, onlyNewFiles = false }) => {
+const FileUploader = ({ updateUploadedFiles, updateCode, closeUploader, maxFiles, files, label, onlyNewFiles = false, companyUID = "" }) => {
     const uploadFileTabs = [{
         name: "Upload new file",
         label: "Upload new file"
@@ -87,6 +87,9 @@ const FileUploader = ({ updateUploadedFiles, updateCode, closeUploader, maxFiles
         }
         formData.append("label", label)
         formData.append("updateCode", updateCode)
+        if (companyUID) {
+            formData.append("companyUID", companyUID)
+        }
         setUploading(true)
 
         const uploadFiles = await postProtectedMultipart("files/upload", formData, user.role)
