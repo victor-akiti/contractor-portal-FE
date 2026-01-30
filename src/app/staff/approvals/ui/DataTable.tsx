@@ -282,7 +282,7 @@ export default function DataTable({
     // All successful
     if (failed.length === 0) {
       return {
-        message: `Successfully sent reminders to all ${successful.length} contractor${successful.length > 1 ? "s" : ""}`,
+        message: `Successfully sent reminders to ${successful.length} contractor${successful.length > 1 ? "s" : ""}`,
         details: undefined,
       };
     }
