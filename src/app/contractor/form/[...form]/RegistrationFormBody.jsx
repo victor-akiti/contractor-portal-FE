@@ -203,16 +203,16 @@ const RegistrationFormBody = ({registrationForm,
             {
                 Object.values(currentFieldToUploadFor).length > 0  && <Modal>
                     <FileUploader label={registrationForm.form.pages[currentFieldToUploadFor.pageIndex].sections[currentFieldToUploadFor.sectionIndex].fields[currentFieldToUploadFor.fieldIndex].label}
-                     updateCode={registrationForm.form.pages[currentFieldToUploadFor.pageIndex].sections[currentFieldToUploadFor.sectionIndex].fields[currentFieldToUploadFor.fieldIndex].updateCode} 
+                     updateCode={registrationForm.form.pages[currentFieldToUploadFor.pageIndex].sections[currentFieldToUploadFor.sectionIndex].fields[currentFieldToUploadFor.fieldIndex].updateCode}
                      updateUploadedFiles={fileUrlsArray => {
-                        
+
                         updateField(currentFieldToUploadFor.pageIndex, currentFieldToUploadFor.sectionIndex, currentFieldToUploadFor.fieldIndex, "value", fileUrlsArray)
                         const currentField = registrationForm.form.pages[currentFieldToUploadFor.pageIndex].sections[currentFieldToUploadFor.sectionIndex].fields[currentFieldToUploadFor.fieldIndex]
                         if (currentField.isACertificate) {
                             addCertificates(fileUrlsArray)
                         }
                         closeUploadModal()
-                    }} files={registrationForm.files} maxFiles={currentFieldToUploadFor.maxFiles} closeUploader={() => closeUploadModal()} />
+                    }} files={registrationForm.files} maxFiles={currentFieldToUploadFor.maxFiles} closeUploader={() => closeUploadModal()} companyUID={registrationForm._id} />
                 </Modal>
             }
 

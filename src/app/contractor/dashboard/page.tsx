@@ -172,6 +172,7 @@ const Dashboard = () => {
                                 updateCode={selectedCertificate.updateCode}
                                 updateUploadedFiles={(newFiles) => setNewCertificate(newFiles[0])}
                                 files={dashboardData.files}
+                                companyUID={dashboardData.companies[0]?._id}
                             />
                         </Modal>
                     )}

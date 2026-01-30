@@ -471,7 +471,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
             {
                 currentUpload.field && <Modal>
                     <FileUploader closeUploader={() => { closeUploadModal() }} files={[]} onlyNewFiles={true} maxFiles={1} label={"Upload File"} updateCode={""} updateUploadedFiles={response => updateUploadedField(currentUpload.field, response, currentUpload.index)
-                    } />
+                    } companyUID={approvalData?._id} />
                 </Modal>
             }
 
