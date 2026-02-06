@@ -25,18 +25,66 @@ import styles from "./styles/styles.module.css"
 
 
 
-const RegistrationFormBody = ({registrationForm, 
-    showFinish, 
-    submitForm, 
-    submitting, 
-    showSuccess, 
-    currentFieldToUploadFor, 
+const RegistrationFormBody = ({registrationForm,
+    showFinish,
+    submitForm,
+    submitting,
+    showSuccess,
+    currentFieldToUploadFor,
     savingForm,
     vendorID,
+    companyStatus,
     updateField, addCertificates, closeUploadModal, errorMessage, activePage, goToPreviousPage, saveBeforeProgress, isComplete, tabs, setActivePage, addFieldToSection, removeFieldFromSection, setFieldToUploadFor, removeCertificate, removeFileFromFileList, addSectionToPage, removeSectionFromPage}) => {
 
-    
-    // 
+    const [showRemarksBanner, setShowRemarksBanner] = useState(true)
+
+    // Collect all form-level remarks grouped by page and section
+    const getFormLevelRemarks = () => {
+        const remarks = registrationForm?.form?.remarks
+        if (!remarks || typeof remarks !== "object") return {}
+        return remarks
+    }
+
+    // Check if there are any remarks at all (form-level or section-level)
+    const hasAnyRemarks = () => {
+        // Check form-level remarks
+        const formRemarks = getFormLevelRemarks()
+        for (const pageName in formRemarks) {
+            for (const sectionName in formRemarks[pageName]) {
+                if (formRemarks[pageName][sectionName]?.length > 0) return true
+            }
+        }
+
+        // Check section-level remarks and comments
+        if (registrationForm?.form?.pages) {
+            for (const page of registrationForm.form.pages) {
+                if (page.sections) {
+                    for (const section of page.sections) {
+                        if (section.remarks?.length > 0 || section.comments?.length > 0) return true
+                    }
+                }
+            }
+        }
+
+        return false
+    }
+
+    // Get section-level remarks (from both .remarks and .comments arrays)
+    const getSectionRemarks = (section) => {
+        const remarks = []
+        if (section.remarks && Array.isArray(section.remarks)) {
+            remarks.push(...section.remarks)
+        }
+        if (section.comments && Array.isArray(section.comments)) {
+            remarks.push(...section.comments.map(c => ({ remark: c.remark || c.comment })))
+        }
+        return remarks
+    }
+
+    const isReturned = companyStatus === "returned"
+    const remarksExist = hasAnyRemarks()
+
+    //
 
     const getFieldPlaceholder = (field) => {
         if (field.type === "shortText" && field.label === "Registered Number") {
@@ -222,6 +270,76 @@ const RegistrationFormBody = ({registrationForm,
                 errorMessage && <ErrorText text={errorMessage} />
             }
 
+            {/* Return Remarks Summary Banner */}
+            {isReturned && remarksExist && showRemarksBanner && (
+                <div className={styles.remarksBanner}>
+                    <div className={styles.remarksBannerHeader}>
+                        <div className={styles.remarksBannerTitle}>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 6v4m0 4h.01M18 10a8 8 0 11-16 0 8 8 0 0116 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span>Your application has been returned for the following updates:</span>
+                        </div>
+                        <button className={styles.remarksBannerDismiss} onClick={() => setShowRemarksBanner(false)}>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div className={styles.remarksBannerContent}>
+                        {Object.entries(getFormLevelRemarks()).map(([pageName, sections]) => (
+                            Object.entries(sections).map(([sectionName, remarksList]) => (
+                                remarksList && remarksList.length > 0 && (
+                                    <div key={`${pageName}-${sectionName}`} className={styles.remarksBannerGroup}>
+                                        <div className={styles.remarksBannerGroupTitle}>
+                                            {pageName} &rarr; {sectionName}
+                                        </div>
+                                        <ul className={styles.remarksBannerList}>
+                                            {remarksList.map((item, idx) => (
+                                                <li key={idx}>{item.remark}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )
+                            ))
+                        ))}
+                        {/* Also show section-level remarks not in form.remarks */}
+                        {registrationForm?.form?.pages?.map((page, pageIdx) =>
+                            page.sections?.map((section, secIdx) => {
+                                const sectionRemarks = getSectionRemarks(section)
+                                if (sectionRemarks.length === 0) return null
+                                // Check if this section's remarks are already covered by form-level remarks
+                                const formRemarks = getFormLevelRemarks()
+                                const coveredInFormRemarks = formRemarks[page.pageTitle]?.[section.title]
+                                if (coveredInFormRemarks && coveredInFormRemarks.length > 0) return null
+                                return (
+                                    <div key={`section-${pageIdx}-${secIdx}`} className={styles.remarksBannerGroup}>
+                                        <div className={styles.remarksBannerGroupTitle}>
+                                            {page.pageTitle} &rarr; {section.title}
+                                        </div>
+                                        <ul className={styles.remarksBannerList}>
+                                            {sectionRemarks.map((item, idx) => (
+                                                <li key={idx}>{item.remark}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )
+                            })
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Show Remarks button when banner is dismissed */}
+            {isReturned && remarksExist && !showRemarksBanner && (
+                <button className={styles.showRemarksButton} onClick={() => setShowRemarksBanner(true)}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 4v4m0 4h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Show Return Remarks
+                </button>
+            )}
+
             {
                 registrationForm.form && <div>
                     <div className={styles.actionButtonsTop}>
@@ -258,6 +376,22 @@ const RegistrationFormBody = ({registrationForm,
                                 <h3>{sectionItem.title}</h3>
                                 <p>{sectionItem.description}</p>
 
+                                {/* Section-level remarks display */}
+                                {isReturned && getSectionRemarks(sectionItem).length > 0 && (
+                                    <div className={styles.sectionRemarks}>
+                                        <div className={styles.sectionRemarksHeader}>
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 4v4m0 4h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                            <span>Remarks for this section:</span>
+                                        </div>
+                                        <ul className={styles.sectionRemarksList}>
+                                            {getSectionRemarks(sectionItem).map((item, remarkIdx) => (
+                                                <li key={remarkIdx} className={styles.sectionRemarkItem}>{item.remark}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
 
                                 <div>
                                     {
