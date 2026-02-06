@@ -84,6 +84,7 @@ const NewCompanyRegistration = () => {
     const [submitting, setSubmitting] = useState(false)
     const [savingForm, setSavingForm] = useState(false)
     const [vendorID, setVendorID] = useState<String>("")
+    const [companyStatus, setCompanyStatus] = useState<string>("")
     const user = useSelector((state: any) => state.user.user)
 
 
@@ -158,6 +159,9 @@ const NewCompanyRegistration = () => {
                 tempBaseRegistrationForm = getVendorRegistrationFormRequest.data.baseRegistrationForm
                 setBaseRegistrationForm(tempBaseRegistrationForm)
 
+                // Extract company status for returned remarks display
+                const status = vendorRegistrationForm?.flags?.status || vendorRegistrationForm?.flags?.stage || ""
+                setCompanyStatus(status)
 
                 let tempTabs = [...tabs]
                 tempTabs = generalRegistrationForm.form.pages.map((item) => {
@@ -746,6 +750,7 @@ const NewCompanyRegistration = () => {
             showFinish={showFinish}
             vendorID={vendorID}
             showSuccess={showSuccess}
+            companyStatus={companyStatus}
             addSectionToPage={(section, pageIndex, sectionIndex, index) => addSectionToPage(section, pageIndex, sectionIndex)}
             removeSectionFromPage={(section, pageIndex, sectionIndex) => removeSectionFromPage(section, pageIndex, sectionIndex)}
             setActivePage={(newActivePAge) => setActivePage(newActivePAge)}

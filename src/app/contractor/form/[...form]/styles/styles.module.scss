@@ -99,6 +99,118 @@
 
     
 
+    // Return Remarks Summary Banner
+    .remarksBanner {
+        background-color: #fff8f0;
+        border: 1px solid #f0ad4e;
+        border-left: 4px solid #e67509;
+        border-radius: 5px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+
+        .remarksBannerHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .remarksBannerTitle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #856404;
+
+            svg {
+                flex-shrink: 0;
+                color: #e67509;
+            }
+        }
+
+        .remarksBannerDismiss {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: #856404;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+        }
+
+        .remarksBannerContent {
+            padding-left: 28px;
+        }
+
+        .remarksBannerGroup {
+            margin-bottom: 10px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        .remarksBannerGroupTitle {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6c5a1e;
+            margin-bottom: 4px;
+        }
+
+        .remarksBannerList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                position: relative;
+                padding-left: 16px;
+                font-size: 13px;
+                color: #6c5a1e;
+                line-height: 1.5;
+                margin-bottom: 2px;
+
+                &::before {
+                    content: "\2022";
+                    position: absolute;
+                    left: 0;
+                    color: #e67509;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+
+    .showRemarksButton {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background-color: #fff8f0;
+        border: 1px solid #f0ad4e;
+        border-radius: 5px;
+        padding: 8px 16px;
+        margin-bottom: 16px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        color: #856404;
+
+        svg {
+            color: #e67509;
+        }
+
+        &:hover {
+            background-color: #fff1e0;
+        }
+    }
+
     .registrationFormContent {
         margin-top: 20px;
 
@@ -114,6 +226,55 @@
             border-bottom-width: 1px;
             border-bottom-color: #d7d7d7;
             padding-bottom: 20px;
+
+            .sectionRemarks {
+                background-color: #fff8f0;
+                border: 1px solid #f0ad4e;
+                border-left: 3px solid #e67509;
+                border-radius: 4px;
+                padding: 10px 14px;
+                margin-top: 8px;
+                margin-bottom: 16px;
+
+                .sectionRemarksHeader {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #856404;
+                    margin-bottom: 6px;
+
+                    svg {
+                        flex-shrink: 0;
+                        color: #e67509;
+                    }
+                }
+
+                .sectionRemarksList {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                    padding-left: 22px;
+
+                    .sectionRemarkItem {
+                        position: relative;
+                        padding-left: 14px;
+                        font-size: 13px;
+                        color: #6c5a1e;
+                        line-height: 1.5;
+                        margin-bottom: 2px;
+
+                        &::before {
+                            content: "\2022";
+                            position: absolute;
+                            left: 0;
+                            color: #e67509;
+                            font-weight: bold;
+                        }
+                    }
+                }
+            }
         }
 
         .doubleColumn { 
