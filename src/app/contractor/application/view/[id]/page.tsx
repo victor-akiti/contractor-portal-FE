@@ -121,21 +121,22 @@ const ViewPage = () => {
       if (getVendorRegistrationFormRequest.status === "OK") {
         const responseData = getVendorRegistrationFormRequest.data;
         const generalRegistrationForm = responseData.generalRegistrationForm;
-        const vendorRegistrationForm = responseData.vendorRegistrationForm;
         setRegistrationForm(generalRegistrationForm);
 
-        // Extract company status for returned remarks display
-        const status =
-          vendorRegistrationForm?.flags?.status ||
-          vendorRegistrationForm?.flags?.stage ||
-          responseData?.approvalData?.flags?.status ||
-          responseData?.flags?.status ||
-          responseData?.companyStatus ||
-          "";
-        console.log("[ViewPage] API response data keys:", Object.keys(responseData));
-        console.log("[ViewPage] vendorRegistrationForm:", vendorRegistrationForm);
-        console.log("[ViewPage] Resolved companyStatus:", status);
-        setCompanyStatus(status);
+        // Fetch company status from dashboard data for returned remarks display
+        try {
+          const dashboardRequest = await getProtected("companies/dashboard/data", user.role);
+          if (dashboardRequest.status === "OK") {
+            const company = dashboardRequest.data.companies?.find(
+              (c: any) => c.vendor === vendorID
+            );
+            if (company) {
+              setCompanyStatus(company.flags?.status || "");
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch company status:", error);
+        }
       } else {
         console.error("Failed to load registration form");
       }

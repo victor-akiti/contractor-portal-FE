@@ -149,7 +149,6 @@ const NewCompanyRegistration = () => {
 
             if (getVendorRegistrationFormRequest.status === "OK") {
                 let generalRegistrationForm = getVendorRegistrationFormRequest.data.generalRegistrationForm
-                let vendorRegistrationForm = getVendorRegistrationFormRequest.data.vendorRegistrationForm
 
                 let tempRegistrationForm = { ...registrationForm }
                 tempRegistrationForm = generalRegistrationForm
@@ -159,20 +158,20 @@ const NewCompanyRegistration = () => {
                 tempBaseRegistrationForm = getVendorRegistrationFormRequest.data.baseRegistrationForm
                 setBaseRegistrationForm(tempBaseRegistrationForm)
 
-                // Extract company status for returned remarks display
-                // Check multiple possible paths since the API response structure may vary
-                const responseData = getVendorRegistrationFormRequest.data
-                const status =
-                    vendorRegistrationForm?.flags?.status ||
-                    vendorRegistrationForm?.flags?.stage ||
-                    responseData?.approvalData?.flags?.status ||
-                    responseData?.flags?.status ||
-                    responseData?.companyStatus ||
-                    ""
-                console.log("[VendorForm] API response data keys:", Object.keys(responseData))
-                console.log("[VendorForm] vendorRegistrationForm:", vendorRegistrationForm)
-                console.log("[VendorForm] Resolved companyStatus:", status)
-                setCompanyStatus(status)
+                // Fetch company status from dashboard data for returned remarks display
+                try {
+                    const dashboardRequest = await getProtected("companies/dashboard/data", user.role)
+                    if (dashboardRequest.status === "OK") {
+                        const company = dashboardRequest.data.companies?.find(
+                            (c: any) => c.vendor === vendorId
+                        )
+                        if (company) {
+                            setCompanyStatus(company.flags?.status || "")
+                        }
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch company status:", error)
+                }
 
                 let tempTabs = [...tabs]
                 tempTabs = generalRegistrationForm.form.pages.map((item) => {
