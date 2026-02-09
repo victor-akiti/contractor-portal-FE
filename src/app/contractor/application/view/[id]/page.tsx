@@ -63,6 +63,7 @@ const ViewPage = () => {
   const [registrationForm, setRegistrationForm] = useState<RegistrationForm>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showRemarksBanner, setShowRemarksBanner] = useState(true);
+  const [companyStatus, setCompanyStatus] = useState("");
   const location = useParams();
   const router = useRouter();
   const user = useSelector((state: any) => state.user.user);
@@ -118,9 +119,23 @@ const ViewPage = () => {
       );
 
       if (getVendorRegistrationFormRequest.status === "OK") {
-        const generalRegistrationForm =
-          getVendorRegistrationFormRequest.data.generalRegistrationForm;
+        const responseData = getVendorRegistrationFormRequest.data;
+        const generalRegistrationForm = responseData.generalRegistrationForm;
+        const vendorRegistrationForm = responseData.vendorRegistrationForm;
         setRegistrationForm(generalRegistrationForm);
+
+        // Extract company status for returned remarks display
+        const status =
+          vendorRegistrationForm?.flags?.status ||
+          vendorRegistrationForm?.flags?.stage ||
+          responseData?.approvalData?.flags?.status ||
+          responseData?.flags?.status ||
+          responseData?.companyStatus ||
+          "";
+        console.log("[ViewPage] API response data keys:", Object.keys(responseData));
+        console.log("[ViewPage] vendorRegistrationForm:", vendorRegistrationForm);
+        console.log("[ViewPage] Resolved companyStatus:", status);
+        setCompanyStatus(status);
       } else {
         console.error("Failed to load registration form");
       }
@@ -381,7 +396,7 @@ const ViewPage = () => {
       </div>
 
       {/* Return Remarks Summary Banner */}
-      {hasAnyRemarks() && showRemarksBanner && (
+      {companyStatus === "returned" && hasAnyRemarks() && showRemarksBanner && (
         <div className={styles.remarksBanner}>
           <div className={styles.remarksBannerHeader}>
             <div className={styles.remarksBannerTitle}>
@@ -438,7 +453,7 @@ const ViewPage = () => {
         </div>
       )}
 
-      {hasAnyRemarks() && !showRemarksBanner && (
+      {companyStatus === "returned" && hasAnyRemarks() && !showRemarksBanner && (
         <button className={styles.showRemarksButton} onClick={() => setShowRemarksBanner(true)}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M8 4v4m0 4h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -467,7 +482,7 @@ const ViewPage = () => {
                       <h6 className={styles.sectionTitle}>{section.title}</h6>
                     </div>
 
-                    {getSectionRemarks(section).length > 0 && (
+                    {companyStatus === "returned" && getSectionRemarks(section).length > 0 && (
                       <div className={styles.sectionRemarks}>
                         <div className={styles.sectionRemarksHeader}>
                           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
