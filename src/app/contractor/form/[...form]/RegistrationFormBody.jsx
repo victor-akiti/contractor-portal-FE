@@ -55,12 +55,12 @@ const RegistrationFormBody = ({registrationForm,
             }
         }
 
-        // Check section-level remarks and comments
+        // Check section-level remarks (Notes for Vendor only, not internal comments)
         if (registrationForm?.form?.pages) {
             for (const page of registrationForm.form.pages) {
                 if (page.sections) {
                     for (const section of page.sections) {
-                        if (section.remarks?.length > 0 || section.comments?.length > 0) return true
+                        if (section.remarks?.length > 0) return true
                     }
                 }
             }
@@ -69,16 +69,12 @@ const RegistrationFormBody = ({registrationForm,
         return false
     }
 
-    // Get section-level remarks (from both .remarks and .comments arrays)
+    // Get section-level remarks (Notes for Vendor only)
     const getSectionRemarks = (section) => {
-        const remarks = []
-        if (section.remarks && Array.isArray(section.remarks)) {
-            remarks.push(...section.remarks)
+        if (section.remarks && Array.isArray(section.remarks) && section.remarks.length > 0) {
+            return section.remarks
         }
-        if (section.comments && Array.isArray(section.comments)) {
-            remarks.push(...section.comments.map(c => ({ remark: c.remark || c.comment })))
-        }
-        return remarks
+        return []
     }
 
     const isReturned = companyStatus === "returned"
