@@ -160,7 +160,18 @@ const NewCompanyRegistration = () => {
                 setBaseRegistrationForm(tempBaseRegistrationForm)
 
                 // Extract company status for returned remarks display
-                const status = vendorRegistrationForm?.flags?.status || vendorRegistrationForm?.flags?.stage || ""
+                // Check multiple possible paths since the API response structure may vary
+                const responseData = getVendorRegistrationFormRequest.data
+                const status =
+                    vendorRegistrationForm?.flags?.status ||
+                    vendorRegistrationForm?.flags?.stage ||
+                    responseData?.approvalData?.flags?.status ||
+                    responseData?.flags?.status ||
+                    responseData?.companyStatus ||
+                    ""
+                console.log("[VendorForm] API response data keys:", Object.keys(responseData))
+                console.log("[VendorForm] vendorRegistrationForm:", vendorRegistrationForm)
+                console.log("[VendorForm] Resolved companyStatus:", status)
                 setCompanyStatus(status)
 
                 let tempTabs = [...tabs]
