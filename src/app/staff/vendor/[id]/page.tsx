@@ -1127,13 +1127,13 @@ const ViewVendorPage = () => {
                                         <div className={styles.currentAdminInfoItem}>
                                             <label>Name</label>
 
-                                            <p>{currentPortalAdministrator.name}</p>
+                                            <p>{currentPortalAdministrator?.name}</p>
                                         </div>
 
                                         <div className={styles.currentAdminInfoItem}>
                                             <label>Email</label>
 
-                                            <p>{currentPortalAdministrator.email}</p>
+                                            <p>{currentPortalAdministrator?.email}</p>
                                         </div>
 
                                         <div className={styles.currentAdminInfoItem}>
@@ -1141,8 +1141,8 @@ const ViewVendorPage = () => {
 
                                             <p>
                                                 {currentPortalAdministrator?.phone?.number
-                                                    ? currentPortalAdministrator.phone.number
-                                                    : currentPortalAdministrator.phone}
+                                                    ? currentPortalAdministrator?.phone.number
+                                                    : currentPortalAdministrator?.phone}
                                             </p>
                                         </div>
                                     </div>
