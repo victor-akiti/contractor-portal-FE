@@ -77,7 +77,6 @@ const RegistrationFormBody = ({registrationForm,
         return []
     }
 
-    const isReturned = companyStatus === "returned"
     const remarksExist = hasAnyRemarks()
 
     //
@@ -267,7 +266,7 @@ const RegistrationFormBody = ({registrationForm,
             }
 
             {/* Return Remarks Summary Banner */}
-            {isReturned && remarksExist && showRemarksBanner && (
+            {remarksExist && showRemarksBanner && (
                 <div className={styles.remarksBanner}>
                     <div className={styles.remarksBannerHeader}>
                         <div className={styles.remarksBannerTitle}>
@@ -327,7 +326,7 @@ const RegistrationFormBody = ({registrationForm,
             )}
 
             {/* Show Remarks button when banner is dismissed */}
-            {isReturned && remarksExist && !showRemarksBanner && (
+            {remarksExist && !showRemarksBanner && (
                 <button className={styles.showRemarksButton} onClick={() => setShowRemarksBanner(true)}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 4v4m0 4h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -373,7 +372,7 @@ const RegistrationFormBody = ({registrationForm,
                                 <p>{sectionItem.description}</p>
 
                                 {/* Section-level remarks display */}
-                                {isReturned && getSectionRemarks(sectionItem).length > 0 && (
+                                {getSectionRemarks(sectionItem).length > 0 && (
                                     <div className={styles.sectionRemarks}>
                                         <div className={styles.sectionRemarksHeader}>
                                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
