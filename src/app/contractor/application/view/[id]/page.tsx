@@ -23,6 +23,11 @@ type RegistrationForm = {
         description?: string;
         allowMultiple?: boolean;
         addSectionText?: string;
+        remarks?: Array<{
+          remark: string;
+          userName: string;
+          date: string;
+        }>;
         fields?: Array<{
           value?: any;
           type?: any;
@@ -55,6 +60,8 @@ type RegistrationForm = {
  * - View contractor registration details
  * - Certificate expiry tracking
  * - Elegant accordion-based layout
+ * - Clean, professional design
+ * - Shows remarks (notes for vendors) by default when available
  * - 100% backward-compatible with existing functionality
  */
 const ViewPage = () => {
@@ -100,8 +107,7 @@ const ViewPage = () => {
     if (currentDateObject.getTime() >= expiryDateObject.getTime()) {
       return "expired";
     } else if (
-      (expiryDateObject.getTime() - currentDateObject.getTime()) / 1000 <
-      7884000
+      (expiryDateObject.getTime() - currentDateObject.getTime()) / 1000 < 7884000
     ) {
       return "expiring";
     } else {
@@ -182,7 +188,7 @@ const ViewPage = () => {
                     </div>
                   )}
 
-                  <div style={{ display: "flex", gap: "var(--spacing-sm)", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     {field.value[0]?.url && (
                       <Link href={field.value[0].url} target="_blank">
                         View Document
@@ -355,6 +361,9 @@ const ViewPage = () => {
                 return null;
               }
 
+              // Check if section has remarks
+              const hasRemarks = section.remarks && section.remarks.length > 0;
+
               return (
                 <div key={sectionIndex} className={styles.sectionItem}>
                   <div>
@@ -362,7 +371,38 @@ const ViewPage = () => {
                       <h6 className={styles.sectionTitle}>{section.title}</h6>
                     </div>
 
+                    {/* Fields */}
                     <div>
+
+
+                      {/* Remarks - Clean Design */}
+                      {hasRemarks && (
+                        <div className={styles.remarksContainer}>
+                          <div className={styles.remarksHeader}>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path
+                                d="M8 14A6 6 0 108 2a6 6 0 000 12zM8 5v3m0 2h.01"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <h4 className={styles.remarksTitle}>{section.title} Review Notes</h4>
+                          </div>
+
+                          <div className={styles.remarksList}>
+                            {section.remarks.map((remarkItem, remarkIndex) => (
+                              <div key={remarkIndex} className={styles.remarkItem}>
+                                <p className={styles.remarkText}>{remarkItem.remark}</p>
+                                <div className={styles.remarkTimestamp}>
+                                  {moment(remarkItem.date).format("MMM DD, YYYY [at] h:mm A")}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {section.fields?.map((field, fieldIndex) =>
                         getFieldItemComponent(field, fieldIndex)
                       )}

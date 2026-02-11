@@ -515,3 +515,87 @@
   background-color: rgba(220, 53, 69, 0.1);
   color: var(--color-danger);
 }
+
+/* Clean Remarks Container - Vendor Side */
+.remarksContainer {
+  background-color: #fffbf0;
+  border-left: 3px solid #e67509;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.remarksHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0e5d0;
+}
+
+.remarksHeader svg {
+  color: #e67509;
+  flex-shrink: 0;
+}
+
+.remarksTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64676b;
+  margin: 0;
+}
+
+.remarksList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.remarkItem {
+  background-color: white;
+  border: 1px solid #f0e5d0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.remarkText {
+  color: #5a4a2a;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+}
+
+.remarkTimestamp {
+  font-size: 0.8125rem;
+  color: #9a8250;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .remarksContainer {
+    padding: 16px;
+  }
+
+  .remarksHeader {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .remarksList {
+    gap: 12px;
+  }
+
+  .remarkItem {
+    padding: 14px;
+  }
+
+  .remarkText {
+    font-size: 0.9rem;
+  }
+
+  .remarkTimestamp {
+    font-size: 0.75rem;
+  }
+}

@@ -114,7 +114,8 @@
   border-style: none;
   border-radius: 5px;
 }
-.newRegistration .actionButtonsFooter button:nth-child(1), .newRegistration .actionButtonsFooter button:nth-child(2) {
+.newRegistration .actionButtonsFooter button:nth-child(1),
+.newRegistration .actionButtonsFooter button:nth-child(2) {
   background-color: var(--form-section-border);
   color: var(--form-input-text);
 }
@@ -147,7 +148,8 @@
   background-color: #e67509 !important;
   color: white !important;
 }
-.newRegistration .actionButtonsTop button:nth-child(1), .newRegistration .actionButtonsTop button:nth-child(2) {
+.newRegistration .actionButtonsTop button:nth-child(1),
+.newRegistration .actionButtonsTop button:nth-child(2) {
   background-color: rgba(0, 0, 0, 0);
   border-style: none;
   border-style: solid;
@@ -170,7 +172,20 @@
 .newRegistration .finishDiv p {
   margin-bottom: 10px;
   color: var(--color-text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Helvetica Neue,
+    Arial,
+    Noto Sans,
+    Liberation Sans,
+    sans-serif,
+    Apple Color Emoji,
+    Segoe UI Emoji,
+    Segoe UI Symbol,
+    Noto Color Emoji;
 }
 .newRegistration .finishDiv h5 {
   font-size: 1.25rem;
@@ -192,4 +207,88 @@
 }
 .newRegistration .finishDiv button > div {
   margin-left: 5px;
-}/*# sourceMappingURL=styles.module.css.map */
+} /*# sourceMappingURL=styles.module.css.map */
+
+/* Clean Remarks Container - Registration Form */
+.remarksContainer {
+  background-color: #fffbf0;
+  border-left: 3px solid #e67509;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px 0;
+}
+
+.remarksHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0e5d0;
+}
+
+.remarksHeader svg {
+  color: #e67509;
+  flex-shrink: 0;
+}
+
+.remarksTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64676b;
+  margin: 0;
+}
+
+.remarksList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.remarkItem {
+  background-color: white;
+  border: 1px solid #f0e5d0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.remarkText {
+  color: #5a4a2a;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+}
+
+.remarkTimestamp {
+  font-size: 0.8125rem;
+  color: #9a8250;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .remarksContainer {
+    padding: 16px;
+  }
+
+  .remarksHeader {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .remarksList {
+    gap: 12px;
+  }
+
+  .remarkItem {
+    padding: 14px;
+  }
+
+  .remarkText {
+    font-size: 0.9rem;
+  }
+
+  .remarkTimestamp {
+    font-size: 0.75rem;
+  }
+}

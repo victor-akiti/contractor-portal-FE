@@ -1486,8 +1486,8 @@ const ViewVendorPage = () => {
                             </div>
                         </Accordion>
 
-                        {pages.map((item, index) => (
-                            <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
+                        {pages.map((item, index) => {
+                            return <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
                                 {item.sections.map((sectionItem, sectionIndex) => {
                                     if (!sectionItem.hideOnApproval && sectionHasData(sectionItem)) {
                                         return (
@@ -1562,7 +1562,7 @@ const ViewVendorPage = () => {
                                     }
                                 })}
                             </Accordion>
-                        ))}
+                        })}
                     </div>
 
                     <div className={styles.approvalContent}>
