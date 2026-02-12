@@ -1287,6 +1287,7 @@ export default function ApprovalsContainer() {
           { label: "Stage", value: "stage" },
           { label: "L2 Stage", value: "l2Stage" },
           { label: "Pending L2 Stage", value: "l2PendingStage" },
+          { label: "Priority", value: (row: any) => row?.flags?.isPriority ? "Yes" : "No" },
           { label: "Last Updated", value: (row: any) => new Date(row.updatedAt) },
           // Vendor Portal Admin details
           { label: "Portal Admin Name", value: "portalAdminName" },
