@@ -86,7 +86,7 @@ export default function SearchBar({
                 <div key={idx} className={styles.searchResultItem}>
                   <div className={styles.searchResultMetaData}>
                     <p>{String(item.companyName).toUpperCase()}</p>
-                    <p>{item?.displayStage ?? capitalizeWord(String(item?.flags?.stage))}</p>
+                    <p>{(item?.displayStage ?? capitalizeWord(String(item?.flags?.stage))) + (item?.flags?.status === "returned" ? " (Returned)" : "")}</p>
                   </div>
                   <div className={styles.searchResultsActionButtons}>
                     <Link href={`/staff/vendor/${item?._id}`}>
