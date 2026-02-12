@@ -885,7 +885,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
             <h3 className={styles.subTitle}>Carry out Stage B</h3>
 
             {
-                !applicationProcessed && <div>
+                !applicationProcessed && ["VRM", "HOD", "C and P Staff", "C and P Supervisor", "C&P Admin", "Admin"].includes(user?.user?.role) && <div>
                     {
                         expiringCertificates.length > 0 && <div className={styles.expiringCertificatesDiv}>
                             <h3>Expiring Certificates/Permits</h3>

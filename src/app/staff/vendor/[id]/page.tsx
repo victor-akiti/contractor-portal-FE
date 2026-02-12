@@ -1319,44 +1319,48 @@ const ViewVendorPage = () => {
 
             {!applicationProcessed && (
                 <div>
-                    {expiringCertificates?.length > 0 && (
-                        <div className={styles.expiringCertificatesDiv}>
-                            <h3>Expiring Certificates/Permits</h3>
-                            <p>The following certificates/permit are expiring within the next 3 months</p>
+                    {["VRM", "HOD", "C and P Staff", "C and P Supervisor", "C&P Admin", "Admin"].includes(user?.user?.role) && (
+                        <>
+                            {expiringCertificates?.length > 0 && (
+                                <div className={styles.expiringCertificatesDiv}>
+                                    <h3>Expiring Certificates/Permits</h3>
+                                    <p>The following certificates/permit are expiring within the next 3 months</p>
 
-                            <div>
-                                {expiringCertificates.map((item, index) => (
-                                    <div key={index} className={styles.expiringCertificatesItem}>
-                                        <h4>{item.approvalLabel}</h4>
-                                        <p>{item.expiryDate}</p>
+                                    <div>
+                                        {expiringCertificates.map((item, index) => (
+                                            <div key={index} className={styles.expiringCertificatesItem}>
+                                                <h4>{item.approvalLabel}</h4>
+                                                <p>{item.expiryDate}</p>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
 
-                            <a>
-                                <p>Notify vendor</p>
-                            </a>
-                        </div>
-                    )}
+                                    <a>
+                                        <p>Notify vendor</p>
+                                    </a>
+                                </div>
+                            )}
 
-                    {expiredCertificates?.length > 0 && (
-                        <div className={styles.expiredCertificatesDiv}>
-                            <h3>Expired Certificates/Permits</h3>
-                            <p>The following certificates/permits have expired</p>
+                            {expiredCertificates?.length > 0 && (
+                                <div className={styles.expiredCertificatesDiv}>
+                                    <h3>Expired Certificates/Permits</h3>
+                                    <p>The following certificates/permits have expired</p>
 
-                            <div>
-                                {expiredCertificates.map((item, index) => (
-                                    <div key={index} className={styles.expiringCertificatesItem}>
-                                        <h4>{item.approvalLabel}</h4>
-                                        <p>{item.expiryDate}</p>
+                                    <div>
+                                        {expiredCertificates.map((item, index) => (
+                                            <div key={index} className={styles.expiringCertificatesItem}>
+                                                <h4>{item.approvalLabel}</h4>
+                                                <p>{item.expiryDate}</p>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
 
-                            <a>
-                                <p>Notify vendor</p>
-                            </a>
-                        </div>
+                                    <a>
+                                        <p>Notify vendor</p>
+                                    </a>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             )}
