@@ -8,6 +8,7 @@ interface Props {
   activeFilter: string
   onInviteFilter: (filter: string) => void
   onNameOrEmailFilter: (query: string) => void
+  onReturnedNameFilter?: (query: string) => void
   approvalStages: string[]
   l3Filters: string[]
   activeL3Filter: string
@@ -25,6 +26,7 @@ export default function FilterControls({
   activeFilter,
   onInviteFilter,
   onNameOrEmailFilter,
+  onReturnedNameFilter,
   approvalStages,
   l3Filters,
   activeL3Filter,
@@ -116,7 +118,16 @@ export default function FilterControls({
     </div>
   )
 
-  if (!userIsCnPStaff && activeTab !== "l3") {
+  const renderReturnedFilter = () => (
+    <div>
+      <input
+        placeholder="Filter by company name"
+        onChange={(e) => onReturnedNameFilter?.(e.target.value)}
+      />
+    </div>
+  )
+
+  if (!userIsCnPStaff && activeTab !== "l3" && activeTab !== "returned") {
     return null
   }
 
@@ -129,6 +140,7 @@ export default function FilterControls({
         {activeTab === "invited" && renderInviteFilters()}
         {activeTab === "pending-l2" && userIsCnPStaff && renderPendingL2Filters()}
         {activeTab === "l3" && renderL3Filters()}
+        {activeTab === "returned" && renderReturnedFilter()}
       </div>
     </>
   )

@@ -517,6 +517,19 @@ export default function ApprovalsContainer() {
     setApprovals(temp);
   };
 
+  const filterReturnedCompaniesByName = (name: string) => {
+    const temp = { ...approvals };
+    if (!name) {
+      temp.returned = fixedApprovals.returned;
+    } else {
+      temp.returned = fixedApprovals.returned.filter(
+        (item: any) =>
+          String(item.companyName).toLowerCase().includes(String(name).toLowerCase()),
+      );
+    }
+    setApprovals(temp);
+  };
+
   const [archivingInvite, setArchivingInvite] = useState<any>();
   const [archiveStatusMessages, setArchiveStatusMessages] = useState({
     errorMessage: "",
@@ -1845,6 +1858,7 @@ export default function ApprovalsContainer() {
             activeFilter={activeFilter}
             onInviteFilter={filterInvites}
             onNameOrEmailFilter={filterInvitedCompaniesByNameOrEmail}
+            onReturnedNameFilter={filterReturnedCompaniesByName}
             approvalStages={[...approvalStages]}
             l3Filters={l3Filters}
             activeL3Filter={activeL3Filter}
