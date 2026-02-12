@@ -8,7 +8,7 @@ interface Props {
   activeFilter: string
   onInviteFilter: (filter: string) => void
   onNameOrEmailFilter: (query: string) => void
-  onReturnedNameFilter?: (query: string) => void
+  onNameFilter?: (query: string) => void
   approvalStages: string[]
   l3Filters: string[]
   activeL3Filter: string
@@ -26,7 +26,7 @@ export default function FilterControls({
   activeFilter,
   onInviteFilter,
   onNameOrEmailFilter,
-  onReturnedNameFilter,
+  onNameFilter,
   approvalStages,
   l3Filters,
   activeL3Filter,
@@ -77,6 +77,13 @@ export default function FilterControls({
     </div>
   )
 
+  const renderNameSearchInput = () => (
+    <input
+      placeholder="Filter by company name"
+      onChange={(e) => onNameFilter?.(e.target.value)}
+    />
+  )
+
   const renderPendingL2Filters = () => (
     <div>
       {renderFilterButton(
@@ -99,6 +106,7 @@ export default function FilterControls({
           `Completed Stage ${stage}${getFilterCount(stage)}`
         )
       )}
+      {renderNameSearchInput()}
     </div>
   )
 
@@ -115,21 +123,15 @@ export default function FilterControls({
           `${filter}${getL3FilterCount(filter)}`
         )
       )}
+      {renderNameSearchInput()}
     </div>
   )
 
-  const renderReturnedFilter = () => (
+  const renderSearchOnly = () => (
     <div>
-      <input
-        placeholder="Filter by company name"
-        onChange={(e) => onReturnedNameFilter?.(e.target.value)}
-      />
+      {renderNameSearchInput()}
     </div>
   )
-
-  if (!userIsCnPStaff && activeTab !== "l3" && activeTab !== "returned") {
-    return null
-  }
 
   return (
     <>
@@ -138,9 +140,12 @@ export default function FilterControls({
         {userIsCnPStaff && <label>Filter: </label>}
 
         {activeTab === "invited" && renderInviteFilters()}
+        {activeTab === "in-progress" && renderSearchOnly()}
         {activeTab === "pending-l2" && userIsCnPStaff && renderPendingL2Filters()}
         {activeTab === "l3" && renderL3Filters()}
-        {activeTab === "returned" && renderReturnedFilter()}
+        {activeTab === "completed-l2" && renderSearchOnly()}
+        {activeTab === "returned" && renderSearchOnly()}
+        {activeTab === "park-requests" && renderSearchOnly()}
       </div>
     </>
   )

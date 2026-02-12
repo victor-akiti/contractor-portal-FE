@@ -517,12 +517,23 @@ export default function ApprovalsContainer() {
     setApprovals(temp);
   };
 
-  const filterReturnedCompaniesByName = (name: string) => {
+  const filterCompaniesByName = (name: string) => {
+    const keyMap: Record<string, string> = {
+      "in-progress": "inProgress",
+      "pending-l2": "pendingL2",
+      l3: "l3",
+      "completed-l2": "completedL2",
+      returned: "returned",
+      "park-requests": "parkRequested",
+    };
+    const key = keyMap[activeTab];
+    if (!key) return;
+
     const temp = { ...approvals };
     if (!name) {
-      temp.returned = fixedApprovals.returned;
+      temp[key] = fixedApprovals[key];
     } else {
-      temp.returned = fixedApprovals.returned.filter(
+      temp[key] = fixedApprovals[key].filter(
         (item: any) =>
           String(item.companyName).toLowerCase().includes(String(name).toLowerCase()),
       );
@@ -1859,7 +1870,7 @@ export default function ApprovalsContainer() {
             activeFilter={activeFilter}
             onInviteFilter={filterInvites}
             onNameOrEmailFilter={filterInvitedCompaniesByNameOrEmail}
-            onReturnedNameFilter={filterReturnedCompaniesByName}
+            onNameFilter={filterCompaniesByName}
             approvalStages={[...approvalStages]}
             l3Filters={l3Filters}
             activeL3Filter={activeL3Filter}
