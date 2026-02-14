@@ -1319,7 +1319,7 @@ const ViewVendorPage = () => {
 
             {!applicationProcessed && (
                 <div>
-                    {["VRM", "HOD", "C and P Staff", "C and P Supervisor", "C&P Admin", "Admin"].includes(user?.user?.role) && (
+                    {["VRM", "HOD", "C and P Staff", "C and P Supervisor", "Supervisor", "C&P Admin", "Admin"].includes(user?.user?.role) && (
                         <>
                             {expiringCertificates?.length > 0 && (
                                 <div className={styles.expiringCertificatesDiv}>
