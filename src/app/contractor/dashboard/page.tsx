@@ -1,6 +1,7 @@
 'use client'
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
+import FileLink from "@/components/fileLink"
 import FileUploader from "@/components/fileUploader"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
@@ -364,13 +365,13 @@ const Dashboard = () => {
                                                 </td>
                                                 <td>
                                                     <div className={styles.tableActions}>
-                                                        <Link
-                                                            href={certificate.url}
-                                                            target="_blank"
+                                                        <FileLink
+                                                            url={certificate.url}
+                                                            name={certificate.name}
                                                             className={`${styles.tableButton} ${styles.tableButtonView}`}
                                                         >
                                                             View
-                                                        </Link>
+                                                        </FileLink>
                                                         <button
                                                             onClick={() => setCertificateToUpdate(certificate, "expiring", index)}
                                                             className={styles.tableButton}
@@ -431,13 +432,13 @@ const Dashboard = () => {
                                                 </td>
                                                 <td>
                                                     <div className={styles.tableActions}>
-                                                        <Link
-                                                            href={certificate.url}
-                                                            target="_blank"
+                                                        <FileLink
+                                                            url={certificate.url}
+                                                            name={certificate.name}
                                                             className={`${styles.tableButton} ${styles.tableButtonView}`}
                                                         >
                                                             View
-                                                        </Link>
+                                                        </FileLink>
                                                         <button
                                                             onClick={() => setCertificateToUpdate(certificate, "expired", index)}
                                                             className={styles.tableButton}

@@ -11,6 +11,7 @@ import CertificateHistoryModal from "@/components/certificateHistory"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
+import FileLink from "@/components/fileLink"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
@@ -258,7 +259,7 @@ const StageX = () => {
                             <div className={styles.fieldData}>
                                 <label>{`${field.label}:`}</label>
                                 <div>
-                                    <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                    <FileLink url={field?.value[0]?.url} name={field?.value[0]?.name} type={field?.value[0]?.type}><p>View</p></FileLink>
                                 </div>
 
                                 {

@@ -17,6 +17,7 @@ import { getProtected } from "@/requests/get";
 import { postProtected } from "@/requests/post";
 import { putProtected } from "@/requests/put";
 import { formatNumberAsCurrency } from "@/utilities/currency";
+import FileLink from "@/components/fileLink";
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
@@ -294,9 +295,9 @@ const ViewVendorPage = () => {
                                     <label>{`${field.label}:`}</label>
                                     {field?.value[0]?.url && (
                                         <div>
-                                            <Link href={field?.value[0]?.url} target="_blank">
+                                            <FileLink url={field?.value[0]?.url} name={field?.value[0]?.name} type={field?.value[0]?.type}>
                                                 <p>View</p>
-                                            </Link>
+                                            </FileLink>
                                         </div>
                                     )}
 

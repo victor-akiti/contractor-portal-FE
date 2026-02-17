@@ -1,6 +1,7 @@
 "use client";
 import Accordion from "@/components/accordion";
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
+import FileLink from "@/components/fileLink";
 import { getProtected } from "@/requests/get";
 import moment from "moment";
 import Link from "next/link";
@@ -190,7 +191,7 @@ const ViewPage = () => {
 
                   <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     {field.value[0]?.url && (
-                      <Link href={field.value[0].url} target="_blank">
+                      <FileLink url={field.value[0].url} name={field.value[0].name} type={field.value[0].type}>
                         View Document
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <path
@@ -201,7 +202,7 @@ const ViewPage = () => {
                             strokeLinejoin="round"
                           />
                         </svg>
-                      </Link>
+                      </FileLink>
                     )}
 
                     {field.hasExpiryDate && (

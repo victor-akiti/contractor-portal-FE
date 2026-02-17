@@ -5,6 +5,7 @@ import alertIcon from "@/assets/images/red_alert_circle.svg"
 import successGreen from "@/assets/images/success_green.svg"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
+import FileLink from "@/components/fileLink"
 import FileUploader from "@/components/fileUploader"
 import Modal from "@/components/modal"
 import staffApi from "@/redux/apis/staffApi"
@@ -534,7 +535,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
 
                                     {
-                                        vendorDueDiligenceData?.registrationCheck?.finding[0]?.url && <Link href={vendorDueDiligenceData?.registrationCheck?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                                        vendorDueDiligenceData?.registrationCheck?.finding[0]?.url && <FileLink url={vendorDueDiligenceData?.registrationCheck?.finding[0]?.url} name={vendorDueDiligenceData?.registrationCheck?.finding[0]?.name}><button>View</button></FileLink>
                                     }
 
                                     <label>{vendorDueDiligenceData?.registrationCheck?.finding[0]?.name}</label>
@@ -592,7 +593,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
 
                                     {
-                                        vendorDueDiligenceData?.internetCheck?.finding[0]?.url && <Link href={vendorDueDiligenceData?.internetCheck?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                                        vendorDueDiligenceData?.internetCheck?.finding[0]?.url && <FileLink url={vendorDueDiligenceData?.internetCheck?.finding[0]?.url} name={vendorDueDiligenceData?.internetCheck?.finding[0]?.name}><button>View</button></FileLink>
                                     }
 
                                     <label>{vendorDueDiligenceData?.internetCheck?.finding[0]?.name}</label>
@@ -729,7 +730,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
 
 
                                                     {
-                                                        vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url && <Link href={vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                                                        vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url && <FileLink url={vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.url} name={vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.name}><button>View</button></FileLink>
                                                     }
 
                                                     <label>{vendorDueDiligenceData?.exposedPersons[index]?.finding[0]?.name}</label>
@@ -806,7 +807,7 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                                     <button className={styles.clearButton} onClick={() => clearUploadedField("referenceCheck", currentUpload.index)}>Clear</button>
 
                                     {
-                                        vendorDueDiligenceData?.referenceCheck?.finding[0]?.url && <Link href={vendorDueDiligenceData?.referenceCheck?.finding[0]?.url} target="_blank"><button>View</button></Link>
+                                        vendorDueDiligenceData?.referenceCheck?.finding[0]?.url && <FileLink url={vendorDueDiligenceData?.referenceCheck?.finding[0]?.url} name={vendorDueDiligenceData?.referenceCheck?.finding[0]?.name}><button>View</button></FileLink>
                                     }
 
                                     <label>{vendorDueDiligenceData?.referenceCheck?.finding[0]?.name}</label>

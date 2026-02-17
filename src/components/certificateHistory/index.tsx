@@ -1,4 +1,4 @@
-import Link from "next/link"
+import FileLink from "@/components/fileLink"
 import Modal from "../modal"
 import styles from "./styles/styles.module.css"
 
@@ -34,7 +34,7 @@ const CertificateHistoryModal = ({currentCertificateHistory, clearCurrentCertifi
                         </td>
 
                         <td>
-                            <Link href={item.url} target="_blank">View</Link>
+                            <FileLink url={item.url} name={item.name} type={item.type}>View</FileLink>
                         </td>
                     </tr>)
                     }

@@ -17,6 +17,7 @@ import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
 import { formatNumberAsCurrency } from "@/utilities/currency"
+import FileLink from "@/components/fileLink"
 import moment from "moment"
 import Image from "next/image"
 import Link from "next/link"
@@ -253,7 +254,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                 <label>{`${field.label}:`}</label>
 
                                 {
-                                    field?.value[0]?.url && <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                    field?.value[0]?.url && <FileLink url={field?.value[0]?.url} name={field?.value[0]?.name} type={field?.value[0]?.type}><p>View</p></FileLink>
                                 }
                                 <div>
 
@@ -976,7 +977,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     <h5>Company Registration</h5>
 
                                     {
-                                        approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <FileLink url={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} name={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.name}>VIEW FINDINGS</FileLink>
                                     }
 
                                 </div>
@@ -985,7 +986,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     <h5>Internet Check</h5>
 
                                     {
-                                        approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.internetCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <FileLink url={approvalData?.dueDiligence?.internetCheck?.finding[0]?.url} name={approvalData?.dueDiligence?.internetCheck?.finding[0]?.name}>VIEW FINDINGS</FileLink>
                                     }
 
                                 </div>
@@ -994,7 +995,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     <h5>Reference Check</h5>
 
                                     {
-                                        approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <FileLink url={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} name={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.name}>VIEW FINDINGS</FileLink>
                                     }
 
                                 </div>
@@ -1051,7 +1052,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
 
                                                     <td>
                                                         {
-                                                            item.finding[0].url && <Link href={item.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                                            item.finding[0].url && <FileLink url={item.finding[0].url} name={item.finding[0].name}>VIEW FINDINGS</FileLink>
                                                         }
 
                                                     </td>
@@ -1073,7 +1074,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     <h5>Contractor’s CAC registration check</h5>
 
                                     {
-                                        approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <FileLink url={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} name={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.name}>VIEW FINDINGS</FileLink>
                                     }
 
 
@@ -1089,7 +1090,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     <h5>Internet search on the Contractor</h5>
 
                                     {
-                                        approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData.dueDiligence.internetCheck.finding[0].url} target="_blank">VIEW FINDINGS</Link>
+                                        approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <FileLink url={approvalData.dueDiligence.internetCheck.finding[0].url} name={approvalData.dueDiligence.internetCheck.finding[0].name}>VIEW FINDINGS</FileLink>
                                     }
 
 
@@ -1106,7 +1107,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     {
                                         approvalData?.dueDiligence?.exposedPersons && approvalData.dueDiligence?.exposedPersons.map((item, index) => <div key={index}>
                                             <p>{`Person ${index + 1} : ${item.companyName ? item.companyName : item.firstName + " " + item.lastName} - ${item.role === "Both" ? "Director & Shareholder" : item.role}`}</p>
-                                            <Link href={approvalData?.dueDiligence?.exposedPersons[index]?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                            <FileLink url={approvalData?.dueDiligence?.exposedPersons[index]?.finding[0]?.url} name={approvalData?.dueDiligence?.exposedPersons[index]?.finding[0]?.name}>VIEW FINDINGS</FileLink>
                                         </div>)
                                     }
                                 </div>
@@ -1120,7 +1121,7 @@ const StageE = ({ approvalData, formPages, vendorID }) => {
                                     <h5>Reference check</h5>
 
                                     {
-                                        approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
+                                        approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <FileLink url={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} name={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.name}>VIEW FINDINGS</FileLink>
                                     }
 
 

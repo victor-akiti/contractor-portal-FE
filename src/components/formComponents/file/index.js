@@ -1,7 +1,7 @@
+import FileLink from "@/components/fileLink"
 import FormErrorText from "@/components/formErrorText"
 import InfoText from "@/components/infoText"
 import Image from "next/image"
-import Link from "next/link"
 import fileIcon from "../../../assets/images/fileIcon.svg"
 import styles from "./styles/styles.module.css"
 
@@ -80,7 +80,7 @@ const FileSelector = ({onClick, label, highlighted, allowedFormats=["PDF", "JPG"
                     <div>
                         <label>{item.name}</label>
                         {
-                            item.url && <Link href={item.url} target="_blank">View</Link>
+                            item.url && <FileLink url={item.url} name={item.name} type={item.type}>View</FileLink>
                         }
                         
                     </div>

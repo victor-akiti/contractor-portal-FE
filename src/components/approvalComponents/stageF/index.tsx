@@ -9,6 +9,7 @@ import styles from "./styles/styles.module.css"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import CertificateHistoryModal from "@/components/certificateHistory"
 import ErrorText from "@/components/errorText"
+import FileLink from "@/components/fileLink"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -310,7 +311,7 @@ const StageF = () => {
 
                                 {
                                     field?.value[0]?.url && <div>
-                                        <Link href={field?.value[0]?.url} target="_blank"><p>View</p></Link>
+                                        <FileLink url={field?.value[0]?.url} name={field?.value[0]?.name} type={field?.value[0]?.type}><p>View</p></FileLink>
                                     </div>
                                 }
 
