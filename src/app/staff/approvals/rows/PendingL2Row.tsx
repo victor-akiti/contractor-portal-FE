@@ -26,9 +26,9 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
     if (user.role === "User") return false;
     if (deriveLevel(companyRecord?.flags) === 2 && companyRecord.currentEndUsers.includes(user._id))
       return true;
-    if (user.role === "VRM" && (!companyRecord?.flags?.level || deriveLevel(companyRecord?.flags) === 3))
+    if (user.role === "VRM" && (deriveLevel(companyRecord?.flags) === 0 || deriveLevel(companyRecord?.flags) === 3))
       return true;
-    if (user.role === "CO" && (!companyRecord?.flags?.level || deriveLevel(companyRecord?.flags) === 2))
+    if (user.role === "CO" && (deriveLevel(companyRecord?.flags) === 0 || deriveLevel(companyRecord?.flags) === 2))
       return true;
     if (
       (user.role === "GM" || user.role?.toLowerCase() === "supervisor") &&
