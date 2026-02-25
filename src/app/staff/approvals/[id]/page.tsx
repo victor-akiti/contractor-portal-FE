@@ -47,6 +47,7 @@ const Approval = () => {
     })
     const [updatingApplication, setUpdatingApplication] = useState(false)
     const [showReturnToL2Modal, setShowReturnToL2Modal] = useState(false)
+    const [resetToStageA, setResetToStageA] = useState(false)
     const [showRetrieveApplicationModal, setShowRetrieveApplicationModal] = useState(false)
     const [vendorID, setVendorID] = useState("")
     const [successMessage, setSuccessMessage] = useState("")
@@ -178,7 +179,7 @@ const Approval = () => {
         if (!updatingApplication) {
             try {
                 setUpdatingApplication(true)
-                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, { from: "parked", reason }, user.role)
+                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, { from: "parked", reason, resetToStageA }, user.role)
 
                 setUpdatingApplication(false)
                 setShowReturnToL2Modal(false)
@@ -210,6 +211,7 @@ const Approval = () => {
     const closeRevertToL2Modal = () => {
         setShowReturnToL2Modal(false)
         setErrorMessage("")
+        setResetToStageA(false)
     }
 
     const retrieveApplicationFromVendor = async (reason) => {
@@ -245,6 +247,17 @@ const Approval = () => {
                             <p>You are about to return this parked application to L2</p>
 
                             <textarea rows={5} placeholder="Reason for returning to L2"></textarea>
+
+                            <div>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={resetToStageA}
+                                        onChange={e => setResetToStageA(e.target.checked)}
+                                    />
+                                    {" "}Restart from Stage A
+                                </label>
+                            </div>
 
                             {
                                 errorMessage && <ErrorText text={errorMessage} />
