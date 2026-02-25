@@ -439,24 +439,16 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
         }
         const tempPages = [...pages]
 
-
-        if (!tempPages[pageIndex].sections[sectionIndex].remarks) {
-
-            tempPages[pageIndex].sections[sectionIndex]["remarks"] = []
-            tempPages[pageIndex].sections[sectionIndex].remarks.push({
+        tempPages[pageIndex].sections[sectionIndex].remarks = [
+            ...(tempPages[pageIndex].sections[sectionIndex].remarks || []),
+            {
                 remark,
                 userID: user.user.uid,
                 userName: user.user.name,
                 date: Date.now()
-            })
-        } else {
-            tempPages[pageIndex].sections[sectionIndex].remarks.push({
-                remark,
-                userID: user.user.uid,
-                userName: user.user.name,
-                date: Date.now()
-            })
-        }
+            }
+        ]
+
         setPages(tempPages)
 
         const tempNewRemarks = { ...newRemarks }
@@ -465,11 +457,11 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
             tempNewRemarks[pages[pageIndex].pageTitle] = {}
         }
 
-        if (!tempNewRemarks[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title]) {
-            tempNewRemarks[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title] = []
+        if (!tempNewRemarks[pages[pageIndex].pageTitle][sectionIndex]) {
+            tempNewRemarks[pages[pageIndex].pageTitle][sectionIndex] = []
         }
 
-        tempNewRemarks[pages[pageIndex].pageTitle][pages[pageIndex].sections[sectionIndex].title].push({
+        tempNewRemarks[pages[pageIndex].pageTitle][sectionIndex].push({
             remark,
             userID: user.user.uid,
             userName: user.user.name,
@@ -631,7 +623,7 @@ const StageB = ({ approvalData, formPages, vendorID }) => {
 
                         if (!remarksForValidation[element.pageTitle]) {
                             unapprovedSectionsWithoutRemarks.push(section.title)
-                        } else if (!remarksForValidation[element.pageTitle][section.title]) {
+                        } else if (!remarksForValidation[element.pageTitle][sectionIndex]) {
                             unapprovedSectionsWithoutRemarks.push(section.title)
                         }
                     }
