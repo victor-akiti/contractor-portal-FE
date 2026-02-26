@@ -47,7 +47,8 @@ const Approval = () => {
     })
     const [updatingApplication, setUpdatingApplication] = useState(false)
     const [showReturnToL2Modal, setShowReturnToL2Modal] = useState(false)
-    const [resetToStageA, setResetToStageA] = useState(false)
+    const [unparkStep, setUnparkStep] = useState<"choose" | "resume">("choose")
+    const [returnFromParked, setReturnFromParked] = useState(false)
     const [showRetrieveApplicationModal, setShowRetrieveApplicationModal] = useState(false)
     const [vendorID, setVendorID] = useState("")
     const [successMessage, setSuccessMessage] = useState("")
@@ -179,7 +180,7 @@ const Approval = () => {
         if (!updatingApplication) {
             try {
                 setUpdatingApplication(true)
-                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, { from: "parked", reason, resetToStageA }, user.role)
+                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, { from: "parked", reason }, user.role)
 
                 setUpdatingApplication(false)
                 setShowReturnToL2Modal(false)
@@ -211,7 +212,7 @@ const Approval = () => {
     const closeRevertToL2Modal = () => {
         setShowReturnToL2Modal(false)
         setErrorMessage("")
-        setResetToStageA(false)
+        setUnparkStep("choose")
     }
 
     const retrieveApplicationFromVendor = async (reason) => {
@@ -238,38 +239,49 @@ const Approval = () => {
             {
                 showReturnToL2Modal && <Modal>
                     <div className={styles.returnToL2Modal}>
-                        <form onSubmit={event => {
-                            event.preventDefault()
-                            revertApplicationToL2(event.target[0].value)
-                        }}>
-                            <h3>Return Parked Application To L2</h3>
+                        {unparkStep === "choose" && (
+                            <>
+                                <h3>Unpark Application</h3>
 
-                            <p>You are about to return this parked application to L2</p>
+                                <p>How would you like to proceed with this parked application?</p>
 
-                            <textarea rows={5} placeholder="Reason for returning to L2"></textarea>
+                                <div>
+                                    <button onClick={() => setUnparkStep("resume")}>Resume at previous stage</button>
+                                    <button onClick={() => {
+                                        setReturnFromParked(true)
+                                        closeRevertToL2Modal()
+                                    }}>Return to contractor</button>
+                                </div>
 
-                            <div>
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={resetToStageA}
-                                        onChange={e => setResetToStageA(e.target.checked)}
-                                    />
-                                    {" "}Restart from Stage A
-                                </label>
-                            </div>
+                                <div>
+                                    <button onClick={() => closeRevertToL2Modal()}>Cancel</button>
+                                </div>
+                            </>
+                        )}
 
-                            {
-                                errorMessage && <ErrorText text={errorMessage} />
-                            }
+                        {unparkStep === "resume" && (
+                            <form onSubmit={event => {
+                                event.preventDefault()
+                                revertApplicationToL2((event.target as HTMLFormElement)[0].value)
+                            }}>
+                                <h3>Resume at Previous Stage</h3>
 
-                            <div>
-                                <button>Return to L2 {updatingApplication && <ButtonLoadingIcon />}</button>
+                                <p>You are about to resume this application from where it was parked</p>
+
+                                <textarea rows={5} placeholder="Reason (optional)"></textarea>
+
                                 {
-                                    !updatingApplication && <button onClick={() => closeRevertToL2Modal()}>Cancel</button>
+                                    errorMessage && <ErrorText text={errorMessage} />
                                 }
-                            </div>
-                        </form>
+
+                                <div>
+                                    <button>Resume {updatingApplication && <ButtonLoadingIcon />}</button>
+                                    {
+                                        !updatingApplication && <button type="button" onClick={() => setUnparkStep("choose")}>Back</button>
+                                    }
+                                </div>
+                            </form>
+                        )}
                     </div>
                 </Modal>
             }
@@ -362,7 +374,7 @@ const Approval = () => {
 
 
             {
-                vendorIsParked() && !successMessage && <div className={styles.noApprovalDiv}>
+                vendorIsParked() && !successMessage && !returnFromParked && <div className={styles.noApprovalDiv}>
                     <h4>Application Parked</h4>
 
                     <p>This vendor&apos;s application has been parked at L2. Approval actions cannot be carried out for now</p>
@@ -389,7 +401,7 @@ const Approval = () => {
 
 
             {
-                (fetchedVendorData && userHasApprovalPermissions() && !vendorIsParked() && !vendorApplicationIsReturned()) && <div>
+                (fetchedVendorData && userHasApprovalPermissions() && (!vendorIsParked() || returnFromParked) && !vendorApplicationIsReturned()) && <div>
                     {
                         getCurrentStage() === "A" && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
                     }
