@@ -1730,6 +1730,7 @@ export default function ApprovalsContainer() {
           actionProgress={actionProgress}
           onConfirm={() => revertToL2(returnToL2Data.vendorID, returnToL2Data.from)}
           onCancel={cancelRevertToL2}
+          vendorID={returnToL2Data.vendorID}
         />
       )}
 

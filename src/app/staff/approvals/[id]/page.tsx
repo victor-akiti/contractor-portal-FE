@@ -13,7 +13,7 @@ import Modal from "@/components/modal"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
@@ -40,6 +40,7 @@ type Vendor = {
 
 const Approval = () => {
     const params = useParams()
+    const searchParams = useSearchParams()
     const [fetchedVendorData, setFetchedVendorData] = useState(false)
     const [vendorData, setVendorData] = useState<Vendor>({
         approvalData: {},
@@ -88,6 +89,12 @@ const Approval = () => {
             fetchVendorData(params.id)
         }
     }, [params])
+
+    useEffect(() => {
+        if (searchParams.get("action") === "return-to-contractor") {
+            setReturnFromParked(true)
+        }
+    }, [searchParams])
 
 
     const userHasApprovalPermissions = () => {
