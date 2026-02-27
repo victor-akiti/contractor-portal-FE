@@ -21,7 +21,7 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
     if (companyRecord?.flags?.level === 2 || companyRecord?.flags?.approvals?.level === 2) {
       return canProcess();
     }
-    if (user.role === "Admin" || user.role === "HOD" || user.role === "Executive Approver")
+    if (user.role === "Admin" || user.role === "HOD" || user.role === "Executive Approver" || user.role?.toLowerCase()?.includes("supervisor"))
       return true;
     if (user.role === "User") return false;
     if (deriveLevel(companyRecord?.flags) === 2 && companyRecord.currentEndUsers.includes(user._id))
@@ -31,7 +31,7 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
     if (user.role === "CO" && (deriveLevel(companyRecord?.flags) === 0 || deriveLevel(companyRecord?.flags) === 2))
       return true;
     if (
-      (user.role === "GM" || user.role?.toLowerCase() === "supervisor") &&
+      (user.role === "GM" || user.role?.toLowerCase()?.includes("supervisor")) &&
       (!companyRecord?.flags?.level || deriveLevel(companyRecord?.flags) === 4)
     )
       return true;
