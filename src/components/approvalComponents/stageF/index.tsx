@@ -655,12 +655,11 @@ const StageF = () => {
 
                     // Map level numbers to stage names and descriptions
                     const stageInfo = [
-                        { name: 'A to B', description: 'Initial Application Review' },
-                        { name: 'B to C', description: 'Supervisor Review' },
-                        { name: 'C to D', description: 'End User Assignment & Review' },
-                        { name: 'D to E', description: 'Due Diligence' },
-                        { name: 'E to F', description: 'HOD Final Review' },
-                        // { name: 'F', description: 'Executive Approval' }
+                        { name: 'A to B', description: 'Contractor Submission' },
+                        { name: 'B to C', description: 'VMO Document Review' },
+                        { name: 'C to D', description: 'C&P Supervisor/HOD Review' },
+                        { name: 'D to E', description: 'End-User Review' },
+                        { name: 'E to F', description: 'VMO Due Diligence Review' },
                     ];
 
                     // Collect all level approvals (level0, level1, etc.)

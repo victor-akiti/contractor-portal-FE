@@ -6,6 +6,7 @@ import StageC from "@/components/approvalComponents/stageC"
 import StageD from "@/components/approvalComponents/stageD"
 import StageE from "@/components/approvalComponents/stageE"
 import StageF from "@/components/approvalComponents/stageF"
+import StageG from "@/components/approvalComponents/stageG"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Loading from "@/components/loading"
@@ -141,6 +142,10 @@ const Approval = () => {
                 hasApprovalPermissions = true;
             }
         } else if (level === 5) {
+            if (["Executive Approver", "HOD", "Admin"].includes(user.role)) {
+                hasApprovalPermissions = true;
+            }
+        } else if (level === 6) {
             if (["Executive Approver", "Admin"].includes(user.role)) {
                 hasApprovalPermissions = true;
             }
@@ -431,6 +436,10 @@ const Approval = () => {
 
                     {
                         getCurrentStage() === "F" && <StageF />
+                    }
+
+                    {
+                        getCurrentStage() === "G" && <StageG />
                     }
 
                     {/* <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} /> */}

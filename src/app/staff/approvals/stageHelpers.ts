@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 // src/pages/staff/approvals/stageHelpers.ts
 
-export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F"] as const;
+export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F", "G"] as const;
 export type ApprovalStage = (typeof APPROVAL_STAGES)[number];
 
 export const deriveLevel = (flags: any): number => {
@@ -36,7 +36,7 @@ export const shouldShowEndUsers = (activeFilter: string): boolean => {
 
 // Your previous rule for when to show End Users
 export const shouldShowUnverified = (activeFilter: string): boolean => {
-    return activeFilter === "E" || activeFilter === "B" || activeFilter === "C" || activeFilter === "D";
+    return activeFilter === "B" || activeFilter === "C" || activeFilter === "D" || activeFilter === "E" || activeFilter === "F";
 };
 
 export const shouldShowUnchecked = (activeFilter: string): boolean => {
@@ -45,7 +45,7 @@ export const shouldShowUnchecked = (activeFilter: string): boolean => {
 
 // Your previous rule for when to show End Users
 export const shouldShowVerified = (activeFilter: string): boolean => {
-    return activeFilter === "F" || activeFilter === "G";
+    return activeFilter === "G";
 };
 
 // Helper function to get name verification status for export
@@ -59,7 +59,7 @@ export const getNameVerificationStatus = (company: any): string => {
         const stage = getStageFromFlags(company.flags);
         if (stage === "A") {
             return "Unchecked";
-        } else if (stage === "F") { // || stage === "G"
+        } else if (stage === "G") {
             return "Verified";
         } else {
             return "Unverified";
