@@ -179,7 +179,7 @@ export default function ApprovalsContainer() {
             ? ["Contractor Name (verified)", "Approval Stage", "Action", "Last Contractor Update"]
             : ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     l3: ["Contractor Name (verified)", "Action", "Last Contractor Update"],
-    completedL2: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
+    completedL2: ["Contractor Name", "Approval Stage", "Parked Reason", "Action", "Last Contractor Update"],
     returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
     parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Action"],
   };
@@ -710,16 +710,17 @@ export default function ApprovalsContainer() {
     }
   };
 
-  const revertToL2 = async (vendorID: string, from: string) => {
+  const revertToL2 = async (vendorID: string, from: string, level?: number) => {
     setActionProgress("processing");
     try {
       // Try RTK mutation first, fallback to original API
       try {
-        await revertToL2Mutation({ vendorId: vendorID, from, userRole: user.role }).unwrap();
+        await revertToL2Mutation({ vendorId: vendorID, from, userRole: user.role, level }).unwrap();
         setActionProgress("success");
       } catch {
         // Fallback to original API
-        const res = await postProtected(`approvals/revert/l2/${vendorID}`, { from }, user.role);
+        const body = level !== undefined ? { from, level } : { from };
+        const res = await postProtected(`approvals/revert/l2/${vendorID}`, body, user.role);
         if (res.status === "OK") {
           setActionProgress("success");
         } else {
@@ -1728,7 +1729,7 @@ export default function ApprovalsContainer() {
       {returnToL2Data && (
         <RevertToL2Modal
           actionProgress={actionProgress}
-          onConfirm={() => revertToL2(returnToL2Data.vendorID, returnToL2Data.from)}
+          onConfirm={(level?: number) => revertToL2(returnToL2Data.vendorID, returnToL2Data.from, level)}
           onCancel={cancelRevertToL2}
           vendorID={returnToL2Data.vendorID}
         />

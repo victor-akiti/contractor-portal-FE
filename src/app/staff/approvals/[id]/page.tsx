@@ -199,7 +199,7 @@ const Approval = () => {
         if (!updatingApplication) {
             try {
                 setUpdatingApplication(true)
-                const revertRequest = await postProtected(`approvals/revert/l0/${vendorID}`, { from: "parked", reason }, user.role)
+                const revertRequest = await postProtected(`approvals/revert/l2/${vendorID}`, { from: "parked", reason, level: 0 }, user.role)
 
                 setUpdatingApplication(false)
                 setShowReturnToL2Modal(false)

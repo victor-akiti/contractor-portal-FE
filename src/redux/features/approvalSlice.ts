@@ -154,11 +154,11 @@ export const approvalSlice = staffApi.injectEndpoints({
         }),
 
         // POST /approvals/revert/l2/:vendorId
-        revertToL2: builder.mutation<any, { vendorId: string; from: string; userRole: string }>({
-            query: ({ vendorId, from }) => ({
+        revertToL2: builder.mutation<any, { vendorId: string; from: string; userRole: string; level?: number }>({
+            query: ({ vendorId, from, level }) => ({
                 url: `approvals/revert/l2/${vendorId}`,
                 method: "POST",
-                body: { from },
+                body: level !== undefined ? { from, level } : { from },
             }),
             invalidatesTags: (result, error) =>
                 error

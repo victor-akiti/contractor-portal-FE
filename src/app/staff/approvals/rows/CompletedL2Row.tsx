@@ -62,6 +62,9 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user 
         <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
       </td>
       <td>
+        <p>{companyRecord?.flags?.hold?.reason ?? "—"}</p>
+      </td>
+      <td>
         <div className={styles.actionsContainer}>
           {hasAdminPermissions(user.role) && (
             <a onClick={() => revertToL2(companyRecord.vendor)}>REVERT TO PENDING L2</a>
