@@ -48,7 +48,7 @@ const Approval = () => {
     })
     const [updatingApplication, setUpdatingApplication] = useState(false)
     const [showReturnToL2Modal, setShowReturnToL2Modal] = useState(false)
-    const [unparkStep, setUnparkStep] = useState<"choose" | "resume">("choose")
+    const [unparkStep, setUnparkStep] = useState<"choose" | "resume" | "return-to-l0">("choose")
     const [returnFromParked, setReturnFromParked] = useState(false)
     const [showRetrieveApplicationModal, setShowRetrieveApplicationModal] = useState(false)
     const [vendorID, setVendorID] = useState("")
@@ -203,6 +203,26 @@ const Approval = () => {
         }
     }
 
+    const revertApplicationToL0 = async (reason) => {
+        if (!updatingApplication) {
+            try {
+                setUpdatingApplication(true)
+                const revertRequest = await postProtected(`approvals/revert/l0/${vendorID}`, { from: "parked", reason }, user.role)
+
+                setUpdatingApplication(false)
+                setShowReturnToL2Modal(false)
+                if (revertRequest.status === "OK") {
+                    showSuccessMessage("Application has been returned to Approvals. Refreshing page...")
+                } else {
+                    showErrorMessage(revertRequest.error.message)
+                }
+
+            } catch (error) {
+                console.error({ error });
+            }
+        }
+    }
+
     const showSuccessMessage = message => {
         setSuccessMessage(message)
 
@@ -254,10 +274,7 @@ const Approval = () => {
 
                                 <div>
                                     <button onClick={() => setUnparkStep("resume")}>Resume at previous stage</button>
-                                    <button onClick={() => {
-                                        setReturnFromParked(true)
-                                        closeRevertToL2Modal()
-                                    }}>Return to contractor</button>
+                                    <button onClick={() => setUnparkStep("return-to-l0")}>Return to Approvals (Level 0)</button>
                                 </div>
 
                                 <div>
@@ -269,7 +286,7 @@ const Approval = () => {
                         {unparkStep === "resume" && (
                             <form onSubmit={event => {
                                 event.preventDefault()
-                                revertApplicationToL2((event.target as HTMLFormElement)[0].value)
+                                revertApplicationToL2(((event.target as HTMLFormElement)[0] as HTMLTextAreaElement).value)
                             }}>
                                 <h3>Resume at Previous Stage</h3>
 
@@ -283,6 +300,30 @@ const Approval = () => {
 
                                 <div>
                                     <button>Resume {updatingApplication && <ButtonLoadingIcon />}</button>
+                                    {
+                                        !updatingApplication && <button type="button" onClick={() => setUnparkStep("choose")}>Back</button>
+                                    }
+                                </div>
+                            </form>
+                        )}
+
+                        {unparkStep === "return-to-l0" && (
+                            <form onSubmit={event => {
+                                event.preventDefault()
+                                revertApplicationToL0(((event.target as HTMLFormElement)[0] as HTMLTextAreaElement).value)
+                            }}>
+                                <h3>Return to Approvals (Level 0)</h3>
+
+                                <p>You are about to return this application to the beginning of the approvals process</p>
+
+                                <textarea rows={5} placeholder="Reason (optional)"></textarea>
+
+                                {
+                                    errorMessage && <ErrorText text={errorMessage} />
+                                }
+
+                                <div>
+                                    <button>Return to Approvals {updatingApplication && <ButtonLoadingIcon />}</button>
                                     {
                                         !updatingApplication && <button type="button" onClick={() => setUnparkStep("choose")}>Back</button>
                                     }
