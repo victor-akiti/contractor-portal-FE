@@ -13,7 +13,7 @@ import Modal from "@/components/modal"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import Link from "next/link"
-import { useParams, useSearchParams } from "next/navigation"
+import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
@@ -40,7 +40,6 @@ type Vendor = {
 
 const Approval = () => {
     const params = useParams()
-    const searchParams = useSearchParams()
     const [fetchedVendorData, setFetchedVendorData] = useState(false)
     const [vendorData, setVendorData] = useState<Vendor>({
         approvalData: {},
@@ -49,7 +48,6 @@ const Approval = () => {
     const [updatingApplication, setUpdatingApplication] = useState(false)
     const [showReturnToL2Modal, setShowReturnToL2Modal] = useState(false)
     const [unparkStep, setUnparkStep] = useState<"choose" | "resume" | "return-to-l0">("choose")
-    const [returnFromParked, setReturnFromParked] = useState(false)
     const [showRetrieveApplicationModal, setShowRetrieveApplicationModal] = useState(false)
     const [vendorID, setVendorID] = useState("")
     const [successMessage, setSuccessMessage] = useState("")
@@ -89,12 +87,6 @@ const Approval = () => {
             fetchVendorData(params.id)
         }
     }, [params])
-
-    useEffect(() => {
-        if (searchParams.get("action") === "return-to-contractor") {
-            setReturnFromParked(true)
-        }
-    }, [searchParams])
 
 
     const userHasApprovalPermissions = () => {
@@ -422,7 +414,7 @@ const Approval = () => {
 
 
             {
-                vendorIsParked() && !successMessage && !returnFromParked && <div className={styles.noApprovalDiv}>
+                vendorIsParked() && !successMessage && <div className={styles.noApprovalDiv}>
                     <h4>Application Parked</h4>
 
                     <p>This vendor&apos;s application has been parked at L2. Approval actions cannot be carried out for now</p>
@@ -449,7 +441,7 @@ const Approval = () => {
 
 
             {
-                (fetchedVendorData && userHasApprovalPermissions() && (!vendorIsParked() || returnFromParked) && !vendorApplicationIsReturned()) && <div>
+                (fetchedVendorData && userHasApprovalPermissions() && !vendorIsParked() && !vendorApplicationIsReturned()) && <div>
                     {
                         getCurrentStage() === "A" && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
                     }
