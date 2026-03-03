@@ -47,7 +47,7 @@ const Approval = () => {
     })
     const [updatingApplication, setUpdatingApplication] = useState(false)
     const [showReturnToL2Modal, setShowReturnToL2Modal] = useState(false)
-    const [unparkStep, setUnparkStep] = useState<"choose" | "resume" | "return-to-l0">("choose")
+    const [returnToL0, setReturnToL0] = useState(false)
     const [showRetrieveApplicationModal, setShowRetrieveApplicationModal] = useState(false)
     const [vendorID, setVendorID] = useState("")
     const [successMessage, setSuccessMessage] = useState("")
@@ -231,7 +231,7 @@ const Approval = () => {
     const closeRevertToL2Modal = () => {
         setShowReturnToL2Modal(false)
         setErrorMessage("")
-        setUnparkStep("choose")
+        setReturnToL0(false)
     }
 
     const retrieveApplicationFromVendor = async (reason) => {
@@ -258,70 +258,47 @@ const Approval = () => {
             {
                 showReturnToL2Modal && <Modal>
                     <div className={styles.returnToL2Modal}>
-                        {unparkStep === "choose" && (
-                            <>
-                                <h3>Unpark Application</h3>
+                        <form onSubmit={event => {
+                            event.preventDefault()
+                            const reason = ((event.target as HTMLFormElement)[0] as HTMLTextAreaElement).value
+                            if (returnToL0) {
+                                revertApplicationToL0(reason)
+                            } else {
+                                revertApplicationToL2(reason)
+                            }
+                        }}>
+                            <h3>Unpark Application</h3>
 
-                                <p>How would you like to proceed with this parked application?</p>
+                            <div>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="unparkMode"
+                                        checked={!returnToL0}
+                                        onChange={() => setReturnToL0(false)}
+                                    />
+                                    Resume at previous stage
+                                </label>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="unparkMode"
+                                        checked={returnToL0}
+                                        onChange={() => setReturnToL0(true)}
+                                    />
+                                    Return to Approvals (Level 0)
+                                </label>
+                            </div>
 
-                                <div>
-                                    <button onClick={() => setUnparkStep("resume")}>Resume at previous stage</button>
-                                    <button onClick={() => setUnparkStep("return-to-l0")}>Return to Approvals (Level 0)</button>
-                                </div>
+                            <textarea rows={5} placeholder="Reason (optional)"></textarea>
 
-                                <div>
-                                    <button onClick={() => closeRevertToL2Modal()}>Cancel</button>
-                                </div>
-                            </>
-                        )}
+                            {errorMessage && <ErrorText text={errorMessage} />}
 
-                        {unparkStep === "resume" && (
-                            <form onSubmit={event => {
-                                event.preventDefault()
-                                revertApplicationToL2(((event.target as HTMLFormElement)[0] as HTMLTextAreaElement).value)
-                            }}>
-                                <h3>Resume at Previous Stage</h3>
-
-                                <p>You are about to resume this application from where it was parked</p>
-
-                                <textarea rows={5} placeholder="Reason (optional)"></textarea>
-
-                                {
-                                    errorMessage && <ErrorText text={errorMessage} />
-                                }
-
-                                <div>
-                                    <button>Resume {updatingApplication && <ButtonLoadingIcon />}</button>
-                                    {
-                                        !updatingApplication && <button type="button" onClick={() => setUnparkStep("choose")}>Back</button>
-                                    }
-                                </div>
-                            </form>
-                        )}
-
-                        {unparkStep === "return-to-l0" && (
-                            <form onSubmit={event => {
-                                event.preventDefault()
-                                revertApplicationToL0(((event.target as HTMLFormElement)[0] as HTMLTextAreaElement).value)
-                            }}>
-                                <h3>Return to Approvals (Level 0)</h3>
-
-                                <p>You are about to return this application to the beginning of the approvals process</p>
-
-                                <textarea rows={5} placeholder="Reason (optional)"></textarea>
-
-                                {
-                                    errorMessage && <ErrorText text={errorMessage} />
-                                }
-
-                                <div>
-                                    <button>Return to Approvals {updatingApplication && <ButtonLoadingIcon />}</button>
-                                    {
-                                        !updatingApplication && <button type="button" onClick={() => setUnparkStep("choose")}>Back</button>
-                                    }
-                                </div>
-                            </form>
-                        )}
+                            <div>
+                                <button>{returnToL0 ? "Return to Approvals" : "Resume"} {updatingApplication && <ButtonLoadingIcon />}</button>
+                                {!updatingApplication && <button type="button" onClick={() => closeRevertToL2Modal()}>Cancel</button>}
+                            </div>
+                        </form>
                     </div>
                 </Modal>
             }
