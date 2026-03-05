@@ -104,13 +104,13 @@ const RegistrationFormBody = ({
                 updateField(activePage.index, sectionIndex, fieldIndex, "value", "")
               }
               updateIssueDate={(newValues) =>
-                updateField(activePage.index, sectionIndex, fieldIndex, "issueDate", "")
+                updateField(activePage.index, sectionIndex, fieldIndex, "value", newValues)
               }
               setErrorText={(errorText) =>
                 updateField(activePage.index, sectionIndex, fieldIndex, "errorText", "")
               }
               updateExpiryDate={(newValues) =>
-                updateField(activePage.index, sectionIndex, fieldIndex, "ExpiryDate", "")
+                updateField(activePage.index, sectionIndex, fieldIndex, "value", newValues)
               }
               removeFile={(fileID) => {
                 removeFileFromFileList(activePage.index, sectionIndex, fieldIndex, fileID);
