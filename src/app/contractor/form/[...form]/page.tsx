@@ -254,6 +254,7 @@ const NewCompanyRegistration = () => {
 
             if (saveCurrentPageRequest.status === "OK") {
                 setSavingForm(false)
+                console.log("[createNewVendor] raw saveCurrentPageRequest.data:", JSON.stringify(saveCurrentPageRequest.data, null, 2))
                 // Preserve user-entered form data; only pull non-form metadata from response
                 const { form: _ignored, ...responseMeta } = saveCurrentPageRequest.data || {}
                 setRegistrationForm(prev => ({ ...prev, ...responseMeta }))
@@ -278,6 +279,7 @@ const NewCompanyRegistration = () => {
 
             if (saveCurrentPageRequest.status === "OK") {
                 setSavingForm(false)
+                console.log("[saveCurrentVendor] raw saveCurrentPageRequest.data:", JSON.stringify(saveCurrentPageRequest.data, null, 2))
                 // Preserve user-entered form data; only pull non-form metadata from response
                 const { form: _ignored, ...responseMeta } = saveCurrentPageRequest.data || {}
                 setRegistrationForm(prev => ({ ...prev, ...responseMeta }))
