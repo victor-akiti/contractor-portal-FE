@@ -34,3 +34,29 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+---
+
+## Pending Investigation
+
+### Verify backend save response shape (certificate form fix)
+
+A fix was applied to prevent the backend's save response from overwriting user-entered form data
+(`src/app/contractor/form/[...form]/page.tsx` — `createNewVendor` and `saveCurrentVendor`).
+
+Diagnostic `console.log` statements have been left in place to confirm whether the backend
+response actually includes a top-level `form` key and what its field values contain.
+
+**To check:**
+1. Log in as a **contractor**
+2. Open the contractor registration form
+3. Fill in any page and click **Next / Save**
+4. Open browser DevTools → **Console** tab
+5. Look for lines starting with `[createNewVendor]` or `[saveCurrentVendor]`
+6. Paste the output for review
+
+**Files with diagnostic logs:**
+- `src/app/contractor/form/[...form]/page.tsx` (lines with `console.log("[createNewVendor]"` and `console.log("[saveCurrentVendor]"`)
+
+Once the response shape is confirmed, remove the `console.log` statements and update the
+merge logic if needed.
