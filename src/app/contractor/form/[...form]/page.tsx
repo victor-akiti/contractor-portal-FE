@@ -254,9 +254,9 @@ const NewCompanyRegistration = () => {
 
             if (saveCurrentPageRequest.status === "OK") {
                 setSavingForm(false)
-                let tempRegistrationForm = { ...registrationForm }
-                tempRegistrationForm = { ...tempRegistrationForm, ...saveCurrentPageRequest.data }
-                setRegistrationForm(tempRegistrationForm)
+                // Preserve user-entered form data; only pull non-form metadata from response
+                const { form: _ignored, ...responseMeta } = saveCurrentPageRequest.data || {}
+                setRegistrationForm(prev => ({ ...prev, ...responseMeta }))
 
                 goToNextPage()
             }
@@ -278,9 +278,9 @@ const NewCompanyRegistration = () => {
 
             if (saveCurrentPageRequest.status === "OK") {
                 setSavingForm(false)
-                let tempRegistrationForm = { ...registrationForm }
-                tempRegistrationForm = { ...tempRegistrationForm, ...saveCurrentPageRequest.data }
-                setRegistrationForm(tempRegistrationForm)
+                // Preserve user-entered form data; only pull non-form metadata from response
+                const { form: _ignored, ...responseMeta } = saveCurrentPageRequest.data || {}
+                setRegistrationForm(prev => ({ ...prev, ...responseMeta }))
 
                 goToNextPage()
             }
