@@ -9,7 +9,7 @@ const DateSelect = ({onClick, label,  placeholder, highlighted, infoText, errorT
             onClick()
         }}>
             <label>{label}{required && <label className={styles.requiredIcon}>*</label>}</label>
-            <input placeholder={placeholder} value={value}  type={"datetime-local"} onChange={(event) => {
+            <input placeholder={placeholder} value={value ? value.split('T')[0] : ''}  type={"date"} onChange={(event) => {
                 onChange(event.target.value)
             }} />
 
