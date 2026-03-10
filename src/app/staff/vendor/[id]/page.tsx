@@ -30,6 +30,7 @@ const ViewVendorPage = () => {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [vendorID, setVendorID] = useState("");
     const [sectionRemarksToShow, setSectionRemarksToShow] = useState({});
+    const [remarksHistory, setRemarksHistory] = useState([]);
     const [showCategoriesList, setShowCategoriesList] = useState(false);
     const [expiringCertificates, setExpiringCertificates] = useState([]);
     const [expiredCertificates, setExpiredCertificates] = useState([]);
@@ -79,6 +80,7 @@ const ViewVendorPage = () => {
                 let tempPages = [...pages];
                 tempPages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages;
                 setPages(tempPages);
+                setRemarksHistory(fetchVendorDataRequest.data.baseRegistrationForm.form.remarksHistory || []);
 
                 if (fetchVendorDataRequest.data.approvalData.jobCategories) {
                     let tempSelectedCategories = [...selectedCategories];
@@ -1567,6 +1569,48 @@ const ViewVendorPage = () => {
                                 })}
                             </Accordion>
                         })}
+
+                        {remarksHistory.length > 0 && (
+                            <div className={styles.remarksHistorySection}>
+                                <h5 className={styles.remarksHistoryTitle}>Previous Return Cycles</h5>
+                                {remarksHistory.map((historyEntry, historyIndex) => (
+                                    <Accordion
+                                        key={historyIndex}
+                                        defaultOpen={false}
+                                        title={`Return — ${moment(historyEntry.date).format("DD MMM YYYY")}`}
+                                    >
+                                        {historyEntry.remarks?.pages?.map((page, pageIndex) =>
+                                            page.sections?.map((sectionItem, sectionIndex) => {
+                                                if (sectionItem.remarks && sectionItem.remarks.length > 0) {
+                                                    return (
+                                                        <div key={`${pageIndex}-${sectionIndex}`} className={styles.sectionItem}>
+                                                            <div className={styles.sectionHeader}>
+                                                                <h6>{sectionItem.title}</h6>
+                                                            </div>
+                                                            <div className={styles.remarksContent}>
+                                                                <p>Notes for Vendor</p>
+                                                                <div>
+                                                                    {sectionItem.remarks.map((remarkItem, remarkIndex) => (
+                                                                        <div key={remarkIndex} className={styles.remarksItem}>
+                                                                            <p>{remarkItem.remark}</p>
+                                                                            <p>
+                                                                                <span>{remarkItem.userName} </span>
+                                                                                <p>|</p>{" "}
+                                                                                <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p>
+                                                                            </p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                            }),
+                                        )}
+                                    </Accordion>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className={styles.approvalContent}>
