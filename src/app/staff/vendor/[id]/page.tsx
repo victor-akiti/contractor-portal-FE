@@ -80,7 +80,15 @@ const ViewVendorPage = () => {
                 let tempPages = [...pages];
                 tempPages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages;
                 setPages(tempPages);
-                setRemarksHistory(fetchVendorDataRequest.data.baseRegistrationForm.form.remarksHistory || []);
+
+                try {
+                    const getFormRequest = await getProtected(`companies/register/form/${vendorID}`, user.role);
+                    if (getFormRequest.status === "OK") {
+                        setRemarksHistory(getFormRequest.data.generalRegistrationForm?.form?.remarksHistory || []);
+                    }
+                } catch (formError) {
+                    console.error({ formError });
+                }
 
                 if (fetchVendorDataRequest.data.approvalData.jobCategories) {
                     let tempSelectedCategories = [...selectedCategories];
@@ -1579,7 +1587,7 @@ const ViewVendorPage = () => {
                                         defaultOpen={false}
                                         title={`Return — ${moment(historyEntry.date).format("DD MMM YYYY")}`}
                                     >
-                                        {historyEntry.remarks?.pages?.map((page, pageIndex) =>
+                                        {(Array.isArray(historyEntry.remarks) ? historyEntry.remarks : historyEntry.remarks?.pages)?.map((page, pageIndex) =>
                                             page.sections?.map((sectionItem, sectionIndex) => {
                                                 if (sectionItem.remarks && sectionItem.remarks.length > 0) {
                                                     return (
