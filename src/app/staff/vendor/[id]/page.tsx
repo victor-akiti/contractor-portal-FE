@@ -80,15 +80,7 @@ const ViewVendorPage = () => {
                 let tempPages = [...pages];
                 tempPages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages;
                 setPages(tempPages);
-
-                try {
-                    const getFormRequest = await getProtected(`companies/register/form/${vendorID}`, user.role);
-                    if (getFormRequest.status === "OK") {
-                        setRemarksHistory(getFormRequest.data.generalRegistrationForm?.form?.remarksHistory || []);
-                    }
-                } catch (formError) {
-                    console.error({ formError });
-                }
+                setRemarksHistory(fetchVendorDataRequest.data.generalRegistrationForm?.form?.remarksHistory || []);
 
                 if (fetchVendorDataRequest.data.approvalData.jobCategories) {
                     let tempSelectedCategories = [...selectedCategories];
@@ -1587,33 +1579,26 @@ const ViewVendorPage = () => {
                                         defaultOpen={false}
                                         title={`Return — ${moment(historyEntry.date).format("DD MMM YYYY")}`}
                                     >
-                                        {(Array.isArray(historyEntry.remarks) ? historyEntry.remarks : historyEntry.remarks?.pages)?.map((page, pageIndex) =>
-                                            page.sections?.map((sectionItem, sectionIndex) => {
-                                                if (sectionItem.remarks && sectionItem.remarks.length > 0) {
-                                                    return (
-                                                        <div key={`${pageIndex}-${sectionIndex}`} className={styles.sectionItem}>
-                                                            <div className={styles.sectionHeader}>
-                                                                <h6>{sectionItem.title}</h6>
-                                                            </div>
-                                                            <div className={styles.remarksContent}>
-                                                                <p>Notes for Vendor</p>
-                                                                <div>
-                                                                    {sectionItem.remarks.map((remarkItem, remarkIndex) => (
-                                                                        <div key={remarkIndex} className={styles.remarksItem}>
-                                                                            <p>{remarkItem.remark}</p>
-                                                                            <p>
-                                                                                <span>{remarkItem.userName} </span>
-                                                                                <p>|</p>{" "}
-                                                                                <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p>
-                                                                            </p>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
+                                        {historyEntry.remarks && Object.entries(historyEntry.remarks).flatMap(([pageTitle, sections]: [string, any]) =>
+                                            Object.entries(sections).map(([sectionTitle, remarkTexts]: [string, any]) =>
+                                                remarkTexts.length > 0 && (
+                                                    <div key={`${pageTitle}-${sectionTitle}`} className={styles.sectionItem}>
+                                                        <div className={styles.sectionHeader}>
+                                                            <h6>{sectionTitle}</h6>
+                                                        </div>
+                                                        <div className={styles.remarksContent}>
+                                                            <p>Notes for Vendor</p>
+                                                            <div>
+                                                                {remarkTexts.map((remarkText: string, remarkIndex: number) => (
+                                                                    <div key={remarkIndex} className={styles.remarksItem}>
+                                                                        <p>{remarkText}</p>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         </div>
-                                                    );
-                                                }
-                                            }),
+                                                    </div>
+                                                )
+                                            )
                                         )}
                                     </Accordion>
                                 ))}
