@@ -1496,6 +1496,14 @@ const ViewVendorPage = () => {
                             return <Accordion defaultOpen={index === 0} key={index} title={item.pageTitle}>
                                 {item.sections.map((sectionItem, sectionIndex) => {
                                     if (!sectionItem.hideOnApproval && sectionHasData(sectionItem)) {
+                                        const sectionHistoryRemarks = remarksHistory.filter(
+                                            entry => (entry.remarks?.[item.pageTitle]?.[sectionItem.title] || []).length > 0
+                                        );
+                                        const hasAnyRemarks =
+                                            (sectionItem.remarks?.length > 0) ||
+                                            (sectionItem.comments?.length > 0) ||
+                                            sectionHistoryRemarks.length > 0;
+
                                         return (
                                             <div key={sectionIndex} className={styles.sectionItem}>
                                                 <div>
@@ -1510,7 +1518,7 @@ const ViewVendorPage = () => {
                                                     </div>
 
                                                     <div>
-                                                        {sectionItem.remarks && sectionItem.remarks?.length > 0 && (
+                                                        {hasAnyRemarks && (
                                                             <div className={styles.showCommentTriggerDiv}>
                                                                 <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>
                                                                     SHOW COMMENTS
@@ -1557,6 +1565,20 @@ const ViewVendorPage = () => {
                                                                         </div>
                                                                     </div>
                                                                 )}
+
+                                                                {sectionHistoryRemarks.map((historyEntry, historyIndex) => (
+                                                                    <div key={historyIndex} className={styles.remarksContent}>
+                                                                        <p>Return — {moment(historyEntry.date).format("DD MMM YYYY")}</p>
+
+                                                                        <div>
+                                                                            {historyEntry.remarks[item.pageTitle][sectionItem.title].map((remarkText: string, remarkIndex: number) => (
+                                                                                <div key={remarkIndex} className={styles.remarksItem}>
+                                                                                    <p>{remarkText}</p>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         )}
                                                     </div>
@@ -1569,41 +1591,6 @@ const ViewVendorPage = () => {
                                 })}
                             </Accordion>
                         })}
-
-                        {remarksHistory.length > 0 && (
-                            <div className={styles.remarksHistorySection}>
-                                <h5 className={styles.remarksHistoryTitle}>Previous Return Cycles</h5>
-                                {remarksHistory.map((historyEntry, historyIndex) => (
-                                    <Accordion
-                                        key={historyIndex}
-                                        defaultOpen={false}
-                                        title={`Return — ${moment(historyEntry.date).format("DD MMM YYYY")}`}
-                                    >
-                                        {historyEntry.remarks && Object.entries(historyEntry.remarks).flatMap(([pageTitle, sections]: [string, any]) =>
-                                            Object.entries(sections).map(([sectionTitle, remarkTexts]: [string, any]) =>
-                                                remarkTexts.length > 0 && (
-                                                    <div key={`${pageTitle}-${sectionTitle}`} className={styles.sectionItem}>
-                                                        <div className={styles.sectionHeader}>
-                                                            <h6>{sectionTitle}</h6>
-                                                        </div>
-                                                        <div className={styles.remarksContent}>
-                                                            <p>Notes for Vendor</p>
-                                                            <div>
-                                                                {remarkTexts.map((remarkText: string, remarkIndex: number) => (
-                                                                    <div key={remarkIndex} className={styles.remarksItem}>
-                                                                        <p>{remarkText}</p>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            )
-                                        )}
-                                    </Accordion>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
                     <div className={styles.approvalContent}>

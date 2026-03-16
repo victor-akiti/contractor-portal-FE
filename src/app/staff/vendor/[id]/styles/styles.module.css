@@ -634,15 +634,6 @@
   cursor: pointer;
 }
 
-.remarksHistorySection {
-  margin-top: 10px;
-}
-
-.remarksHistoryTitle {
-  padding: 0 20px 10px;
-  font-weight: bold;
-}
-
 .approvalHeader {
   display: flex;
   justify-content: space-between;
