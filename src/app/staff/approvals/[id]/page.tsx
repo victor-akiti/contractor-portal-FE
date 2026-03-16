@@ -50,6 +50,7 @@ const Approval = () => {
     const [returnToL0, setReturnToL0] = useState(false)
     const [showRetrieveApplicationModal, setShowRetrieveApplicationModal] = useState(false)
     const [vendorID, setVendorID] = useState("")
+    const [remarksHistory, setRemarksHistory] = useState([])
     const [successMessage, setSuccessMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
 
@@ -165,6 +166,7 @@ const Approval = () => {
                 tempVendorData.approvalData = fetchVendorDataRequest.data.approvalData
                 tempVendorData.pages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages
                 setVendorData(tempVendorData)
+                setRemarksHistory(fetchVendorDataRequest.data.generalRegistrationForm?.form?.remarksHistory || [])
                 setFetchedVendorData(true)
             }
 
@@ -420,11 +422,11 @@ const Approval = () => {
             {
                 (fetchedVendorData && userHasApprovalPermissions() && !vendorIsParked() && !vendorApplicationIsReturned()) && <div>
                     {
-                        getCurrentStage() === "A" && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                        getCurrentStage() === "A" && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} />
                     }
 
                     {
-                        getCurrentStage() === "B" && <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                        getCurrentStage() === "B" && <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} />
                     }
 
                     {
@@ -436,7 +438,7 @@ const Approval = () => {
                     }
 
                     {
-                        getCurrentStage() === "E" && <StageE approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                        getCurrentStage() === "E" && <StageE approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} />
                     }
 
                     {

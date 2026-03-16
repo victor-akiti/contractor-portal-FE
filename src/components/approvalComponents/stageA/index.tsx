@@ -31,7 +31,7 @@ function useOutsideClick(ref: any, onClickOut: () => void, deps = []) {
     }, deps);
 }
 
-const StageA = ({ approvalData, formPages, vendorID }) => {
+const StageA = ({ approvalData, formPages, vendorID, remarksHistory = [] }) => {
 
 
 
@@ -925,6 +925,9 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                                 {
                                     item.sections.map((sectionItem, sectionIndex) => {
                                         if (!sectionItem.hideOnApproval) {
+                                            const sectionHistoryRemarks = remarksHistory.filter(
+                                                entry => (entry.remarks?.[item.pageTitle]?.[sectionItem.title] || []).length > 0
+                                            );
                                             return <div key={sectionIndex} className={styles.sectionItem}>
                                                 <div>
                                                     <div className={styles.sectionHeader}>
@@ -943,7 +946,7 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
 
 
                                                         {
-                                                            ((sectionItem.comments && sectionItem.comments.length > 0) || (sectionItem.remarks && sectionItem.remarks.length > 0)) && <div className={styles.showCommentTriggerDiv}>
+                                                            ((sectionItem.comments && sectionItem.comments.length > 0) || (sectionItem.remarks && sectionItem.remarks.length > 0) || sectionHistoryRemarks.length > 0) && <div className={styles.showCommentTriggerDiv}>
                                                                 <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
                                                             </div>
                                                         }
@@ -980,6 +983,19 @@ const StageA = ({ approvalData, formPages, vendorID }) => {
                                                                         </div>
 
                                                                     </div>
+                                                                }
+
+                                                                {
+                                                                    sectionHistoryRemarks.map((historyEntry, historyIndex) => <div key={historyIndex} className={styles.remarksContent}>
+                                                                        <p>Return — {moment(historyEntry.date).format("DD MMM YYYY")}</p>
+
+                                                                        <div>
+                                                                            {historyEntry.remarks[item.pageTitle][sectionItem.title].map((remarkItem: any, remarkIndex: number) => <div key={remarkIndex} className={styles.remarksItem}>
+                                                                                <p>{remarkItem.remark ?? remarkItem}</p>
+                                                                                {remarkItem.userName && <p><span>{remarkItem.userName} </span><p>|</p> <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p></p>}
+                                                                            </div>)}
+                                                                        </div>
+                                                                    </div>)
                                                                 }
                                                             </div>
                                                         }
