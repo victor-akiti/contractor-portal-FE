@@ -1571,9 +1571,16 @@ const ViewVendorPage = () => {
                                                                         <p>Return — {moment(historyEntry.date).format("DD MMM YYYY")}</p>
 
                                                                         <div>
-                                                                            {historyEntry.remarks[item.pageTitle][sectionItem.title].map((remarkText: string, remarkIndex: number) => (
+                                                                            {historyEntry.remarks[item.pageTitle][sectionItem.title].map((remarkItem: any, remarkIndex: number) => (
                                                                                 <div key={remarkIndex} className={styles.remarksItem}>
-                                                                                    <p>{remarkText}</p>
+                                                                                    <p>{remarkItem.remark ?? remarkItem}</p>
+                                                                                    {remarkItem.userName && (
+                                                                                        <p>
+                                                                                            <span>{remarkItem.userName} </span>
+                                                                                            <p>|</p>{" "}
+                                                                                            <p>{moment(remarkItem.date).format("DD/MM/YYYY")}</p>
+                                                                                        </p>
+                                                                                    )}
                                                                                 </div>
                                                                             ))}
                                                                         </div>
