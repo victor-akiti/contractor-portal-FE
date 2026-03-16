@@ -1,10 +1,6 @@
 "use client";
 import closeIcon from "@/assets/images/closeGrey.svg";
 import Accordion from "@/components/accordion";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import styles from "./styles/styles.module.css";
-
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary";
 import CertificateHistoryModal from "@/components/certificateHistory";
@@ -20,7 +16,10 @@ import { formatNumberAsCurrency } from "@/utilities/currency";
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import styles from "./styles/styles.module.css";
 
 const ViewVendorPage = () => {
     const [approvalData, setApprovalData] = useState<any>({});
