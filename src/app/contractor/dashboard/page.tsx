@@ -37,6 +37,47 @@ interface DashboardData {
     files: any[];
 }
 
+const getCertificateTimeValidity = (expiryDate: string): string => {
+    const currentDateObject = new Date()
+    const expiryDateObject = new Date(expiryDate)
+
+    if (currentDateObject.getTime() >= expiryDateObject.getTime()) {
+        return "expired"
+    } else if ((expiryDateObject.getTime() - currentDateObject.getTime()) / 1000 < 7884000) {
+        return "expiring"
+    } else {
+        return ""
+    }
+}
+
+const extractCertificatesFromFormPages = (pages: any[]): { expiring: Certificate[], expired: Certificate[] } => {
+    const expiring: Certificate[] = []
+    const expired: Certificate[] = []
+
+    pages.forEach((page: any) => {
+        page.sections?.forEach((section: any) => {
+            section.fields?.forEach((field: any) => {
+                if (field.type === "file" && field.value && field.value[0]?.expiryDate) {
+                    const validity = getCertificateTimeValidity(field.value[0].expiryDate)
+                    if (validity === "expiring" || validity === "expired") {
+                        const cert: Certificate = {
+                            _id: field.value[0]._id || field._id || "",
+                            label: field.label || field.approvalLabel || "",
+                            expiryDate: field.value[0].expiryDate,
+                            url: field.value[0].url || "",
+                            updateCode: field.updateCode || "",
+                        }
+                        if (validity === "expiring") expiring.push(cert)
+                        else expired.push(cert)
+                    }
+                }
+            })
+        })
+    })
+
+    return { expiring, expired }
+}
+
 /**
  * CONTRACTOR DASHBOARD (MODERNIZED)
  * - Company registration overview
@@ -70,9 +111,40 @@ const Dashboard = () => {
             const fetchDashboardDataRequest = await getProtected("companies/dashboard/data", user.role)
 
             if (fetchDashboardDataRequest.status === "OK") {
+                const data: DashboardData = fetchDashboardDataRequest.data
+
+                // If backend doesn't return certificates, compute them from each company's form pages
+                if (
+                    (!data.expiringCertificates || data.expiringCertificates.length === 0) &&
+                    (!data.expiredCertificates || data.expiredCertificates.length === 0) &&
+                    data.companies?.length > 0
+                ) {
+                    const allExpiring: Certificate[] = []
+                    const allExpired: Certificate[] = []
+
+                    await Promise.all(
+                        data.companies.map(async (company) => {
+                            try {
+                                const formRequest = await getProtected(`companies/register/form/${company.vendor}`, user.role)
+                                if (formRequest.status === "OK") {
+                                    const pages = formRequest.data?.generalRegistrationForm?.form?.pages || []
+                                    const { expiring, expired } = extractCertificatesFromFormPages(pages)
+                                    allExpiring.push(...expiring)
+                                    allExpired.push(...expired)
+                                }
+                            } catch (err) {
+                                console.error({ err })
+                            }
+                        })
+                    )
+
+                    data.expiringCertificates = allExpiring
+                    data.expiredCertificates = allExpired
+                }
+
                 setFetchedDashboardData(true)
                 setFetchingDashboardData(false)
-                setDashboardData(fetchDashboardDataRequest.data)
+                setDashboardData(data)
             }
         } catch (error) {
             console.error({ error })
