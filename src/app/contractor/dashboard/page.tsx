@@ -173,17 +173,19 @@ const Dashboard = () => {
         try {
             setUpdatingCertificate(true)
             const updateCertificateRequest = await putProtected(
-                `companies/certificates/${selectedCertificate._id}`,
-                selectedCertificate,
+                `companies/certificates/${selectedCertificate.updateCode}`,
+                {
+                    updateCode: selectedCertificate.updateCode,
+                    newCertificate: {
+                        url: selectedCertificate.newCertificate.url,
+                        name: selectedCertificate.newCertificate.name,
+                        expiryDate: selectedCertificate.newCertificate.expiryDate,
+                    },
+                },
                 user.role
             )
             setUpdatingCertificate(false)
-
-            if (updateCertificateRequest.status === "OK") {
-                setUpdateCertificateSuccess("Certificate updated successfully!")
-            } else {
-                setUpdateCertificateError(updateCertificateRequest.error.message)
-            }
+            setUpdateCertificateSuccess("Certificate updated successfully!")
         } catch (error) {
             console.error({ error })
             setUpdatingCertificate(false)
