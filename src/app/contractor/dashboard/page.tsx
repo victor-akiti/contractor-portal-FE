@@ -17,6 +17,7 @@ interface Certificate {
     expiryDate: string;
     url: string;
     updateCode: string;
+    vendorID?: string;
 }
 
 interface Company {
@@ -50,7 +51,7 @@ const getCertificateTimeValidity = (expiryDate: string): string => {
     }
 }
 
-const extractCertificatesFromFormPages = (pages: any[]): { expiring: Certificate[], expired: Certificate[] } => {
+const extractCertificatesFromFormPages = (pages: any[], vendorID?: string): { expiring: Certificate[], expired: Certificate[] } => {
     const expiring: Certificate[] = []
     const expired: Certificate[] = []
 
@@ -66,6 +67,7 @@ const extractCertificatesFromFormPages = (pages: any[]): { expiring: Certificate
                             expiryDate: field.value[0].expiryDate,
                             url: field.value[0].url || "",
                             updateCode: field.updateCode || "",
+                            vendorID,
                         }
                         if (validity === "expiring") expiring.push(cert)
                         else expired.push(cert)
@@ -128,7 +130,8 @@ const Dashboard = () => {
                                 const formRequest = await getProtected(`companies/register/form/${company.vendor}`, user.role)
                                 if (formRequest.status === "OK") {
                                     const pages = formRequest.data?.generalRegistrationForm?.form?.pages || []
-                                    const { expiring, expired } = extractCertificatesFromFormPages(pages)
+                                    const vendorID = formRequest.data?.generalRegistrationForm?._id
+                                    const { expiring, expired } = extractCertificatesFromFormPages(pages, vendorID)
                                     allExpiring.push(...expiring)
                                     allExpired.push(...expired)
                                 }
@@ -169,19 +172,25 @@ const Dashboard = () => {
         }
     }
 
+    const isAdminRole = (role: string) => ["Admin", "IT Admin", "C&P Admin"].includes(role)
+
     const updateCertificate = async () => {
         try {
             setUpdatingCertificate(true)
+            const body: any = {
+                updateCode: selectedCertificate.updateCode,
+                newCertificate: {
+                    url: selectedCertificate.newCertificate.url,
+                    name: selectedCertificate.newCertificate.name,
+                    expiryDate: selectedCertificate.newCertificate.expiryDate,
+                },
+            }
+            if (isAdminRole(user.role) && selectedCertificate.vendorID) {
+                body.vendorID = selectedCertificate.vendorID
+            }
             const updateCertificateRequest = await putProtected(
                 `companies/certificates/${selectedCertificate.updateCode}`,
-                {
-                    updateCode: selectedCertificate.updateCode,
-                    newCertificate: {
-                        url: selectedCertificate.newCertificate.url,
-                        name: selectedCertificate.newCertificate.name,
-                        expiryDate: selectedCertificate.newCertificate.expiryDate,
-                    },
-                },
+                body,
                 user.role
             )
             setUpdatingCertificate(false)
