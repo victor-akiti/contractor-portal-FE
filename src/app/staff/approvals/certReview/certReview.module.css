@@ -1,0 +1,275 @@
+/* ============================================
+   CERT REVIEW TAB
+   ============================================ */
+
+.certReviewTab {
+    width: 100%;
+    padding: 0;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--color-text-secondary);
+}
+
+.emptyState p {
+    font-size: var(--font-size-base);
+    margin: 0;
+}
+
+/* ============================================
+   QUEUE TABLE
+   ============================================ */
+
+.queueTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-base);
+}
+
+.queueTable thead tr {
+    background-color: #f5f5f5;
+}
+
+.queueTable thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid var(--color-border);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.queueTable tbody tr {
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.15s;
+}
+
+.queueTable tbody tr:hover {
+    background-color: #fafafa;
+}
+
+.queueTable tbody td {
+    padding: 12px 14px;
+    vertical-align: middle;
+    color: var(--color-text-primary);
+}
+
+.companyName {
+    font-weight: 600;
+}
+
+.certLabel {
+    color: var(--color-text-primary);
+}
+
+.fileName {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dateText {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.reviewBtn {
+    padding: 6px 16px;
+    background-color: #e67509;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    white-space: nowrap;
+}
+
+.reviewBtn:hover {
+    background-color: #c5620a;
+}
+
+/* ============================================
+   CERT REVIEW MODAL
+   ============================================ */
+
+.modalInner {
+    background: #fff;
+    border-radius: 8px;
+    padding: 28px 32px;
+    width: 100%;
+    max-width: 620px;
+    margin: auto;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modalTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.closeBtn:hover {
+    color: var(--color-text-primary);
+}
+
+.detailsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.detailsTable td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.detailsTable td:first-child {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    width: 40%;
+}
+
+.viewFileBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #e67509;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    border: 1px solid #e67509;
+    border-radius: 4px;
+    padding: 3px 10px;
+    transition: background-color 0.15s;
+}
+
+.viewFileBtn:hover {
+    background-color: #fff3e0;
+}
+
+.decisionSection {
+    margin-bottom: 16px;
+}
+
+.decisionLabel {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    display: block;
+    margin-bottom: 10px;
+}
+
+.radioGroup {
+    display: flex;
+    gap: 24px;
+}
+
+.radioGroup label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.reasonSection {
+    margin-bottom: 16px;
+}
+
+.reasonLabel {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.reasonTextarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    resize: vertical;
+    font-family: var(--font-family-base);
+    box-sizing: border-box;
+}
+
+.reasonTextarea:focus {
+    outline: none;
+    border-color: #e67509;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cancelBtn {
+    padding: 8px 20px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: border-color 0.15s;
+}
+
+.cancelBtn:hover {
+    border-color: var(--color-text-secondary);
+}
+
+.submitBtn {
+    padding: 8px 20px;
+    background-color: #e67509;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.15s;
+}
+
+.submitBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background-color: #c5620a;
+}

@@ -6,6 +6,7 @@ import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { getProtected } from "@/requests/get"
 import { putProtected } from "@/requests/put"
+import CertStatusBadge from "@/components/certStatusBadge"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
@@ -17,6 +18,8 @@ interface Certificate {
     expiryDate: string;
     url: string;
     updateCode: string;
+    certStatus?: string;
+    reviewRemarks?: string;
 }
 
 interface Company {
@@ -426,7 +429,19 @@ const Dashboard = () => {
                                     <tbody>
                                         {dashboardData.expiringCertificates.map((certificate, index) => (
                                             <tr key={index}>
-                                                <td className={styles.certificateType}>{certificate.label}</td>
+                                                <td className={styles.certificateType}>
+                                                    {certificate.label}
+                                                    {certificate.certStatus && (
+                                                        <span style={{ marginLeft: 8 }}>
+                                                            <CertStatusBadge status={certificate.certStatus} />
+                                                        </span>
+                                                    )}
+                                                    {certificate.certStatus === "rejected" && certificate.reviewRemarks && (
+                                                        <div style={{ fontSize: "0.8rem", color: "#c62828", marginTop: 4 }}>
+                                                            {certificate.reviewRemarks}
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td className={`${styles.expiryDate} ${styles.expiryDateExpiring}`}>
                                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                         <path d="M8 4v4l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -443,12 +458,23 @@ const Dashboard = () => {
                                                         >
                                                             View
                                                         </Link>
-                                                        <button
-                                                            onClick={() => setCertificateToUpdate(certificate, "expiring", index)}
-                                                            className={styles.tableButton}
-                                                        >
-                                                            Update Certificate
-                                                        </button>
+                                                        {certificate.certStatus === "rejected" ? (
+                                                            <button
+                                                                onClick={() => setCertificateToUpdate(certificate, "expiring", index)}
+                                                                className={styles.tableButton}
+                                                            >
+                                                                Re-upload
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => setCertificateToUpdate(certificate, "expiring", index)}
+                                                                className={styles.tableButton}
+                                                                disabled={certificate.certStatus === "pending review"}
+                                                                title={certificate.certStatus === "pending review" ? "Certificate is under review" : undefined}
+                                                            >
+                                                                Update Certificate
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -494,7 +520,19 @@ const Dashboard = () => {
                                     <tbody>
                                         {dashboardData.expiredCertificates.map((certificate, index) => (
                                             <tr key={index}>
-                                                <td className={styles.certificateType}>{certificate.label}</td>
+                                                <td className={styles.certificateType}>
+                                                    {certificate.label}
+                                                    {certificate.certStatus && (
+                                                        <span style={{ marginLeft: 8 }}>
+                                                            <CertStatusBadge status={certificate.certStatus} />
+                                                        </span>
+                                                    )}
+                                                    {certificate.certStatus === "rejected" && certificate.reviewRemarks && (
+                                                        <div style={{ fontSize: "0.8rem", color: "#c62828", marginTop: 4 }}>
+                                                            {certificate.reviewRemarks}
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td className={`${styles.expiryDate} ${styles.expiryDateExpired}`}>
                                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                                         <path d="M8 4v4m0 2h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -510,12 +548,23 @@ const Dashboard = () => {
                                                         >
                                                             View
                                                         </Link>
-                                                        <button
-                                                            onClick={() => setCertificateToUpdate(certificate, "expired", index)}
-                                                            className={styles.tableButton}
-                                                        >
-                                                            Update Certificate
-                                                        </button>
+                                                        {certificate.certStatus === "rejected" ? (
+                                                            <button
+                                                                onClick={() => setCertificateToUpdate(certificate, "expired", index)}
+                                                                className={styles.tableButton}
+                                                            >
+                                                                Re-upload
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => setCertificateToUpdate(certificate, "expired", index)}
+                                                                className={styles.tableButton}
+                                                                disabled={certificate.certStatus === "pending review"}
+                                                                title={certificate.certStatus === "pending review" ? "Certificate is under review" : undefined}
+                                                            >
+                                                                Update Certificate
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>

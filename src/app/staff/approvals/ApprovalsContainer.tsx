@@ -63,6 +63,7 @@ import {
   shouldShowVerified,
 } from "./stageHelpers";
 import SearchBar from "./ui/SearchBar";
+import CertReviewTab from "./certReview/CertReviewTab";
 
 // const approvalStages = ["A", "B", "C", "D", "E", "F"]; // "G"];
 
@@ -162,6 +163,7 @@ export default function ApprovalsContainer() {
     { label: "Completed L2", name: "completed-l2" },
     { label: "Returned To Contractor", name: "returned" },
     { label: "Park Requests", name: "park-requests" },
+    { label: "Cert Review", name: "cert-review" },
   ]);
 
   const inviteFilters = ["All", "Active", "Used", "Expired", "Archived"];
@@ -206,7 +208,7 @@ export default function ApprovalsContainer() {
   } = useGetCompaniesByTabQuery(
     { tab: activeTab, userRole: user?.role || "" },
     {
-      skip: !user?.role || activeTab === "invited",
+      skip: !user?.role || activeTab === "invited" || activeTab === "cert-review",
     },
   );
 
@@ -1886,7 +1888,9 @@ export default function ApprovalsContainer() {
           {errorMessage && <ErrorText text={errorMessage} />}
           {successMessage && <SuccessMessage message={successMessage} />}
 
-          {currentTabLoading ? (
+          {activeTab === "cert-review" ? (
+            <CertReviewTab user={user} />
+          ) : currentTabLoading ? (
             <div className={styles.loading}>
               <Loading message="Loading data..." />
             </div>
