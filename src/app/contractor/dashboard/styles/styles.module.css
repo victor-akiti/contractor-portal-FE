@@ -231,7 +231,7 @@
 .tableContainer {
   background-color: var(--color-bg-white);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
   border: 2px solid var(--color-border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }

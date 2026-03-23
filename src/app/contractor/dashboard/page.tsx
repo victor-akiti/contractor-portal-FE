@@ -513,20 +513,24 @@ const Dashboard = () => {
                                                             <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-sm)" }}>—</span>
                                                         )}
                                                     </td>
-                                                    <td className={`${styles.expiryDate}`}>
-                                                        {certificate.issueDate
-                                                            ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
-                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
-                                                        }
+                                                    <td>
+                                                        <div className={styles.expiryDate}>
+                                                            {certificate.issueDate
+                                                                ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
+                                                                : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                            }
+                                                        </div>
                                                     </td>
-                                                    <td className={`${styles.expiryDate} ${styles.expiryDateExpired}`}>
-                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                            <path d="M8 4v4m0 2h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                        </svg>
-                                                        {certificate.expiryDate
-                                                            ? new Date(certificate.expiryDate).toLocaleDateString("en-NG")
-                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
-                                                        }
+                                                    <td>
+                                                        <div className={`${styles.expiryDate} ${styles.expiryDateExpired}`}>
+                                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                                <path d="M8 4v4m0 2h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                            </svg>
+                                                            {certificate.expiryDate
+                                                                ? new Date(certificate.expiryDate).toLocaleDateString("en-NG")
+                                                                : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                            }
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         {certificate.reviewRemarks ? (
