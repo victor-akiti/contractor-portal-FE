@@ -689,6 +689,13 @@
   margin: 0;
 }
 
+/* Section label in rejected certs table */
+.certSectionLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
 /* Fix/Re-upload button — red variant */
 .tableButtonFix {
   border-color: #c62828;

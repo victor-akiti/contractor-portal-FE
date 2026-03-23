@@ -25,7 +25,26 @@ interface Certificate {
     isReUpload?: boolean;
     updatedAt?: string;
     createdAt?: string;
-    vendor?: { _id: string };
+    vendor?: {
+        _id: string;
+        form?: {
+            name?: string;
+            pages: Array<{
+                pageTitle?: string;
+                sections: Array<{
+                    title?: string;
+                    fields: Array<{
+                        _id?: string;
+                        updateCode?: string;
+                        type?: string;
+                        label?: string;
+                        approvalLabel?: string;
+                        value?: Array<{ _id?: string }>;
+                    }>;
+                }>;
+            }>;
+        };
+    };
 }
 
 interface Company {
@@ -87,6 +106,28 @@ const extractCertificatesFromFormPages = (pages: any[]): { expiring: Certificate
     })
 
     return { expiring, expired }
+}
+
+const getCertSectionTitle = (certificate: Certificate): string | null => {
+    const pages = certificate.vendor?.form?.pages
+    if (!pages) return null
+
+    for (const page of pages) {
+        for (const section of page.sections ?? []) {
+            for (const field of section.fields ?? []) {
+                if (field.type !== "file") continue
+                const fieldValueId = field.value?.[0]?._id
+                const matches =
+                    (fieldValueId && fieldValueId === certificate._id) ||
+                    (field.updateCode && field.updateCode === certificate.updateCode)
+                if (matches) {
+                    const parts = [page.pageTitle, section.title].filter(Boolean)
+                    return parts.length > 0 ? parts.join(" › ") : null
+                }
+            }
+        }
+    }
+    return null
 }
 
 /**
@@ -430,6 +471,7 @@ const Dashboard = () => {
                                         <thead>
                                             <tr>
                                                 <th>Certificate</th>
+                                                <th>Section</th>
                                                 <th>Reason for Rejection</th>
                                                 <th>Action</th>
                                             </tr>
@@ -439,6 +481,11 @@ const Dashboard = () => {
                                                 <tr key={index}>
                                                     <td className={styles.certificateType}>
                                                         {certificate.label}
+                                                    </td>
+                                                    <td className={styles.certSectionLabel}>
+                                                        {getCertSectionTitle(certificate) ?? (
+                                                            <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-sm)" }}>—</span>
+                                                        )}
                                                     </td>
                                                     <td>
                                                         {certificate.reviewRemarks ? (
