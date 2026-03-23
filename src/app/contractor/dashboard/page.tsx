@@ -471,7 +471,10 @@ const Dashboard = () => {
                                         <thead>
                                             <tr>
                                                 <th>Certificate</th>
+                                                <th>File</th>
                                                 <th>Section</th>
+                                                <th>Issue Date</th>
+                                                <th>Expiry Date</th>
                                                 <th>Reason for Rejection</th>
                                                 <th>Action</th>
                                             </tr>
@@ -482,10 +485,48 @@ const Dashboard = () => {
                                                     <td className={styles.certificateType}>
                                                         {certificate.label}
                                                     </td>
+                                                    <td>
+                                                        {certificate.name ? (
+                                                            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                                                <span style={{ fontSize: "var(--font-size-sm)" }}>{certificate.name}</span>
+                                                                <Link
+                                                                    href={certificate.url}
+                                                                    target="_blank"
+                                                                    className={`${styles.tableButton} ${styles.tableButtonView}`}
+                                                                    style={{ alignSelf: "flex-start", marginTop: 2 }}
+                                                                >
+                                                                    View ↗
+                                                                </Link>
+                                                            </div>
+                                                        ) : (
+                                                            <Link
+                                                                href={certificate.url}
+                                                                target="_blank"
+                                                                className={`${styles.tableButton} ${styles.tableButtonView}`}
+                                                            >
+                                                                View ↗
+                                                            </Link>
+                                                        )}
+                                                    </td>
                                                     <td className={styles.certSectionLabel}>
                                                         {getCertSectionTitle(certificate) ?? (
                                                             <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-sm)" }}>—</span>
                                                         )}
+                                                    </td>
+                                                    <td className={`${styles.expiryDate}`}>
+                                                        {certificate.issueDate
+                                                            ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
+                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                        }
+                                                    </td>
+                                                    <td className={`${styles.expiryDate} ${styles.expiryDateExpired}`}>
+                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                            <path d="M8 4v4m0 2h.01M14 8A6 6 0 112 8a6 6 0 0112 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                        </svg>
+                                                        {certificate.expiryDate
+                                                            ? new Date(certificate.expiryDate).toLocaleDateString("en-NG")
+                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                        }
                                                     </td>
                                                     <td>
                                                         {certificate.reviewRemarks ? (
@@ -503,21 +544,12 @@ const Dashboard = () => {
                                                         )}
                                                     </td>
                                                     <td>
-                                                        <div className={styles.tableActions}>
-                                                            <Link
-                                                                href={certificate.url}
-                                                                target="_blank"
-                                                                className={`${styles.tableButton} ${styles.tableButtonView}`}
-                                                            >
-                                                                View
-                                                            </Link>
-                                                            <button
-                                                                onClick={() => setCertificateToUpdate(certificate, "rejected", index)}
-                                                                className={`${styles.tableButton} ${styles.tableButtonFix}`}
-                                                            >
-                                                                Re-upload
-                                                            </button>
-                                                        </div>
+                                                        <button
+                                                            onClick={() => setCertificateToUpdate(certificate, "rejected", index)}
+                                                            className={`${styles.tableButton} ${styles.tableButtonFix}`}
+                                                        >
+                                                            Re-upload
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
