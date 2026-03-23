@@ -3,23 +3,24 @@ import { staffApi } from "../apis/staffApi";
 export const certReviewSlice = staffApi.injectEndpoints({
     endpoints: (builder) => ({
         getCertReviewQueue: builder.query<any, { userRole: string }>({
-            query: () => ({ url: "companies/certificates/pending-review", method: "GET" }),
+            query: () => ({ url: "certificates/pending-review", method: "GET" }),
             providesTags: ["CertReview"],
             extraOptions: (arg: any) => ({ userRole: arg.userRole }),
         }),
 
         reviewCertificate: builder.mutation<
             any,
-            { certificateId: string; decision: "approved" | "rejected"; reason?: string; userRole: string }
+            { certificateId: string; certStatus: "approved" | "rejected"; reviewRemarks?: string; userRole: string }
         >({
-            query: ({ certificateId, decision, reason }) => ({
-                url: `companies/certificates/${certificateId}/review`,
+            query: ({ certificateId, certStatus, reviewRemarks }) => ({
+                url: `certificates/${certificateId}/review`,
                 method: "PUT",
-                body: { decision, reason },
+                body: { certStatus, reviewRemarks },
             }),
             invalidatesTags: ["CertReview"],
             extraOptions: (arg: any) => ({ userRole: arg.userRole }),
         }),
+
     }),
 });
 

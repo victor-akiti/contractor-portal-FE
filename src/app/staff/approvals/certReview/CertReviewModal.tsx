@@ -8,12 +8,11 @@ import styles from "./certReview.module.css";
 
 interface CertReviewItem {
     _id: string;
-    certificateId: string;
-    companyName: string;
+    company: { _id: string; companyName: string };
     label: string;
-    fileName: string;
+    name: string;
     url: string;
-    submittedAt?: string;
+    createdAt?: string;
     expiryDate?: string;
 }
 
@@ -24,8 +23,8 @@ interface Props {
 }
 
 export default function CertReviewModal({ item, userRole, onClose }: Props) {
-    const [decision, setDecision] = useState<"approved" | "rejected" | "">("");
-    const [reason, setReason] = useState("");
+    const [certStatus, setCertStatus] = useState<"approved" | "rejected" | "">("");
+    const [reviewRemarks, setReviewRemarks] = useState("");
     const [error, setError] = useState("");
 
     const [reviewCertificate, { isLoading }] = useReviewCertificateMutation();
@@ -36,11 +35,11 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
     };
 
     const handleSubmit = async () => {
-        if (!decision) {
+        if (!certStatus) {
             setError("Please select a decision.");
             return;
         }
-        if (decision === "rejected" && !reason.trim()) {
+        if (certStatus === "rejected" && !reviewRemarks.trim()) {
             setError("A reason is required when rejecting a certificate.");
             return;
         }
@@ -48,14 +47,14 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
 
         try {
             await reviewCertificate({
-                certificateId: item.certificateId || item._id,
-                decision,
-                reason: decision === "rejected" ? reason.trim() : undefined,
+                certificateId: item._id,
+                certStatus,
+                reviewRemarks: certStatus === "rejected" ? reviewRemarks.trim() : undefined,
                 userRole,
             }).unwrap();
 
             toast.success(
-                decision === "approved"
+                certStatus === "approved"
                     ? "Certificate approved successfully."
                     : "Certificate rejected successfully."
             );
@@ -79,7 +78,7 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                     <tbody>
                         <tr>
                             <td>Company</td>
-                            <td>{item.companyName}</td>
+                            <td>{item.company?.companyName}</td>
                         </tr>
                         <tr>
                             <td>Certificate</td>
@@ -88,7 +87,7 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                         <tr>
                             <td>File</td>
                             <td>
-                                <span style={{ marginRight: 10 }}>{item.fileName}</span>
+                                <span style={{ marginRight: 10 }}>{item.name}</span>
                                 <a
                                     href={item.url}
                                     target="_blank"
@@ -99,10 +98,10 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                                 </a>
                             </td>
                         </tr>
-                        {item.submittedAt && (
+                        {item.createdAt && (
                             <tr>
                                 <td>Submitted</td>
-                                <td>{formatDate(item.submittedAt)}</td>
+                                <td>{formatDate(item.createdAt)}</td>
                             </tr>
                         )}
                         {item.expiryDate && (
@@ -120,35 +119,35 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                         <label>
                             <input
                                 type="radio"
-                                name="decision"
+                                name="certStatus"
                                 value="approved"
-                                checked={decision === "approved"}
-                                onChange={() => { setDecision("approved"); setError(""); }}
+                                checked={certStatus === "approved"}
+                                onChange={() => { setCertStatus("approved"); setError(""); }}
                             />
                             Approve
                         </label>
                         <label>
                             <input
                                 type="radio"
-                                name="decision"
+                                name="certStatus"
                                 value="rejected"
-                                checked={decision === "rejected"}
-                                onChange={() => { setDecision("rejected"); setError(""); }}
+                                checked={certStatus === "rejected"}
+                                onChange={() => { setCertStatus("rejected"); setError(""); }}
                             />
                             Reject
                         </label>
                     </div>
                 </div>
 
-                {decision === "rejected" && (
+                {certStatus === "rejected" && (
                     <div className={styles.reasonSection}>
                         <span className={styles.reasonLabel}>
                             Reason <span style={{ color: "#c62828" }}>*</span>
                         </span>
                         <textarea
                             className={styles.reasonTextarea}
-                            value={reason}
-                            onChange={(e) => { setReason(e.target.value); setError(""); }}
+                            value={reviewRemarks}
+                            onChange={(e) => { setReviewRemarks(e.target.value); setError(""); }}
                             placeholder="Explain why this certificate is being rejected..."
                         />
                     </div>
@@ -160,7 +159,7 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                     <button className={styles.cancelBtn} onClick={onClose} disabled={isLoading}>
                         Cancel
                     </button>
-                    <button className={styles.submitBtn} onClick={handleSubmit} disabled={isLoading || !decision}>
+                    <button className={styles.submitBtn} onClick={handleSubmit} disabled={isLoading || !certStatus}>
                         Submit Review
                         {isLoading && <ButtonLoadingIcon />}
                     </button>

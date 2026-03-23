@@ -469,8 +469,8 @@ const Dashboard = () => {
                                                             <button
                                                                 onClick={() => setCertificateToUpdate(certificate, "expiring", index)}
                                                                 className={styles.tableButton}
-                                                                disabled={certificate.certStatus === "pending review"}
-                                                                title={certificate.certStatus === "pending review" ? "Certificate is under review" : undefined}
+                                                                disabled={certificate.certStatus === "pending"}
+                                                                title={certificate.certStatus === "pending" ? "Certificate is under review" : undefined}
                                                             >
                                                                 Update Certificate
                                                             </button>
@@ -559,8 +559,8 @@ const Dashboard = () => {
                                                             <button
                                                                 onClick={() => setCertificateToUpdate(certificate, "expired", index)}
                                                                 className={styles.tableButton}
-                                                                disabled={certificate.certStatus === "pending review"}
-                                                                title={certificate.certStatus === "pending review" ? "Certificate is under review" : undefined}
+                                                                disabled={certificate.certStatus === "pending"}
+                                                                title={certificate.certStatus === "pending" ? "Certificate is under review" : undefined}
                                                             >
                                                                 Update Certificate
                                                             </button>

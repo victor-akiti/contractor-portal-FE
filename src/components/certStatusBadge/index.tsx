@@ -5,6 +5,7 @@ interface Props {
 }
 
 const statusMap: Record<string, { label: string; className: string }> = {
+    pending: { label: "Pending Review", className: styles.pending },
     "pending review": { label: "Pending Review", className: styles.pending },
     approved: { label: "Approved", className: styles.approved },
     rejected: { label: "Rejected", className: styles.rejected },

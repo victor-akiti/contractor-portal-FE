@@ -2,12 +2,11 @@ import styles from "./certReview.module.css";
 
 interface CertReviewItem {
     _id: string;
-    certificateId: string;
-    companyName: string;
+    company: { _id: string; companyName: string };
     label: string;
-    fileName: string;
+    name: string;
     url: string;
-    submittedAt?: string;
+    createdAt?: string;
     expiryDate?: string;
 }
 
@@ -24,10 +23,10 @@ export default function CertReviewRow({ item, onReview }: Props) {
 
     return (
         <tr>
-            <td className={styles.companyName}>{item.companyName}</td>
+            <td className={styles.companyName}>{item.company?.companyName}</td>
             <td className={styles.certLabel}>{item.label}</td>
-            <td className={styles.fileName} title={item.fileName}>{item.fileName}</td>
-            <td className={styles.dateText}>{formatDate(item.submittedAt)}</td>
+            <td className={styles.fileName} title={item.name}>{item.name}</td>
+            <td className={styles.dateText}>{formatDate(item.createdAt)}</td>
             <td className={styles.dateText}>{formatDate(item.expiryDate)}</td>
             <td>
                 <button className={styles.reviewBtn} onClick={() => onReview(item)}>
