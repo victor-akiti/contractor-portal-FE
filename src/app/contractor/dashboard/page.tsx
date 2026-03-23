@@ -464,14 +464,12 @@ const Dashboard = () => {
                                                             >
                                                                 View
                                                             </Link>
-                                                            {certificate.vendor?._id && (
-                                                                <Link
-                                                                    href={`/contractor/form/form/${certificate.vendor._id}`}
-                                                                    className={`${styles.tableButton} ${styles.tableButtonFix}`}
-                                                                >
-                                                                    Fix &amp; Re-upload →
-                                                                </Link>
-                                                            )}
+                                                            <button
+                                                                onClick={() => setCertificateToUpdate(certificate, "rejected", index)}
+                                                                className={`${styles.tableButton} ${styles.tableButtonFix}`}
+                                                            >
+                                                                Re-upload
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
