@@ -15,11 +15,17 @@ import styles from "./styles/styles.module.css"
 interface Certificate {
     _id: string;
     label: string;
+    name?: string;
     expiryDate: string;
+    issueDate?: string;
     url: string;
     updateCode: string;
     certStatus?: string;
     reviewRemarks?: string;
+    isReUpload?: boolean;
+    updatedAt?: string;
+    createdAt?: string;
+    vendor?: { _id: string };
 }
 
 interface Company {
@@ -37,6 +43,8 @@ interface DashboardData {
     companies: Company[];
     expiringCertificates: Certificate[];
     expiredCertificates: Certificate[];
+    pendingCertificates: Certificate[];
+    rejectedCertificates: Certificate[];
     files: any[];
 }
 
@@ -93,6 +101,8 @@ const Dashboard = () => {
         companies: [],
         expiringCertificates: [],
         expiredCertificates: [],
+        pendingCertificates: [],
+        rejectedCertificates: [],
         files: []
     })
     const [fetchedDashboardData, setFetchedDashboardData] = useState(false)
@@ -393,6 +403,140 @@ const Dashboard = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Rejected Certificates Section — shown only when non-empty */}
+                    {(dashboardData.rejectedCertificates ?? []).length > 0 && (
+                        <>
+                            <hr className={styles.divider} />
+                            <div className={styles.section}>
+                                <div className={styles.sectionHeader}>
+                                    <h5 className={`${styles.sectionTitle} ${styles.rejectedSectionTitle}`}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                        Action Required — Rejected Certificates
+                                    </h5>
+                                </div>
+
+                                <div className={styles.actionRequiredBanner}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M8 14A6 6 0 108 2a6 6 0 000 12zM8 5v3m0 2h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    One or more of your re-uploaded certificates have been reviewed and rejected. Please read the reason below and re-upload the correct document.
+                                </div>
+
+                                <div className={styles.tableContainer}>
+                                    <table className={styles.table}>
+                                        <thead>
+                                            <tr>
+                                                <th>Certificate</th>
+                                                <th>Reason for Rejection</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {dashboardData.rejectedCertificates.map((certificate, index) => (
+                                                <tr key={index}>
+                                                    <td className={styles.certificateType}>
+                                                        {certificate.label}
+                                                    </td>
+                                                    <td>
+                                                        {certificate.reviewRemarks ? (
+                                                            <div className={styles.rejectionRemarksBox}>
+                                                                <div className={styles.rejectionRemarksHeader}>
+                                                                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                                                                        <path d="M8 14A6 6 0 108 2a6 6 0 000 12zM8 5v3m0 2h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                                    </svg>
+                                                                    Staff Review Note
+                                                                </div>
+                                                                <p className={styles.rejectionRemarksText}>{certificate.reviewRemarks}</p>
+                                                            </div>
+                                                        ) : (
+                                                            <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-sm)" }}>No reason provided</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <div className={styles.tableActions}>
+                                                            <Link
+                                                                href={certificate.url}
+                                                                target="_blank"
+                                                                className={`${styles.tableButton} ${styles.tableButtonView}`}
+                                                            >
+                                                                View
+                                                            </Link>
+                                                            {certificate.vendor?._id && (
+                                                                <Link
+                                                                    href={`/contractor/form/form/${certificate.vendor._id}`}
+                                                                    className={`${styles.tableButton} ${styles.tableButtonFix}`}
+                                                                >
+                                                                    Fix &amp; Re-upload →
+                                                                </Link>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Pending Review Section — shown only when non-empty */}
+                    {(dashboardData.pendingCertificates ?? []).length > 0 && (
+                        <>
+                            <hr className={styles.divider} />
+                            <div className={styles.section}>
+                                <div className={styles.sectionHeader}>
+                                    <h5 className={`${styles.sectionTitle} ${styles.pendingSectionTitle}`}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                        Pending Review
+                                    </h5>
+                                </div>
+
+                                <div className={styles.pendingInfoBanner}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M8 14A6 6 0 108 2a6 6 0 000 12zM8 5v3m0 2h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    Your re-uploaded certificate(s) are awaiting staff review. You will be notified by email once a decision has been made.
+                                </div>
+
+                                <div className={styles.tableContainer}>
+                                    <table className={styles.table}>
+                                        <thead>
+                                            <tr>
+                                                <th>Certificate</th>
+                                                <th>Uploaded</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {dashboardData.pendingCertificates.map((certificate, index) => (
+                                                <tr key={index}>
+                                                    <td className={styles.certificateType}>
+                                                        {certificate.label}
+                                                    </td>
+                                                    <td className={`${styles.expiryDate} ${styles.expiryDateExpiring}`}>
+                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                            <path d="M8 4v4l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                            <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+                                                        </svg>
+                                                        {certificate.updatedAt
+                                                            ? new Date(certificate.updatedAt).toLocaleDateString("en-NG")
+                                                            : certificate.createdAt
+                                                                ? new Date(certificate.createdAt).toLocaleDateString("en-NG")
+                                                                : "—"}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     <hr className={styles.divider} />
 

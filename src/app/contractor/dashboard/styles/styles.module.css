@@ -601,6 +601,106 @@
 }
 
 /* ============================================
+   PENDING REVIEW SECTION
+   ============================================ */
+
+.pendingSectionTitle svg {
+  color: var(--color-warning);
+}
+
+.pendingInfoBanner {
+  background-color: #fffbf0;
+  border: 1px solid #f5d87e;
+  border-left: 4px solid #e67509;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  color: #7a5500;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.pendingInfoBanner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #e67509;
+}
+
+/* ============================================
+   REJECTED CERTIFICATES SECTION
+   ============================================ */
+
+.rejectedSectionTitle svg {
+  color: var(--color-danger);
+}
+
+.actionRequiredBanner {
+  background-color: #fff5f5;
+  border: 1px solid #f5c2c2;
+  border-left: 4px solid #c62828;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  color: #7a1a1a;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.actionRequiredBanner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #c62828;
+}
+
+/* Rejection remarks — mirrors the form remarks style */
+.rejectionRemarksBox {
+  background-color: #fff5f5;
+  border-left: 3px solid #c62828;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-top: var(--spacing-xs);
+}
+
+.rejectionRemarksHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: #c62828;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.rejectionRemarksHeader svg {
+  flex-shrink: 0;
+}
+
+.rejectionRemarksText {
+  color: #5a1a1a;
+  font-size: var(--font-size-sm);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Fix/Re-upload button — red variant */
+.tableButtonFix {
+  border-color: #c62828;
+  color: #c62828;
+}
+
+.tableButtonFix:hover {
+  background-color: #c62828;
+  color: var(--color-bg-white);
+}
+
+/* ============================================
    PRINT STYLES
    ============================================ */
 
