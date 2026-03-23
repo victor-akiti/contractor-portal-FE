@@ -555,12 +555,6 @@ const Dashboard = () => {
                                                     <td>
                                                         {certificate.reviewRemarks ? (
                                                             <div className={styles.rejectionRemarksBox}>
-                                                                <div className={styles.rejectionRemarksHeader}>
-                                                                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                                                                        <path d="M8 14A6 6 0 108 2a6 6 0 000 12zM8 5v3m0 2h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                                    </svg>
-                                                                    Staff Review Note
-                                                                </div>
                                                                 <p className={styles.rejectionRemarksText}>{certificate.reviewRemarks}</p>
                                                             </div>
                                                         ) : (
