@@ -196,6 +196,21 @@ const Dashboard = () => {
                     data.expiredCertificates = allExpired
                 }
 
+                // De-dupe across all four cert arrays by _id (a cert can
+                // theoretically appear in multiple arrays during edge cases)
+                const seenIds = new Set<string>()
+                const dedup = (certs: Certificate[]) =>
+                    (certs ?? []).filter(c => {
+                        if (seenIds.has(c._id)) return false
+                        seenIds.add(c._id)
+                        return true
+                    })
+                // Priority order: rejected > pending > expired > expiring
+                data.rejectedCertificates = dedup(data.rejectedCertificates ?? [])
+                data.pendingCertificates = dedup(data.pendingCertificates ?? [])
+                data.expiredCertificates = dedup(data.expiredCertificates ?? [])
+                data.expiringCertificates = dedup(data.expiringCertificates ?? [])
+
                 setFetchedDashboardData(true)
                 setFetchingDashboardData(false)
                 setDashboardData(data)
@@ -226,9 +241,21 @@ const Dashboard = () => {
     const updateCertificate = async () => {
         try {
             setUpdatingCertificate(true)
+            const body: Record<string, any> = {
+                newCertificate: {
+                    url: selectedCertificate.newCertificate.url,
+                    name: selectedCertificate.newCertificate.name,
+                    expiryDate: selectedCertificate.newCertificate.expiryDate,
+                },
+                updateCode: selectedCertificate.updateCode,
+            }
+            // vendorID is only required for non-Vendor callers
+            if (user.role?.toLowerCase() !== "vendor") {
+                body.vendorID = selectedCertificate.vendor?._id
+            }
             const updateCertificateRequest = await putProtected(
-                `companies/certificates/${selectedCertificate._id}`,
-                selectedCertificate,
+                `certificates/${selectedCertificate._id}`,
+                body,
                 user.role
             )
             setUpdatingCertificate(false)
@@ -236,7 +263,7 @@ const Dashboard = () => {
             if (updateCertificateRequest.status === "OK") {
                 setUpdateCertificateSuccess("Certificate updated successfully!")
             } else {
-                setUpdateCertificateError(updateCertificateRequest.error.message)
+                setUpdateCertificateError(updateCertificateRequest.error?.message ?? "Failed to update certificate")
             }
         } catch (error) {
             console.error({ error })
