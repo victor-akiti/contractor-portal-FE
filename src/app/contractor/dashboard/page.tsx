@@ -241,21 +241,9 @@ const Dashboard = () => {
     const updateCertificate = async () => {
         try {
             setUpdatingCertificate(true)
-            const body: Record<string, any> = {
-                newCertificate: {
-                    url: selectedCertificate.newCertificate.url,
-                    name: selectedCertificate.newCertificate.name,
-                    expiryDate: selectedCertificate.newCertificate.expiryDate,
-                },
-                updateCode: selectedCertificate.updateCode,
-            }
-            // vendorID is only required for non-Vendor callers
-            if (user.role?.toLowerCase() !== "vendor") {
-                body.vendorID = selectedCertificate.vendor?._id
-            }
             const updateCertificateRequest = await putProtected(
-                `certificates/${selectedCertificate._id}`,
-                body,
+                `companies/certificates/${selectedCertificate._id}`,
+                selectedCertificate,
                 user.role
             )
             setUpdatingCertificate(false)
