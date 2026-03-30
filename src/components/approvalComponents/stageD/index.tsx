@@ -58,7 +58,18 @@ type DueDiligenceData = {
     }
 }
 
-const StageD = ({ approvalData, formPages, vendorID }) => {
+const StageD = ({ approvalData, formPages, vendorID, companyInvite = null }) => {
+
+    const getRecommendedBy = () => {
+        if (companyInvite?.recommendedBy?.name) return companyInvite.recommendedBy;
+        if (companyInvite?.inviteHistory?.length > 0) {
+            const last = companyInvite.inviteHistory[companyInvite.inviteHistory.length - 1];
+            if (last?.recommendedBy) return last.recommendedBy;
+            if (last?.previousInvite?.recommendedBy) return last.previousInvite.recommendedBy;
+        }
+        return null;
+    };
+    const recommendedBy = getRecommendedBy();
 
     const [vendorDueDiligenceData, setVendorDueDiligenceData] = useState<DueDiligenceData>({
         registrationCheck: {
@@ -479,6 +490,13 @@ const StageD = ({ approvalData, formPages, vendorID }) => {
                 <h2>{approvalData.companyName}</h2>
                 <Link href={`/staff/vendor/${vendorID}`}>Open in view only mode</Link>
             </div>
+
+            {recommendedBy && (
+                <p className={styles.recommendedByText}>
+                    Recommended By: <span>{recommendedBy.name}</span>
+                    {recommendedBy.department ? ` (${recommendedBy.department})` : ""}
+                </p>
+            )}
 
             <h3>Carry Out Stage E</h3>
 

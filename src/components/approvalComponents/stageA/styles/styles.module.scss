@@ -539,6 +539,17 @@
     }
 }
 
+.recommendedByText {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 16px;
+
+    span {
+        font-weight: 600;
+        color: #333;
+    }
+}
+
 .contractorCategorizationDiv {
     p:nth-child(1) {
         color: $primaryColor;

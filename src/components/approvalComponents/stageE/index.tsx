@@ -31,7 +31,18 @@ function useOutsideClick(ref: any, onClickOut: () => void, deps = []) {
     }, deps);
 }
 
-const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [] }) => {
+const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], companyInvite = null }) => {
+
+    const getRecommendedBy = () => {
+        if (companyInvite?.recommendedBy?.name) return companyInvite.recommendedBy;
+        if (companyInvite?.inviteHistory?.length > 0) {
+            const last = companyInvite.inviteHistory[companyInvite.inviteHistory.length - 1];
+            if (last?.recommendedBy) return last.recommendedBy;
+            if (last?.previousInvite?.recommendedBy) return last.previousInvite.recommendedBy;
+        }
+        return null;
+    };
+    const recommendedBy = getRecommendedBy();
 
 
 
@@ -818,6 +829,13 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [] }) => {
 
                 <a onClick={() => hideAllRemarks()}>HIDE COMMENTS</a>
             </div>
+
+            {recommendedBy && (
+                <p className={styles.recommendedByText}>
+                    Recommended By: <span>{recommendedBy.name}</span>
+                    {recommendedBy.department ? ` (${recommendedBy.department})` : ""}
+                </p>
+            )}
 
             <h3 className={styles.subTitle}>Carry out HOD Review</h3>
 
