@@ -220,7 +220,7 @@ const NewCompanyRegistration = () => {
     }
 
     const saveBeforeProgress = () => {
-        const currentPageIsValid: boolean = validateCurrentPage()
+        const currentPageIsValid: boolean = validateCurrentPage(activePage.index)
         if (currentPageIsValid) {
             if (registrationForm.vendorID) {
                 saveCurrentVendor()
@@ -290,166 +290,141 @@ const NewCompanyRegistration = () => {
         }
     }
 
-    const validateCurrentPage = () => {
-        const sections = registrationForm.form.pages[activePage.index].sections
-        const pageIndex = activePage.index
-        let isValidated = true
+    const validateCurrentPage = (pageIndex: number) => {
+        const sections = registrationForm.form.pages[pageIndex].sections
+        let isPageValid = true
 
         for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
             const section = sections[sectionIndex];
 
             for (let fieldIndex = 0; fieldIndex < section.fields.length; fieldIndex++) {
                 const field = section.fields[fieldIndex]
+                let fieldIsValid = true
 
                 if (field.type === "shortText") {
                     if (String(field.value) === "" && field.required) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
                     } else if (String(field.value).length > field.maxLength) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
                     } else {
-                        isValidated = true
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "radioButtons") {
                     if (String(field.value) === "" && field.required) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "You have to select a value for this field.")
                     } else if (String(field.value).length > field.maxLength) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
                     } else {
-                        isValidated = true
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "longText") {
                     if (String(field.value) === "" && field.required) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
                     } else if (String(field.value).length > field.maxLength) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
                     } else {
-                        isValidated = true
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "date") {
-                    const dateRegex = /"([1|2]\d{3})-((0[1-9])|(1[0-2]))-([0][1-9]|([1-2]\d)|(3[0-1]))T(([0-1]\d)|(2[0-3])):([0-5][0-9])"g/
-                    const date = new Date(field.value)
-
-
                     if (String(field.value) === "" && field.required) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field cannot be left empty")
                     } else if (String(field.value).length > field.maxLength) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, `This field can only be ${field.maxLength} ${field.maxLength === 1 ? "character" : "characters"} long`)
-                    }
-                    // else if (!dateRegex.test(field.value)) {
-                    //     isValidated = false
-                    //     
-
-                    //     setFieldError(pageIndex, sectionIndex, fieldIndex, "Please select a valid date")
-                    // } 
-                    else {
-                        isValidated = true
+                    } else {
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "multiSelectText") {
                     if (field.required && field.value?.length === 0) {
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required and you have to enter at least one value")
                     } else {
-                        isValidated = true
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                     }
                 } else if (field.type === "file") {
 
-
                     if (field.label === "Upload CAC/BN Form 1") {
-
                         //@ts-ignore
                         if (registrationForm.form.pages[0].sections[0].fields[1].value === "Business Name Registration" && field.value?.length === 0) {
-                            isValidated = false
+                            fieldIsValid = false
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                         } else {
-                            isValidated = true
                             setFieldValid(pageIndex, sectionIndex, fieldIndex)
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
-                    } else if (field.label === "Upload CAC Form 2A" || field.label === "Upload CAC Form 7") {
+                    } else if (field.label === "Upload CAC Form 2A" || field.label === "Upload CAC Form 2" || field.label === "Upload CAC Form 7") {
                         //@ts-ignore
                         if (registrationForm.form.pages[0].sections[0].fields[1].value === "Company Registration" && field.value?.length === 0) {
-                            isValidated = false
+                            fieldIsValid = false
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
                         } else {
-                            isValidated = true
                             setFieldValid(pageIndex, sectionIndex, fieldIndex)
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
                     } else if (field.required && field.value?.length === 0) {
-
-                        isValidated = false
+                        fieldIsValid = false
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
-                    } else if (field.isACertificate) {
-                        let certificateIsNotValid = false
-
-                        if (field.hasExpiryDate) {
-                            for (let index = 0; index < field.value?.length; index++) {
-                                const element = field.value[index];
-
-                                if (field.isACertificate && field.hasExpiryDate && !element.expiryDate) {
-
-
-                                    setFieldError(pageIndex, sectionIndex, fieldIndex, `Set an expiry date for ${element.label}`)
-                                    certificateIsNotValid = true
-                                }
-
+                    } else if (field.isACertificate && field.hasExpiryDate) {
+                        for (let index = 0; index < field.value?.length; index++) {
+                            const element = field.value[index];
+                            if (!element.expiryDate) {
+                                setFieldError(pageIndex, sectionIndex, fieldIndex, `Set an expiry date for ${element.label}`)
+                                fieldIsValid = false
                             }
-
-                            if (certificateIsNotValid) {
-                                isValidated = false
-                            }
-                        } else {
-                            isValidated = true
+                        }
+                        if (fieldIsValid) {
                             setFieldValid(pageIndex, sectionIndex, fieldIndex)
                             setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                         }
-
-
                     } else {
-
-                        isValidated = true
-
                         setFieldValid(pageIndex, sectionIndex, fieldIndex)
                         setFieldError(pageIndex, sectionIndex, fieldIndex, "")
                     }
-
-
                 }
 
-
-
-                if (!isValidated) {
-                    break
+                if (!fieldIsValid) {
+                    isPageValid = false
                 }
-
             }
-
-            if (!isValidated) {
-
-                break
-            }
-
         }
-        return isValidated
+        return isPageValid
+    }
+
+    const validateAllPages = (): { isValid: boolean, firstInvalidPageIndex: number } => {
+        let isValid = true
+        let firstInvalidPageIndex = -1
+
+        for (let i = 0; i < registrationForm.form.pages.length; i++) {
+            const pageIsValid = validateCurrentPage(i)
+            if (!pageIsValid) {
+                isValid = false
+                if (firstInvalidPageIndex === -1) {
+                    firstInvalidPageIndex = i
+                }
+            }
+        }
+
+        return { isValid, firstInvalidPageIndex }
     }
 
     const validateField = (pageIndex, sectionIndex, fieldIndex, valueField, value) => {
         const field = registrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]
 
-
+        if (field.type === "file" && valueField === "value") {
+            if (field.required && Array.isArray(value) && value.length === 0) {
+                setFieldError(pageIndex, sectionIndex, fieldIndex, "This field is required")
+            } else {
+                setFieldValid(pageIndex, sectionIndex, fieldIndex)
+            }
+            return
+        }
 
 
 
@@ -702,6 +677,17 @@ const NewCompanyRegistration = () => {
     }
 
     const submitForm = async () => {
+        const { isValid, firstInvalidPageIndex } = validateAllPages()
+
+        if (!isValid) {
+            setShowFinish(false)
+            const tempActivePage = { ...activePage }
+            tempActivePage.index = firstInvalidPageIndex
+            tempActivePage.label = registrationForm.form.pages[firstInvalidPageIndex].pageTitle
+            setActivePage(tempActivePage)
+            return
+        }
+
         try {
             setSubmitting(true)
 
