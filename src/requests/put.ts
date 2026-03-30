@@ -1,5 +1,6 @@
 import { auth } from '@/lib/firebase';
 import { getIdToken } from "firebase/auth";
+import { BACKEND_BASE_URL } from "@/lib/config";
 
 const handleTokenRefresh = async (): Promise<boolean> => {
     try {
@@ -11,7 +12,7 @@ const handleTokenRefresh = async (): Promise<boolean> => {
 
         const freshToken = await getIdToken(user, true);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
+        const response = await fetch(`${BACKEND_BASE_URL}/user/ver`, {
             method: "PUT",
             headers: { token: freshToken },
             credentials: "include",
@@ -54,7 +55,7 @@ const getAuthHeader = async (): Promise<Record<string, string>> => {
 
 export const putPlain = async (route: string, body: any) => {
     try {
-        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
+        const request = await fetch(`${BACKEND_BASE_URL}/${route}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -73,7 +74,7 @@ export const putPlain = async (route: string, body: any) => {
 
 export const putProtected = async (route: string, body: any, role?: string) => {
     try {
-        const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`;
+        const url = `${BACKEND_BASE_URL}/${route}`;
         const authHeader = await getAuthHeader();
 
         const request = await fetch(url, {
