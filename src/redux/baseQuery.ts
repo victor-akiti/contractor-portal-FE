@@ -3,6 +3,7 @@ import { auth } from '@/lib/firebase';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getIdToken } from 'firebase/auth';
+import { BACKEND_BASE_URL } from '@/lib/config';
 
 // Detect cookie (browser-only safeguard)
 const hasAuthCookie = () => {
@@ -34,7 +35,7 @@ const performTokenRefresh = async (): Promise<boolean> => {
 
         const freshToken = await getIdToken(user, true);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
+        const response = await fetch(`${BACKEND_BASE_URL}/user/ver`, {
             method: "PUT",
             headers: { token: freshToken },
             credentials: "include",
@@ -63,7 +64,7 @@ const redirectToLogin = (role?: string): void => {
 
 // === BASE QUERY ===
 const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+    baseUrl: BACKEND_BASE_URL,
     credentials: "include",
     prepareHeaders: async (headers, apiContext) => {
         const cookieAvailable = hasAuthCookie();

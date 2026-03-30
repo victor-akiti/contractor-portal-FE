@@ -1,5 +1,6 @@
 import { auth } from "@/lib/firebase";
 import { getIdToken } from "firebase/auth";
+import { BACKEND_BASE_URL } from "@/lib/config";
 
 // Simple refresh state management
 let isRefreshing = false;
@@ -39,7 +40,7 @@ export const getPlain = async (route) => {
 
 export const getProtected = async (route, role) => {
   try {
-    const baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`;
+    const baseUrl = `${BACKEND_BASE_URL}/${route}`;
 
     const authHeader = await getAuthHeader();
 
@@ -121,7 +122,7 @@ const performTokenRefresh = async () => {
     const freshToken = await getIdToken(user, true);
 
     // Send fresh token to backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
+    const response = await fetch(`${BACKEND_BASE_URL}/user/ver`, {
       method: "PUT",
       headers: { token: freshToken },
       credentials: "include",
