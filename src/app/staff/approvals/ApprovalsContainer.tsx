@@ -801,7 +801,7 @@ export default function ApprovalsContainer() {
       activeTab === "park-requests"
     )
       return index === 0 || index === 3;
-    if (activeTab === "l3") return false;
+    if (activeTab === "l3") return index === 0 || index === 2;
     return false;
   };
 
@@ -833,11 +833,13 @@ export default function ApprovalsContainer() {
         temp.completedL2 = sortArrayByNameDescending(temp.completedL2);
       else if (activeTab === "in-progress")
         temp.inProgress = sortArrayByNameDescending(temp.inProgress);
+      else if (activeTab === "l3") temp.l3 = sortArrayByNameDescending(temp.l3);
       else if (activeTab === "returned") temp.returned = sortArrayByNameDescending(temp.returned);
     } else {
       if (activeTab === "pending-l2") temp.pendingL2 = sortArrayByName(temp.pendingL2);
       else if (activeTab === "completed-l2") temp.completedL2 = sortArrayByName(temp.completedL2);
       else if (activeTab === "in-progress") temp.inProgress = sortArrayByName(temp.inProgress);
+      else if (activeTab === "l3") temp.l3 = sortArrayByName(temp.l3);
       else if (activeTab === "returned") temp.returned = sortArrayByName(temp.returned);
     }
     setApprovals(temp);
@@ -876,6 +878,7 @@ export default function ApprovalsContainer() {
         temp.completedL2 = sortArrayNumericallyDescending(temp.completedL2);
       else if (activeTab === "in-progress")
         temp.inProgress = sortArrayNumericallyDescending(temp.inProgress);
+      else if (activeTab === "l3") temp.l3 = sortArrayNumericallyDescending(temp.l3);
       else if (activeTab === "returned")
         temp.returned = sortArrayNumericallyDescending(temp.returned);
     } else {
@@ -883,6 +886,7 @@ export default function ApprovalsContainer() {
       else if (activeTab === "completed-l2")
         temp.completedL2 = sortArrayNumerically(temp.completedL2);
       else if (activeTab === "in-progress") temp.inProgress = sortArrayNumerically(temp.inProgress);
+      else if (activeTab === "l3") temp.l3 = sortArrayNumerically(temp.l3);
       else if (activeTab === "returned") temp.returned = sortArrayNumerically(temp.returned);
     }
     setCurrentSort("numerical");
