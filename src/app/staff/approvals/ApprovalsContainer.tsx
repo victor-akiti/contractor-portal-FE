@@ -1307,6 +1307,26 @@ export default function ApprovalsContainer() {
           { label: "Portal Admin Name", value: "portalAdminName" },
           { label: "Portal Admin Email", value: "portalAdminEmail" },
           { label: "Portal Admin Phone", value: "portalAdminPhone" },
+          {
+            label: "Executive Approval Date",
+            value: (row: any) => {
+              if (row?.flags?.approved === true && row?.flags?.status === "approved" && row?.flags?.approvals?.level5?.date) {
+                const d = new Date(row.flags.approvals.level5.date);
+                const day = String(d.getDate()).padStart(2, "0");
+                const month = String(d.getMonth() + 1).padStart(2, "0");
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+              }
+              return "";
+            },
+          },
+          {
+            label: "Contractor Categorization",
+            value: (row: any) =>
+              row?.jobCategories?.length
+                ? row.jobCategories.map((jc: any) => jc.category).join(", ")
+                : "",
+          },
         ],
         content: exportData,
       },
