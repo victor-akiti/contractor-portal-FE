@@ -19,6 +19,27 @@
 }
 
 /* ============================================
+   COMPANY GROUP
+   ============================================ */
+
+.companyGroup {
+    margin-bottom: 28px;
+}
+
+.companyGroupHeader {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    background-color: #f0f0f0;
+    border-left: 3px solid #e67509;
+    margin-bottom: 0;
+    font-family: monospace;
+}
+
+/* ============================================
    QUEUE TABLE
    ============================================ */
 

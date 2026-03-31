@@ -23,7 +23,6 @@ export default function CertReviewRow({ item, onReview }: Props) {
 
     return (
         <tr>
-            <td className={styles.companyName}>{item.company?.companyName}</td>
             <td className={styles.certLabel}>{item.label}</td>
             <td className={styles.fileName} title={item.name}>{item.name}</td>
             <td className={styles.dateText}>{formatDate(item.createdAt)}</td>
