@@ -1,5 +1,5 @@
 const BACKEND_URLS: Record<string, string> = {
-    development: "http://localhost:8000",
+    development: process.env.NEXT_PUBLIC_DEV_BACKEND_URL ?? "http://localhost:8085",
     production: process.env.NEXT_PUBLIC_BACKEND_URL ?? "",
 };
 
