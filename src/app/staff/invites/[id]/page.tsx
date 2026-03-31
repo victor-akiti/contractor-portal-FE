@@ -9,7 +9,6 @@ import { postProtected } from "@/requests/post"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
-import _ from "underscore"
 import styles from "./styles/styles.module.css"
 
 type InvitedCompany = {
@@ -44,6 +43,7 @@ const ResendInvite = () => {
     const [currentQueryString, setCurrentQueryString] = useState("")
     const [searchingCompanies, setSearchingCompanies] = useState(false)
     const emailFieldRef = useRef(null)
+    const companySearchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [registrationStatus, setRegistrationStatus] = useState({
         status: 0,
         showReminderModal: false,
@@ -102,26 +102,28 @@ const ResendInvite = () => {
         }
     }
 
-    const findCompany = async (queryString: String) => {
+    const fetchSimilarCompanies = async (queryString: string): Promise<InvitedCompany[]> => {
+        if (!queryString || queryString.trim().length < 2) return []
         try {
-            if (queryString.length < 2) {
-                setSimilarCompanyNames([])
-                return
-            }
-
-            setSearchingCompanies(true)
-            const findCompanyRequest = await postProtected("invites/find", { queryString }, user.role)
-
+            const findCompanyRequest = await postProtected("invites/find", { queryString: queryString.trim() }, user.role)
             if (findCompanyRequest.status === "OK") {
-                let tempSimilarCompanies = [...similarCompanyNames]
-                tempSimilarCompanies = findCompanyRequest.data.companies
-                setSimilarCompanyNames(tempSimilarCompanies)
+                return findCompanyRequest.data.companies || []
             }
-            setSearchingCompanies(false)
         } catch (error) {
-            console.error({ error });
-            setSearchingCompanies(false)
+            console.error({ error })
         }
+        return []
+    }
+
+    const findCompany = async (queryString: string) => {
+        if (queryString.length < 2) {
+            setSimilarCompanyNames([])
+            return
+        }
+        setSearchingCompanies(true)
+        const companies = await fetchSimilarCompanies(queryString)
+        setSimilarCompanyNames(companies)
+        setSearchingCompanies(false)
     }
 
     const updateNewInvitee = (event: any) => {
@@ -137,7 +139,7 @@ const ResendInvite = () => {
         setValidationErrors(prev => ({ ...prev, [field]: false }))
     }
 
-    const validateNewInviteeDetails = () => {
+    const validateNewInviteeDetails = async () => {
         const errors = {
             fname: !newInvitee.fname,
             lname: !newInvitee.lname,
@@ -162,19 +164,34 @@ const ResendInvite = () => {
             setErrorMessage("Please enter a company name")
         } else {
             setErrorMessage("")
+
+            // Always do a fresh lookup at submit time so we never rely on stale search state
+            setSearchingCompanies(true)
+            const freshCompanies = await fetchSimilarCompanies(newInvitee.companyName)
+            setSearchingCompanies(false)
+            setSimilarCompanyNames(freshCompanies)
+
+            // Hard block: exact name match (case-insensitive) means a duplicate company
+            const exactMatch = freshCompanies.find(
+                (c: InvitedCompany) => c.companyName.trim().toLowerCase() === newInvitee.companyName.trim().toLowerCase()
+            )
+            if (exactMatch) {
+                setValidationErrors(prev => ({ ...prev, companyName: true }))
+                setErrorMessage(`A company named "${exactMatch.companyName}" is already registered. Duplicate companies are not permitted.`)
+                return
+            }
+
             if (selectedExistingCompany._id) {
                 getCompanyRegistrationStatus()
+            } else if (freshCompanies.length > 0) {
+                let tempRegistrationStatus = { ...registrationStatus }
+                tempRegistrationStatus.status = 5
+                tempRegistrationStatus.reminderModalText = "There is at least one company with a similar name to the one you're trying to invite. Continue?"
+                tempRegistrationStatus.reminderModalButtonText = "Send Invite"
+                tempRegistrationStatus.showReminderModal = true
+                setRegistrationStatus(tempRegistrationStatus)
             } else {
-                if (similarCompanyNames.length > 0) {
-                    let tempRegistrationStatus = { ...registrationStatus }
-                    tempRegistrationStatus.status = 5
-                    tempRegistrationStatus.reminderModalText = "There is at least one company with a similar name to the one you're trying to invite. Continue?"
-                    tempRegistrationStatus.reminderModalButtonText = "Send Invite"
-                    tempRegistrationStatus.showReminderModal = true
-                    setRegistrationStatus(tempRegistrationStatus)
-                } else {
-                    sendNewInvite()
-                }
+                sendNewInvite()
             }
         }
     }
@@ -184,7 +201,7 @@ const ResendInvite = () => {
             const getRegistrationStatusRequest = await postProtected("companies/registrationstatus/get", { email: newInvitee.email, companyName: newInvitee.companyName, type: "resend", inviteID: params.id }, user.role)
             if (getRegistrationStatusRequest.status === "OK") {
                 let tempRegistrationStatus = { ...registrationStatus }
-                if (getRegistrationStatusRequest.data.inviteStatus === 2 || getRegistrationStatusRequest.data.inviteStatus === 2) {
+                if (getRegistrationStatusRequest.data.inviteStatus === 2) {
                     tempRegistrationStatus.status = getRegistrationStatusRequest.data.inviteStatus
                     tempRegistrationStatus.reminderModalText = "A company has already been invited with this same name and email address. Would you like to send them an invite reminder?"
                     tempRegistrationStatus.reminderModalButtonText = "Send Reminder"
@@ -255,20 +272,9 @@ const ResendInvite = () => {
     }
 
     const noticeModalAction = () => {
-        switch (registrationStatus.status) {
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-            case 5:
-                return sendNewInvite()
-            default: {
-            }
-        }
+        // All modal action cases (reminder, update & resend, or confirmed similar-name bypass)
+        // route through sendNewInvite — the backend enforces deduplication on its end.
+        sendNewInvite()
         closeNoticeModal()
     }
 
@@ -407,8 +413,15 @@ const ResendInvite = () => {
                                         name="companyName"
                                         value={newInvitee.companyName}
                                         onChange={event => {
+                                            const value = event.target.value
                                             updateNewInvitee(event)
-                                            _.debounce(() => findCompany(event.target.value), 500)()
+                                            // Clear selected company if user is typing a different name
+                                            if (selectedExistingCompany._id && value.trim().toLowerCase() !== selectedExistingCompany.companyName?.trim().toLowerCase()) {
+                                                setSelectedExistingCompany(invitedCompanyTemplate)
+                                            }
+                                            // Proper debounce using a timer ref — replaces the broken _.debounce() pattern
+                                            if (companySearchTimerRef.current) clearTimeout(companySearchTimerRef.current)
+                                            companySearchTimerRef.current = setTimeout(() => findCompany(value), 500)
                                         }}
                                         className={validationErrors.companyName ? styles.inputError : ''}
                                         autoComplete="organization"
