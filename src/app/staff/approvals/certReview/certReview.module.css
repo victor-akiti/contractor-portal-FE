@@ -86,11 +86,6 @@
     color: var(--color-text-primary);
 }
 
-.sectionLabel {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-}
-
 .fileName {
     font-size: 0.85rem;
     color: var(--color-text-secondary);
