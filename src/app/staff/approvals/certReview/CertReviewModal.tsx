@@ -14,6 +14,7 @@ interface CertReviewItem {
     url: string;
     createdAt?: string;
     expiryDate?: string;
+    section?: string | null;
 }
 
 interface Props {
@@ -84,6 +85,12 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                             <td>Certificate</td>
                             <td>{item.label}</td>
                         </tr>
+                        {item.section && (
+                            <tr>
+                                <td>Section</td>
+                                <td>{item.section}</td>
+                            </tr>
+                        )}
                         <tr>
                             <td>File</td>
                             <td>
