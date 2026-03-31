@@ -19,11 +19,13 @@ export default function CertReviewTab({ user }: Props) {
 
     const items: any[] = data?.data?.certificates || data?.data || [];
 
-    // Group certificates by company ID
-    const grouped = items.reduce<Record<string, any[]>>((acc, item) => {
+    // Group certificates by company ID (keyed by ID, display name shown in header)
+    const grouped = items.reduce<Record<string, { name: string; certs: any[] }>>((acc, item) => {
         const companyId = item.company?._id || "unknown";
-        if (!acc[companyId]) acc[companyId] = [];
-        acc[companyId].push(item);
+        if (!acc[companyId]) {
+            acc[companyId] = { name: item.company?.companyName || companyId, certs: [] };
+        }
+        acc[companyId].certs.push(item);
         return acc;
     }, {});
 
@@ -46,10 +48,10 @@ export default function CertReviewTab({ user }: Props) {
                     <p>No certificates awaiting review.</p>
                 </div>
             ) : (
-                Object.entries(grouped).map(([companyId, certs]) => (
+                Object.entries(grouped).map(([companyId, { name, certs }]) => (
                     <div key={companyId} className={styles.companyGroup}>
                         <div className={styles.companyGroupHeader}>
-                            {companyId}
+                            {name}
                         </div>
                         <table className={styles.queueTable}>
                             <thead>
