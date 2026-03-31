@@ -57,6 +57,7 @@ export default function CertReviewTab({ user }: Props) {
                             <thead>
                                 <tr>
                                     <th>Certificate</th>
+                                    <th>Section</th>
                                     <th>File</th>
                                     <th>Submitted</th>
                                     <th>Expiry Date</th>
