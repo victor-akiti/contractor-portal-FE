@@ -29,6 +29,9 @@ const Tasks = () => {
     const user = useSelector((state: any) => state.user)
 
 
+    const toTitleCase = (str: string) =>
+        str.trim().replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+
     const validateNewCategoryLabel = () => {
         if (!newCategoryLabel) {
             return false
@@ -78,7 +81,7 @@ const Tasks = () => {
         setUpdatingCategories(true)
         try {
             let newJobCategory = {
-                label: newCategoryLabel,
+                label: toTitleCase(newCategoryLabel),
                 userID: user?.user?.uid,
                 userName: user?.user?.name,
                 date: new Date()
@@ -113,7 +116,7 @@ const Tasks = () => {
     const updateExistingCategory = async () => {
         setUpdatingCategories(true)
         try {
-            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, { category: newCategoryLabel }, user.role)
+            const updateExistingJobCategoryRequest = await putProtected(`jobCategories/${categoryToUpdate._id}`, { category: toTitleCase(newCategoryLabel) }, user.role)
 
             if (updateExistingJobCategoryRequest.status === "OK") {
                 setUpdatingCategories(false)

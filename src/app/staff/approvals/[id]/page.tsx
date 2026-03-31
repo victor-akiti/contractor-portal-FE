@@ -35,7 +35,8 @@ type ApprovalData = {
 
 type Vendor = {
     approvalData?: ApprovalData,
-    pages?: Array<any>
+    pages?: Array<any>,
+    companyInvite?: any
 }
 
 const Approval = () => {
@@ -43,7 +44,8 @@ const Approval = () => {
     const [fetchedVendorData, setFetchedVendorData] = useState(false)
     const [vendorData, setVendorData] = useState<Vendor>({
         approvalData: {},
-        pages: []
+        pages: [],
+        companyInvite: null
     })
     const [updatingApplication, setUpdatingApplication] = useState(false)
     const [showReturnToL2Modal, setShowReturnToL2Modal] = useState(false)
@@ -165,6 +167,7 @@ const Approval = () => {
                 const tempVendorData = { ...vendorData }
                 tempVendorData.approvalData = fetchVendorDataRequest.data.approvalData
                 tempVendorData.pages = fetchVendorDataRequest.data.baseRegistrationForm.form.pages
+                tempVendorData.companyInvite = fetchVendorDataRequest.data.companyInvite || null
                 setVendorData(tempVendorData)
                 setRemarksHistory(fetchVendorDataRequest.data.generalRegistrationForm?.form?.remarksHistory || [])
                 setFetchedVendorData(true)
@@ -422,11 +425,11 @@ const Approval = () => {
             {
                 (fetchedVendorData && userHasApprovalPermissions() && !vendorIsParked() && !vendorApplicationIsReturned()) && <div>
                     {
-                        getCurrentStage() === "A" && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} />
+                        getCurrentStage() === "A" && <StageA approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} companyInvite={vendorData.companyInvite} />
                     }
 
                     {
-                        getCurrentStage() === "B" && <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} />
+                        getCurrentStage() === "B" && <StageB approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} companyInvite={vendorData.companyInvite} />
                     }
 
                     {
@@ -434,11 +437,11 @@ const Approval = () => {
                     }
 
                     {
-                        getCurrentStage() === "D" && <StageD approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} />
+                        getCurrentStage() === "D" && <StageD approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} companyInvite={vendorData.companyInvite} />
                     }
 
                     {
-                        getCurrentStage() === "E" && <StageE approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} />
+                        getCurrentStage() === "E" && <StageE approvalData={vendorData.approvalData} formPages={vendorData.pages} vendorID={params.id} remarksHistory={remarksHistory} companyInvite={vendorData.companyInvite} />
                     }
 
                     {

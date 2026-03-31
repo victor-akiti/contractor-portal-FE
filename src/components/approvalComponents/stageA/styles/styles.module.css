@@ -490,6 +490,16 @@
   cursor: pointer;
 }
 
+.recommendedByText {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 16px;
+}
+.recommendedByText span {
+  font-weight: 600;
+  color: #333;
+}
+
 .contractorCategorizationDiv p:nth-child(1) {
   color: #e67509;
   margin-bottom: 20px;

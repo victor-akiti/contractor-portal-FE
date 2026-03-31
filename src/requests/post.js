@@ -1,5 +1,6 @@
 import { auth } from '@/lib/firebase';
 import { getIdToken } from "firebase/auth";
+import { BACKEND_BASE_URL } from "@/lib/config";
 
 
 // Import the refresh logic from get.js to avoid duplication
@@ -13,7 +14,7 @@ import { getIdToken } from "firebase/auth";
 
 //         const freshToken = await getIdToken(user, true);
         
-//         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
+//         const response = await fetch(`${BACKEND_BASE_URL}/user/ver`, {
 //             method: "PUT",
 //             headers: { token: freshToken },
 //             credentials: "include",
@@ -42,7 +43,7 @@ import { getIdToken } from "firebase/auth";
 
 export const postPlain = async (route, body, role) => {
     try {
-        const request = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`, {
+        const request = await fetch(`${BACKEND_BASE_URL}/${route}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -70,7 +71,7 @@ const handleTokenRefresh = async () => {
 
         const freshToken = await getIdToken(user, true);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/ver`, {
+        const response = await fetch(`${BACKEND_BASE_URL}/user/ver`, {
             method: "PUT",
             headers: { token: freshToken },
             credentials: "include",
@@ -119,7 +120,7 @@ const getAuthHeader = async () => {
 // ============================================================================
 export const postProtected = async (route, body, role) => {
     try {
-        const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`;
+        const url = `${BACKEND_BASE_URL}/${route}`;
         const authHeader = await getAuthHeader();
 
         let request = await fetch(url, {
@@ -181,7 +182,7 @@ export const postProtected = async (route, body, role) => {
 // ============================================================================
 export const postProtectedMultipart = async (route, body, role) => {
     try {
-        const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${route}`;
+        const url = `${BACKEND_BASE_URL}/${route}`;
         const authHeader = await getAuthHeader();
 
         let request = await fetch(url, {
