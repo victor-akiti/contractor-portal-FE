@@ -162,11 +162,22 @@ export const postProtected = async (route, body, role) => {
             return await request.json();
         }
 
-        // Not ok but responded
-        return {
-            status: "FAILED",
-            error: { message: `Request failed with status ${request.status}` }
-        };
+        // Not ok but responded — parse the error body so callers can read structured errors
+        try {
+            const errorBody = await request.json();
+            return {
+                status: "FAILED",
+                error: {
+                    message: errorBody.message || `Request failed with status ${request.status}`,
+                    ...errorBody,
+                },
+            };
+        } catch {
+            return {
+                status: "FAILED",
+                error: { message: `Request failed with status ${request.status}` },
+            };
+        }
 
     } catch (error) {
         console.error("POST ERROR:", error);

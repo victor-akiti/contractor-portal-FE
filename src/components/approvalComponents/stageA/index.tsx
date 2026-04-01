@@ -13,6 +13,7 @@ import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import CertificateHistoryModal from "@/components/certificateHistory"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
+import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -69,6 +70,7 @@ const StageA = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
     const [sectionToRemarkOn, setSectionToRemarkOn] = useState(null)
     const [unaprovedSectionsWithNoRemarks, setUnapprovedSectionsWithNoRemarks] = useState([])
     const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false)
+    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null)
     const containerDivRef = useRef(null)
 
     const user = useSelector((state: any) => state.user)
@@ -665,19 +667,23 @@ const StageA = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
         ]));
     };
 
-    const processToStageB = async () => {
+    const processToStageB = async (confirmCertApproval = false) => {
         try {
             setItemBeingUpdated("approve")
-            const processToStageBRequest = await postProtected(`approvals/process/${vendorID}`, {
-                pages,
-            }, user.role)
+            const body: any = { pages }
+            if (confirmCertApproval) body.confirmCertApproval = true
+            const processToStageBRequest = await postProtected(`approvals/process/${vendorID}`, body, user.role)
 
             if (processToStageBRequest.status === "OK") {
+                setPendingCertsForConfirm(null)
                 invalidateApprovalCache();
                 actionCompleted()
+            } else if (processToStageBRequest.error?.pendingCerts?.length > 0) {
+                setPendingCertsForConfirm(processToStageBRequest.error.pendingCerts)
+                setItemBeingUpdated("")
             }
         } catch (error) {
-
+            setItemBeingUpdated("")
         }
     }
 
@@ -878,6 +884,15 @@ const StageA = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
             {
                 currentCertificateHistory.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
             }
+
+            {pendingCertsForConfirm && (
+                <PendingCertsConfirmModal
+                    certs={pendingCertsForConfirm}
+                    isLoading={itemBeingUpdated === "approve"}
+                    onConfirm={() => processToStageB(true)}
+                    onCancel={() => setPendingCertsForConfirm(null)}
+                />
+            )}
 
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>

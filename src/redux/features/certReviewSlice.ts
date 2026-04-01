@@ -10,12 +10,16 @@ export const certReviewSlice = staffApi.injectEndpoints({
 
         reviewCertificate: builder.mutation<
             any,
-            { certificateId: string; certStatus: "approved" | "rejected"; reviewRemarks?: string; userRole: string }
+            { certificateId: string; certStatus: "approved" | "rejected"; reviewRemarks?: string; internalComment?: string; userRole: string }
         >({
-            query: ({ certificateId, certStatus, reviewRemarks }) => ({
+            query: ({ certificateId, certStatus, reviewRemarks, internalComment }) => ({
                 url: `companies/certificates/${certificateId}/review`,
                 method: "PUT",
-                body: { certStatus, reviewRemarks },
+                body: {
+                    certStatus,
+                    reviewRemarks,
+                    ...(internalComment?.trim() ? { internalComment: internalComment.trim() } : {}),
+                },
             }),
             invalidatesTags: ["CertReview"],
             extraOptions: (arg: any) => ({ userRole: arg.userRole }),

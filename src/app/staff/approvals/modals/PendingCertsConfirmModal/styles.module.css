@@ -1,0 +1,85 @@
+.inner {
+    background: #fff;
+    border-radius: 8px;
+    padding: 28px 32px;
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 16px;
+}
+
+.description {
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    margin: 0 0 12px;
+}
+
+.certList {
+    list-style: disc;
+    padding-left: 20px;
+    margin: 0 0 16px;
+}
+
+.certItem {
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    padding: 3px 0;
+}
+
+.question {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 20px;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.cancelBtn {
+    padding: 8px 20px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: border-color 0.15s;
+}
+
+.cancelBtn:hover {
+    border-color: var(--color-text-secondary);
+}
+
+.confirmBtn {
+    padding: 8px 20px;
+    background-color: #e67509;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.15s;
+}
+
+.confirmBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.confirmBtn:hover:not(:disabled) {
+    background-color: #c5620a;
+}
