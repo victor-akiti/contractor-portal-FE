@@ -64,6 +64,7 @@ import {
 } from "./stageHelpers";
 import SearchBar from "./ui/SearchBar";
 import CertReviewTab from "./certReview/CertReviewTab";
+import { useGetCertReviewQueueQuery } from "@/redux/features/certReviewSlice";
 
 // const approvalStages = ["A", "B", "C", "D", "E", "F"]; // "G"];
 
@@ -200,6 +201,11 @@ export default function ApprovalsContainer() {
     skip: !user?.role,
   });
 
+  const { data: certReviewData } = useGetCertReviewQueueQuery(
+    { userRole: user?.role || "" },
+    { skip: !user?.role }
+  );
+
   const {
     data: tabDataRTK,
     isLoading: tabLoading,
@@ -265,6 +271,19 @@ export default function ApprovalsContainer() {
       updateTabLabelsWithCounts(countsData.data.counts);
     }
   }, [countsData]);
+
+  // Update Cert Review tab label with queue count
+  useEffect(() => {
+    const certItems: any[] = certReviewData?.data?.certificates || certReviewData?.data || [];
+    const count = certItems.length;
+    setApprovalsTabs((prev) =>
+      prev.map((tab) =>
+        tab.name === "cert-review"
+          ? { ...tab, label: count > 0 ? `Cert Review (${count})` : "Cert Review" }
+          : tab
+      )
+    );
+  }, [certReviewData]);
 
   // ✅ Update fixedApprovals for all tabs as data becomes available (even if not opened)
   useEffect(() => {
