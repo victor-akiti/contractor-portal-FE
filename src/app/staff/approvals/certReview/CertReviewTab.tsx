@@ -19,6 +19,16 @@ export default function CertReviewTab({ user }: Props) {
 
     const items: any[] = data?.data?.certificates || data?.data || [];
 
+    // Group certificates by company ID (keyed by ID, display name shown in header)
+    const grouped = items.reduce<Record<string, { name: string; certs: any[] }>>((acc, item) => {
+        const companyId = item.company?._id || "unknown";
+        if (!acc[companyId]) {
+            acc[companyId] = { name: item.company?.companyName || companyId, certs: [] };
+        }
+        acc[companyId].certs.push(item);
+        return acc;
+    }, {});
+
     if (isLoading) {
         return <Loading message="Loading certificate review queue..." />;
     }
@@ -38,27 +48,34 @@ export default function CertReviewTab({ user }: Props) {
                     <p>No certificates awaiting review.</p>
                 </div>
             ) : (
-                <table className={styles.queueTable}>
-                    <thead>
-                        <tr>
-                            <th>Company</th>
-                            <th>Certificate</th>
-                            <th>File</th>
-                            <th>Submitted</th>
-                            <th>Expiry Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {items.map((item: any, index: number) => (
-                            <CertReviewRow
-                                key={item._id || index}
-                                item={item}
-                                onReview={setSelectedItem}
-                            />
-                        ))}
-                    </tbody>
-                </table>
+                Object.entries(grouped).map(([companyId, { name, certs }]) => (
+                    <div key={companyId} className={styles.companyGroup}>
+                        <div className={styles.companyGroupHeader}>
+                            {name}
+                        </div>
+                        <table className={styles.queueTable}>
+                            <thead>
+                                <tr>
+                                    <th>Certificate</th>
+                                    <th>Section</th>
+                                    <th>File</th>
+                                    <th>Submitted</th>
+                                    <th>Expiry Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {certs.map((item: any, index: number) => (
+                                    <CertReviewRow
+                                        key={item._id || index}
+                                        item={item}
+                                        onReview={setSelectedItem}
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ))
             )}
         </div>
     );
