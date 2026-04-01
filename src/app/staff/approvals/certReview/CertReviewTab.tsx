@@ -14,11 +14,10 @@ export default function CertReviewTab({ user }: Props) {
 
     const { data, isLoading } = useGetCertReviewQueueQuery(
         { userRole: user?.role || "" },
-        { skip: !user?.role }
+        { skip: !user?.role, refetchOnMountOrArgChange: true }
     );
 
     const items: any[] = data?.data?.certificates || data?.data || [];
-    if (data) console.log("[CertReviewTab] raw response:", data, "resolved items:", items);
 
     // Group certificates by company ID (keyed by ID, display name shown in header)
     const grouped = items.reduce<Record<string, { name: string; certs: any[] }>>((acc, item) => {
