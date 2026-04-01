@@ -244,6 +244,10 @@ const Dashboard = () => {
     const isAdminRole = (role: string) => ["Admin", "IT Admin", "C&P Admin"].includes(role)
 
     const updateCertificate = async () => {
+        if (!selectedCertificate._id) {
+            setUpdateCertificateError("This certificate is missing an ID and cannot be updated. Please contact support.")
+            return
+        }
         try {
             setUpdatingCertificate(true)
             const updateCertificateRequest = await putProtected(
