@@ -13,7 +13,6 @@ import roundCheckboxIconUnchecked from "@/assets/images/rounde_checkbox_unchecke
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
 import CertificateHistoryModal from "@/components/certificateHistory";
 import Modal from "@/components/modal";
-import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal";
 import staffApi from "@/redux/apis/staffApi";
 import { getProtected } from "@/requests/get";
 import { postProtected } from "@/requests/post";
@@ -30,7 +29,6 @@ const StageC = () => {
     const [vendorID, setVendorID] = useState("");
     const [sectionRemarksToShow, setSectionRemarksToShow] = useState<any>({});
     const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false);
-    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null);
     const [approvalChoice, setApprovalChoice] = useState("complete");
     const [jobCategories, setJobCategories] = useState<any[]>([]);
     const [fixedJobCategories, setFixedJobCategoires] = useState<any[]>([]);
@@ -492,28 +490,20 @@ const StageC = () => {
         );
     };
 
-    const processToStageD = async (confirmCertApproval = false) => {
+    const processToStageD = async () => {
         try {
             setItemBeingUpdated("approve");
-            const body: any = { pages, selectedServices, siteVisitRequired };
-            if (confirmCertApproval) body.confirmCertApproval = true;
             const processToStageDRequest = await postProtected(
                 `approvals/process/${vendorID}`,
-                body,
+                { pages, selectedServices, siteVisitRequired },
                 user.role
             );
 
             if (processToStageDRequest.status === "OK") {
-                setPendingCertsForConfirm(null);
                 invalidateApprovalCache();
                 actionCompleted();
-            } else if (processToStageDRequest.error?.pendingCerts?.length > 0) {
-                setPendingCertsForConfirm(processToStageDRequest.error.pendingCerts);
-                setItemBeingUpdated("");
             }
-        } catch (error) {
-            setItemBeingUpdated("");
-        }
+        } catch (error) { }
     };
 
     return (
@@ -550,15 +540,6 @@ const StageC = () => {
                 <CertificateHistoryModal
                     clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()}
                     currentCertificateHistory={currentCertificateHistory}
-                />
-            )}
-
-            {pendingCertsForConfirm && (
-                <PendingCertsConfirmModal
-                    certs={pendingCertsForConfirm}
-                    isLoading={itemBeingUpdated === "approve"}
-                    onConfirm={() => processToStageD(true)}
-                    onCancel={() => setPendingCertsForConfirm(null)}
                 />
             )}
 

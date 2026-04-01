@@ -8,7 +8,6 @@ import styles from "./styles/styles.module.css"
 
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import CertificateHistoryModal from "@/components/certificateHistory"
-import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import ErrorText from "@/components/errorText"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
@@ -54,7 +53,6 @@ const StageF = () => {
         actionResponseCode: 0
     })
     const [updating, setUpdating] = useState(false)
-    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null)
     const [revertReason, setRevertReason] = useState("")
     const [errorText, setErrorText] = useState("")
     const params = useParams()
@@ -535,16 +533,15 @@ const StageF = () => {
         ]));
     };
 
-    const approveToL3 = async (confirmCertApproval = false) => {
+    const approveToL3 = async () => {
         if (!updating) {
             try {
                 setUpdating(true)
-                const body: any = { pages }
-                if (confirmCertApproval) body.confirmCertApproval = true
-                const approveToL3Request = await postProtected(`approvals/process/${vendorID}`, body, user.role)
+                const approveToL3Request = await postProtected(`approvals/process/${vendorID}`, {
+                    pages
+                }, user.role)
 
                 if (approveToL3Request.status === "OK") {
-                    setPendingCertsForConfirm(null)
                     invalidateApprovalCache();
 
                     postActionCompleted("Vendor approved for L3", `${approvalData.companyName} has been approved for L3. Returning to the vendors list.`, 1)
@@ -552,9 +549,6 @@ const StageF = () => {
                     // setTimeout(() => {
                     //     router.push("/staff/approvals")
                     // }, 5000)
-                } else if (approveToL3Request.error?.pendingCerts?.length > 0) {
-                    setPendingCertsForConfirm(approveToL3Request.error.pendingCerts)
-                    setUpdating(false)
                 } else {
                     setUpdating(false)
                     setErrorText(approveToL3Request.error.message)
@@ -629,15 +623,6 @@ const StageF = () => {
             {
                 currentCertificateHistory.length > 0 && <CertificateHistoryModal clearCurrentCertificateHistory={() => clearCurrentCertificateHistory()} currentCertificateHistory={currentCertificateHistory} />
             }
-
-            {pendingCertsForConfirm && (
-                <PendingCertsConfirmModal
-                    certs={pendingCertsForConfirm}
-                    isLoading={updating}
-                    onConfirm={() => approveToL3(true)}
-                    onCancel={() => setPendingCertsForConfirm(null)}
-                />
-            )}
 
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>

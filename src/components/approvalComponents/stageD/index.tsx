@@ -7,7 +7,6 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import FileUploader from "@/components/fileUploader"
 import Modal from "@/components/modal"
-import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import staffApi from "@/redux/apis/staffApi"
 import { postProtected } from "@/requests/post"
 import Image from "next/image"
@@ -112,7 +111,6 @@ const StageD = ({ approvalData, formPages, vendorID, companyInvite = null }) => 
     })
     const [showFinishSection, setShowFinishSection] = useState(false)
     const [approvalStatus, setApprovalStatus] = useState("")
-    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null)
     const router = useRouter()
     const user = useSelector((state: any) => state.user.user)
 
@@ -450,15 +448,14 @@ const StageD = ({ approvalData, formPages, vendorID, companyInvite = null }) => 
         ]));
     };
 
-    const processToStageE = async (confirmCertApproval = false) => {
+    const processToStageE = async () => {
         setApprovalStatus("approving")
         try {
-            const body: any = { dueDiligence: vendorDueDiligenceData }
-            if (confirmCertApproval) body.confirmCertApproval = true
-            const processToStageERequest = await postProtected(`approvals/process/${vendorID}`, body, user.role)
+            const processToStageERequest = await postProtected(`approvals/process/${vendorID}`, {
+                dueDiligence: vendorDueDiligenceData
+            }, user.role)
 
             if (processToStageERequest.status === "OK") {
-                setPendingCertsForConfirm(null)
                 invalidateApprovalCache();
                 // actionCompleted()
 
@@ -468,16 +465,12 @@ const StageD = ({ approvalData, formPages, vendorID, companyInvite = null }) => 
                     router.push("/staff/approvals")
                 }, 3000)
 
-            } else if (processToStageERequest.error?.pendingCerts?.length > 0) {
-                setPendingCertsForConfirm(processToStageERequest.error.pendingCerts)
-                setApprovalStatus("")
             } else {
                 const tempPageErrors = { ...pageErrors }
                 tempPageErrors.submission = processToStageERequest.error.message
-                setApprovalStatus("")
             }
         } catch (error) {
-            setApprovalStatus("")
+
         }
     }
 
@@ -492,15 +485,6 @@ const StageD = ({ approvalData, formPages, vendorID, companyInvite = null }) => 
                     } />
                 </Modal>
             }
-
-            {pendingCertsForConfirm && (
-                <PendingCertsConfirmModal
-                    certs={pendingCertsForConfirm}
-                    isLoading={approvalStatus === "approving"}
-                    onConfirm={() => processToStageE(true)}
-                    onCancel={() => setPendingCertsForConfirm(null)}
-                />
-            )}
 
             <div className={styles.titleDiv}>
                 <h2>{approvalData.companyName}</h2>
