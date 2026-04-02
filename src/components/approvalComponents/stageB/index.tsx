@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
 
 
+import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import CertificateHistoryModal from "@/components/certificateHistory"
@@ -70,6 +71,7 @@ const StageB = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
     const [sectionToRemarkOn, setSectionToRemarkOn] = useState(null)
     const [unaprovedSectionsWithNoRemarks, setUnapprovedSectionsWithNoRemarks] = useState([])
     const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false)
+    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null)
     const containerDivRef = useRef(null)
 
     const user = useSelector((state: any) => state.user)
@@ -677,20 +679,23 @@ const StageB = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
     };
 
     const [isProcessing, setIsProcessing] = useState(false);
-    const processToStageC = async () => {
+    const processToStageC = async (confirmCertApproval = false) => {
         try {
             setItemBeingUpdated("approve")
-            const processToStageCRequest = await postProtected(`approvals/process/${vendorID}`, {
-                pages,
-                selectedEndUsers
-            }, user.role)
+            const body: any = { pages, selectedEndUsers }
+            if (confirmCertApproval) body.confirmCertApproval = true
+            const processToStageCRequest = await postProtected(`approvals/process/${vendorID}`, body, user.role)
 
             if (processToStageCRequest.status === "OK") {
+                setPendingCertsForConfirm(null)
                 invalidateApprovalCache();
                 actionCompleted()
+            } else if (processToStageCRequest.error?.pendingCerts?.length > 0) {
+                setPendingCertsForConfirm(processToStageCRequest.error.pendingCerts)
+                setItemBeingUpdated("")
             }
         } catch (error) {
-
+            setItemBeingUpdated("")
         }
     }
 
@@ -919,7 +924,7 @@ const StageB = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
 
                             <p>Please include a reason why this application should be held</p>
 
-                            <textarea placeholder="Reason for hold..." rows={5}></textarea>
+                            <textarea required placeholder="Reason for hold..." rows={5}></textarea>
 
                             <div>
                                 <button type="button" onClick={() => setShowSetReasonForHoldModal(false)}>Cancel</button>
@@ -929,6 +934,15 @@ const StageB = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                     </div>
                 </Modal>
             }
+
+            {pendingCertsForConfirm && (
+                <PendingCertsConfirmModal
+                    certs={pendingCertsForConfirm}
+                    isLoading={itemBeingUpdated === "approve"}
+                    onConfirm={() => processToStageC(true)}
+                    onCancel={() => setPendingCertsForConfirm(null)}
+                />
+            )}
 
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>

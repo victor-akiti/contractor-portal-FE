@@ -521,7 +521,7 @@ const StageC = () => {
 
                             <p>Please include a reason why this application should be held</p>
 
-                            <textarea placeholder="Reason for hold..." rows={5}></textarea>
+                            <textarea required placeholder="Reason for hold..." rows={5}></textarea>
 
                             <div>
                                 <button type="button" onClick={() => setShowSetReasonForHoldModal(false)}>

@@ -26,6 +26,7 @@ interface Props {
 export default function CertReviewModal({ item, userRole, onClose }: Props) {
     const [certStatus, setCertStatus] = useState<"approved" | "rejected" | "">("");
     const [reviewRemarks, setReviewRemarks] = useState("");
+    const [internalComment, setInternalComment] = useState("");
     const [error, setError] = useState("");
 
     const [reviewCertificate, { isLoading }] = useReviewCertificateMutation();
@@ -51,6 +52,7 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                 certificateId: item._id,
                 certStatus,
                 reviewRemarks: certStatus === "rejected" ? reviewRemarks.trim() : undefined,
+                internalComment,
                 userRole,
             }).unwrap();
 
@@ -156,6 +158,20 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                             value={reviewRemarks}
                             onChange={(e) => { setReviewRemarks(e.target.value); setError(""); }}
                             placeholder="Explain why this certificate is being rejected..."
+                        />
+                    </div>
+                )}
+
+                {certStatus && (
+                    <div className={styles.reasonSection}>
+                        <span className={styles.reasonLabel}>
+                            Internal Comment <span style={{ color: "var(--color-text-secondary)", fontWeight: 400 }}>(optional)</span>
+                        </span>
+                        <textarea
+                            className={styles.reasonTextarea}
+                            value={internalComment}
+                            onChange={(e) => setInternalComment(e.target.value)}
+                            placeholder="Add an internal comment visible only to staff..."
                         />
                     </div>
                 )}
