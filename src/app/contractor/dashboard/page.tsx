@@ -151,6 +151,7 @@ const Dashboard = () => {
     const [fetchedDashboardData, setFetchedDashboardData] = useState(false)
     const [fetchingDashboardData, setFetchingDashboardData] = useState(true)
     const [selectedCertificate, setSelectedCertificate] = useState<any>({})
+    console.log({ selectedCertificate })
     const [updateCertificateError, setUpdateCertificateError] = useState("")
     const [updatingCertificate, setUpdatingCertificate] = useState(false)
     const [updateCertificateSuccess, setUpdateCertificateSuccess] = useState("")
@@ -225,10 +226,13 @@ const Dashboard = () => {
     }
 
     const setCertificateToUpdate = (certificate: Certificate, certificateCategory: string, certificateIndex: number) => {
+
+        console.log({ see2: certificate, certificateCategory, certificateIndex })
         setSelectedCertificate({ ...certificate, certificateCategory, certificateIndex })
     }
 
     const setNewCertificate = (newCertificate: any) => {
+        console.log({ see1: selectedCertificate })
         setSelectedCertificate({ ...selectedCertificate, newCertificate })
     }
 

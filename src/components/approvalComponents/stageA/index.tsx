@@ -8,12 +8,12 @@ import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
 
 
+import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ButtonLoadingIconPrimary from "@/components/buttonLoadingPrimary"
 import CertificateHistoryModal from "@/components/certificateHistory"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
-import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -870,7 +870,7 @@ const StageA = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
 
                             <p>Please include a reason why this application should be held</p>
 
-                            <textarea placeholder="Reason for hold..." rows={5}></textarea>
+                            <textarea required placeholder="Reason for hold..." rows={5}></textarea>
 
                             <div>
                                 <button type="button" onClick={() => setShowSetReasonForHoldModal(false)}>Cancel</button>
