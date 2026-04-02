@@ -250,9 +250,20 @@ const Dashboard = () => {
         }
         try {
             setUpdatingCertificate(true)
+            const body: Record<string, any> = {
+                newCertificate: {
+                    url: selectedCertificate.newCertificate.url,
+                    name: selectedCertificate.newCertificate.name,
+                    expiryDate: selectedCertificate.newCertificate.expiryDate,
+                },
+                updateCode: selectedCertificate.updateCode,
+            }
+            if (user.role?.toLowerCase() !== "vendor") {
+                body.vendorID = selectedCertificate.vendor?._id
+            }
             const updateCertificateRequest = await putProtected(
                 `companies/certificates/${selectedCertificate._id}`,
-                selectedCertificate,
+                body,
                 user.role
             )
             setUpdatingCertificate(false)
