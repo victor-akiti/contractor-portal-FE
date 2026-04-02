@@ -10,63 +10,16 @@ import { putProtected } from "@/requests/put"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
+import type {
+    Certificate,
+    Company,
+    DashboardData,
+    SelectedCertificate,
+    CertUpdateBody,
+    VendorFormPage,
+    UploadedFile,
+} from "@/types/certificate.types"
 import styles from "./styles/styles.module.css"
-
-interface Certificate {
-    _id: string;
-    label: string;
-    name?: string;
-    expiryDate: string;
-    issueDate?: string;
-    url: string;
-    updateCode: string;
-    vendorID?: string;
-    certStatus?: string;
-    reviewRemarks?: string;
-    isReUpload?: boolean;
-    updatedAt?: string;
-    createdAt?: string;
-    vendor?: {
-        _id: string;
-        form?: {
-            name?: string;
-            pages: Array<{
-                pageTitle?: string;
-                sections: Array<{
-                    title?: string;
-                    fields: Array<{
-                        _id?: string;
-                        updateCode?: string;
-                        type?: string;
-                        label?: string;
-                        approvalLabel?: string;
-                        value?: Array<{ _id?: string }>;
-                    }>;
-                }>;
-            }>;
-        };
-    };
-}
-
-interface Company {
-    _id: string;
-    companyName: string;
-    vendor: string;
-    flags: {
-        stage: string;
-        status: string;
-        submitted: boolean;
-    };
-}
-
-interface DashboardData {
-    companies: Company[];
-    expiringCertificates: Certificate[];
-    expiredCertificates: Certificate[];
-    pendingCertificates: Certificate[];
-    rejectedCertificates: Certificate[];
-    files: any[];
-}
 
 const getCertificateTimeValidity = (expiryDate: string): string => {
     const currentDateObject = new Date()
@@ -81,13 +34,13 @@ const getCertificateTimeValidity = (expiryDate: string): string => {
     }
 }
 
-const extractCertificatesFromFormPages = (pages: any[], vendorID?: string): { expiring: Certificate[], expired: Certificate[] } => {
+const extractCertificatesFromFormPages = (pages: VendorFormPage[], vendorID?: string): { expiring: Certificate[], expired: Certificate[] } => {
     const expiring: Certificate[] = []
     const expired: Certificate[] = []
 
-    pages.forEach((page: any) => {
-        page.sections?.forEach((section: any) => {
-            section.fields?.forEach((field: any) => {
+    pages.forEach((page) => {
+        page.sections?.forEach((section) => {
+            section.fields?.forEach((field) => {
                 if (field.type === "file" && field.value && field.value[0]?.expiryDate) {
                     const validity = getCertificateTimeValidity(field.value[0].expiryDate)
                     if (validity === "expiring" || validity === "expired") {
@@ -150,7 +103,7 @@ const Dashboard = () => {
     })
     const [fetchedDashboardData, setFetchedDashboardData] = useState(false)
     const [fetchingDashboardData, setFetchingDashboardData] = useState(true)
-    const [selectedCertificate, setSelectedCertificate] = useState<any>({})
+    const [selectedCertificate, setSelectedCertificate] = useState<Partial<SelectedCertificate>>({})
     const [updateCertificateError, setUpdateCertificateError] = useState("")
     const [updatingCertificate, setUpdatingCertificate] = useState(false)
     const [updateCertificateSuccess, setUpdateCertificateSuccess] = useState("")
@@ -224,11 +177,15 @@ const Dashboard = () => {
         }
     }
 
-    const setCertificateToUpdate = (certificate: Certificate, certificateCategory: string, certificateIndex: number) => {
+    const setCertificateToUpdate = (
+        certificate: Certificate,
+        certificateCategory: SelectedCertificate["certificateCategory"],
+        certificateIndex: number
+    ) => {
         setSelectedCertificate({ ...certificate, certificateCategory, certificateIndex })
     }
 
-    const setNewCertificate = (newCertificate: any) => {
+    const setNewCertificate = (newCertificate: UploadedFile) => {
         setSelectedCertificate({ ...selectedCertificate, newCertificate })
     }
 
@@ -241,8 +198,6 @@ const Dashboard = () => {
         }
     }
 
-    const isAdminRole = (role: string) => ["Admin", "IT Admin", "C&P Admin"].includes(role)
-
     const updateCertificate = async () => {
         if (!selectedCertificate._id) {
             setUpdateCertificateError("This certificate is missing an ID and cannot be updated. Please contact support.")
@@ -250,13 +205,13 @@ const Dashboard = () => {
         }
         try {
             setUpdatingCertificate(true)
-            const body: Record<string, any> = {
+            const body: CertUpdateBody = {
                 newCertificate: {
-                    url: selectedCertificate.newCertificate.url,
-                    name: selectedCertificate.newCertificate.name,
-                    expiryDate: selectedCertificate.newCertificate.expiryDate,
+                    url: selectedCertificate.newCertificate!.url,
+                    name: selectedCertificate.newCertificate!.name,
+                    expiryDate: selectedCertificate.newCertificate!.expiryDate!,
                 },
-                updateCode: selectedCertificate.updateCode,
+                updateCode: selectedCertificate.updateCode!,
             }
             if (user.role?.toLowerCase() !== "vendor") {
                 body.vendorID = selectedCertificate.vendor?._id

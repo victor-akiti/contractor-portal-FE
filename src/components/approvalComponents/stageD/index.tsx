@@ -8,6 +8,7 @@ import ErrorText from "@/components/errorText"
 import FileUploader from "@/components/fileUploader"
 import Modal from "@/components/modal"
 import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
+import type { PendingCert } from "@/types/certificate.types"
 import staffApi from "@/redux/apis/staffApi"
 import { postProtected } from "@/requests/post"
 import Image from "next/image"
@@ -112,7 +113,7 @@ const StageD = ({ approvalData, formPages, vendorID, companyInvite = null }) => 
     })
     const [showFinishSection, setShowFinishSection] = useState(false)
     const [approvalStatus, setApprovalStatus] = useState("")
-    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null)
+    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<PendingCert[] | null>(null)
     const router = useRouter()
     const user = useSelector((state: any) => state.user.user)
 

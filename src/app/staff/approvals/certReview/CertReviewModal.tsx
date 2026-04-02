@@ -4,18 +4,8 @@ import Modal from "@/components/modal";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useReviewCertificateMutation } from "@/redux/features/certReviewSlice";
+import type { CertReviewItem } from "@/types/certificate.types";
 import styles from "./certReview.module.css";
-
-interface CertReviewItem {
-    _id: string;
-    company: { _id: string; companyName: string };
-    label: string;
-    name: string;
-    url: string;
-    createdAt?: string;
-    expiryDate?: string;
-    section?: string | null;
-}
 
 interface Props {
     item: CertReviewItem;

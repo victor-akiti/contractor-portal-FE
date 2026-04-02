@@ -13,6 +13,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import CertificateHistoryModal from "@/components/certificateHistory"
 import Modal from "@/components/modal"
 import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
+import type { PendingCert } from "@/types/certificate.types"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -70,7 +71,7 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
     const [sectionToRemarkOn, setSectionToRemarkOn] = useState(null)
     const [unaprovedSectionsWithNoRemarks, setUnapprovedSectionsWithNoRemarks] = useState([])
     const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false)
-    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null)
+    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<PendingCert[] | null>(null)
     const [dueDiligenceApprovals, setDueDiligenceApprovals] = useState({
         internetCheck: false,
         registrationCheck: false,

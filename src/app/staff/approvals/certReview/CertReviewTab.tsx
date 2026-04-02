@@ -1,26 +1,30 @@
 import Loading from "@/components/loading";
 import { useGetCertReviewQueueQuery } from "@/redux/features/certReviewSlice";
 import { useState } from "react";
+import type { CertReviewItem } from "@/types/certificate.types";
+import type { User } from "@/types/auth.types";
 import CertReviewModal from "./CertReviewModal";
 import CertReviewRow from "./CertReviewRow";
 import styles from "./certReview.module.css";
 
 interface Props {
-    user: any;
+    user: User;
 }
 
 export default function CertReviewTab({ user }: Props) {
-    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [selectedItem, setSelectedItem] = useState<CertReviewItem | null>(null);
 
     const { data, isLoading } = useGetCertReviewQueueQuery(
         { userRole: user?.role || "" },
         { skip: !user?.role, refetchOnMountOrArgChange: true }
     );
 
-    const items: any[] = data?.data?.certificates || data?.data || [];
+    const items: CertReviewItem[] = (data?.data as { certificates: CertReviewItem[] })?.certificates
+        ?? (data?.data as CertReviewItem[])
+        ?? [];
 
     // Group certificates by company ID (keyed by ID, display name shown in header)
-    const grouped = items.reduce<Record<string, { name: string; certs: any[] }>>((acc, item) => {
+    const grouped = items.reduce<Record<string, { name: string; certs: CertReviewItem[] }>>((acc, item) => {
         const companyId = item.company?._id || "unknown";
         if (!acc[companyId]) {
             acc[companyId] = { name: item.company?.companyName || companyId, certs: [] };
@@ -65,7 +69,7 @@ export default function CertReviewTab({ user }: Props) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {certs.map((item: any, index: number) => (
+                                {certs.map((item, index) => (
                                     <CertReviewRow
                                         key={item._id || index}
                                         item={item}

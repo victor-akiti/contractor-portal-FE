@@ -15,6 +15,7 @@ import CertificateHistoryModal from "@/components/certificateHistory"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
+import type { PendingCert } from "@/types/certificate.types"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -71,7 +72,7 @@ const StageB = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
     const [sectionToRemarkOn, setSectionToRemarkOn] = useState(null)
     const [unaprovedSectionsWithNoRemarks, setUnapprovedSectionsWithNoRemarks] = useState([])
     const [showSetReasonForHoldModal, setShowSetReasonForHoldModal] = useState(false)
-    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<any[] | null>(null)
+    const [pendingCertsForConfirm, setPendingCertsForConfirm] = useState<PendingCert[] | null>(null)
     const containerDivRef = useRef(null)
 
     const user = useSelector((state: any) => state.user)

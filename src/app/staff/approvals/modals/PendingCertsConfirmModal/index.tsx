@@ -1,11 +1,7 @@
 import Modal from "@/components/modal";
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon";
+import type { PendingCert } from "@/types/certificate.types";
 import styles from "./styles.module.css";
-
-interface PendingCert {
-    _id: string;
-    label: string;
-}
 
 interface Props {
     certs: PendingCert[];
