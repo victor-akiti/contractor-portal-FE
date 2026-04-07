@@ -2,10 +2,8 @@
 
 import useDebounce from "@/hooks/useDebounce";
 import { useFuzzySearch } from "@/hooks/useFuzzySearch";
-import type { FuseResult } from "fuse.js";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { SearchableVendor } from "@/hooks/useFuzzySearch";
 import styles from "./vendorSearch.module.css";
 
 interface Props {
@@ -18,19 +16,6 @@ interface Props {
     parkRequested: any[];
     invites: any[];
   };
-}
-
-function getMatchedFieldLabel(result: FuseResult<SearchableVendor>): string | null {
-  const matches = result.matches || [];
-  for (const m of matches) {
-    if (m.key === "categories" && result.item.categories) {
-      return `Category: ${result.item.categories}`;
-    }
-    if (m.key === "stageLabel") {
-      return `Stage: ${result.item.stageLabel}`;
-    }
-  }
-  return null;
 }
 
 export default function VendorFuzzySearch({ fixedApprovals }: Props) {
@@ -114,14 +99,13 @@ export default function VendorFuzzySearch({ fixedApprovals }: Props) {
             ) : (
               results.map((result) => {
                 const vendor = result.item;
-                const matchedField = getMatchedFieldLabel(result);
                 return (
                   <div key={vendor._id} className={styles.resultItem}>
                     <div className={styles.resultMeta}>
                       <p className={styles.companyName}>{vendor.companyName.toUpperCase()}</p>
                       <span className={styles.stageBadge}>{vendor.stageLabel}</span>
-                      {matchedField && (
-                        <p className={styles.matchedField}>{matchedField}</p>
+                      {vendor.categories && (
+                        <p className={styles.matchedField}>{vendor.categories}</p>
                       )}
                     </div>
                     <Link href={`/staff/vendor/${vendor._id}`} onClick={handleClear}>
