@@ -7,6 +7,7 @@ interface CertReviewItem {
     name: string;
     url: string;
     createdAt?: string;
+    issueDate?: string;
     expiryDate?: string;
     section?: string | null;
 }
@@ -28,6 +29,7 @@ export default function CertReviewRow({ item, onReview }: Props) {
             <td className={styles.sectionLabel}>{item.section || "—"}</td>
             <td className={styles.fileName} title={item.name}>{item.name}</td>
             <td className={styles.dateText}>{formatDate(item.createdAt)}</td>
+            <td className={styles.dateText}>{formatDate(item.issueDate)}</td>
             <td className={styles.dateText}>{formatDate(item.expiryDate)}</td>
             <td>
                 <button className={styles.reviewBtn} onClick={() => onReview(item)}>

@@ -13,6 +13,7 @@ interface CertReviewItem {
     name: string;
     url: string;
     createdAt?: string;
+    issueDate?: string;
     expiryDate?: string;
     section?: string | null;
 }
@@ -111,6 +112,12 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
                             <tr>
                                 <td>Submitted</td>
                                 <td>{formatDate(item.createdAt)}</td>
+                            </tr>
+                        )}
+                        {item.issueDate && (
+                            <tr>
+                                <td>Issue Date</td>
+                                <td>{formatDate(item.issueDate)}</td>
                             </tr>
                         )}
                         {item.expiryDate && (

@@ -316,29 +316,28 @@ const ViewVendorPage = () => {
                                 <p className={styles.approvalInfoText}>Approval info text</p>
                             )}
 
-                            {field.isACertificate && (
-                                <>
-                                    {field?.value[0]?.expiryDate && (
-                                        <p
-                                            className={styles.expiryDateText}
-                                        >{`Expiry date: ${field.value[0].expiryDate}`}</p>
+                            {field.isACertificate && Array.isArray(field.value) && field.value.map((entry: any, entryIndex: number) => (
+                                <div key={entryIndex}>
+                                    {entry?.issueDate && (
+                                        <p className={styles.expiryDateText}>{`Issue date: ${entry.issueDate}`}</p>
                                     )}
-
-                                    {field.value && field?.value[0]?.expiryDate && (
+                                    {entry?.expiryDate && (
+                                        <p className={styles.expiryDateText}>{`Expiry date: ${entry.expiryDate}`}</p>
+                                    )}
+                                    {entry?.expiryDate && (
                                         <>
-                                            {getCertificateTimeValidity(field.value[0].expiryDate) === "expired" && (
+                                            {getCertificateTimeValidity(entry.expiryDate) === "expired" && (
                                                 <p className={styles.certificateExpiredText}>Certificate has expired</p>
                                             )}
-
-                                            {getCertificateTimeValidity(field.value[0].expiryDate) === "expiring" && (
+                                            {getCertificateTimeValidity(entry.expiryDate) === "expiring" && (
                                                 <p className={styles.certificateToExpireText}>
                                                     Certificate will soon expire
                                                 </p>
                                             )}
                                         </>
                                     )}
-                                </>
-                            )}
+                                </div>
+                            ))}
                         </div>
                     );
                 }
@@ -388,15 +387,16 @@ const ViewVendorPage = () => {
         pages.forEach((page, pageIndex) => {
             page.sections.forEach((section, sectionIndex) => {
                 section.fields.forEach((field, fieldIndex) => {
-                    if (field.type === "file") {
-                        if (field.value) {
-                            if (getCertificateTimeValidity(field.value[0].expiryDate) === "expiring") {
-                                tempExpiringCertificates.push(field);
+                    if (field.type === "file" && Array.isArray(field.value)) {
+                        field.value.forEach((entry) => {
+                            if (!entry?.expiryDate) return;
+                            if (getCertificateTimeValidity(entry.expiryDate) === "expiring") {
+                                tempExpiringCertificates.push({ ...field, value: [entry] });
                             }
-                            if (getCertificateTimeValidity(field.value[0].expiryDate) === "expired") {
-                                tempExpiredCertificates.push(field);
+                            if (getCertificateTimeValidity(entry.expiryDate) === "expired") {
+                                tempExpiredCertificates.push({ ...field, value: [entry] });
                             }
-                        }
+                        });
                     }
                 });
             });
