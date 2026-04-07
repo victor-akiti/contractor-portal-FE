@@ -88,20 +88,24 @@ const extractCertificatesFromFormPages = (pages: any[], vendorID?: string): { ex
     pages.forEach((page: any) => {
         page.sections?.forEach((section: any) => {
             section.fields?.forEach((field: any) => {
-                if (field.type === "file" && field.value && field.value[0]?.expiryDate) {
-                    const validity = getCertificateTimeValidity(field.value[0].expiryDate)
-                    if (validity === "expiring" || validity === "expired") {
-                        const cert: Certificate = {
-                            _id: field.value[0]._id || field._id || "",
-                            label: field.label || field.approvalLabel || "",
-                            expiryDate: field.value[0].expiryDate,
-                            url: field.value[0].url || "",
-                            updateCode: field.updateCode || "",
-                            vendorID,
+                if (field.type === "file" && Array.isArray(field.value)) {
+                    field.value.forEach((entry: any) => {
+                        if (!entry?.expiryDate) return
+                        const validity = getCertificateTimeValidity(entry.expiryDate)
+                        if (validity === "expiring" || validity === "expired") {
+                            const cert: Certificate = {
+                                _id: entry._id || field._id || "",
+                                label: field.label || field.approvalLabel || "",
+                                expiryDate: entry.expiryDate,
+                                issueDate: entry.issueDate,
+                                url: entry.url || "",
+                                updateCode: field.updateCode || "",
+                                vendorID,
+                            }
+                            if (validity === "expiring") expiring.push(cert)
+                            else expired.push(cert)
                         }
-                        if (validity === "expiring") expiring.push(cert)
-                        else expired.push(cert)
-                    }
+                    })
                 }
             })
         })
@@ -279,6 +283,16 @@ const Dashboard = () => {
         })
     }
 
+    const setNewCertificateIssueDate = (issueDate: string) => {
+        setSelectedCertificate({
+            ...selectedCertificate,
+            newCertificate: {
+                ...selectedCertificate.newCertificate,
+                issueDate
+            }
+        })
+    }
+
     const closeUploader = () => {
         setSelectedCertificate({})
         setUpdateCertificateError("")
@@ -344,6 +358,16 @@ const Dashboard = () => {
                                             <tr>
                                                 <td>File Name</td>
                                                 <td>{selectedCertificate.newCertificate.name}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Issue Date</td>
+                                                <td>
+                                                    <input
+                                                        type="date"
+                                                        defaultValue={selectedCertificate.issueDate ? new Date(selectedCertificate.issueDate).toISOString().split('T')[0] : undefined}
+                                                        onChange={(event) => setNewCertificateIssueDate(event.target.value)}
+                                                    />
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td>Expiry Date</td>
@@ -665,6 +689,7 @@ const Dashboard = () => {
                                     <thead>
                                         <tr>
                                             <th>Certificate Type</th>
+                                            <th>Issue Date</th>
                                             <th>Expiry Date</th>
                                             <th>Action</th>
                                         </tr>
@@ -684,6 +709,14 @@ const Dashboard = () => {
                                                             {certificate.reviewRemarks}
                                                         </div>
                                                     )}
+                                                </td>
+                                                <td>
+                                                    <div className={styles.expiryDate}>
+                                                        {certificate.issueDate
+                                                            ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
+                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                        }
+                                                    </div>
                                                 </td>
                                                 <td className={`${styles.expiryDate} ${styles.expiryDateExpiring}`}>
                                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -754,6 +787,7 @@ const Dashboard = () => {
                                     <thead>
                                         <tr>
                                             <th>Certificate Type</th>
+                                            <th>Issue Date</th>
                                             <th>Expiry Date</th>
                                             <th>Action</th>
                                         </tr>
@@ -773,6 +807,14 @@ const Dashboard = () => {
                                                             {certificate.reviewRemarks}
                                                         </div>
                                                     )}
+                                                </td>
+                                                <td>
+                                                    <div className={styles.expiryDate}>
+                                                        {certificate.issueDate
+                                                            ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
+                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                        }
+                                                    </div>
                                                 </td>
                                                 <td className={`${styles.expiryDate} ${styles.expiryDateExpired}`}>
                                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

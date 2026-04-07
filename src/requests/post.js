@@ -229,10 +229,28 @@ export const postProtectedMultipart = async (route, body, role) => {
 
         if (request.ok) return request.json();
 
-        throw new Error("Request failed");
+        // Not ok — parse and return structured error so callers can display it
+        try {
+            const errorBody = await request.json();
+            return {
+                status: "FAILED",
+                error: {
+                    message: errorBody.message || errorBody.error?.message || `Request failed with status ${request.status}`,
+                    ...errorBody,
+                },
+            };
+        } catch {
+            return {
+                status: "FAILED",
+                error: { message: `Request failed with status ${request.status}` },
+            };
+        }
 
     } catch (error) {
         console.error("MULTIPART POST ERROR:", error);
-        throw error;
+        return {
+            status: "FAILED",
+            error: { message: error.message || "An unexpected error occurred" },
+        };
     }
 };
