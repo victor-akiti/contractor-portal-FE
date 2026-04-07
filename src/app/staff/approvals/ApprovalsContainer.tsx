@@ -64,6 +64,7 @@ import {
 } from "./stageHelpers";
 import SearchBar from "./ui/SearchBar";
 import CertReviewTab from "./certReview/CertReviewTab";
+import VendorFuzzySearch from "@/components/vendorSearch/VendorFuzzySearch";
 import { useGetCertReviewQueueQuery } from "@/redux/features/certReviewSlice";
 
 // const approvalStages = ["A", "B", "C", "D", "E", "F"]; // "G"];
@@ -1786,6 +1787,10 @@ export default function ApprovalsContainer() {
           isPriority={priorityToggleData.isPriority}
           companyName={priorityToggleData.companyName}
         />
+      )}
+
+      {!fetchingContractors && (
+        <VendorFuzzySearch fixedApprovals={fixedApprovals} />
       )}
 
       <header>
