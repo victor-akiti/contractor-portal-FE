@@ -278,9 +278,16 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
                     <p className={styles.sectionLabel}>Business Activities</p>
                     <div className={styles.tagList}>
                         {activities.map((a, i) => {
-                            const isMatched =
+                            const inMatchedOn =
                                 matchedActivityValues.has(a.display.toLowerCase()) ||
                                 matchedActivityValues.has(a.value.toLowerCase())
+                            // Only highlight if the query actually appears as a substring
+                            // in the display text — prevents fuzzy-matched-but-unrelated
+                            // activities from being lit up (e.g. "dredging" ≠ "drilling")
+                            const queryInText =
+                                a.display.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                a.value.toLowerCase().includes(searchQuery.toLowerCase())
+                            const isMatched = inMatchedOn && queryInText
                             return (
                                 <span
                                     key={i}
@@ -302,7 +309,9 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
                     <p className={styles.sectionLabel}>Job Categories</p>
                     <div className={styles.tagList}>
                         {jobCategories.map((c, i) => {
-                            const isMatched = matchedCategoryValues.has(c.label.toLowerCase())
+                            const inMatchedOn = matchedCategoryValues.has(c.label.toLowerCase())
+                            const queryInText = c.label.toLowerCase().includes(searchQuery.toLowerCase())
+                            const isMatched = inMatchedOn && queryInText
                             return (
                                 <span
                                     key={i}
