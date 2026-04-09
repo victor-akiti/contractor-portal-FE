@@ -171,15 +171,16 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
     const hasOnlyNameMatch =
         matchedOn.length === 1 && matchedOn[0].field === "companyName"
 
-    // Sets of matched values for activity / category pills — used to highlight exactly
-    // which pills triggered the match, using the value from matchedOn
-    const nameMatched = matchedOn.some((m) => m.field === "companyName")
-    const matchedActivityValues = new Set(
-        matchedOn.filter((m) => m.field === "activity").map((m) => m.value.toLowerCase())
-    )
-    const matchedCategoryValues = new Set(
-        matchedOn.filter((m) => m.field === "jobCategory").map((m) => m.value.toLowerCase())
-    )
+    // Substring match is the sole gate for visual highlighting.
+    // matchedOn tells us *why* a result appeared (used only for the
+    // "Matched by" footer); it must not gate per-pill highlighting because
+    // the fuzzy engine can flag activities unrelated to the typed query.
+    const q = searchQuery.toLowerCase()
+    const activityIsMatch = (a: { display: string; value: string }) =>
+        q.length >= 2 &&
+        (a.display.toLowerCase().includes(q) || a.value.toLowerCase().includes(q))
+    const categoryIsMatch = (c: { label: string }) =>
+        q.length >= 2 && c.label.toLowerCase().includes(q)
 
     return (
         <div className={`${styles.card} ${isL3 ? styles.cardApproved : ""}`}>
@@ -187,9 +188,7 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
             <div className={styles.cardHeader}>
                 <div className={styles.cardTitleRow}>
                     <h3 className={styles.companyName}>
-                        {nameMatched
-                            ? <HighlightText text={vendor.companyName} query={searchQuery} />
-                            : vendor.companyName}
+                        <HighlightText text={vendor.companyName} query={searchQuery} />
                     </h3>
                     <div className={styles.badgeRow}>
                         {isL3 && (
@@ -278,24 +277,13 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
                     <p className={styles.sectionLabel}>Business Activities</p>
                     <div className={styles.tagList}>
                         {activities.map((a, i) => {
-                            const inMatchedOn =
-                                matchedActivityValues.has(a.display.toLowerCase()) ||
-                                matchedActivityValues.has(a.value.toLowerCase())
-                            // Only highlight if the query actually appears as a substring
-                            // in the display text — prevents fuzzy-matched-but-unrelated
-                            // activities from being lit up (e.g. "dredging" ≠ "drilling")
-                            const queryInText =
-                                a.display.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                a.value.toLowerCase().includes(searchQuery.toLowerCase())
-                            const isMatched = inMatchedOn && queryInText
+                            const isMatched = activityIsMatch(a)
                             return (
                                 <span
                                     key={i}
                                     className={`${styles.tag} ${isMatched ? styles.tagActivityMatched : styles.tagActivity}`}
                                 >
-                                    {isMatched
-                                        ? <HighlightText text={a.display} query={searchQuery} />
-                                        : a.display}
+                                    <HighlightText text={a.display} query={searchQuery} />
                                 </span>
                             )
                         })}
@@ -309,17 +297,13 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
                     <p className={styles.sectionLabel}>Job Categories</p>
                     <div className={styles.tagList}>
                         {jobCategories.map((c, i) => {
-                            const inMatchedOn = matchedCategoryValues.has(c.label.toLowerCase())
-                            const queryInText = c.label.toLowerCase().includes(searchQuery.toLowerCase())
-                            const isMatched = inMatchedOn && queryInText
+                            const isMatched = categoryIsMatch(c)
                             return (
                                 <span
                                     key={i}
                                     className={`${styles.tag} ${isMatched ? styles.tagCategoryMatched : styles.tagCategory}`}
                                 >
-                                    {isMatched
-                                        ? <HighlightText text={c.label} query={searchQuery} />
-                                        : c.label}
+                                    <HighlightText text={c.label} query={searchQuery} />
                                 </span>
                             )
                         })}
