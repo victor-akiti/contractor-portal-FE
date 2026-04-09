@@ -113,6 +113,25 @@ function buildLocationString(hqAddress?: VendorResult["hqAddress"]): string {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+/**
+ * Wraps occurrences of `query` inside `text` with a highlighted <mark>.
+ * Case-insensitive. Falls back to plain text if no substring found.
+ */
+function HighlightText({ text, query }: { text: string; query: string }) {
+    if (!query || query.length < 2) return <>{text}</>
+
+    const idx = text.toLowerCase().indexOf(query.toLowerCase())
+    if (idx === -1) return <>{text}</>
+
+    return (
+        <>
+            {text.slice(0, idx)}
+            <mark className={styles.highlight}>{text.slice(idx, idx + query.length)}</mark>
+            {text.slice(idx + query.length)}
+        </>
+    )
+}
+
 function MatchedBySection({ matchedOn }: { matchedOn: MatchedOn[] }) {
     // Group by field
     const grouped: Record<string, MatchedOn[]> = {}
@@ -142,7 +161,7 @@ function MatchedBySection({ matchedOn }: { matchedOn: MatchedOn[] }) {
     )
 }
 
-function VendorCard({ vendor }: { vendor: VendorResult }) {
+function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery: string }) {
     const { status, primaryContact, activities, jobCategories, hqAddress, matchedOn } = vendor
     // displayStage === "L3" is the authoritative L3 indicator; isApproved provides additional emphasis
     const isL3 = status?.displayStage === "L3"
@@ -152,12 +171,26 @@ function VendorCard({ vendor }: { vendor: VendorResult }) {
     const hasOnlyNameMatch =
         matchedOn.length === 1 && matchedOn[0].field === "companyName"
 
+    // Sets of matched values for activity / category pills — used to highlight exactly
+    // which pills triggered the match, using the value from matchedOn
+    const nameMatched = matchedOn.some((m) => m.field === "companyName")
+    const matchedActivityValues = new Set(
+        matchedOn.filter((m) => m.field === "activity").map((m) => m.value.toLowerCase())
+    )
+    const matchedCategoryValues = new Set(
+        matchedOn.filter((m) => m.field === "jobCategory").map((m) => m.value.toLowerCase())
+    )
+
     return (
         <div className={`${styles.card} ${isL3 ? styles.cardApproved : ""}`}>
             {/* Header row */}
             <div className={styles.cardHeader}>
                 <div className={styles.cardTitleRow}>
-                    <h3 className={styles.companyName}>{vendor.companyName}</h3>
+                    <h3 className={styles.companyName}>
+                        {nameMatched
+                            ? <HighlightText text={vendor.companyName} query={searchQuery} />
+                            : vendor.companyName}
+                    </h3>
                     <div className={styles.badgeRow}>
                         {isL3 && (
                             <span className={`${styles.badge} ${styles.badgeL3}`}>
@@ -244,11 +277,21 @@ function VendorCard({ vendor }: { vendor: VendorResult }) {
                 <div className={styles.tagsSection}>
                     <p className={styles.sectionLabel}>Business Activities</p>
                     <div className={styles.tagList}>
-                        {activities.map((a, i) => (
-                            <span key={i} className={`${styles.tag} ${styles.tagActivity}`}>
-                                {a.display}
-                            </span>
-                        ))}
+                        {activities.map((a, i) => {
+                            const isMatched =
+                                matchedActivityValues.has(a.display.toLowerCase()) ||
+                                matchedActivityValues.has(a.value.toLowerCase())
+                            return (
+                                <span
+                                    key={i}
+                                    className={`${styles.tag} ${isMatched ? styles.tagActivityMatched : styles.tagActivity}`}
+                                >
+                                    {isMatched
+                                        ? <HighlightText text={a.display} query={searchQuery} />
+                                        : a.display}
+                                </span>
+                            )
+                        })}
                     </div>
                 </div>
             )}
@@ -258,11 +301,19 @@ function VendorCard({ vendor }: { vendor: VendorResult }) {
                 <div className={styles.tagsSection}>
                     <p className={styles.sectionLabel}>Job Categories</p>
                     <div className={styles.tagList}>
-                        {jobCategories.map((c, i) => (
-                            <span key={i} className={`${styles.tag} ${styles.tagCategory}`}>
-                                {c.label}
-                            </span>
-                        ))}
+                        {jobCategories.map((c, i) => {
+                            const isMatched = matchedCategoryValues.has(c.label.toLowerCase())
+                            return (
+                                <span
+                                    key={i}
+                                    className={`${styles.tag} ${isMatched ? styles.tagCategoryMatched : styles.tagCategory}`}
+                                >
+                                    {isMatched
+                                        ? <HighlightText text={c.label} query={searchQuery} />
+                                        : c.label}
+                                </span>
+                            )
+                        })}
                     </div>
                 </div>
             )}
@@ -445,7 +496,7 @@ export default function VendorSearchPage() {
 
                         <div className={styles.resultsList}>
                             {results.map((vendor) => (
-                                <VendorCard key={vendor._id} vendor={vendor} />
+                                <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
                             ))}
                         </div>
 
