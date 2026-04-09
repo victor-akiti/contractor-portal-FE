@@ -95,7 +95,6 @@ function getStatusClass(status: string): string {
         case "returned":
             return styles.statusReturned
         case "parked":
-        case "suspended":
             return styles.statusParked
         case "recommended for hold":
         case "park requested":
@@ -196,7 +195,7 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
                                 {isFullyApproved ? "L3 Approved" : "L3"}
                             </span>
                         )}
-                        {status?.isPriority && (
+                        {status?.isPriority && !isL3 && (
                             <span className={`${styles.badge} ${styles.badgePriority}`}>
                                 <FontAwesomeIcon icon={faStar} className={styles.starIcon} />
                                 Priority
@@ -334,7 +333,9 @@ export default function VendorSearchPage() {
     const isForbidden =
         isError && (error as any)?.status === 403
 
-    const results: VendorResult[] = data?.data?.results ?? []
+    const results: VendorResult[] = (data?.data?.results ?? []).filter(
+        (v: VendorResult) => v.status?.status !== "returned"
+    )
     const total: number = data?.data?.total ?? 0
     const totalPages = Math.ceil(total / (data?.data?.limit ?? 20))
 
