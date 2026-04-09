@@ -47,7 +47,9 @@ interface VendorResult {
         phone?: string
     } | null
     activities?: { display: string; value: string }[]
-    jobCategories?: { label: string; name: string }[]
+    jobCategories?: { label: string; name: string | null }[]
+    endUsers?: { endUser: { name: string; email?: string; department?: string } }[]
+    currentEndUsers?: string[]
     status: {
         displayStage: string
         approvalLevel: number
@@ -142,22 +144,24 @@ function MatchedBySection({ matchedOn }: { matchedOn: MatchedOn[] }) {
 
 function VendorCard({ vendor }: { vendor: VendorResult }) {
     const { status, primaryContact, activities, jobCategories, hqAddress, matchedOn } = vendor
-    const isApproved = status?.isApproved && status?.displayStage === "L3"
+    // displayStage === "L3" is the authoritative L3 indicator; isApproved provides additional emphasis
+    const isL3 = status?.displayStage === "L3"
+    const isFullyApproved = isL3 && status?.isApproved
     const location = buildLocationString(hqAddress)
 
     const hasOnlyNameMatch =
         matchedOn.length === 1 && matchedOn[0].field === "companyName"
 
     return (
-        <div className={`${styles.card} ${isApproved ? styles.cardApproved : ""}`}>
+        <div className={`${styles.card} ${isL3 ? styles.cardApproved : ""}`}>
             {/* Header row */}
             <div className={styles.cardHeader}>
                 <div className={styles.cardTitleRow}>
                     <h3 className={styles.companyName}>{vendor.companyName}</h3>
                     <div className={styles.badgeRow}>
-                        {isApproved && (
+                        {isL3 && (
                             <span className={`${styles.badge} ${styles.badgeL3}`}>
-                                L3 Approved
+                                {isFullyApproved ? "L3 Approved" : "L3"}
                             </span>
                         )}
                         {status?.isPriority && (
