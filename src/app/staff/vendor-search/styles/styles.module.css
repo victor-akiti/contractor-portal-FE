@@ -167,6 +167,10 @@
 }
 
 .resultsHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
   margin-bottom: var(--spacing-md);
 }
 
@@ -174,6 +178,28 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   font-weight: 500;
+}
+
+.hiddenIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.hiddenLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.hiddenChip {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: var(--color-bg-gray);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-light);
 }
 
 .resultsList {

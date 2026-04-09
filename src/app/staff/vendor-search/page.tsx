@@ -330,9 +330,12 @@ export default function VendorSearchPage() {
     const isForbidden =
         isError && (error as any)?.status === 403
 
-    const results: VendorResult[] = (data?.data?.results ?? []).filter(
-        (v: VendorResult) => v.status?.status !== "returned"
+    const allResults: VendorResult[] = data?.data?.results ?? []
+    const results = allResults.filter(
+        (v) => v.status?.status !== "returned" && v.status?.status !== "parked"
     )
+    const hiddenParked = allResults.filter((v) => v.status?.status === "parked").length
+    const hiddenReturned = allResults.filter((v) => v.status?.status === "returned").length
     const total: number = data?.data?.total ?? 0
     const totalPages = Math.ceil(total / (data?.data?.limit ?? 20))
 
@@ -483,6 +486,21 @@ export default function VendorSearchPage() {
                             <span className={styles.resultCount}>
                                 {total} {total === 1 ? "result" : "results"}
                             </span>
+                            {(hiddenParked > 0 || hiddenReturned > 0) && (
+                                <div className={styles.hiddenIndicator}>
+                                    <span className={styles.hiddenLabel}>Not shown:</span>
+                                    {hiddenParked > 0 && (
+                                        <span className={styles.hiddenChip}>
+                                            {hiddenParked} parked
+                                        </span>
+                                    )}
+                                    {hiddenReturned > 0 && (
+                                        <span className={styles.hiddenChip}>
+                                            {hiddenReturned} returned
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className={styles.resultsList}>
