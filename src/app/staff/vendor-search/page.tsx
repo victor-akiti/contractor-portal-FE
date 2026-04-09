@@ -3,6 +3,7 @@
 import useDebounce from "@/hooks/useDebounce"
 import { useLazyVendorSearchQuery } from "@/redux/features/vendorSearchSlice"
 import { useAppSelector } from "@/redux/hooks"
+import Link from "next/link"
 import {
     faBuilding,
     faChevronLeft,
@@ -309,6 +310,13 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
 
             {/* Matched by — only when there are non-name matches */}
             {!hasOnlyNameMatch && <MatchedBySection matchedOn={matchedOn} />}
+
+            {/* Footer action */}
+            <div className={styles.cardFooter}>
+                <Link href={`/staff/vendor/${vendor._id}`} className={styles.viewLink}>
+                    View vendor
+                </Link>
+            </div>
         </div>
     )
 }

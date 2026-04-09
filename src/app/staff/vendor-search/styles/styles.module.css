@@ -530,6 +530,31 @@
   border-radius: 0;
 }
 
+/* ── Card footer ─────────────────────────────────────────── */
+.cardFooter {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.viewLink {
+  display: inline-block;
+  padding: 0.375rem 1rem;
+  background-color: var(--color-primary);
+  color: var(--color-bg-white);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color var(--transition-base);
+}
+
+.viewLink:hover {
+  background-color: var(--color-primary-dark);
+}
+
 /* ── Matched by section ───────────────────────────────────── */
 .matchedBy {
   margin-top: var(--spacing-lg);
