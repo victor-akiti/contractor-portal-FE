@@ -81,7 +81,6 @@ const STATUS_OPTIONS = [
     { label: "Approved (L3)", value: "approved" },
     { label: "Pending", value: "pending" },
     { label: "In Progress", value: "in progress" },
-    { label: "Returned", value: "returned" },
     { label: "Parked", value: "parked" },
     { label: "Park Requested", value: "park requested" },
 ]
@@ -92,8 +91,6 @@ function getStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
         case "approved":
             return styles.statusApproved
-        case "returned":
-            return styles.statusReturned
         case "parked":
             return styles.statusParked
         case "recommended for hold":
