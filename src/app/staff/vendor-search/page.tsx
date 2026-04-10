@@ -321,7 +321,7 @@ export default function VendorSearchPage() {
 
     const debouncedQuery = useDebounce(query, 350)
 
-    const [triggerSearch, { data, isLoading, isError, error }] = useLazyVendorSearchQuery()
+    const [triggerSearch, { data, isLoading, isFetching, isError, error }] = useLazyVendorSearchQuery()
 
     const isForbidden =
         isError && (error as any)?.status === 403
@@ -360,7 +360,7 @@ export default function VendorSearchPage() {
     // Determine empty-state type
     const showMinCharsHint = query.length > 0 && query.length < 2
     const showNoResults =
-        !isLoading && !isError && debouncedQuery.length >= 2 && results.length === 0
+        !isFetching && !isError && debouncedQuery.length >= 2 && results.length === 0
     const showPlaceholder = query.length === 0
 
     return (
@@ -389,7 +389,7 @@ export default function VendorSearchPage() {
                         onChange={(e) => setQuery(e.target.value)}
                         autoComplete="off"
                     />
-                    {isLoading && <span className={styles.spinnerInline} />}
+                    {isFetching && <span className={styles.spinnerInline} />}
                 </div>
             </div>
 
@@ -462,7 +462,7 @@ export default function VendorSearchPage() {
                     </div>
                 )}
 
-                {/* ── Loading ── */}
+                {/* ── First-load spinner (no data yet) ── */}
                 {isLoading && (
                     <div className={styles.loadingState}>
                         <span className={styles.spinner} />
@@ -494,7 +494,7 @@ export default function VendorSearchPage() {
                                             className={`${styles.hiddenChip} ${showParked ? styles.hiddenChipActive : ""}`}
                                             onClick={() => setShowParked((v) => !v)}
                                         >
-                                            {hiddenParked} parked {showParked ? "▲" : "▼"}
+                                            {showParked ? "Hide" : "Show"} {hiddenParked} parked
                                         </button>
                                     )}
                                     {hiddenReturned > 0 && (
@@ -502,14 +502,44 @@ export default function VendorSearchPage() {
                                             className={`${styles.hiddenChip} ${showReturned ? styles.hiddenChipActive : ""}`}
                                             onClick={() => setShowReturned((v) => !v)}
                                         >
-                                            {hiddenReturned} returned {showReturned ? "▲" : "▼"}
+                                            {showReturned ? "Hide" : "Show"} {hiddenReturned} returned
                                         </button>
                                     )}
                                 </div>
                             )}
                         </div>
 
-                        <div className={styles.resultsList}>
+                        {/* Hidden groups — above main results */}
+                        {showParked && parkedResults.length > 0 && (
+                            <div className={styles.hiddenSection}>
+                                <p className={styles.hiddenSectionLabel}>Parked vendors</p>
+                                <div className={styles.resultsList}>
+                                    {parkedResults.map((vendor) => (
+                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {showReturned && returnedResults.length > 0 && (
+                            <div className={styles.hiddenSection}>
+                                <p className={styles.hiddenSectionLabel}>Returned vendors</p>
+                                <div className={styles.resultsList}>
+                                    {returnedResults.map((vendor) => (
+                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Re-fetch loading overlay */}
+                        {isFetching && !isLoading && (
+                            <div className={styles.refetchOverlay}>
+                                <span className={styles.spinner} />
+                            </div>
+                        )}
+
+                        <div className={`${styles.resultsList} ${isFetching ? styles.resultsListFetching : ""}`}>
                             {results.map((vendor) => (
                                 <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
                             ))}
@@ -537,29 +567,6 @@ export default function VendorSearchPage() {
                                 >
                                     <FontAwesomeIcon icon={faChevronRight} />
                                 </button>
-                            </div>
-                        )}
-
-                        {/* Hidden result groups */}
-                        {showParked && parkedResults.length > 0 && (
-                            <div className={styles.hiddenSection}>
-                                <p className={styles.hiddenSectionLabel}>Parked vendors</p>
-                                <div className={styles.resultsList}>
-                                    {parkedResults.map((vendor) => (
-                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {showReturned && returnedResults.length > 0 && (
-                            <div className={styles.hiddenSection}>
-                                <p className={styles.hiddenSectionLabel}>Returned vendors</p>
-                                <div className={styles.resultsList}>
-                                    {returnedResults.map((vendor) => (
-                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
-                                    ))}
-                                </div>
                             </div>
                         )}
                     </>

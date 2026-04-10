@@ -241,6 +241,17 @@
   gap: var(--spacing-lg);
 }
 
+.resultsListFetching {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.refetchOverlay {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg) 0;
+}
+
 /* ── Empty / loading states ──────────────────────────────── */
 .emptyState {
   display: flex;
