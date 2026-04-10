@@ -348,31 +348,6 @@
   border: 1px solid var(--color-border-light);
 }
 
-/* ── Status badge colours ────────────────────────────────── */
-.statusApproved {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.statusParked {
-  background-color: var(--color-bg-gray);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-}
-
-.statusParkRequested {
-  background-color: #fde8d0;
-  color: #7d3800;
-  border: 1px solid #f5c6a0;
-}
-
-.statusNeutral {
-  background-color: var(--color-bg-light);
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border-light);
-}
-
 /* ── Card meta (location, reg type, website) ─────────────── */
 .cardMeta {
   display: flex;

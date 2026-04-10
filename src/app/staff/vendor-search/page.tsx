@@ -88,20 +88,6 @@ const STATUS_OPTIONS = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getStatusClass(status: string): string {
-    switch (status?.toLowerCase()) {
-        case "approved":
-            return styles.statusApproved
-        case "parked":
-            return styles.statusParked
-        case "recommended for hold":
-        case "park requested":
-            return styles.statusParkRequested
-        default:
-            return styles.statusNeutral
-    }
-}
-
 function buildLocationString(hqAddress?: VendorResult["hqAddress"]): string {
     if (!hqAddress) return ""
     const parts = [hqAddress.state, hqAddress.country].filter(Boolean)
@@ -193,18 +179,17 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
                                 {isFullyApproved ? "L3 Approved" : "L3"}
                             </span>
                         )}
+                        {!isL3 && (
+                            <span className={`${styles.badge} ${styles.badgeStage}`}>
+                                {status?.displayStage ?? "Unknown"}
+                            </span>
+                        )}
                         {status?.isPriority && !isL3 && (
                             <span className={`${styles.badge} ${styles.badgePriority}`}>
                                 <FontAwesomeIcon icon={faStar} className={styles.starIcon} />
                                 Priority
                             </span>
                         )}
-                        <span className={`${styles.badge} ${styles.badgeStage}`}>
-                            {status?.displayStage ?? "Unknown"}
-                        </span>
-                        <span className={`${styles.badge} ${getStatusClass(status?.status)}`}>
-                            {status?.status ?? "Unknown"}
-                        </span>
                     </div>
                 </div>
 
