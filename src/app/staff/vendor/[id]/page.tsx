@@ -262,7 +262,7 @@ const ViewVendorPage = () => {
                         <div>
                             <p className={styles.fieldData}>
                                 <label>{`${field.label}:`}</label>
-                                <p>{field.value}</p>
+                                <p>{typeof field.value === "object" && field.value !== null ? field.value.label || field.value.name : field.value}</p>
                             </p>
                         </div>
 
