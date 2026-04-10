@@ -316,6 +316,9 @@ export default function VendorSearchPage() {
     const [statusFilter, setStatusFilter] = useState("")
     const [page, setPage] = useState(1)
 
+    const [showParked, setShowParked] = useState(false)
+    const [showReturned, setShowReturned] = useState(false)
+
     const debouncedQuery = useDebounce(query, 350)
 
     const [triggerSearch, { data, isLoading, isError, error }] = useLazyVendorSearchQuery()
@@ -327,8 +330,10 @@ export default function VendorSearchPage() {
     const results = allResults.filter(
         (v) => v.status?.status !== "returned" && v.status?.status !== "parked"
     )
-    const hiddenParked = allResults.filter((v) => v.status?.status === "parked").length
-    const hiddenReturned = allResults.filter((v) => v.status?.status === "returned").length
+    const parkedResults = allResults.filter((v) => v.status?.status === "parked")
+    const returnedResults = allResults.filter((v) => v.status?.status === "returned")
+    const hiddenParked = parkedResults.length
+    const hiddenReturned = returnedResults.length
     const total: number = data?.data?.total ?? 0
     const totalPages = Math.ceil(total / (data?.data?.limit ?? 20))
 
@@ -345,9 +350,11 @@ export default function VendorSearchPage() {
         })
     }, [debouncedQuery, category, statusFilter, page])
 
-    // Reset page when search params change (not page itself)
+    // Reset page and hidden toggles when search params change
     useEffect(() => {
         setPage(1)
+        setShowParked(false)
+        setShowReturned(false)
     }, [debouncedQuery, category, statusFilter])
 
     // Determine empty-state type
@@ -483,14 +490,20 @@ export default function VendorSearchPage() {
                                 <div className={styles.hiddenIndicator}>
                                     <span className={styles.hiddenLabel}>Not shown:</span>
                                     {hiddenParked > 0 && (
-                                        <span className={styles.hiddenChip}>
-                                            {hiddenParked} parked
-                                        </span>
+                                        <button
+                                            className={`${styles.hiddenChip} ${showParked ? styles.hiddenChipActive : ""}`}
+                                            onClick={() => setShowParked((v) => !v)}
+                                        >
+                                            {hiddenParked} parked {showParked ? "▲" : "▼"}
+                                        </button>
                                     )}
                                     {hiddenReturned > 0 && (
-                                        <span className={styles.hiddenChip}>
-                                            {hiddenReturned} returned
-                                        </span>
+                                        <button
+                                            className={`${styles.hiddenChip} ${showReturned ? styles.hiddenChipActive : ""}`}
+                                            onClick={() => setShowReturned((v) => !v)}
+                                        >
+                                            {hiddenReturned} returned {showReturned ? "▲" : "▼"}
+                                        </button>
                                     )}
                                 </div>
                             )}
@@ -524,6 +537,29 @@ export default function VendorSearchPage() {
                                 >
                                     <FontAwesomeIcon icon={faChevronRight} />
                                 </button>
+                            </div>
+                        )}
+
+                        {/* Hidden result groups */}
+                        {showParked && parkedResults.length > 0 && (
+                            <div className={styles.hiddenSection}>
+                                <p className={styles.hiddenSectionLabel}>Parked vendors</p>
+                                <div className={styles.resultsList}>
+                                    {parkedResults.map((vendor) => (
+                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {showReturned && returnedResults.length > 0 && (
+                            <div className={styles.hiddenSection}>
+                                <p className={styles.hiddenSectionLabel}>Returned vendors</p>
+                                <div className={styles.resultsList}>
+                                    {returnedResults.map((vendor) => (
+                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </>
