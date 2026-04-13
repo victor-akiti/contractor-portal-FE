@@ -581,7 +581,7 @@ export default function VendorSearchPage() {
                                 <p className={styles.hiddenSectionLabel}>Parked vendors</p>
                                 <div className={styles.resultsList}>
                                     {parkedResults.map((vendor) => (
-                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
+                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} isPinned={false} />
                                     ))}
                                 </div>
                             </div>
@@ -592,7 +592,7 @@ export default function VendorSearchPage() {
                                 <p className={styles.hiddenSectionLabel}>Returned vendors</p>
                                 <div className={styles.resultsList}>
                                     {returnedResults.map((vendor) => (
-                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
+                                        <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} isPinned={false} />
                                     ))}
                                 </div>
                             </div>
