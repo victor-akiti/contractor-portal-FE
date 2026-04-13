@@ -308,6 +308,25 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
+// Returns an array of page numbers and "…" ellipsis markers to render.
+// Always shows first, last, current, and one neighbour on each side.
+function buildPageRange(current: number, total: number): (number | "…")[] {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+
+    const set = new Set<number>()
+    set.add(1)
+    set.add(total)
+    for (let i = Math.max(1, current - 1); i <= Math.min(total, current + 1); i++) set.add(i)
+
+    const sorted = Array.from(set).sort((a, b) => a - b)
+    const result: (number | "…")[] = []
+    for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push("…")
+        result.push(sorted[i])
+    }
+    return result
+}
+
 export default function VendorSearchPage() {
     const user = useAppSelector((state: any) => state.user.user)
 
@@ -556,9 +575,23 @@ export default function VendorSearchPage() {
                                 >
                                     <FontAwesomeIcon icon={faChevronLeft} />
                                 </button>
-                                <span className={styles.pageInfo}>
-                                    Page {page} of {totalPages}
-                                </span>
+
+                                {buildPageRange(page, totalPages).map((p, i) =>
+                                    p === "…" ? (
+                                        <span key={`ellipsis-${i}`} className={styles.pageEllipsis}>…</span>
+                                    ) : (
+                                        <button
+                                            key={p}
+                                            className={`${styles.pageBtn} ${p === page ? styles.pageBtnCurrent : ""}`}
+                                            onClick={() => setPage(p)}
+                                            aria-label={`Page ${p}`}
+                                            aria-current={p === page ? "page" : undefined}
+                                        >
+                                            {p}
+                                        </button>
+                                    )
+                                )}
+
                                 <button
                                     className={styles.pageBtn}
                                     disabled={page >= totalPages}

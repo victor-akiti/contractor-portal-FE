@@ -625,12 +625,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  min-width: 36px;
   height: 36px;
+  padding: 0 6px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background-color: var(--color-bg-white);
   color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-base);
 }
@@ -645,10 +648,27 @@
   cursor: not-allowed;
 }
 
-.pageInfo {
+.pageBtnCurrent {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-bg-white);
+}
+
+.pageBtnCurrent:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-bg-white);
+}
+
+.pageEllipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  font-weight: 500;
+  color: var(--color-text-muted);
+  user-select: none;
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
