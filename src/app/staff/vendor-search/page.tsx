@@ -16,7 +16,7 @@ import {
     faSearch,
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -342,6 +342,7 @@ export default function VendorSearchPage() {
     const debouncedQuery = useDebounce(query, 350)
 
     const [triggerSearch, { data, isLoading, isFetching, isError, error }] = useLazyVendorSearchQuery()
+    const inflightRef = useRef<{ abort: () => void } | null>(null)
 
     const isForbidden =
         isError && (error as any)?.status === 403
@@ -357,10 +358,13 @@ export default function VendorSearchPage() {
     const total: number = data?.data?.total ?? 0
     const totalPages = Math.ceil(total / limit)
 
-    // Fire search whenever debounced query, category, status, or page changes
+    // Fire search whenever debounced query, category, status, or page changes.
+    // Abort any in-flight request before firing a new one to prevent
+    // out-of-order responses from overwriting newer results.
     useEffect(() => {
         if (debouncedQuery.length < 2) return
-        triggerSearch({
+        inflightRef.current?.abort()
+        inflightRef.current = triggerSearch({
             q: debouncedQuery,
             category,
             status: statusFilter || undefined,
