@@ -141,6 +141,9 @@
 /* ── Status filter ───────────────────────────────────────── */
 .statusFilterWrapper {
   margin-left: auto;
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
 }
 
 .statusSelect {

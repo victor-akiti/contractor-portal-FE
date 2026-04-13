@@ -334,6 +334,7 @@ export default function VendorSearchPage() {
     const [category, setCategory] = useState<"all" | "name" | "activities" | "categories">("all")
     const [statusFilter, setStatusFilter] = useState("")
     const [page, setPage] = useState(1)
+    const [limit, setLimit] = useState(20)
 
     const [showParked, setShowParked] = useState(false)
     const [showReturned, setShowReturned] = useState(false)
@@ -354,7 +355,7 @@ export default function VendorSearchPage() {
     const hiddenParked = parkedResults.length
     const hiddenReturned = returnedResults.length
     const total: number = data?.data?.total ?? 0
-    const totalPages = Math.ceil(total / (data?.data?.limit ?? 20))
+    const totalPages = Math.ceil(total / limit)
 
     // Fire search whenever debounced query, category, status, or page changes
     useEffect(() => {
@@ -364,17 +365,17 @@ export default function VendorSearchPage() {
             category,
             status: statusFilter || undefined,
             page,
-            limit: 20,
+            limit,
             userRole: user?.role ?? "",
         })
-    }, [debouncedQuery, category, statusFilter, page])
+    }, [debouncedQuery, category, statusFilter, page, limit])
 
-    // Reset page and hidden toggles when search params change
+    // Reset page and hidden toggles when search params or page size change
     useEffect(() => {
         setPage(1)
         setShowParked(false)
         setShowReturned(false)
-    }, [debouncedQuery, category, statusFilter])
+    }, [debouncedQuery, category, statusFilter, limit])
 
     // Determine empty-state type
     const showMinCharsHint = query.length > 0 && query.length < 2
@@ -440,6 +441,17 @@ export default function VendorSearchPage() {
                                 {opt.label}
                             </option>
                         ))}
+                    </select>
+
+                    <select
+                        className={styles.statusSelect}
+                        value={limit}
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                        aria-label="Results per page"
+                    >
+                        <option value={20}>20 per page</option>
+                        <option value={50}>50 per page</option>
+                        <option value={100}>100 per page</option>
                     </select>
                 </div>
             </div>
