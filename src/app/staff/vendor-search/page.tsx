@@ -144,7 +144,7 @@ function MatchedBySection({ matchedOn }: { matchedOn: MatchedOn[] }) {
     )
 }
 
-function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery: string }) {
+function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; searchQuery: string; isPinned: boolean }) {
     const { status, primaryContact, activities, jobCategories, hqAddress, matchedOn } = vendor
     // displayStage === "L3" is the authoritative L3 indicator; isApproved provides additional emphasis
     const isL3 = status?.displayStage === "L3"
@@ -177,6 +177,11 @@ function VendorCard({ vendor, searchQuery }: { vendor: VendorResult; searchQuery
                         {isL3 && (
                             <span className={`${styles.badge} ${styles.badgeL3}`}>
                                 {isFullyApproved ? "L3 Approved" : "L3"}
+                            </span>
+                        )}
+                        {isPinned && (
+                            <span className={`${styles.badge} ${styles.badgePinned}`} title="Shown first due to L3 status — a closer match may appear below">
+                                Pinned
                             </span>
                         )}
                         {!isL3 && (
@@ -338,6 +343,7 @@ export default function VendorSearchPage() {
 
     const [showParked, setShowParked] = useState(false)
     const [showReturned, setShowReturned] = useState(false)
+    const [sortOrder, setSortOrder] = useState<"default" | "relevance">("default")
 
     const debouncedQuery = useDebounce(query, 350)
 
@@ -348,9 +354,19 @@ export default function VendorSearchPage() {
         isError && (error as any)?.status === 403
 
     const allResults: VendorResult[] = data?.data?.results ?? []
-    const results = allResults.filter(
+    const filteredResults = allResults.filter(
         (v) => v.status?.status !== "returned" && v.status?.status !== "parked"
     )
+    const results =
+        sortOrder === "relevance"
+            ? [...filteredResults].sort((a, b) => b.score - a.score)
+            : filteredResults
+
+    // Highest score among non-L3 results on this page — used to flag L3 cards
+    // that are pinned above more relevant non-L3 matches.
+    const maxNonL3Score = filteredResults
+        .filter((v) => v.status?.displayStage !== "L3")
+        .reduce((max, v) => Math.max(max, v.score), 0)
     const parkedResults = allResults.filter((v) => v.status?.status === "parked")
     const returnedResults = allResults.filter((v) => v.status?.status === "returned")
     const hiddenParked = parkedResults.length
@@ -521,6 +537,21 @@ export default function VendorSearchPage() {
                             <span className={styles.resultCount}>
                                 {total} {total === 1 ? "result" : "results"}
                             </span>
+
+                            <div className={styles.sortToggle} role="group" aria-label="Sort order">
+                                <button
+                                    className={`${styles.sortBtn} ${sortOrder === "default" ? styles.sortBtnActive : ""}`}
+                                    onClick={() => setSortOrder("default")}
+                                >
+                                    L3 First
+                                </button>
+                                <button
+                                    className={`${styles.sortBtn} ${sortOrder === "relevance" ? styles.sortBtnActive : ""}`}
+                                    onClick={() => setSortOrder("relevance")}
+                                >
+                                    By Relevance
+                                </button>
+                            </div>
                             {(hiddenParked > 0 || hiddenReturned > 0) && (
                                 <div className={styles.hiddenIndicator}>
                                     <span className={styles.hiddenLabel}>Not shown:</span>
@@ -576,7 +607,16 @@ export default function VendorSearchPage() {
 
                         <div className={`${styles.resultsList} ${isFetching ? styles.resultsListFetching : ""}`}>
                             {results.map((vendor) => (
-                                <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} />
+                                <VendorCard
+                                    key={vendor._id}
+                                    vendor={vendor}
+                                    searchQuery={debouncedQuery}
+                                    isPinned={
+                                        sortOrder === "default" &&
+                                        vendor.status?.displayStage === "L3" &&
+                                        vendor.score < maxNonL3Score
+                                    }
+                                />
                             ))}
                         </div>
 
