@@ -345,7 +345,7 @@ export default function VendorSearchPage() {
     const [showReturned, setShowReturned] = useState(false)
     const [sortOrder, setSortOrder] = useState<"default" | "relevance">("default")
 
-    const debouncedQuery = useDebounce(query, 350)
+    const debouncedQuery = useDebounce(query, 200)
 
     const [triggerSearch, { data, isLoading, isFetching, isError, error }] = useLazyVendorSearchQuery()
     const inflightRef = useRef<{ abort: () => void } | null>(null)
@@ -387,7 +387,7 @@ export default function VendorSearchPage() {
             page,
             limit,
             userRole: user?.role ?? "",
-        })
+        }, /* preferCacheValue */ true)
     }, [debouncedQuery, category, statusFilter, page, limit])
 
     // Reset page and hidden toggles when search params or page size change

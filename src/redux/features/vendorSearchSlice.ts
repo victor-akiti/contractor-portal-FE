@@ -28,7 +28,7 @@ export const vendorSearchSlice = staffApi.injectEndpoints({
                 { type: "Search", id: `vendor-${arg.q}-${arg.category}-${arg.status}-${arg.page}` },
             ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 300,
         }),
     }),
     overrideExisting: false,
