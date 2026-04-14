@@ -86,15 +86,7 @@ const STATUS_OPTIONS = [
     { label: "Park Requested", value: "park requested" },
 ]
 
-// Vendors shown in the main list must have one of these displayStage values.
-// Anything outside this set (Pending, In Progress without a stage, etc.) is
-// hidden from main results and surfaced via the "returned & pending" toggle.
-const ACTIVE_STAGES = new Set(["A", "B", "C", "D", "E", "F", "L3"])
-
-// Descending rank used for the default "L3 First" client-side sort.
-// L3 is always first; then among staged vendors, F (closest to L3) beats A.
-const STAGE_RANK: Record<string, number> = { L3: 7, F: 6, E: 5, D: 4, C: 3, B: 2, A: 1 }
-
+// Default "L3 First" client-side sort — L3 → Priority → stage hierarchy.
 function stageSort(a: VendorResult, b: VendorResult): number {
     const aIsL3 = a.status?.displayStage === "L3"
     const bIsL3 = b.status?.displayStage === "L3"
@@ -106,8 +98,8 @@ function stageSort(a: VendorResult, b: VendorResult): number {
         const bPri = b.status?.isPriority ?? false
         if (aPri !== bPri) return aPri ? -1 : 1
     }
-    // 3. By stage hierarchy descending (F → E → D → C → B → A)
-    return (STAGE_RANK[b.status?.displayStage] ?? 0) - (STAGE_RANK[a.status?.displayStage] ?? 0)
+    // 3. By approvalLevel descending — higher level = further in pipeline = shown first
+    return (b.status?.approvalLevel ?? 0) - (a.status?.approvalLevel ?? 0)
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -445,16 +437,19 @@ export default function VendorSearchPage() {
         isError && (error as any)?.status === 403
 
     const allResults: VendorResult[] = data?.data?.results ?? []
-    // Parked vendors get their own separate toggle regardless of stage.
+    // Parked vendors get their own separate toggle.
     const parkedResults = allResults.filter((v) => v.status?.status === "parked")
-    // Main results: must have a valid approval stage (A–F or L3) and not be parked.
+    // Main results: exclude parked, returned, and pending (not yet in the pipeline).
     const filteredResults = allResults.filter(
-        (v) => ACTIVE_STAGES.has(v.status?.displayStage) && v.status?.status !== "parked"
+        (v) =>
+            v.status?.status !== "parked" &&
+            v.status?.status !== "returned" &&
+            v.status?.status !== "pending"
     )
-    // Everything without a valid stage (pending, returned, in-progress pre-stage, etc.)
-    // that isn't parked is grouped into the "returned & pending" hidden section.
+    // Pending vendors (not yet submitted) are grouped with returned — both hidden
+    // from the main list and accessible via the "returned & pending" toggle.
     const returnedResults = allResults.filter(
-        (v) => !ACTIVE_STAGES.has(v.status?.displayStage) && v.status?.status !== "parked"
+        (v) => v.status?.status === "returned" || v.status?.status === "pending"
     )
     // "By Relevance" keeps backend score order; default applies stage hierarchy sort.
     const results =
