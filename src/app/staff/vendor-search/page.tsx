@@ -3,7 +3,6 @@
 import useDebounce from "@/hooks/useDebounce"
 import { useLazyVendorSearchQuery } from "@/redux/features/vendorSearchSlice"
 import { useAppSelector } from "@/redux/hooks"
-import Link from "next/link"
 import {
     faBuilding,
     faChevronLeft,
@@ -12,10 +11,11 @@ import {
     faGlobe,
     faMapMarkerAlt,
     faPhone,
-    faStar,
     faSearch,
+    faStar,
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
 
@@ -168,7 +168,7 @@ function MatchedBySection({ matchedOn, searchQuery }: { matchedOn: MatchedOn[]; 
 function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; searchQuery: string; isPinned: boolean }) {
     const { status, primaryContact, activities, jobCategories, hqAddress, matchedOn } = vendor
     // displayStage === "L3" is the authoritative L3 indicator; isApproved provides additional emphasis
-    const isL3 = status?.displayStage === "L3"
+    const isL3 = status?.displayStage === "L3" || status?.isApproved
     const isFullyApproved = isL3 && status?.isApproved
     const location = buildLocationString(hqAddress)
 
@@ -200,11 +200,11 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                                 {isFullyApproved ? "L3 Approved" : "L3"}
                             </span>
                         )}
-                        {isPinned && (
+                        {/* {isPinned && (
                             <span className={`${styles.badge} ${styles.badgePinned}`} title="Shown first due to L3 status — a closer match may appear below">
                                 Pinned
                             </span>
-                        )}
+                        )} */}
                         {!isL3 && (
                             <span className={`${styles.badge} ${styles.badgeStage}`}>
                                 {status?.displayStage ?? "Unknown"}
