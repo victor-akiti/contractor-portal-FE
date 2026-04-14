@@ -184,7 +184,7 @@ export default function ApprovalsContainer() {
     l3: ["Contractor Name (verified)", "Action", "Last Contractor Update"],
     completedL2: ["Contractor Name", "Approval Stage", "Parked Reason", "Action", "Last Contractor Update"],
     returned: ["Contractor Name", "Approval Stage", "Action", "Last Contractor Update"],
-    parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Action"],
+    parkRequests: ["Contractor Name", "Approval Stage", "Requested By", "Park Reason", "Action"],
   };
 
   const user = useAppSelector((state: any) => state?.user?.user);

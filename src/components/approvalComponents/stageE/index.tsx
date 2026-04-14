@@ -885,7 +885,7 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
 
 
                                                         {
-                                                            ((sectionItem.comments && sectionItem.comments.length > 0) || (sectionItem.remarks && sectionItem.remarks.length > 0) || sectionHistoryRemarks.length > 0) && <div className={styles.showCommentTriggerDiv}>
+                                                            ((sectionItem.comments && sectionItem.comments.length > 0) || (sectionItem.remarks && sectionItem.remarks.length > 0) || sectionHistoryRemarks.length > 0 || (sectionItem.internalComment && sectionItem.internalComment.length > 0)) && <div className={styles.showCommentTriggerDiv}>
                                                                 <p onClick={() => toggleHideSectionRemarks(index, sectionIndex)}>SHOW COMMENTS</p>
                                                             </div>
                                                         }
@@ -926,6 +926,22 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                                                                                 sectionItem?.comments?.map((commentItem, commentIndex) => <div key={commentIndex} className={styles.remarksItem}>
                                                                                     <p>{commentItem.comment}</p>
                                                                                     <p><span>{commentItem.userName} </span><p>|</p> <p>{moment(commentItem.date).format("DD/MM/YYYY")}</p></p>
+                                                                                </div>)
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                }
+
+                                                                {
+                                                                    sectionItem?.internalComment && sectionItem?.internalComment.length > 0 && <div className={styles.commentsContent}>
+                                                                        <p>Internal Comments</p>
+
+                                                                        <div>
+                                                                            {
+                                                                                sectionItem?.internalComment?.map((item, i) => <div key={i} className={styles.remarksItem}>
+                                                                                    <p>{item.remark}</p>
+                                                                                    <p><span>{item.approver?.name} </span><p>|</p> <p>{moment(item.timestamp).format("DD/MM/YYYY")}</p></p>
                                                                                 </div>)
                                                                             }
                                                                         </div>
