@@ -417,7 +417,10 @@ export default function VendorSearchPage() {
 
     const allResults: VendorResult[] = data?.data?.results ?? []
     const filteredResults = allResults.filter(
-        (v) => v.status?.status !== "returned" && v.status?.status !== "parked"
+        (v) =>
+            v.status?.status !== "returned" &&
+            v.status?.status !== "parked" &&
+            v.status?.status !== "pending"
     )
     const results =
         sortOrder === "relevance"
@@ -430,7 +433,11 @@ export default function VendorSearchPage() {
         .filter((v) => v.status?.displayStage !== "L3")
         .reduce((max, v) => Math.max(max, v.score), 0)
     const parkedResults = allResults.filter((v) => v.status?.status === "parked")
-    const returnedResults = allResults.filter((v) => v.status?.status === "returned")
+    // Pending vendors (not yet submitted into the approval pipeline) are grouped
+    // with returned vendors — neither should appear in the main results list.
+    const returnedResults = allResults.filter(
+        (v) => v.status?.status === "returned" || v.status?.status === "pending"
+    )
     const hiddenParked = parkedResults.length
     const hiddenReturned = returnedResults.length
     const total: number = data?.data?.total ?? 0
@@ -630,7 +637,7 @@ export default function VendorSearchPage() {
                                             className={`${styles.hiddenChip} ${showReturned ? styles.hiddenChipActive : ""}`}
                                             onClick={() => setShowReturned((v) => !v)}
                                         >
-                                            {showReturned ? "Hide" : "Show"} {hiddenReturned} returned
+                                            {showReturned ? "Hide" : "Show"} {hiddenReturned} returned & pending
                                         </button>
                                     )}
                                 </div>
@@ -651,7 +658,7 @@ export default function VendorSearchPage() {
 
                         {showReturned && returnedResults.length > 0 && (
                             <div className={styles.hiddenSection}>
-                                <p className={styles.hiddenSectionLabel}>Returned vendors</p>
+                                <p className={styles.hiddenSectionLabel}>Returned & pending vendors</p>
                                 <div className={styles.resultsList}>
                                     {returnedResults.map((vendor) => (
                                         <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} isPinned={false} />
