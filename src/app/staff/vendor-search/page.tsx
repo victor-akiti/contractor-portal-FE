@@ -640,7 +640,7 @@ export default function VendorSearchPage() {
                 )}
 
                 {/* ── Results ── */}
-                {!isLoading && !isError && results.length > 0 && (
+                {!isLoading && !isError && !showPlaceholder && results.length > 0 && (
                     <>
                         <div className={styles.resultsHeader}>
                             <span className={styles.resultCount}>
