@@ -439,17 +439,21 @@ export default function VendorSearchPage() {
     const allResults: VendorResult[] = data?.data?.results ?? []
     // Parked vendors get their own separate toggle.
     const parkedResults = allResults.filter((v) => v.status?.status === "parked")
-    // Main results: exclude parked, returned, and pending (not yet in the pipeline).
+    // Main results: must be submitted into the approval pipeline, not parked, not returned.
+    // Using `submitted` as the gate is more reliable than matching status strings —
+    // unsubmitted vendors can have various status.status values but submitted===false.
     const filteredResults = allResults.filter(
         (v) =>
+            v.status?.submitted === true &&
             v.status?.status !== "parked" &&
-            v.status?.status !== "returned" &&
-            v.status?.status !== "pending"
+            v.status?.status !== "returned"
     )
-    // Pending vendors (not yet submitted) are grouped with returned — both hidden
+    // Unsubmitted (pending) and returned vendors are grouped together — hidden
     // from the main list and accessible via the "returned & pending" toggle.
     const returnedResults = allResults.filter(
-        (v) => v.status?.status === "returned" || v.status?.status === "pending"
+        (v) =>
+            v.status?.status !== "parked" &&
+            (v.status?.submitted !== true || v.status?.status === "returned")
     )
     // "By Relevance" keeps backend score order; default applies stage hierarchy sort.
     const results =
