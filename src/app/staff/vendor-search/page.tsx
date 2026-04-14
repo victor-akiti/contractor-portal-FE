@@ -311,6 +311,38 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
     )
 }
 
+// ─── Hooks ───────────────────────────────────────────────────────────────────
+
+const LOADING_MESSAGES = [
+    "Searching vendors…",
+    "Still searching…",
+    "This is taking a while…",
+    "Hang tight, almost there…",
+]
+const LOADING_MESSAGE_DELAYS = [0, 1500, 3500, 6000] // ms from activation
+
+/**
+ * Returns a progressively more patient loading message the longer `isActive`
+ * stays `true`. Resets to the first message as soon as `isActive` goes `false`.
+ */
+function useLoadingMessage(isActive: boolean): string {
+    const [index, setIndex] = useState(0)
+
+    useEffect(() => {
+        if (!isActive) {
+            setIndex(0)
+            return
+        }
+        // Schedule advancement through each subsequent message tier.
+        const timers = LOADING_MESSAGE_DELAYS.slice(1).map((delay, i) =>
+            setTimeout(() => setIndex(i + 1), delay)
+        )
+        return () => timers.forEach(clearTimeout)
+    }, [isActive])
+
+    return LOADING_MESSAGES[index]
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 // Returns an array of page numbers and "…" ellipsis markers to render.
@@ -349,6 +381,8 @@ export default function VendorSearchPage() {
 
     const [triggerSearch, { data, isLoading, isFetching, isError, error }] = useLazyVendorSearchQuery()
     const inflightRef = useRef<{ abort: () => void } | null>(null)
+
+    const loadingMessage = useLoadingMessage(isFetching)
 
     const isForbidden =
         isError && (error as any)?.status === 403
@@ -517,7 +551,7 @@ export default function VendorSearchPage() {
                 {isLoading && (
                     <div className={styles.loadingState}>
                         <span className={styles.spinner} />
-                        <p>Searching vendors…</p>
+                        <p>{loadingMessage}</p>
                     </div>
                 )}
 
@@ -602,6 +636,7 @@ export default function VendorSearchPage() {
                         {isFetching && !isLoading && (
                             <div className={styles.refetchOverlay}>
                                 <span className={styles.spinner} />
+                                <p className={styles.refetchMessage}>{loadingMessage}</p>
                             </div>
                         )}
 
