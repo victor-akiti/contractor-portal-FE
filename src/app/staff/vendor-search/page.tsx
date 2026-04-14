@@ -313,34 +313,62 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-const LOADING_MESSAGES = [
-    "Searching vendors…",
-    "Still searching…",
-    "This is taking a while…",
-    "Hang tight, almost there…",
-]
 const LOADING_MESSAGE_DELAYS = [0, 1500, 3500, 6000] // ms from activation
+
+// Maps category values to the scan-phase description used in loading messages.
+const CATEGORY_SCAN_LABEL: Record<string, string> = {
+    all: "names, Business Activities, and Job Categories",
+    name: "Company Name",
+    activities: "Business Activities",
+    categories: "Job Categories",
+}
+
+function buildLoadingMessages(category: string, statusFilter: string): string[] {
+    const scanLabel = CATEGORY_SCAN_LABEL[category] ?? "all fields"
+    const statusLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? ""
+
+    const line1 =
+        category === "all"
+            ? "Searching across all fields…"
+            : `Searching by ${CATEGORY_TABS.find((t) => t.value === category)?.label ?? category}…`
+
+    const line2 = statusFilter
+        ? `Filtering by ${statusLabel}…`
+        : `Scanning ${scanLabel}…`
+
+    return [
+        line1,
+        line2,
+        "This is taking a little longer than usual…",
+        "Hang tight, almost there…",
+    ]
+}
 
 /**
  * Returns a progressively more patient loading message the longer `isActive`
- * stays `true`. Resets to the first message as soon as `isActive` goes `false`.
+ * stays `true`. Messages reference the active category tab and status filter
+ * so the user knows the search is using their current settings.
+ * Resets to the first message as soon as `isActive` goes `false`.
  */
-function useLoadingMessage(isActive: boolean): string {
+function useLoadingMessage(isActive: boolean, category: string, statusFilter: string): string {
     const [index, setIndex] = useState(0)
+    const messagesRef = useRef<string[]>(buildLoadingMessages(category, statusFilter))
 
     useEffect(() => {
         if (!isActive) {
             setIndex(0)
             return
         }
-        // Schedule advancement through each subsequent message tier.
+        // Snapshot current filter settings when fetch starts.
+        messagesRef.current = buildLoadingMessages(category, statusFilter)
+
         const timers = LOADING_MESSAGE_DELAYS.slice(1).map((delay, i) =>
             setTimeout(() => setIndex(i + 1), delay)
         )
         return () => timers.forEach(clearTimeout)
     }, [isActive])
 
-    return LOADING_MESSAGES[index]
+    return messagesRef.current[index] ?? messagesRef.current[0]
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -382,7 +410,7 @@ export default function VendorSearchPage() {
     const [triggerSearch, { data, isLoading, isFetching, isError, error }] = useLazyVendorSearchQuery()
     const inflightRef = useRef<{ abort: () => void } | null>(null)
 
-    const loadingMessage = useLoadingMessage(isFetching)
+    const loadingMessage = useLoadingMessage(isFetching, category, statusFilter)
 
     const isForbidden =
         isError && (error as any)?.status === 403
