@@ -440,6 +440,20 @@
   font-size: 10px;
 }
 
+/* Returned */
+.badgeReturned {
+  background-color: #fde8e8;
+  color: #9b1c1c;
+  border: 1px solid #f8c3c3;
+}
+
+/* Pending (unsubmitted) */
+.badgePending {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
 /* Stage */
 .badgeStage {
   background-color: var(--color-bg-gray);

@@ -216,6 +216,16 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                                 Priority
                             </span>
                         )}
+                        {status?.status === "returned" && (
+                            <span className={`${styles.badge} ${styles.badgeReturned}`}>
+                                Returned
+                            </span>
+                        )}
+                        {status?.submitted !== true && status?.status !== "returned" && (
+                            <span className={`${styles.badge} ${styles.badgePending}`}>
+                                Pending
+                            </span>
+                        )}
                     </div>
                 </div>
 
