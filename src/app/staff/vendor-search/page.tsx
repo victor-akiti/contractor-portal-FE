@@ -460,11 +460,13 @@ export default function VendorSearchPage() {
     )
     // Unsubmitted (pending) and returned vendors are grouped together — hidden
     // from the main list and accessible via the "returned & pending" toggle.
-    const returnedResults = allResults.filter(
-        (v) =>
-            v.status?.status !== "parked" &&
-            (v.status?.submitted !== true || v.status?.status === "returned")
-    )
+    const returnedResults = allResults
+        .filter(
+            (v) =>
+                v.status?.status !== "parked" &&
+                (v.status?.submitted !== true || v.status?.status === "returned")
+        )
+        .sort((a, b) => (b.status?.isPriority ? 1 : 0) - (a.status?.isPriority ? 1 : 0))
     // "By Relevance" keeps backend score order; default applies stage hierarchy sort.
     const results =
         sortOrder === "relevance"
