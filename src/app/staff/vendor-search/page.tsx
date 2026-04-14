@@ -115,7 +115,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
     )
 }
 
-function MatchedBySection({ matchedOn }: { matchedOn: MatchedOn[] }) {
+function MatchedBySection({ matchedOn, searchQuery }: { matchedOn: MatchedOn[]; searchQuery: string }) {
     // Group by field
     const grouped: Record<string, MatchedOn[]> = {}
     for (const m of matchedOn) {
@@ -136,7 +136,12 @@ function MatchedBySection({ matchedOn }: { matchedOn: MatchedOn[] }) {
                     <span className={styles.matchedByField}>{items[0].label}</span>
                     {" — "}
                     <span className={styles.matchedByValues}>
-                        {items.map((m) => m.value).join(" · ")}
+                        {items.map((m, j) => (
+                            <span key={j}>
+                                {j > 0 && " · "}
+                                <HighlightText text={m.value} query={searchQuery} />
+                            </span>
+                        ))}
                     </span>
                 </span>
             ))}
@@ -299,7 +304,7 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
             )}
 
             {/* Matched by — only when there are non-name matches */}
-            {!hasOnlyNameMatch && <MatchedBySection matchedOn={matchedOn} />}
+            {!hasOnlyNameMatch && <MatchedBySection matchedOn={matchedOn} searchQuery={searchQuery} />}
 
             {/* Footer action */}
             <div className={styles.cardFooter}>
