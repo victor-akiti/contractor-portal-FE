@@ -9,6 +9,7 @@ import {
     faChevronLeft,
     faChevronRight,
     faChevronUp,
+    faDownload,
     faEnvelope,
     faGlobe,
     faMapMarkerAlt,
@@ -17,6 +18,7 @@ import {
     faStar,
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import xlsx from "json-as-xlsx"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
@@ -542,6 +544,68 @@ export default function VendorSearchPage() {
         !isFetching && !isError && debouncedQuery.length >= 2 && results.length === 0
     const showPlaceholder = query.length === 0
 
+    const exportToExcel = () => {
+        const origin = typeof window !== "undefined" ? window.location.origin : ""
+
+        const toRow = (v: VendorResult) => ({
+            companyName: v.companyName,
+            companyUID: v.companyUID,
+            stage: v.status?.displayStage ?? "",
+            l3Approved: v.status?.isApproved ? "Yes" : "No",
+            priority: v.status?.isPriority ? "Yes" : "No",
+            submitted: v.status?.submitted ? "Yes" : "No",
+            registrationType: v.registrationType ?? "",
+            location: buildLocationString(v.hqAddress),
+            website: v.website ?? "",
+            contactName: [v.primaryContact?.firstName, v.primaryContact?.familyName].filter(Boolean).join(" "),
+            contactDesignation: v.primaryContact?.designation ?? "",
+            contactEmail: v.primaryContact?.email ?? "",
+            contactPhone: v.primaryContact?.phone ?? "",
+            jobCategories: (v.jobCategories ?? []).map((c) => c.label).join(", "),
+            activities: (v.activities ?? []).map((a) => a.display).join(", "),
+            portalLink: `${origin}/staff/vendor/${v._id}`,
+        })
+
+        const columns = [
+            { label: "Company Name", value: "companyName" },
+            { label: "Company UID", value: "companyUID" },
+            { label: "Stage", value: "stage" },
+            { label: "L3 Approved", value: "l3Approved" },
+            { label: "Priority", value: "priority" },
+            { label: "Submitted", value: "submitted" },
+            { label: "Registration Type", value: "registrationType" },
+            { label: "Location", value: "location" },
+            { label: "Website", value: "website" },
+            { label: "Primary Contact", value: "contactName" },
+            { label: "Designation", value: "contactDesignation" },
+            { label: "Email", value: "contactEmail" },
+            { label: "Phone", value: "contactPhone" },
+            { label: "Job Categories", value: "jobCategories" },
+            { label: "Business Activities", value: "activities" },
+            { label: "Portal Link", value: "portalLink" },
+        ]
+
+        const sheets: Parameters<typeof xlsx>[0] = [
+            { sheet: "Main Results", columns, content: results.map(toRow) },
+            ...(returnedResults.length > 0
+                ? [{ sheet: "Partially Completed", columns, content: returnedResults.map(toRow) }]
+                : []),
+            ...(parkedResults.length > 0
+                ? [{ sheet: "Parked", columns, content: parkedResults.map(toRow) }]
+                : []),
+        ]
+
+        const date = new Date().toISOString().slice(0, 10)
+        const slug = debouncedQuery ? `_${debouncedQuery.replace(/[^a-zA-Z0-9]/g, "_")}` : ""
+        xlsx(sheets, {
+            fileName: `ContractorSearch${slug}_${date}`,
+            extraLength: 3,
+            writeMode: "writeFile",
+            writeOptions: {},
+            RTL: false,
+        })
+    }
+
     return (
         <div className={styles.page}>
             {/* Page heading */}
@@ -704,6 +768,11 @@ export default function VendorSearchPage() {
                                     )}
                                 </div>
                             )}
+
+                            <button className={styles.exportBtn} onClick={exportToExcel} title="Export all results to Excel">
+                                <FontAwesomeIcon icon={faDownload} />
+                                Export
+                            </button>
                         </div>
 
 
