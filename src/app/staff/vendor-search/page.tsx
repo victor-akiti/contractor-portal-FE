@@ -187,6 +187,10 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
     const categoryIsMatch = (c: { label: string }) =>
         q.length >= 2 && c.label.toLowerCase().includes(q)
 
+    const matchedCategories = (jobCategories ?? []).filter(categoryIsMatch)
+    const matchedActivities = (activities ?? []).filter(activityIsMatch)
+    const hasMatchedPills = matchedCategories.length > 0 || matchedActivities.length > 0
+
     const hasDetails =
         !!primaryContact ||
         (jobCategories && jobCategories.length > 0) ||
@@ -252,6 +256,22 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                     )}
                 </div>
             </div>
+
+            {/* Matched pills — always visible when collapsed */}
+            {hasMatchedPills && !expanded && (
+                <div className={styles.matchedPillsRow}>
+                    {matchedCategories.map((c, i) => (
+                        <span key={i} className={`${styles.tag} ${styles.tagCategoryMatched}`}>
+                            <HighlightText text={c.label} query={searchQuery} />
+                        </span>
+                    ))}
+                    {matchedActivities.map((a, i) => (
+                        <span key={i} className={`${styles.tag} ${styles.tagActivityMatched}`}>
+                            <HighlightText text={a.display} query={searchQuery} />
+                        </span>
+                    ))}
+                </div>
+            )}
 
             {/* Expandable details */}
             {expanded && (

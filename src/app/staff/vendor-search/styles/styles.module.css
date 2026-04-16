@@ -630,6 +630,14 @@
   border-radius: 0;
 }
 
+/* ── Matched pills (default visible, hidden when expanded) ── */
+.matchedPillsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
 /* ── Expandable details wrapper ──────────────────────────── */
 .detailsSection {
   margin-top: var(--spacing-sm);
