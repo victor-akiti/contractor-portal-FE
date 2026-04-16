@@ -588,7 +588,7 @@
 
 /* Activity tags — primary orange tint */
 .tagActivity {
-  background-color: var(--color-primary-light);
+  background-color: transparent; /* var(--color-primary-light) */
   color: var(--color-primary-dark);
   border: 1px solid #f5c6a0;
 }
@@ -603,7 +603,7 @@
 
 /* Category tags — neutral blue-grey */
 .tagCategory {
-  background-color: #e8f0fe;
+  background-color: transparent; /*#e8f0fe;*/
   color: #1a56a4;
   border: 1px solid #c5d8fb;
 }
