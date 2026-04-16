@@ -72,16 +72,16 @@ interface VendorResult {
 
 const CATEGORY_TABS = [
     { label: "All", value: "all" },
-    { label: "Company Name", value: "name" },
-    { label: "Business Activities", value: "activities" },
-    { label: "Job Categories", value: "categories" },
+    { label: "Contractor Name", value: "name" },
+    { label: "AMNI's Categorization", value: "categories" },
+    { label: "Contractor Stated Business Activities", value: "activities" },
 ] as const
 
 const STATUS_OPTIONS = [
     { label: "All Statuses", value: "" },
     { label: "Approved (L3)", value: "approved" },
-    { label: "Pending", value: "pending" },
-    { label: "In Progress", value: "in progress" },
+    { label: "Not yet submitted", value: "in progress" },
+    { label: "Under AMNI Review", value: "pending" },
     { label: "Parked", value: "parked" },
     { label: "Park Requested", value: "park requested" },
 ]
@@ -92,7 +92,7 @@ function stageSort(a: VendorResult, b: VendorResult): number {
     const bIsL3 = b.status?.displayStage === "L3"
     // 1. L3 first
     if (aIsL3 !== bIsL3) return aIsL3 ? -1 : 1
-    // 2. Among non-L3: priority vendors next
+    // 2. Among non-L3: priority contractors next
     if (!aIsL3) {
         const aPri = a.status?.isPriority ?? false
         const bPri = b.status?.isPriority ?? false
@@ -131,39 +131,39 @@ function HighlightText({ text, query }: { text: string; query: string }) {
     )
 }
 
-function MatchedBySection({ matchedOn, searchQuery }: { matchedOn: MatchedOn[]; searchQuery: string }) {
-    // Group by field
-    const grouped: Record<string, MatchedOn[]> = {}
-    for (const m of matchedOn) {
-        if (m.field === "companyName") continue // always visible; don't show in "Matched by"
-        if (!grouped[m.field]) grouped[m.field] = []
-        grouped[m.field].push(m)
-    }
+// function MatchedBySection({ matchedOn, searchQuery }: { matchedOn: MatchedOn[]; searchQuery: string }) {
+//     // Group by field
+//     const grouped: Record<string, MatchedOn[]> = {}
+//     for (const m of matchedOn) {
+//         if (m.field === "companyName") continue // always visible; don't show in "Matched by"
+//         if (!grouped[m.field]) grouped[m.field] = []
+//         grouped[m.field].push(m)
+//     }
 
-    const entries = Object.entries(grouped)
-    if (entries.length === 0) return null
+//     const entries = Object.entries(grouped)
+//     if (entries.length === 0) return null
 
-    return (
-        <div className={styles.matchedBy}>
-            <span className={styles.matchedByLabel}>Matched by:</span>
-            {entries.map(([, items], i) => (
-                <span key={i} className={styles.matchedByGroup}>
-                    {i > 0 && <span className={styles.matchedBySep}> | </span>}
-                    <span className={styles.matchedByField}>{items[0].label}</span>
-                    {" — "}
-                    <span className={styles.matchedByValues}>
-                        {items.map((m, j) => (
-                            <span key={j}>
-                                {j > 0 && " · "}
-                                <HighlightText text={m.value} query={searchQuery} />
-                            </span>
-                        ))}
-                    </span>
-                </span>
-            ))}
-        </div>
-    )
-}
+//     return (
+//         <div className={styles.matchedBy}>
+//             <span className={styles.matchedByLabel}>Matched by:</span>
+//             {entries.map(([, items], i) => (
+//                 <span key={i} className={styles.matchedByGroup}>
+//                     {i > 0 && <span className={styles.matchedBySep}> | </span>}
+//                     <span className={styles.matchedByField}>{items[0].label}</span>
+//                     {" — "}
+//                     <span className={styles.matchedByValues}>
+//                         {items.map((m, j) => (
+//                             <span key={j}>
+//                                 {j > 0 && " · "}
+//                                 <HighlightText text={m.value} query={searchQuery} />
+//                             </span>
+//                         ))}
+//                     </span>
+//                 </span>
+//             ))}
+//         </div>
+//     )
+// }
 
 function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; searchQuery: string; isPinned: boolean }) {
     const { status, primaryContact, activities, jobCategories, hqAddress, matchedOn } = vendor
@@ -172,8 +172,8 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
     const isFullyApproved = isL3 && status?.isApproved
     const location = buildLocationString(hqAddress)
 
-    const hasOnlyNameMatch =
-        matchedOn.length === 1 && matchedOn[0].field === "companyName"
+    // const hasOnlyNameMatch =
+    //     matchedOn.length === 1 && matchedOn[0].field === "companyName"
 
     // Substring match is the sole gate for visual highlighting.
     // matchedOn tells us *why* a result appeared (used only for the
@@ -221,11 +221,11 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                                 Returned
                             </span>
                         )}
-                        {status?.status !== "returned" && status?.displayStage?.toLowerCase() === "pending" && (
+                        {/*{status?.status !== "returned" && status?.approvalLevel >= 0 && (
                             <span className={`${styles.badge} ${styles.badgePending}`}>
-                                Pending
+                                {status.displayStage}
                             </span>
-                        )}
+                        )} */}
                     </div>
                 </div>
 
@@ -289,25 +289,6 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                 </div>
             )}
 
-            {/* Activities */}
-            {activities && activities.length > 0 && (
-                <div className={styles.tagsSection}>
-                    <p className={styles.sectionLabel}>Business Activities</p>
-                    <div className={styles.tagList}>
-                        {activities.map((a, i) => {
-                            const isMatched = activityIsMatch(a)
-                            return (
-                                <span
-                                    key={i}
-                                    className={`${styles.tag} ${isMatched ? styles.tagActivityMatched : styles.tagActivity}`}
-                                >
-                                    <HighlightText text={a.display} query={searchQuery} />
-                                </span>
-                            )
-                        })}
-                    </div>
-                </div>
-            )}
 
             {/* Job Categories */}
             {jobCategories && jobCategories.length > 0 && (
@@ -329,8 +310,28 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                 </div>
             )}
 
+            {/* Activities */}
+            {activities && activities.length > 0 && (
+                <div className={styles.tagsSection}>
+                    <p className={styles.sectionLabel}>Business Activities</p>
+                    <div className={styles.tagList}>
+                        {activities.map((a, i) => {
+                            const isMatched = activityIsMatch(a)
+                            return (
+                                <span
+                                    key={i}
+                                    className={`${styles.tag} ${isMatched ? styles.tagActivityMatched : styles.tagActivity}`}
+                                >
+                                    <HighlightText text={a.display} query={searchQuery} />
+                                </span>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* Matched by — only when there are non-name matches */}
-            {!hasOnlyNameMatch && <MatchedBySection matchedOn={matchedOn} searchQuery={searchQuery} />}
+            {/* {!hasOnlyNameMatch && <MatchedBySection matchedOn={matchedOn} searchQuery={searchQuery} />} */}
 
             {/* Footer action */}
             <div className={styles.cardFooter}>
@@ -344,12 +345,12 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-const LOADING_MESSAGE_DELAYS = [0, 1500, 3500, 6000] // ms from activation
+const LOADING_MESSAGE_DELAYS = [0, 2000, 5000, 8000] // ms from activation
 
 // Maps category values to the scan-phase description used in loading messages.
 const CATEGORY_SCAN_LABEL: Record<string, string> = {
     all: "names, Business Activities, and Job Categories",
-    name: "Company Name",
+    name: "Contractor Name",
     activities: "Business Activities",
     categories: "Job Categories",
 }
@@ -447,19 +448,20 @@ export default function VendorSearchPage() {
         isError && (error as any)?.status === 403
 
     const allResults: VendorResult[] = data?.data?.results ?? []
-    // Parked vendors get their own separate toggle.
-    const parkedResults = allResults.filter((v) => v.status?.status === "parked")
+    // Parked contractors get their own separate toggle.
+    const parkedResults = allResults.filter((v) => v.status?.status === "parked" || v.status?.status === "suspended")
     // Main results: must be submitted into the approval pipeline, not parked, not returned.
     // Using `submitted` as the gate is more reliable than matching status strings —
-    // unsubmitted vendors can have various status.status values but submitted===false.
+    // unsubmitted contractors can have various status.status values but submitted===false.
     const filteredResults = allResults.filter(
         (v) =>
             v.status?.submitted === true &&
             v.status?.status !== "parked" &&
+            v.status?.status !== "suspended" &&
             v.status?.status !== "returned"
     )
-    // Unsubmitted (pending) and returned vendors are grouped together — hidden
-    // from the main list and accessible via the "returned & pending" toggle.
+    // Unsubmitted (pending) and returned contractors are grouped together — hidden
+    // from the main list and accessible via the "partially completed" toggle.
     const returnedResults = allResults
         .filter(
             (v) =>
@@ -516,16 +518,16 @@ export default function VendorSearchPage() {
         <div className={styles.page}>
             {/* Page heading */}
             <header className={styles.pageHeader}>
-                <h2 className={styles.pageTitle}>Vendor Search</h2>
+                <h2 className={styles.pageTitle}>Contractor Search</h2>
                 <p className={styles.pageSubtitle}>
-                    Search the knowledge bank to find vendors and contractors quickly.
+                    Search for contractors quickly by name, amni categorization, or contractor stated activities.
                 </p>
             </header>
 
             {/* Search input */}
             <div className={styles.searchSection}>
                 <label htmlFor="vendorSearchInput" className={styles.searchLabel}>
-                    Search vendors by name, activity, or category
+                    Search contractors by name, categorization, or stated activities
                 </label>
                 <div className={styles.searchInputWrapper}>
                     <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
@@ -630,17 +632,9 @@ export default function VendorSearchPage() {
                     </div>
                 )}
 
-                {/* ── No results ── */}
-                {showNoResults && (
-                    <div className={styles.emptyState}>
-                        <p className={styles.emptyStateText}>
-                            No vendors found matching &ldquo;{debouncedQuery}&rdquo;. Try a different term or category.
-                        </p>
-                    </div>
-                )}
 
                 {/* ── Results ── */}
-                {!isLoading && !isError && !showPlaceholder && results.length > 0 && (
+                {!isLoading && !isError && !showPlaceholder && allResults.length > 0 && (
                     <>
                         <div className={styles.resultsHeader}>
                             <span className={styles.resultCount}>
@@ -664,6 +658,14 @@ export default function VendorSearchPage() {
                             {(hiddenParked > 0 || hiddenReturned > 0) && (
                                 <div className={styles.hiddenIndicator}>
                                     <span className={styles.hiddenLabel}>Not shown:</span>
+                                    {hiddenReturned > 0 && (
+                                        <button
+                                            className={`${styles.hiddenChip} ${showReturned ? styles.hiddenChipActive : ""}`}
+                                            onClick={() => setShowReturned((v) => !v)}
+                                        >
+                                            {showReturned ? "Hide" : "Show"} {hiddenReturned} partially completed
+                                        </button>
+                                    )}
                                     {hiddenParked > 0 && (
                                         <button
                                             className={`${styles.hiddenChip} ${showParked ? styles.hiddenChipActive : ""}`}
@@ -672,35 +674,29 @@ export default function VendorSearchPage() {
                                             {showParked ? "Hide" : "Show"} {hiddenParked} parked
                                         </button>
                                     )}
-                                    {hiddenReturned > 0 && (
-                                        <button
-                                            className={`${styles.hiddenChip} ${showReturned ? styles.hiddenChipActive : ""}`}
-                                            onClick={() => setShowReturned((v) => !v)}
-                                        >
-                                            {showReturned ? "Hide" : "Show"} {hiddenReturned} returned & pending
-                                        </button>
-                                    )}
                                 </div>
                             )}
                         </div>
 
-                        {/* Hidden groups — above main results */}
-                        {showParked && parkedResults.length > 0 && (
+
+                        {showReturned && returnedResults.length > 0 && (
                             <div className={styles.hiddenSection}>
-                                <p className={styles.hiddenSectionLabel}>Parked vendors</p>
+                                <p className={styles.hiddenSectionLabel}>Partially completed contractors</p>
                                 <div className={styles.resultsList}>
-                                    {parkedResults.map((vendor) => (
+                                    {returnedResults.map((vendor) => (
                                         <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} isPinned={false} />
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {showReturned && returnedResults.length > 0 && (
+
+                        {/* Hidden groups — above main results */}
+                        {showParked && parkedResults.length > 0 && (
                             <div className={styles.hiddenSection}>
-                                <p className={styles.hiddenSectionLabel}>Returned & pending vendors</p>
+                                <p className={styles.hiddenSectionLabel}>Parked contractors</p>
                                 <div className={styles.resultsList}>
-                                    {returnedResults.map((vendor) => (
+                                    {parkedResults.map((vendor) => (
                                         <VendorCard key={vendor._id} vendor={vendor} searchQuery={debouncedQuery} isPinned={false} />
                                     ))}
                                 </div>
@@ -769,6 +765,16 @@ export default function VendorSearchPage() {
                             </div>
                         )}
                     </>
+                )}
+
+
+                {/* ── No results ── */}
+                {showNoResults && (
+                    <div className={styles.emptyState}>
+                        <p className={styles.emptyStateText}>
+                            No contractors found matching &ldquo;{debouncedQuery}&rdquo;. Try a different term or category.
+                        </p>
+                    </div>
                 )}
             </div>
         </div>
