@@ -4,19 +4,30 @@ export interface VendorSearchParams {
     q: string;
     category?: "all" | "name" | "activities" | "categories";
     status?: string;
+    jobCategoryFilter?: string;
     page?: number;
     limit?: number;
     userRole: string;
 }
 
+export interface JobCategory {
+    _id: string;
+    category: string;
+    userID: string;
+    userName: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export const vendorSearchSlice = staffApi.injectEndpoints({
     endpoints: (builder) => ({
         vendorSearch: builder.query<any, VendorSearchParams>({
-            query: ({ q, category = "all", status, page = 1, limit = 20 }) => {
+            query: ({ q, category = "all", status, jobCategoryFilter, page = 1, limit = 20 }) => {
                 const params = new URLSearchParams();
                 params.set("q", q);
                 params.set("category", category);
                 if (status) params.set("status", status);
+                if (jobCategoryFilter) params.set("jobCategoryFilter", jobCategoryFilter);
                 params.set("page", String(page));
                 params.set("limit", String(limit));
                 return {
@@ -25,15 +36,19 @@ export const vendorSearchSlice = staffApi.injectEndpoints({
                 };
             },
             providesTags: (r, e, arg) => [
-                { type: "Search", id: `vendor-${arg.q}-${arg.category}-${arg.status}-${arg.page}` },
+                { type: "Search", id: `vendor-${arg.q}-${arg.category}-${arg.status}-${arg.jobCategoryFilter}-${arg.page}` },
             ],
             extraOptions: (arg) => ({ userRole: arg.userRole }),
             keepUnusedDataFor: 300,
+        }),
+        getJobCategories: builder.query<JobCategory[], void>({
+            query: () => ({ url: "job-categories", method: "GET" }),
+            keepUnusedDataFor: 600,
         }),
     }),
     overrideExisting: false,
 });
 
-export const { useVendorSearchQuery, useLazyVendorSearchQuery } = vendorSearchSlice;
+export const { useVendorSearchQuery, useLazyVendorSearchQuery, useGetJobCategoriesQuery } = vendorSearchSlice;
 
 export default vendorSearchSlice;

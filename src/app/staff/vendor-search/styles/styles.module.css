@@ -91,6 +91,21 @@
   animation: spin 0.7s linear infinite;
 }
 
+/* ── Job category pre-filter ─────────────────────────────── */
+.jobCategoryFilter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.jobCategoryLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
 /* ── Controls row (tabs + status filter) ─────────────────── */
 .controls {
   display: flex;

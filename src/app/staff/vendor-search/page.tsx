@@ -1,7 +1,7 @@
 'use client'
 
 import useDebounce from "@/hooks/useDebounce"
-import { useLazyVendorSearchQuery } from "@/redux/features/vendorSearchSlice"
+import { useGetJobCategoriesQuery, useLazyVendorSearchQuery } from "@/redux/features/vendorSearchSlice"
 import { useAppSelector } from "@/redux/hooks"
 import {
     faBuilding,
@@ -430,8 +430,11 @@ export default function VendorSearchPage() {
     const [query, setQuery] = useState("")
     const [category, setCategory] = useState<"all" | "name" | "activities" | "categories">("all")
     const [statusFilter, setStatusFilter] = useState("")
+    const [jobCategoryFilter, setJobCategoryFilter] = useState("")
     const [page, setPage] = useState(1)
     const [limit, setLimit] = useState(20)
+
+    const { data: jobCategoriesData } = useGetJobCategoriesQuery()
 
     const [showParked, setShowParked] = useState(false)
     const [showReturned, setShowReturned] = useState(false)
@@ -495,18 +498,19 @@ export default function VendorSearchPage() {
             q: debouncedQuery,
             category,
             status: statusFilter || undefined,
+            jobCategoryFilter: jobCategoryFilter || undefined,
             page,
             limit,
             userRole: user?.role ?? "",
         }, /* preferCacheValue */ true)
-    }, [debouncedQuery, category, statusFilter, page, limit])
+    }, [debouncedQuery, category, statusFilter, jobCategoryFilter, page, limit])
 
     // Reset page and hidden toggles when search params or page size change
     useEffect(() => {
         setPage(1)
         setShowParked(false)
         setShowReturned(false)
-    }, [debouncedQuery, category, statusFilter, limit])
+    }, [debouncedQuery, category, statusFilter, jobCategoryFilter, limit])
 
     // Determine empty-state type
     const showMinCharsHint = query.length > 0 && query.length < 2
@@ -542,6 +546,27 @@ export default function VendorSearchPage() {
                     />
                     {isFetching && <span className={styles.spinnerInline} />}
                 </div>
+            </div>
+
+            {/* Job category pre-filter */}
+            <div className={styles.jobCategoryFilter}>
+                <label htmlFor="jobCategorySelect" className={styles.jobCategoryLabel}>
+                    Job Category
+                </label>
+                <select
+                    id="jobCategorySelect"
+                    className={styles.statusSelect}
+                    value={jobCategoryFilter}
+                    onChange={(e) => setJobCategoryFilter(e.target.value)}
+                    aria-label="Filter by job category"
+                >
+                    <option value="">All Categories</option>
+                    {(jobCategoriesData ?? []).map((cat) => (
+                        <option key={cat._id} value={cat.category}>
+                            {cat.category}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             {/* Category tabs + status filter */}
