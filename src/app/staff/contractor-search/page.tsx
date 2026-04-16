@@ -207,7 +207,7 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                     <div className={styles.badgeRow}>
                         {isL3 && (
                             <span className={`${styles.badge} ${styles.badgeL3}`}>
-                                {isFullyApproved ? "L3 Approved" : "L3"}
+                                L3  {/*isFullyApproved ? "L3 Approved" : "L3"*/}
                             </span>
                         )}
                         {!isL3 && (
