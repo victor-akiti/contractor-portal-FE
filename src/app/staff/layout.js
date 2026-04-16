@@ -31,7 +31,7 @@ const ADMIN_ROLES = ["Admin", "HOD"]
 const MENU_ITEMS = [
   { href: "/staff/approvals", label: "Registration Approvals" },
   { href: "/staff/invites", label: "Registration Invites" },
-  { href: "/staff/vendor-search", label: "Vendor Search" },
+  { href: "/staff/contractor-search", label: "Contractor Search" },
   { href: "/staff/jobCategories", label: "Job Categories" },
   { href: "/staff/events", label: "Events" },
   { href: "/staff/forms", label: "Forms", adminOnly: true },
