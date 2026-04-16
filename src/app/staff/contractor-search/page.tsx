@@ -5,8 +5,10 @@ import { useLazyVendorSearchQuery } from "@/redux/features/vendorSearchSlice"
 import { useAppSelector } from "@/redux/hooks"
 import {
     faBuilding,
+    faChevronDown,
     faChevronLeft,
     faChevronRight,
+    faChevronUp,
     faEnvelope,
     faGlobe,
     faMapMarkerAlt,
@@ -167,13 +169,12 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; searchQuery: string; isPinned: boolean }) {
     const { status, primaryContact, activities, jobCategories, hqAddress, matchedOn } = vendor
+    const [expanded, setExpanded] = useState(false)
+
     // displayStage === "L3" is the authoritative L3 indicator; isApproved provides additional emphasis
     const isL3 = status?.displayStage === "L3" || status?.isApproved
     const isFullyApproved = isL3 && status?.isApproved
     const location = buildLocationString(hqAddress)
-
-    // const hasOnlyNameMatch =
-    //     matchedOn.length === 1 && matchedOn[0].field === "companyName"
 
     // Substring match is the sole gate for visual highlighting.
     // matchedOn tells us *why* a result appeared (used only for the
@@ -185,6 +186,11 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
         (a.display.toLowerCase().includes(q) || a.value.toLowerCase().includes(q))
     const categoryIsMatch = (c: { label: string }) =>
         q.length >= 2 && c.label.toLowerCase().includes(q)
+
+    const hasDetails =
+        !!primaryContact ||
+        (jobCategories && jobCategories.length > 0) ||
+        (activities && activities.length > 0)
 
     return (
         <div className={`${styles.card} ${isL3 ? styles.cardApproved : ""}`}>
@@ -200,11 +206,6 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                                 {isFullyApproved ? "L3 Approved" : "L3"}
                             </span>
                         )}
-                        {/* {isPinned && (
-                            <span className={`${styles.badge} ${styles.badgePinned}`} title="Shown first due to L3 status — a closer match may appear below">
-                                Pinned
-                            </span>
-                        )} */}
                         {!isL3 && (
                             <span className={`${styles.badge} ${styles.badgeStage}`}>
                                 {status?.displayStage ?? "Unknown"}
@@ -221,11 +222,6 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                                 Returned
                             </span>
                         )}
-                        {/*{status?.status !== "returned" && status?.approvalLevel >= 0 && (
-                            <span className={`${styles.badge} ${styles.badgePending}`}>
-                                {status.displayStage}
-                            </span>
-                        )} */}
                     </div>
                 </div>
 
@@ -248,93 +244,105 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                             target="_blank"
                             rel="noopener noreferrer"
                             className={styles.metaLink}
+                            title={vendor.website}
                         >
                             <FontAwesomeIcon icon={faGlobe} className={styles.metaIcon} />
-                            {vendor.website}
+                            Website
                         </a>
                     )}
                 </div>
             </div>
 
-            {/* Contact */}
-            {primaryContact && (
-                <div className={styles.contactSection}>
-                    <p className={styles.sectionLabel}>Primary Contact</p>
-                    <div className={styles.contactInfo}>
-                        <span className={styles.contactName}>
-                            {[primaryContact.firstName, primaryContact.familyName]
-                                .filter(Boolean)
-                                .join(" ")}
-                            {primaryContact.designation && (
-                                <span className={styles.designation}>
-                                    {" "}— {primaryContact.designation}
+            {/* Expandable details */}
+            {expanded && (
+                <div className={styles.detailsSection}>
+                    {/* Contact */}
+                    {primaryContact && (
+                        <div className={styles.contactSection}>
+                            <p className={styles.sectionLabel}>Primary Contact</p>
+                            <div className={styles.contactInfo}>
+                                <span className={styles.contactName}>
+                                    {[primaryContact.firstName, primaryContact.familyName]
+                                        .filter(Boolean)
+                                        .join(" ")}
+                                    {primaryContact.designation && (
+                                        <span className={styles.designation}>
+                                            {" "}— {primaryContact.designation}
+                                        </span>
+                                    )}
                                 </span>
-                            )}
-                        </span>
-                        <div className={styles.contactDetails}>
-                            {primaryContact.email && (
-                                <a href={`mailto:${primaryContact.email}`} className={styles.contactLink}>
-                                    <FontAwesomeIcon icon={faEnvelope} className={styles.metaIcon} />
-                                    {primaryContact.email}
-                                </a>
-                            )}
-                            {primaryContact.phone && (
-                                <a href={`tel:${primaryContact.phone}`} className={styles.contactLink}>
-                                    <FontAwesomeIcon icon={faPhone} className={styles.metaIcon} />
-                                    {primaryContact.phone}
-                                </a>
-                            )}
+                                <div className={styles.contactDetails}>
+                                    {primaryContact.email && (
+                                        <a href={`mailto:${primaryContact.email}`} className={styles.contactLink}>
+                                            <FontAwesomeIcon icon={faEnvelope} className={styles.metaIcon} />
+                                            {primaryContact.email}
+                                        </a>
+                                    )}
+                                    {primaryContact.phone && (
+                                        <a href={`tel:${primaryContact.phone}`} className={styles.contactLink}>
+                                            <FontAwesomeIcon icon={faPhone} className={styles.metaIcon} />
+                                            {primaryContact.phone}
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Job Categories */}
+                    {jobCategories && jobCategories.length > 0 && (
+                        <div className={styles.tagsSection}>
+                            <p className={styles.sectionLabel}>Job Categories</p>
+                            <div className={styles.tagList}>
+                                {jobCategories.map((c, i) => {
+                                    const isMatched = categoryIsMatch(c)
+                                    return (
+                                        <span
+                                            key={i}
+                                            className={`${styles.tag} ${isMatched ? styles.tagCategoryMatched : styles.tagCategory}`}
+                                        >
+                                            <HighlightText text={c.label} query={searchQuery} />
+                                        </span>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Activities */}
+                    {activities && activities.length > 0 && (
+                        <div className={styles.tagsSection}>
+                            <p className={styles.sectionLabel}>Business Activities</p>
+                            <div className={styles.tagList}>
+                                {activities.map((a, i) => {
+                                    const isMatched = activityIsMatch(a)
+                                    return (
+                                        <span
+                                            key={i}
+                                            className={`${styles.tag} ${isMatched ? styles.tagActivityMatched : styles.tagActivity}`}
+                                        >
+                                            <HighlightText text={a.display} query={searchQuery} />
+                                        </span>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
-
-            {/* Job Categories */}
-            {jobCategories && jobCategories.length > 0 && (
-                <div className={styles.tagsSection}>
-                    <p className={styles.sectionLabel}>Job Categories</p>
-                    <div className={styles.tagList}>
-                        {jobCategories.map((c, i) => {
-                            const isMatched = categoryIsMatch(c)
-                            return (
-                                <span
-                                    key={i}
-                                    className={`${styles.tag} ${isMatched ? styles.tagCategoryMatched : styles.tagCategory}`}
-                                >
-                                    <HighlightText text={c.label} query={searchQuery} />
-                                </span>
-                            )
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {/* Activities */}
-            {activities && activities.length > 0 && (
-                <div className={styles.tagsSection}>
-                    <p className={styles.sectionLabel}>Business Activities</p>
-                    <div className={styles.tagList}>
-                        {activities.map((a, i) => {
-                            const isMatched = activityIsMatch(a)
-                            return (
-                                <span
-                                    key={i}
-                                    className={`${styles.tag} ${isMatched ? styles.tagActivityMatched : styles.tagActivity}`}
-                                >
-                                    <HighlightText text={a.display} query={searchQuery} />
-                                </span>
-                            )
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {/* Matched by — only when there are non-name matches */}
-            {/* {!hasOnlyNameMatch && <MatchedBySection matchedOn={matchedOn} searchQuery={searchQuery} />} */}
-
-            {/* Footer action */}
+            {/* Footer */}
             <div className={styles.cardFooter}>
+                {hasDetails && (
+                    <button
+                        className={styles.detailsToggle}
+                        onClick={() => setExpanded((v) => !v)}
+                        aria-expanded={expanded}
+                    >
+                        <FontAwesomeIcon icon={expanded ? faChevronUp : faChevronDown} className={styles.toggleIcon} />
+                        {expanded ? "Hide details" : "Show details"}
+                    </button>
+                )}
                 <Link href={`/staff/vendor/${vendor._id}`} className={styles.viewLink}>
                     View vendor
                 </Link>
