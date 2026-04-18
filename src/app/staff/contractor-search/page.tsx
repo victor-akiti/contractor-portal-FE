@@ -620,6 +620,28 @@ export default function VendorSearchPage() {
                 </p>
             </header>
 
+
+            {/* Job category pre-filter */}
+            {/* <div className={styles.jobCategoryFilter}>
+                <label htmlFor="jobCategorySelect" className={styles.jobCategoryLabel}>
+                    Job Category
+                </label>
+                <select
+                    id="jobCategorySelect"
+                    className={styles.statusSelect}
+                    value={jobCategoryFilter}
+                    onChange={(e) => setJobCategoryFilter(e.target.value)}
+                    aria-label="Filter by job category"
+                >
+                    <option value="">All Categories</option>
+                    {(jobCategoriesData ?? []).map((cat) => (
+                        <option key={cat._id} value={cat.category}>
+                            {cat.category}
+                        </option>
+                    ))}
+                </select>
+            </div> */}
+
             {/* Search input */}
             <div className={styles.searchSection}>
                 <label htmlFor="vendorSearchInput" className={styles.searchLabel}>
@@ -638,27 +660,6 @@ export default function VendorSearchPage() {
                     />
                     {isFetching && <span className={styles.spinnerInline} />}
                 </div>
-            </div>
-
-            {/* Job category pre-filter */}
-            <div className={styles.jobCategoryFilter}>
-                <label htmlFor="jobCategorySelect" className={styles.jobCategoryLabel}>
-                    Job Category
-                </label>
-                <select
-                    id="jobCategorySelect"
-                    className={styles.statusSelect}
-                    value={jobCategoryFilter}
-                    onChange={(e) => setJobCategoryFilter(e.target.value)}
-                    aria-label="Filter by job category"
-                >
-                    <option value="">All Categories</option>
-                    {(jobCategoriesData ?? []).map((cat) => (
-                        <option key={cat._id} value={cat.category}>
-                            {cat.category}
-                        </option>
-                    ))}
-                </select>
             </div>
 
             {/* Category tabs + status filter */}

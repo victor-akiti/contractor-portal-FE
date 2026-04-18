@@ -42,8 +42,9 @@ export const vendorSearchSlice = staffApi.injectEndpoints({
             keepUnusedDataFor: 300,
         }),
         getJobCategories: builder.query<JobCategory[], void>({
-            query: () => ({ url: "job-categories", method: "GET" }),
+            query: () => ({ url: "jobCategories", method: "GET" }),
             keepUnusedDataFor: 600,
+            transformResponse: (response: { data: JobCategory[] }) => response.data,
         }),
     }),
     overrideExisting: false,
