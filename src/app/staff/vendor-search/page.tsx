@@ -167,9 +167,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; searchQuery: string; isPinned: boolean }) {
     const { status, primaryContact, activities, jobCategories, hqAddress, matchedOn } = vendor
-    // displayStage === "L3" is the authoritative L3 indicator; isApproved provides additional emphasis
     const isL3 = status?.displayStage === "L3" || status?.isApproved
-    const isFullyApproved = isL3 && status?.isApproved
     const location = buildLocationString(hqAddress)
 
     // const hasOnlyNameMatch =
@@ -197,7 +195,7 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                     <div className={styles.badgeRow}>
                         {isL3 && (
                             <span className={`${styles.badge} ${styles.badgeL3}`}>
-                                {isFullyApproved ? "L3 Approved" : "L3"}
+                                L3
                             </span>
                         )}
                         {/* {isPinned && (
