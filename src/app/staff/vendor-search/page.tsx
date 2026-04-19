@@ -209,7 +209,7 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                     <div className={styles.badgeRow}>
                         {isL3 && (
                             <span className={`${styles.badge} ${styles.badgeL3}`}>
-                                {isFullyApproved ? "L3 Approved" : "L3"}
+                                {"L3"}
                             </span>
                         )}
                         {!isL3 && (
@@ -574,7 +574,7 @@ export default function VendorSearchPage() {
             { label: "Company Name", value: "companyName" },
             { label: "Company UID", value: "companyUID" },
             { label: "Stage", value: "stage" },
-            { label: "L3 Approved", value: "l3Approved" },
+            { label: "L3", value: "l3Approved" },
             { label: "Priority", value: "priority" },
             { label: "Submitted", value: "submitted" },
             { label: "Registration Type", value: "registrationType" },
