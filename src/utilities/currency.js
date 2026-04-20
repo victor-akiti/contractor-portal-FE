@@ -4,6 +4,7 @@ export const formatNumberAsCurrency = (number, currencyType = "Naira (NGN)") => 
     const currencyMap = {
         "Naira (NGN)": { code: 'NGN', locale: 'en-NG' },
         "Dollar (USD)": { code: 'USD', locale: 'en-US' },
+        "US Dollars": { code: 'USD', locale: 'en-US' },
         "Pounds (GBP)": { code: 'GBP', locale: 'en-GB' },
         "Euro (EUR)": { code: 'EUR', locale: 'en-EU' }
     };

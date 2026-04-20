@@ -223,7 +223,8 @@ const ViewVendorPage = () => {
                                     (() => {
                                         // Find the currency field in the same section
 
-                                        const currencyField = section.fields.find((f) => f.label === "Currency");
+                                        const currencyField = section.fields.find((f) => f.label?.toLowerCase() === "currency");
+                                        console.log({ selectedCurrency: currencyField?.value, see: section.title })
                                         const selectedCurrency = currencyField?.value || "Naira (NGN)";
 
                                         return <p>{formatNumberAsCurrency(field.value, selectedCurrency)}</p>;
