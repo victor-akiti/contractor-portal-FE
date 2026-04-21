@@ -27,6 +27,7 @@ import styles from "./styles/styles.module.css"
 // CONSTANTS
 // -----------------------------------
 const ADMIN_ROLES = ["Admin", "HOD"]
+const ERROR_TRACKER_ROLES = ["Admin", "IT Admin"]
 
 const MENU_ITEMS = [
   { href: "/staff/approvals", label: "Registration Approvals" },
@@ -36,6 +37,7 @@ const MENU_ITEMS = [
   { href: "/staff/events", label: "Events" },
   { href: "/staff/forms", label: "Forms", adminOnly: true },
   { href: "/staff/userManagement", label: "Roles & User Management", adminOnly: true },
+  { href: "/staff/error-tracker", label: "Error Tracker", requiredRoles: ERROR_TRACKER_ROLES },
   { href: "/staff/settings", label: "Account Settings" },
 ]
 
@@ -77,8 +79,12 @@ const Layout = ({ children }) => {
   }, [user?.role])
 
   const filteredMenuItems = useMemo(() => {
-    return MENU_ITEMS.filter(item => !item.adminOnly || hasAdminPermissions)
-  }, [hasAdminPermissions])
+    return MENU_ITEMS.filter(item => {
+      if (item.adminOnly) return hasAdminPermissions
+      if (item.requiredRoles) return item.requiredRoles.includes(user?.role)
+      return true
+    })
+  }, [hasAdminPermissions, user?.role])
 
   const isActiveMenu = useCallback((menuLink) => {
     return menuLink === pathname
