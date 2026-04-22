@@ -631,32 +631,32 @@
 
 /* Activity tags — primary orange tint */
 .tagActivity {
-  background-color: transparent; /* var(--color-primary-light) */
-  color: var(--color-primary-dark);
-  border: 1px solid #f5c6a0;
-}
-
-/* Activity tag — this specific one matched the query */
-.tagActivityMatched {
-  background-color: var(--color-primary);
-  color: #fff;
-  border: 1px solid var(--color-primary-dark);
-  box-shadow: 0 0 0 2px rgba(230, 117, 9, 0.25);
-}
-
-/* Category tags — neutral blue-grey */
-.tagCategory {
   background-color: transparent; /*#e8f0fe;*/
   color: #1a56a4;
   border: 1px solid #c5d8fb;
 }
 
-/* Category tag — this specific one matched the query */
-.tagCategoryMatched {
+/* Activity tag — this specific one matched the query */
+.tagActivityMatched {
   background-color: #1a56a4;
   color: #fff;
   border: 1px solid #1244a0;
   box-shadow: 0 0 0 2px rgba(26, 86, 164, 0.25);
+}
+
+/* Category tags — neutral blue-grey */
+.tagCategory {
+  background-color: transparent; /* var(--color-primary-light) */
+  color: var(--color-primary-dark);
+  border: 1px solid #f5c6a0;
+}
+
+/* Category tag — this specific one matched the query */
+.tagCategoryMatched {
+  background-color: var(--color-primary);
+  color: #fff;
+  border: 1px solid var(--color-primary-dark);
+  box-shadow: 0 0 0 2px rgba(230, 117, 9, 0.25);
 }
 
 /* ── Inline text highlight (company name / pill text) ────── */
