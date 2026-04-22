@@ -8,20 +8,20 @@ import { useSelector } from "react-redux";
 import RegistrationFormBody from "./RegistrationFormBody";
 
 type RegistrationForm = {
-    _id?: String,
-    vendorID?: String,
+    _id?: string,
+    vendorID?: string,
     files?: Array<any>,
     form?: {
         pages?: [{
-            pageTitle?: String,
+            pageTitle?: string,
             sections?: [
                 {
-                    layout?: String,
-                    title?: String,
-                    description?: String,
-                    allowMultiple?: Boolean,
-                    addSectionText?: String,
-                    isDuplicate?: Boolean,
+                    layout?: string,
+                    title?: string,
+                    description?: string,
+                    allowMultiple?: boolean,
+                    addSectionText?: string,
+                    isDuplicate?: boolean,
                     fields?: [
                         {
                             value?: any,
@@ -40,9 +40,9 @@ type RegistrationForm = {
                             option?: any,
                             text?: any,
                             maxLength?: any,
-                            allowMultiple?: Boolean,
-                            addFieldText?: String,
-                            isDuplicate?: Boolean
+                            allowMultiple?: boolean,
+                            addFieldText?: string,
+                            isDuplicate?: boolean
                         }
                     ]
                 }
@@ -83,7 +83,7 @@ const NewCompanyRegistration = () => {
     const location = useParams()
     const [submitting, setSubmitting] = useState(false)
     const [savingForm, setSavingForm] = useState(false)
-    const [vendorID, setVendorID] = useState<String>("")
+    const [vendorID, setVendorID] = useState<string>("")
     const user = useSelector((state: any) => state.user.user)
 
 
@@ -124,7 +124,7 @@ const NewCompanyRegistration = () => {
                 })
                 setTabs(tempTabs)
 
-                let tempActivePage = { ...activePage }
+                const tempActivePage = { ...activePage }
                 tempActivePage.index = 0
                 tempActivePage.label = getRegistrationFormRequest.data.form.pages[0].pageTitle
                 setActivePage(tempActivePage)
@@ -139,7 +139,7 @@ const NewCompanyRegistration = () => {
         }
     }
 
-    const getVendorForm = async (vendorId: String) => {
+    const getVendorForm = async (vendorId: string) => {
         try {
 
             setVendorID(vendorId)
@@ -147,8 +147,8 @@ const NewCompanyRegistration = () => {
             const getVendorRegistrationFormRequest = await getProtected(`companies/register/form/${vendorId}`, user.role)
 
             if (getVendorRegistrationFormRequest.status === "OK") {
-                let generalRegistrationForm = getVendorRegistrationFormRequest.data.generalRegistrationForm
-                let vendorRegistrationForm = getVendorRegistrationFormRequest.data.vendorRegistrationForm
+                const generalRegistrationForm = getVendorRegistrationFormRequest.data.generalRegistrationForm
+                const vendorRegistrationForm = getVendorRegistrationFormRequest.data.vendorRegistrationForm
 
                 let tempRegistrationForm = { ...registrationForm }
                 tempRegistrationForm = generalRegistrationForm
@@ -168,7 +168,7 @@ const NewCompanyRegistration = () => {
                 })
                 setTabs(tempTabs)
 
-                let tempActivePage = { ...activePage }
+                const tempActivePage = { ...activePage }
                 tempActivePage.index = 0
                 tempActivePage.label = generalRegistrationForm.form.pages[0].pageTitle
                 setActivePage(tempActivePage)
@@ -184,7 +184,7 @@ const NewCompanyRegistration = () => {
     }
 
     const setFieldToUploadFor = (pageIndex, sectionIndex, fieldIndex, maxFiles) => {
-        let tempFieldToUploadFor = { ...currentFieldToUploadFor }
+        const tempFieldToUploadFor = { ...currentFieldToUploadFor }
         tempFieldToUploadFor.pageIndex = pageIndex
         tempFieldToUploadFor.sectionIndex = sectionIndex
         tempFieldToUploadFor.fieldIndex = fieldIndex
@@ -201,7 +201,7 @@ const NewCompanyRegistration = () => {
     const updateField = (pageIndex, sectionIndex, fieldIndex, valueField, value) => {
 
 
-        let tempRegistrationForm = { ...registrationForm }
+        const tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex][valueField] = value
         setRegistrationForm(tempRegistrationForm)
 
@@ -471,7 +471,7 @@ const NewCompanyRegistration = () => {
     const setFieldError = (pageIndex, sectionIndex, fieldIndex, errorText) => {
 
 
-        let tempRegistrationForm = { ...registrationForm }
+        const tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]["errorText"] = errorText
 
 
@@ -481,7 +481,7 @@ const NewCompanyRegistration = () => {
 
     const setFieldValid = (pageIndex, sectionIndex, fieldIndex) => {
 
-        let tempRegistrationForm = { ...registrationForm }
+        const tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex]["errorText"] = ""
 
 
@@ -501,7 +501,7 @@ const NewCompanyRegistration = () => {
 
 
     const removeFileFromFileList = (pageIndex, sectionIndex, fieldIndex, fileID) => {
-        let tempRegistrationForm = { ...registrationForm }
+        const tempRegistrationForm = { ...registrationForm }
 
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].value = tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex].fields[fieldIndex].value.filter(item => item._id !== fileID)
 
@@ -519,9 +519,9 @@ const NewCompanyRegistration = () => {
 
 
     const addFieldToSection = (field, pageIndex, sectionIndex, index) => {
-        let tempNewForm = { ...registrationForm }
+        const tempNewForm = { ...registrationForm }
 
-        let newField = { ...field }
+        const newField = { ...field }
 
 
 
@@ -544,7 +544,7 @@ const NewCompanyRegistration = () => {
     const updateSection = (pageIndex, sectionIndex, valueField, value) => {
 
 
-        let tempRegistrationForm = { ...registrationForm }
+        const tempRegistrationForm = { ...registrationForm }
         tempRegistrationForm.form.pages[pageIndex].sections[sectionIndex][valueField] = value
         setRegistrationForm(tempRegistrationForm)
 
@@ -595,7 +595,7 @@ const NewCompanyRegistration = () => {
     // }
 
     const addSectionToPage = (section, pageIndex, sectionIndex) => {
-        let tempNewForm = { ...registrationForm }
+        const tempNewForm = { ...registrationForm }
 
         let createdSection = {}
 
@@ -606,7 +606,7 @@ const NewCompanyRegistration = () => {
         }
 
         // Create a deep copy of the entire section to avoid reference sharing
-        let newSection = JSON.parse(JSON.stringify(createdSection))
+        const newSection = JSON.parse(JSON.stringify(createdSection))
 
         // Reset all field values to ensure independence
         newSection.fields = newSection.fields.map(field => {
@@ -645,7 +645,7 @@ const NewCompanyRegistration = () => {
     }
 
     const removeFieldFromSection = (field, pageIndex, sectionIndex, index) => {
-        let tempNewForm = { ...registrationForm }
+        const tempNewForm = { ...registrationForm }
 
 
 
@@ -661,7 +661,7 @@ const NewCompanyRegistration = () => {
     }
 
     const removeSectionFromPage = (field, pageIndex, sectionIndex) => {
-        let tempNewForm = { ...registrationForm }
+        const tempNewForm = { ...registrationForm }
 
 
 
