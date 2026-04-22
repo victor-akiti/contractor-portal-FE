@@ -9,7 +9,7 @@ import type { PerformanceData, Period } from '../types';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 
-const PERIODS: Period[] = ['7d', '30d', '60d', '90d'];
+const PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y'];
 
 function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
   if (days == null) return <span style={{ color: '#9ca3af' }}>—</span>;

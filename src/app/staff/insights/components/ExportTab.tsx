@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { downloadExport } from '../api';
 
-type VendorStatus = 'all' | 'approved' | 'pending';
+type VendorStatus = 'all' | 'approved' | 'in-progress';
 
 export default function ExportTab() {
-  const [vendorStatus, setVendorStatus]         = useState<VendorStatus>('all');
+  const [vendorStatus, setVendorStatus] = useState<VendorStatus>('all');
   const [downloadingVendor, setDownloadingVendor]   = useState(false);
   const [downloadingApproval, setDownloadingApproval] = useState(false);
   const [vendorError, setVendorError]           = useState<string | null>(null);
@@ -64,7 +64,7 @@ export default function ExportTab() {
           >
             <option value="all">All Vendors</option>
             <option value="approved">Approved Only</option>
-            <option value="pending">Pending Only</option>
+            <option value="in-progress">In Progress Only</option>
           </select>
         </div>
 

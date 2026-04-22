@@ -74,6 +74,7 @@ export default function OverviewTab() {
   // ── pipeline bar chart data ───────────────────────────────────────────────
   const stageBarData = summary
     ? [
+        { name: 'In Progress', value: summary.pipeline.stageCounts.inProgress },
         { name: 'Stage A', value: summary.pipeline.stageCounts.stageA },
         { name: 'Stage B', value: summary.pipeline.stageCounts.stageB },
         { name: 'Stage C', value: summary.pipeline.stageCounts.stageC },

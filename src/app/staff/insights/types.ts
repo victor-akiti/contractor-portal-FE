@@ -1,6 +1,6 @@
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 export interface StageCounts {
-  pending: number;
+  inProgress: number;
   stageA: number;
   stageB: number;
   stageC: number;
@@ -150,7 +150,7 @@ export interface ExecSummaryData {
     avgCycleDays: number | null;
     returned: number;
     parked: number;
-    pending: number;
+    inProgress: number;
   };
   pipeline: {
     stageCounts: StageCounts;
@@ -188,5 +188,5 @@ export interface NarrativeData {
 }
 
 // ── Shared ────────────────────────────────────────────────────────────────────
-export type Period = '7d' | '14d' | '30d' | '60d' | '90d';
+export type Period = '7d' | '14d' | '30d' | '60d' | '90d' | '180d' | '1y';
 export type SortDir = 'asc' | 'desc';

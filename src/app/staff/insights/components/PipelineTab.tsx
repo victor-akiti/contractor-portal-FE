@@ -41,6 +41,7 @@ export default function PipelineTab() {
 
   const stageCounts = data
     ? [
+        { name: 'In Progress', value: data.stageCounts.inProgress },
         { name: 'Stage A', value: data.stageCounts.stageA },
         { name: 'Stage B', value: data.stageCounts.stageB },
         { name: 'Stage C', value: data.stageCounts.stageC },
@@ -67,8 +68,9 @@ export default function PipelineTab() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
       {/* ── Stage count cards ── */}
-      {loading ? <CardsSkeleton count={9} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
+      {loading ? <CardsSkeleton count={10} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.75rem' }}>
+          <StatCard label="In Progress" value={data.stageCounts.inProgress} color="default" />
           <StatCard label="Stage A"  value={data.stageCounts.stageA}  color="default" />
           <StatCard label="Stage B"  value={data.stageCounts.stageB}  color="blue" />
           <StatCard label="Stage C"  value={data.stageCounts.stageC}  color="green" />
