@@ -26,7 +26,9 @@ type ErrorLog = {
   errorMessage: string
   stack?: string
   userId?: string
+  userName?: string
   userEmail?: string
+  companyName?: string
   ip?: string
   userAgent?: string
   requestBody?: Record<string, any>
@@ -40,6 +42,9 @@ type Filters = {
   statusFilter: string
   method: string
   path: string
+  userEmail: string
+  userName: string
+  companyName: string
   page: number
 }
 
@@ -120,6 +125,9 @@ const ErrorTrackerPage = () => {
   const [statusFilter, setStatusFilter] = useState("")
   const [methodFilter, setMethodFilter] = useState("")
   const [pathFilter, setPathFilter] = useState("")
+  const [userEmailFilter, setUserEmailFilter] = useState("")
+  const [userNameFilter, setUserNameFilter] = useState("")
+  const [companyNameFilter, setCompanyNameFilter] = useState("")
   const [filterError, setFilterError] = useState("")
 
   // Applied/active query filters
@@ -129,6 +137,9 @@ const ErrorTrackerPage = () => {
     statusFilter: "",
     method: "",
     path: "",
+    userEmail: "",
+    userName: "",
+    companyName: "",
     page: 1,
   })
 
@@ -141,6 +152,11 @@ const ErrorTrackerPage = () => {
   const [countdown, setCountdown] = useState(AUTO_REFRESH_SECS)
   const [accessDenied, setAccessDenied] = useState(false)
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null)
+  const [mutedPaths, setMutedPaths] = useState<string[]>(() => {
+    if (typeof window === "undefined") return []
+    try { return JSON.parse(localStorage.getItem("errorTracker_mutedPaths") ?? "[]") }
+    catch { return [] }
+  })
 
   // ─── Role guard ───────────────────────────────────────────────────────────
 
@@ -187,6 +203,9 @@ const ErrorTrackerPage = () => {
             statusFilter: f.statusFilter,
             method: f.method,
             path: f.path,
+            userEmail: f.userEmail,
+            userName: f.userName,
+            companyName: f.companyName,
             page: f.page,
             limit: 25,
           }),
@@ -272,7 +291,7 @@ const ErrorTrackerPage = () => {
       setFilterError("Date range cannot exceed 30 days.")
       return
     }
-    setFilters({ from: fromDate, to: toDate, statusFilter, method: methodFilter, path: pathFilter, page: 1 })
+    setFilters({ from: fromDate, to: toDate, statusFilter, method: methodFilter, path: pathFilter, userEmail: userEmailFilter, userName: userNameFilter, companyName: companyNameFilter, page: 1 })
   }
 
   const handleReset = () => {
@@ -281,8 +300,11 @@ const ErrorTrackerPage = () => {
     setStatusFilter("")
     setMethodFilter("")
     setPathFilter("")
+    setUserEmailFilter("")
+    setUserNameFilter("")
+    setCompanyNameFilter("")
     setFilterError("")
-    setFilters({ from: defaultFrom, to: defaultTo, statusFilter: "", method: "", path: "", page: 1 })
+    setFilters({ from: defaultFrom, to: defaultTo, statusFilter: "", method: "", path: "", userEmail: "", userName: "", companyName: "", page: 1 })
   }
 
   const handlePageChange = (p: number) => {
@@ -298,6 +320,14 @@ const ErrorTrackerPage = () => {
     await copyToClipboard(text)
     setCopiedBlock(blockId)
     setTimeout(() => setCopiedBlock(null), 2000)
+  }
+
+  const toggleMutePath = (path: string) => {
+    setMutedPaths((prev) => {
+      const next = prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]
+      localStorage.setItem("errorTracker_mutedPaths", JSON.stringify(next))
+      return next
+    })
   }
 
   // ─── Render helpers ───────────────────────────────────────────────────────
@@ -362,7 +392,7 @@ const ErrorTrackerPage = () => {
           </select>
         </div>
         <div className={`${styles.filterGroup} ${styles.filterSearch}`}>
-          <label>Search</label>
+          <label>Path / Message</label>
           <input
             type="text"
             placeholder="Path or error message..."
@@ -374,6 +404,38 @@ const ErrorTrackerPage = () => {
         <div className={styles.filterActions}>
           <button className={styles.applyBtn} onClick={handleApply}>Apply</button>
           <button className={styles.resetBtn} onClick={handleReset}>Reset</button>
+        </div>
+      </div>
+      <div className={styles.filtersRowSecondary}>
+        <div className={`${styles.filterGroup} ${styles.filterSearch}`}>
+          <label>Company Name</label>
+          <input
+            type="text"
+            placeholder="Filter by company..."
+            value={companyNameFilter}
+            onChange={(e) => setCompanyNameFilter(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleApply()}
+          />
+        </div>
+        <div className={`${styles.filterGroup} ${styles.filterSearch}`}>
+          <label>User Email</label>
+          <input
+            type="text"
+            placeholder="Filter by email..."
+            value={userEmailFilter}
+            onChange={(e) => setUserEmailFilter(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleApply()}
+          />
+        </div>
+        <div className={`${styles.filterGroup} ${styles.filterSearch}`}>
+          <label>User Name</label>
+          <input
+            type="text"
+            placeholder="Filter by user name..."
+            value={userNameFilter}
+            onChange={(e) => setUserNameFilter(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleApply()}
+          />
         </div>
       </div>
       {filterError && <p className={styles.filterError}>{filterError}</p>}
@@ -426,7 +488,7 @@ const ErrorTrackerPage = () => {
     <div className={styles.skeletonWrapper}>
       {[...Array(7)].map((_, i) => (
         <div key={i} className={styles.skeletonRow}>
-          {[...Array(6)].map((__, j) => (
+          {[...Array(7)].map((__, j) => (
             <div key={j} className={styles.skeletonCell} />
           ))}
         </div>
@@ -434,47 +496,77 @@ const ErrorTrackerPage = () => {
     </div>
   )
 
-  const renderTable = () => (
-    <div className={styles.section}>
-      <h3 className={styles.sectionTitle}>Error Log</h3>
-      <div className={styles.tableWrapper}>
-        {loading ? (
-          renderSkeleton()
-        ) : errors.length === 0 ? (
-          <div className={styles.emptyState}>No errors in this period ✓</div>
-        ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Method</th>
-                <th>Path</th>
-                <th>Status</th>
-                <th>Message</th>
-                <th>Response Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {errors.map((err) => (
-                <tr key={err._id} onClick={() => handleRowClick(err)} className={styles.tableRow}>
-                  <td className={styles.timestampCell}>{formatTimestamp(err.timestamp)}</td>
-                  <td>{renderMethodBadge(err.method)}</td>
-                  <td className={styles.pathCell} title={err.path}>{truncate(err.path, 50)}</td>
-                  <td>{renderStatusBadge(err.statusCode)}</td>
-                  <td className={styles.msgCell} title={err.errorMessage}>
-                    {truncate(err.errorMessage, 90)}
-                  </td>
-                  <td className={styles.rtCell}>
-                    {err.responseTimeMs != null ? `${err.responseTimeMs}ms` : "—"}
-                  </td>
+  const renderTable = () => {
+    const visibleErrors = errors.filter((e) => !mutedPaths.includes(e.path))
+    const mutedCount = errors.length - visibleErrors.length
+
+    return (
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>
+          Error Log
+          {mutedCount > 0 && (
+            <span className={styles.mutedBadge}>{mutedCount} hidden</span>
+          )}
+        </h3>
+        <div className={styles.tableWrapper}>
+          {loading ? (
+            renderSkeleton()
+          ) : visibleErrors.length === 0 ? (
+            <div className={styles.emptyState}>
+              {errors.length === 0 ? "No errors in this period ✓" : "All errors in this period are hidden"}
+            </div>
+          ) : (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Method</th>
+                  <th>Path</th>
+                  <th>Status</th>
+                  <th>User</th>
+                  <th>Message</th>
+                  <th></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {visibleErrors.map((err) => (
+                  <tr key={err._id} onClick={() => handleRowClick(err)} className={styles.tableRow}>
+                    <td className={styles.timestampCell}>{formatTimestamp(err.timestamp)}</td>
+                    <td>{renderMethodBadge(err.method)}</td>
+                    <td className={styles.pathCell} title={err.path}>{truncate(err.path, 50)}</td>
+                    <td>{renderStatusBadge(err.statusCode)}</td>
+                    <td className={styles.userCell}>
+                      {err.userEmail ? (
+                        <span title={[err.userName, err.companyName].filter(Boolean).join(" · ")}>
+                          {truncate(err.userEmail, 26)}
+                        </span>
+                      ) : err.userName ? (
+                        <span>{truncate(err.userName, 26)}</span>
+                      ) : "—"}
+                      {err.companyName && (
+                        <span className={styles.companyLabel}>{truncate(err.companyName, 22)}</span>
+                      )}
+                    </td>
+                    <td className={styles.msgCell} title={err.errorMessage}>
+                      {truncate(err.errorMessage, 80)}
+                    </td>
+                    <td
+                      className={styles.actionCell}
+                      onClick={(e) => { e.stopPropagation(); toggleMutePath(err.path) }}
+                    >
+                      <button className={styles.muteRowBtn} title={`Hide all errors from ${err.path}`}>
+                        Hide
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderPagination = () => {
     if (!loading && pagination.total === 0) return null
@@ -579,6 +671,14 @@ const ErrorTrackerPage = () => {
                 <span className={styles.detailValue}>{err.userEmail ?? "—"}</span>
               </div>
               <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>User Name</span>
+                <span className={styles.detailValue}>{err.userName ?? "—"}</span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailLabel}>Company</span>
+                <span className={styles.detailValue}>{err.companyName ?? "—"}</span>
+              </div>
+              <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>User ID</span>
                 <span className={`${styles.detailValue} ${styles.detailMono}`}>{err.userId ?? "—"}</span>
               </div>
@@ -608,6 +708,31 @@ const ErrorTrackerPage = () => {
               `body-${err._id}`
             )}
           </div>
+          <div className={styles.modalFooter}>
+            <button
+              className={mutedPaths.includes(err.path) ? styles.unmuteBtn : styles.muteModalBtn}
+              onClick={() => { toggleMutePath(err.path); setSelectedError(null) }}
+            >
+              {mutedPaths.includes(err.path) ? "Unhide This Endpoint" : "Hide This Endpoint"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const renderMutedPaths = () => {
+    if (mutedPaths.length === 0) return null
+    return (
+      <div className={styles.mutedPanel}>
+        <span className={styles.mutedPanelLabel}>Hidden Endpoints ({mutedPaths.length})</span>
+        <div className={styles.mutedPathTags}>
+          {mutedPaths.map((p) => (
+            <span key={p} className={styles.mutedPathTag}>
+              <span className={styles.mutedPathText}>{p}</span>
+              <button className={styles.mutedPathRemove} onClick={() => toggleMutePath(p)} title="Unhide">×</button>
+            </span>
+          ))}
         </div>
       </div>
     )
@@ -656,6 +781,7 @@ const ErrorTrackerPage = () => {
 
       {renderStatCards()}
       {renderFiltersBar()}
+      {renderMutedPaths()}
       {!loading && renderTopPaths()}
       {renderTable()}
       {!loading && renderPagination()}
