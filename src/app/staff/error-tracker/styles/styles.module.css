@@ -147,11 +147,21 @@
 
 .filterSearch {
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
 }
 
 .filterSearch input {
   width: 100%;
+}
+
+.filtersRowSecondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #f0f0f0;
 }
 
 .filterActions {
@@ -336,15 +346,68 @@
 }
 
 .msgCell {
-  max-width: 320px;
+  max-width: 280px;
   color: #64676b;
   font-size: 0.82rem;
 }
 
-.rtCell {
-  white-space: nowrap;
-  font-size: 0.82rem;
+.userCell {
+  max-width: 180px;
+  font-size: 0.8rem;
+  color: #495057;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.companyLabel {
+  font-size: 0.72rem;
   color: #878787;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionCell {
+  width: 52px;
+  padding: 0.4rem 0.5rem !important;
+  text-align: center;
+}
+
+.muteRowBtn {
+  opacity: 0;
+  background: none;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  color: #878787;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+
+.tableRow:hover .muteRowBtn {
+  opacity: 1;
+}
+
+.muteRowBtn:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+}
+
+.mutedBadge {
+  margin-left: 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  background: #e2e3e5;
+  color: #495057;
+  padding: 2px 8px;
+  border-radius: 10px;
+  vertical-align: middle;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* ─── Badges ─────────────────────────────────────────────────────────────── */
@@ -377,7 +440,7 @@
 
 .skeletonRow {
   display: grid;
-  grid-template-columns: 1.6fr 0.5fr 1.5fr 0.5fr 2fr 0.7fr;
+  grid-template-columns: 1.6fr 0.5fr 1.5fr 0.5fr 1.2fr 2fr 0.4fr;
   gap: 0.75rem;
   padding: 0.6rem 0.875rem;
   border-bottom: 1px solid #f0f0f0;
@@ -559,6 +622,120 @@
   0%   { width: 0%;   opacity: 1; }
   60%  { width: 85%;  opacity: 1; }
   100% { width: 100%; opacity: 0; }
+}
+
+/* ─── Modal footer ───────────────────────────────────────────────────────── */
+
+.modalFooter {
+  padding: 0.875rem 1.25rem;
+  border-top: 1px solid #dee2e6;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.muteModalBtn {
+  padding: 0 1.1rem;
+  height: 34px;
+  background: #ffffff;
+  color: #878787;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+}
+
+.muteModalBtn:hover {
+  background: #dc3545;
+  color: #ffffff;
+  border-color: #dc3545;
+}
+
+.unmuteBtn {
+  padding: 0 1.1rem;
+  height: 34px;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+}
+
+.unmuteBtn:hover {
+  background: #c3e6cb;
+}
+
+/* ─── Muted paths panel ──────────────────────────────────────────────────── */
+
+.mutedPanel {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mutedPanelLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #878787;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+
+.mutedPathTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.mutedPathTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 2px 4px 2px 8px;
+  font-size: 0.75rem;
+}
+
+.mutedPathText {
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
+    "Roboto Mono", monospace;
+  color: #495057;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mutedPathRemove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #878787;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.1s ease;
+}
+
+.mutedPathRemove:hover {
+  color: #dc3545;
 }
 
 /* ─── Detail grid ────────────────────────────────────────────────────────── */
