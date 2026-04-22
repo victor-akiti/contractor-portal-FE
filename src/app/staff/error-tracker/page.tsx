@@ -497,8 +497,17 @@ const ErrorTrackerPage = () => {
   )
 
   const renderTable = () => {
-    const visibleErrors = errors.filter((e) => !mutedPaths.includes(e.path))
-    const mutedCount = errors.length - visibleErrors.length
+    const clientFiltered = errors.filter((e) => {
+      const email = filters.userEmail.toLowerCase()
+      const name = filters.userName.toLowerCase()
+      const company = filters.companyName.toLowerCase()
+      if (email && !e.userEmail?.toLowerCase().includes(email)) return false
+      if (name && !e.userName?.toLowerCase().includes(name)) return false
+      if (company && !e.companyName?.toLowerCase().includes(company)) return false
+      return true
+    })
+    const visibleErrors = clientFiltered.filter((e) => !mutedPaths.includes(e.path))
+    const mutedCount = clientFiltered.length - visibleErrors.length
 
     return (
       <div className={styles.section}>
