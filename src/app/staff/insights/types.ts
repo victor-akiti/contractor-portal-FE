@@ -187,6 +187,74 @@ export interface NarrativeData {
   metricsSnapshot: Record<string, unknown>;
 }
 
+// ── Dashboard (unified single-call response) ──────────────────────────────────
+export interface DashboardKpis {
+  totalRegistered: number;
+  totalInPipeline: number;
+  totalApproved: number;
+  completionRate: number | null;
+  avgCycleDays: number | null;
+  returned: number;
+  parked: number;
+  inProgress: number;
+  certsPending: number;
+  certsExpired: number;
+  certsExpiringSoon: number;
+}
+
+export interface PipelineDistributionItem {
+  label: string;
+  value: number;
+  color: string;
+}
+
+export interface DashboardTrends {
+  labels: string[];
+  series: {
+    registrations: number[];
+    submissions: number[];
+    progressions: number[];
+    approvals: number[];
+    returns: number[];
+    holds: number[];
+    cumulativeApprovals: number[];
+  };
+  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; Unknown: number };
+}
+
+export interface DashboardData {
+  generatedAt: string;
+  period: string;
+  bucketSize: 'day' | 'week' | 'month';
+  kpis: DashboardKpis;
+  pipeline: {
+    stageCounts: StageCounts;
+    distribution: PipelineDistributionItem[];
+    avgDwellPerStage: { stage: string; avgDays: number | null }[];
+    bottleneck: { stage: string; avgDays: number | null } | null;
+    staleVendors: { companyName: string; stage: string; daysWaiting: number }[];
+  };
+  trends: DashboardTrends;
+  activity: {
+    last30Days: { progressions: number; approvals: number; returns: number; holds: number; submissions: number };
+    last7Days: { progressions: number; approvals: number };
+  };
+  periodComparison: {
+    currentPeriodProgressions: number;
+    prevPeriodProgressions: number;
+    changePercent: number | null;
+  };
+  certificates: { pending: number; approved: number; rejected: number; expired: number; expiringSoon: number; total: number };
+  dueDiligence: {
+    atStageD: number;
+    atStageE: number;
+    avgDaysAtStageD: number | null;
+    avgDaysAtStageE: number | null;
+  };
+  holdStats: { totalApproved: number; periodHolds: number };
+  flags: ExecFlag[];
+}
+
 // ── Shared ────────────────────────────────────────────────────────────────────
-export type Period = '7d' | '14d' | '30d' | '60d' | '90d' | '180d' | '1y';
+export type Period = '7d' | '14d' | '30d' | '60d' | '90d' | '180d' | '1y' | '3y' | '5y' | '10y';
 export type SortDir = 'asc' | 'desc';

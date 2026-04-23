@@ -13,7 +13,7 @@ import type { TrendsData, Period } from '../types';
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
 
-const PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y'];
+const PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y', '3y', '5y', '10y'];
 const LINE_COLORS = { progressions: '#e67509', approvals: '#16a34a', returns: '#d97706', holds: '#dc2626' };
 const STAGE_COLORS = ['#e67509', '#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626'];
 

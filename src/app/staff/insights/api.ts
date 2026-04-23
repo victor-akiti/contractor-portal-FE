@@ -7,6 +7,7 @@ import type {
   TrendsData,
   ExecSummaryData,
   NarrativeData,
+  DashboardData,
   Period,
 } from './types';
 
@@ -39,8 +40,13 @@ export async function fetchTrends(period: Period = '30d'): Promise<TrendsData> {
   return unwrap<TrendsData>(res);
 }
 
-export async function fetchExecSummary(): Promise<ExecSummaryData> {
-  const res = await getProtected('insights/executive-summary', 'Admin');
+export async function fetchDashboard(period: Period = '30d'): Promise<DashboardData> {
+  const res = await getProtected(`insights/dashboard?period=${period}`, 'Admin');
+  return unwrap<DashboardData>(res);
+}
+
+export async function fetchExecSummary(period: Period = '30d'): Promise<ExecSummaryData> {
+  const res = await getProtected(`insights/executive-summary?period=${period}`, 'Admin');
   return unwrap<ExecSummaryData>(res);
 }
 
