@@ -9,15 +9,13 @@ import ErrorCard from './ErrorCard';
 import SortableTable from './SortableTable';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import { fetchDashboard, fetchCertificates, fetchNarrative } from '../api';
-import type { DashboardData, CertificatesData, NarrativeData, Period } from '../types';
+import type { DashboardData, CertificatesData, NarrativeData, PriorityVendors, Period } from '../types';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 const fmtPct = (v: number | null | undefined)        => (v == null ? '—' : `${v.toFixed(1)}%`);
 const fmtChg = (v: number | null | undefined)        =>
   v == null ? null : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
-
-const ALL_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y', '3y', '5y', '10y'];
 
 const FLAG_STYLES: Record<string, { bg: string; border: string; color: string; icon: string }> = {
   critical: { bg: '#fef2f2', border: '#fecaca', color: '#dc2626', icon: '🔴' },
@@ -48,7 +46,8 @@ const CERT_STATUS_COLORS  = ['#16a34a', '#f59e0b', '#dc2626'];
 const CERT_EXPIRY_COLORS  = ['#dc2626', '#f59e0b', '#16a34a', '#9ca3af'];
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function OverviewTab() {
+// period is controlled by the parent page (global selector above the tab bar)
+export default function OverviewTab({ period }: { period: Period }) {
   const [dashboard,        setDashboard]        = useState<DashboardData | null>(null);
   // Cert data is fetched from /insights/certificates — the authoritative source
   // for cert pending/expired/expiringSoon counts (dashboard kpis.certsPending
@@ -57,7 +56,6 @@ export default function OverviewTab() {
   const [certData,         setCertData]         = useState<CertificatesData | null>(null);
   const [narrative,        setNarrative]        = useState<NarrativeData | null>(null);
 
-  const [period,           setPeriod]           = useState<Period>('30d');
   const [loadingMain,      setLoadingMain]      = useState(true);
   const [loadingNarrative, setLoadingNarrative] = useState(true);
   const [errorMain,        setErrorMain]        = useState<string | null>(null);
@@ -146,30 +144,11 @@ export default function OverviewTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* ── Period selector ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '0.875rem', color: '#6c757d', fontWeight: 500 }}>Period:</span>
-        {ALL_PERIODS.map(p => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            style={{
-              padding: '0.3rem 0.8rem',
-              border: `1px solid ${period === p ? '#e67509' : '#d1d5db'}`,
-              borderRadius: '9999px',
-              background: period === p ? '#e67509' : '#fff',
-              color: period === p ? '#fff' : '#374151',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              fontWeight: period === p ? 600 : 400,
-            }}
-          >
-            {p}
-          </button>
-        ))}
+      {/* ── Refresh button ── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <button
           onClick={loadMain}
-          style={{ marginLeft: 'auto', padding: '0.3rem 0.8rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}
+          style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer', color: '#374151' }}
         >
           ↻ Refresh
         </button>
@@ -238,6 +217,11 @@ export default function OverviewTab() {
             );
           })}
         </div>
+      )}
+
+      {/* ── Priority Fast-Track ── */}
+      {!loadingMain && !errorMain && dashboard?.priorityVendors && dashboard.priorityVendors.total > 0 && (
+        <PriorityFastTrackCard pv={dashboard.priorityVendors} />
       )}
 
       {/* ── Trends line chart ── */}
@@ -487,6 +471,99 @@ export default function OverviewTab() {
           </div>
         )}
       </Section>
+    </div>
+  );
+}
+
+// ── Priority Fast-Track card ──────────────────────────────────────────────────
+function PriorityFastTrackCard({ pv }: { pv: PriorityVendors }) {
+  const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
+  const urgentCount = pv.urgentList.length;
+  const stageEntries = Object.entries(pv.byStage).filter(([, v]) => v > 0);
+
+  return (
+    <div style={{
+      background: '#fff8f3',
+      border: `2px solid ${urgentCount > 0 ? '#dc2626' : '#e67509'}`,
+      borderRadius: '0.5rem',
+      padding: '1.25rem',
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#e67509', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          ⚡ Priority Fast-Track Vendors
+        </h3>
+        {urgentCount > 0 && (
+          <span style={{
+            background: '#dc2626', color: '#fff', borderRadius: '9999px',
+            padding: '0.2rem 0.75rem', fontSize: '0.8rem', fontWeight: 700,
+          }}>
+            {urgentCount} URGENT — waiting &gt;7 days
+          </span>
+        )}
+      </div>
+
+      {/* Summary stat row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '0.6rem', marginBottom: '1rem' }}>
+        {[
+          { label: 'Total Priority',   value: pv.total,      color: '#e67509' },
+          { label: 'In Pipeline',      value: pv.inPipeline, color: '#2563eb' },
+          { label: 'L3 Approved',      value: pv.approved,   color: '#16a34a' },
+          { label: 'Returned',         value: pv.returned,   color: '#d97706' },
+          { label: 'Parked',           value: pv.parked,     color: '#dc2626' },
+          { label: 'Approval Rate',
+            value: pv.approvalRate != null ? `${pv.approvalRate.toFixed(1)}%` : '—',
+            color: '#7c3aed' },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{ background: '#fff', borderRadius: '0.375rem', padding: '0.6rem 0.75rem', border: '1px solid #e0e0e0' }}>
+            <div style={{ fontSize: '0.7rem', color: '#6c757d', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>{label}</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color }}>{value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Stage breakdown pills */}
+      {stageEntries.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: urgentCount > 0 ? '1rem' : 0 }}>
+          {stageEntries.map(([stage, count]) => (
+            <span key={stage} style={{
+              background: '#e67509', color: '#fff', borderRadius: '9999px',
+              padding: '0.2rem 0.7rem', fontSize: '0.78rem', fontWeight: 600,
+            }}>
+              {stage}: {count}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Urgent list */}
+      {urgentCount > 0 && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.375rem', padding: '0.75rem' }}>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#dc2626', fontWeight: 700 }}>
+            Vendors needing immediate attention (priority + waiting &gt;7 days):
+          </p>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.825rem' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #fecaca' }}>
+                <th style={{ padding: '0.35rem 0.5rem', textAlign: 'left', color: '#7f1d1d', fontWeight: 600 }}>Company</th>
+                <th style={{ padding: '0.35rem 0.5rem', textAlign: 'left', color: '#7f1d1d', fontWeight: 600, width: 90 }}>Stage</th>
+                <th style={{ padding: '0.35rem 0.5rem', textAlign: 'right', color: '#7f1d1d', fontWeight: 600, width: 110 }}>Days Waiting</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pv.urgentList.map((v, i) => (
+                <tr key={i} style={{ borderTop: i > 0 ? '1px solid #fee2e2' : undefined }}>
+                  <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{v.companyName}</td>
+                  <td style={{ padding: '0.35rem 0.5rem', color: '#6c757d' }}>{v.stage}</td>
+                  <td style={{ padding: '0.35rem 0.5rem', textAlign: 'right', fontWeight: 700, color: '#dc2626' }}>
+                    {fmt(v.daysWaiting, 0)}d
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

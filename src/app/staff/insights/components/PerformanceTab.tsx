@@ -9,8 +9,6 @@ import type { PerformanceData, Period } from '../types';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 
-const PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y', '3y', '5y', '10y'];
-
 function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
   if (days == null) return <span style={{ color: '#9ca3af' }}>—</span>;
   const color = days < 3 ? '#16a34a' : days <= 7 ? '#d97706' : '#dc2626';
@@ -22,9 +20,8 @@ function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
   );
 }
 
-export default function PerformanceTab() {
+export default function PerformanceTab({ period }: { period: Period }) {
   const [data, setData]       = useState<PerformanceData | null>(null);
-  const [period, setPeriod]   = useState<Period>('30d');
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
   const [openStage, setOpenStage] = useState<string | null>(null);
@@ -49,31 +46,10 @@ export default function PerformanceTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* ── Period selector ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '0.875rem', color: '#6c757d', fontWeight: 500 }}>Period:</span>
-        {PERIODS.map(p => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            style={{
-              padding: '0.35rem 0.9rem',
-              border: `1px solid ${period === p ? '#e67509' : '#d1d5db'}`,
-              borderRadius: '9999px',
-              background: period === p ? '#e67509' : '#fff',
-              color: period === p ? '#fff' : '#374151',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              fontWeight: period === p ? 600 : 400,
-            }}
-          >
-            {p}
-          </button>
-        ))}
-        <button
-          onClick={load}
-          style={{ marginLeft: 'auto', padding: '0.35rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.85rem', cursor: 'pointer' }}
-        >
+      {/* ── Refresh ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
+        <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
           ↻ Refresh
         </button>
       </div>

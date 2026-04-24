@@ -37,6 +37,7 @@ export interface PipelineData {
     completionRate: number;
     avgTotalCycleDays: number | null;
   };
+  priorityVendors?: PriorityVendors;
 }
 
 // ── Performance ───────────────────────────────────────────────────────────────
@@ -140,6 +141,24 @@ export interface ExecFlag {
   message: string;
 }
 
+export interface PriorityVendorUrgent {
+  companyName: string;
+  stage: string;
+  daysWaiting: number;
+}
+
+export interface PriorityVendors {
+  total: number;
+  approved: number;
+  inPipeline: number;
+  returned: number;
+  parked: number;
+  byStage: Record<string, number>;
+  approvalRate: number | null;
+  // vendors that are priority AND have been waiting >7 days — need immediate action
+  urgentList: PriorityVendorUrgent[];
+}
+
 export interface ExecSummaryData {
   generatedAt: string;
   overview: {
@@ -170,6 +189,7 @@ export interface ExecSummaryData {
     avgDaysAtStageD: number | null;
     avgDaysAtStageE: number | null;
   };
+  priorityVendors?: PriorityVendors;
   flags: ExecFlag[];
 }
 
@@ -252,6 +272,7 @@ export interface DashboardData {
     avgDaysAtStageE: number | null;
   };
   holdStats: { totalApproved: number; periodHolds: number };
+  priorityVendors?: PriorityVendors;
   flags: ExecFlag[];
 }
 
