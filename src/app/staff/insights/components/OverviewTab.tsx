@@ -8,8 +8,8 @@ import StatCard from './StatCard';
 import ErrorCard from './ErrorCard';
 import SortableTable from './SortableTable';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
-import { fetchDashboard, fetchNarrative } from '../api';
-import type { DashboardData, NarrativeData, Period } from '../types';
+import { fetchDashboard, fetchCertificates, fetchNarrative } from '../api';
+import type { DashboardData, CertificatesData, NarrativeData, Period } from '../types';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
@@ -32,38 +32,52 @@ const NARRATIVE_CHIP: Record<string, { bg: string; color: string }> = {
   success:  { bg: '#f0fdf4', color: '#16a34a' },
 };
 
-// series shown on the trends chart and their display colours
 const TREND_SERIES: { key: string; label: string; color: string; dashed?: boolean }[] = [
-  { key: 'progressions',       label: 'Progressions',        color: '#e67509' },
-  { key: 'approvals',          label: 'Approvals',           color: '#16a34a' },
-  { key: 'registrations',      label: 'Registrations',       color: '#2563eb' },
-  { key: 'submissions',        label: 'Submissions',         color: '#7c3aed' },
-  { key: 'returns',            label: 'Returns',             color: '#d97706' },
-  { key: 'holds',              label: 'Holds',               color: '#dc2626' },
-  { key: 'cumulativeApprovals',label: 'Cumulative Approvals',color: '#059669', dashed: true },
+  { key: 'progressions',        label: 'Progressions',         color: '#e67509' },
+  { key: 'approvals',           label: 'Approvals',            color: '#16a34a' },
+  { key: 'registrations',       label: 'Registrations',        color: '#2563eb' },
+  { key: 'submissions',         label: 'Submissions',          color: '#7c3aed' },
+  { key: 'returns',             label: 'Returns',              color: '#d97706' },
+  { key: 'holds',               label: 'Holds',                color: '#dc2626' },
+  { key: 'cumulativeApprovals', label: 'Cumulative Approvals', color: '#059669', dashed: true },
 ];
 
-const CERT_COLORS = ['#16a34a', '#f59e0b', '#dc2626', '#ef4444', '#9ca3af'];
+// Cert status colours: approved, pending, rejected, expiringSoon, expired
+const CERT_STATUS_COLORS  = ['#16a34a', '#f59e0b', '#dc2626'];
+// Cert expiry colours: expired, expiringSoon, healthy, noExpiry
+const CERT_EXPIRY_COLORS  = ['#dc2626', '#f59e0b', '#16a34a', '#9ca3af'];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function OverviewTab() {
   const [dashboard,        setDashboard]        = useState<DashboardData | null>(null);
+  // Cert data is fetched from /insights/certificates — the authoritative source
+  // for cert pending/expired/expiringSoon counts (dashboard kpis.certsPending
+  // reflects a broader query; the certificates endpoint counts only vendor-submitted
+  // certs that are actually pending review in the cert-review queue).
+  const [certData,         setCertData]         = useState<CertificatesData | null>(null);
   const [narrative,        setNarrative]        = useState<NarrativeData | null>(null);
+
   const [period,           setPeriod]           = useState<Period>('30d');
-  const [loadingDashboard, setLoadingDashboard] = useState(true);
+  const [loadingMain,      setLoadingMain]      = useState(true);
   const [loadingNarrative, setLoadingNarrative] = useState(true);
-  const [errorDashboard,   setErrorDashboard]   = useState<string | null>(null);
+  const [errorMain,        setErrorMain]        = useState<string | null>(null);
   const [errorNarrative,   setErrorNarrative]   = useState<string | null>(null);
 
-  const loadDashboard = useCallback(async () => {
-    setLoadingDashboard(true);
-    setErrorDashboard(null);
+  // Fetch dashboard + certificates in parallel — single loading state covers both
+  const loadMain = useCallback(async () => {
+    setLoadingMain(true);
+    setErrorMain(null);
     try {
-      setDashboard(await fetchDashboard(period));
+      const [dash, certs] = await Promise.all([
+        fetchDashboard(period),
+        fetchCertificates(),
+      ]);
+      setDashboard(dash);
+      setCertData(certs);
     } catch {
-      setErrorDashboard('Failed to load dashboard data');
+      setErrorMain('Failed to load dashboard data');
     } finally {
-      setLoadingDashboard(false);
+      setLoadingMain(false);
     }
   }, [period]);
 
@@ -79,8 +93,7 @@ export default function OverviewTab() {
     }
   }, []);
 
-  useEffect(() => { loadDashboard(); }, [loadDashboard]);
-  // narrative fetched once; doesn't depend on period
+  useEffect(() => { loadMain(); },      [loadMain]);
   useEffect(() => { loadNarrative(); }, [loadNarrative]);
 
   // ── derived chart data ─────────────────────────────────────────────────────
@@ -106,20 +119,28 @@ export default function OverviewTab() {
         .map(([stage, count]) => ({ stage: `Stage ${stage}`, count }))
     : [];
 
-  const certDonut = dashboard
+  // Use authoritative cert counts from /insights/certificates
+  const certStatusDonut = certData
     ? [
-        { name: 'Approved',      value: dashboard.certificates.approved },
-        { name: 'Pending',       value: dashboard.certificates.pending },
-        { name: 'Rejected',      value: dashboard.certificates.rejected },
-        { name: 'Expiring Soon', value: dashboard.certificates.expiringSoon },
-        { name: 'Expired',       value: dashboard.certificates.expired },
+        { name: 'Approved', value: certData.statusBreakdown.approved },
+        { name: 'Pending',  value: certData.statusBreakdown.pending },
+        { name: 'Rejected', value: certData.statusBreakdown.rejected },
+      ]
+    : [];
+
+  const certExpiryDonut = certData
+    ? [
+        { name: 'Expired',      value: certData.expiryBreakdown.expired },
+        { name: 'Expiring Soon', value: certData.expiryBreakdown.expiringSoon },
+        { name: 'Healthy',      value: certData.expiryBreakdown.healthy },
+        { name: 'No Expiry',    value: certData.expiryBreakdown.noExpiry },
       ]
     : [];
 
   const staleVendors = (dashboard?.pipeline.staleVendors ?? []) as unknown as Record<string, unknown>[];
 
-  const chg    = dashboard?.periodComparison.changePercent;
-  const chgStr = fmtChg(chg);
+  const chg      = dashboard?.periodComparison.changePercent;
+  const chgStr   = fmtChg(chg);
   const chgColor = chg == null ? '#9ca3af' : chg >= 0 ? '#16a34a' : '#dc2626';
 
   return (
@@ -147,7 +168,7 @@ export default function OverviewTab() {
           </button>
         ))}
         <button
-          onClick={loadDashboard}
+          onClick={loadMain}
           style={{ marginLeft: 'auto', padding: '0.3rem 0.8rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}
         >
           ↻ Refresh
@@ -155,34 +176,55 @@ export default function OverviewTab() {
       </div>
 
       {/* ── KPI stat cards ── */}
-      {loadingDashboard ? (
-        <CardsSkeleton count={6} />
-      ) : errorDashboard ? (
-        <ErrorCard message={errorDashboard} onRetry={loadDashboard} />
+      {/*
+        Vendor counts from dashboard:
+          • totalRegistered  = vendors where isSubmitted=true
+          • totalInPipeline  = isSubmitted=true, NOT parked/suspended, level 0-6 where isApproved=false
+          • totalApproved    = level 5 & isApproved=true  OR  level 6+
+          • returned / parked = respective status flags
+
+        Cert counts below use /insights/certificates (the cert-review endpoint),
+        NOT dashboard.kpis.certsPending which reflects a broader query.
+      */}
+      {loadingMain ? (
+        <CardsSkeleton count={8} />
+      ) : errorMain ? (
+        <ErrorCard message={errorMain} onRetry={loadMain} />
       ) : dashboard && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Total Registered"  value={dashboard.kpis.totalRegistered}  color="default" />
-            <StatCard label="In Pipeline"        value={dashboard.kpis.totalInPipeline}  color="blue" />
-            <StatCard label="L3 Approved"        value={dashboard.kpis.totalApproved}    color="green" />
-            <StatCard
-              label="Completion Rate"
-              value={fmtPct(dashboard.kpis.completionRate)}
-              sub={chgStr ? <span style={{ color: chgColor, fontWeight: 600 }}>{chgStr} vs prev</span> as unknown as string : undefined}
-              color="purple"
-            />
-            <StatCard label="Avg Cycle Days"     value={fmt(dashboard.kpis.avgCycleDays)} sub="days" color="amber" />
-            <StatCard label="Returned"           value={dashboard.kpis.returned}          color="amber" />
-            <StatCard label="Parked"             value={dashboard.kpis.parked}            color="red" />
-            <StatCard label="Certs Pending"      value={dashboard.kpis.certsPending}      color="amber" />
-            <StatCard label="Certs Expired"      value={dashboard.kpis.certsExpired}      color="red" />
-            <StatCard label="Certs Expiring Soon" value={dashboard.kpis.certsExpiringSoon} color="red" />
-          </div>
-        </>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+          <StatCard label="Total Registered" value={dashboard.kpis.totalRegistered} color="default" />
+          <StatCard label="In Pipeline"       value={dashboard.kpis.totalInPipeline} color="blue" />
+          <StatCard label="L3 Approved"       value={dashboard.kpis.totalApproved}   color="green" />
+          <StatCard
+            label="Completion Rate"
+            value={fmtPct(dashboard.kpis.completionRate)}
+            sub={chgStr ? `${chgStr} vs prev` : undefined}
+            color="purple"
+          />
+          <StatCard label="Avg Cycle Days"    value={fmt(dashboard.kpis.avgCycleDays)} sub="days" color="amber" />
+          <StatCard label="Returned"          value={dashboard.kpis.returned}          color="amber" />
+          <StatCard label="Parked"            value={dashboard.kpis.parked}            color="red" />
+          {/* Cert counts sourced from /insights/certificates — the cert-review queue */}
+          <StatCard
+            label="Certs Pending Review"
+            value={certData?.statusBreakdown.pending ?? '—'}
+            color="amber"
+          />
+          <StatCard
+            label="Certs Expired"
+            value={certData?.expiryBreakdown.expired ?? '—'}
+            color="red"
+          />
+          <StatCard
+            label="Certs Expiring Soon"
+            value={certData?.expiryBreakdown.expiringSoon ?? '—'}
+            color="red"
+          />
+        </div>
       )}
 
       {/* ── Flags ── */}
-      {!loadingDashboard && !errorDashboard && dashboard && dashboard.flags.length > 0 && (
+      {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           {dashboard.flags.map((flag, i) => {
             const s = FLAG_STYLES[flag.severity] ?? FLAG_STYLES.info;
@@ -200,7 +242,7 @@ export default function OverviewTab() {
 
       {/* ── Trends line chart ── */}
       <Section title={`Activity Trends (${dashboard?.bucketSize ?? '…'} buckets)`}>
-        {loadingDashboard ? <ChartSkeleton height={260} /> : errorDashboard ? null : (
+        {loadingMain ? <ChartSkeleton height={260} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={trendChartData} margin={{ top: 8, right: 20, bottom: 4, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -227,7 +269,7 @@ export default function OverviewTab() {
 
       {/* ── Pipeline distribution doughnut ── */}
       <Section title="Pipeline Distribution">
-        {loadingDashboard ? <ChartSkeleton height={220} /> : errorDashboard ? null : (
+        {loadingMain ? <ChartSkeleton height={220} /> : errorMain ? null : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
             <ResponsiveContainer width={220} height={220}>
               <PieChart>
@@ -250,15 +292,12 @@ export default function OverviewTab() {
               </PieChart>
             </ResponsiveContainer>
 
-            {/* Bottleneck callout */}
             {dashboard!.pipeline.bottleneck && (
               <div style={{
                 background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem',
                 padding: '1rem 1.25rem', flex: 1, minWidth: 180,
               }}>
-                <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color: '#6c757d', textTransform: 'uppercase', fontWeight: 600 }}>
-                  Bottleneck
-                </p>
+                <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color: '#6c757d', textTransform: 'uppercase', fontWeight: 600 }}>Bottleneck</p>
                 <p style={{ margin: '0 0 0.25rem', fontSize: '1.1rem', fontWeight: 700, color: '#dc2626' }}>
                   {dashboard!.pipeline.bottleneck.stage}
                 </p>
@@ -273,7 +312,7 @@ export default function OverviewTab() {
 
       {/* ── Avg dwell per stage ── */}
       <Section title="Avg Dwell Per Stage (days)">
-        {loadingDashboard ? <ChartSkeleton height={200} /> : errorDashboard ? null : (
+        {loadingMain ? <ChartSkeleton height={200} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
               data={dashboard!.pipeline.avgDwellPerStage.map(d => ({ ...d, days: d.avgDays ?? 0 }))}
@@ -291,7 +330,7 @@ export default function OverviewTab() {
 
       {/* ── Returns by stage ── */}
       <Section title="Returns by Stage (period)">
-        {loadingDashboard ? <ChartSkeleton height={180} /> : errorDashboard ? null : (
+        {loadingMain ? <ChartSkeleton height={180} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={returnsByStageData} layout="vertical" margin={{ top: 4, right: 40, bottom: 4, left: 70 }}>
               <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
@@ -304,53 +343,81 @@ export default function OverviewTab() {
       </Section>
 
       {/* ── Activity cards ── */}
-      {!loadingDashboard && !errorDashboard && dashboard && (
+      {!loadingMain && !errorMain && dashboard && (
         <Section title="Activity">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Progressions (30d)"  value={dashboard.activity.last30Days.progressions} color="blue" />
-            <StatCard label="Approvals (30d)"     value={dashboard.activity.last30Days.approvals}    color="green" />
-            <StatCard label="Returns (30d)"        value={dashboard.activity.last30Days.returns}      color="amber" />
-            <StatCard label="Holds (30d)"          value={dashboard.activity.last30Days.holds}        color="red" />
-            <StatCard label="Submissions (30d)"    value={dashboard.activity.last30Days.submissions}  color="default" />
-            <StatCard label="Progressions (7d)"   value={dashboard.activity.last7Days.progressions}  color="blue" />
-            <StatCard label="Approvals (7d)"      value={dashboard.activity.last7Days.approvals}     color="green" />
-            <StatCard label="Period Holds"         value={dashboard.holdStats.periodHolds}            color="red" />
+            <StatCard label="Progressions (30d)" value={dashboard.activity.last30Days.progressions} color="blue" />
+            <StatCard label="Approvals (30d)"    value={dashboard.activity.last30Days.approvals}    color="green" />
+            <StatCard label="Returns (30d)"      value={dashboard.activity.last30Days.returns}      color="amber" />
+            <StatCard label="Holds (30d)"        value={dashboard.activity.last30Days.holds}        color="red" />
+            <StatCard label="Submissions (30d)"  value={dashboard.activity.last30Days.submissions}  color="default" />
+            <StatCard label="Progressions (7d)"  value={dashboard.activity.last7Days.progressions}  color="blue" />
+            <StatCard label="Approvals (7d)"     value={dashboard.activity.last7Days.approvals}     color="green" />
+            <StatCard label="Period Holds"       value={dashboard.holdStats.periodHolds}            color="red" />
           </div>
         </Section>
       )}
 
-      {/* ── Due Diligence cards ── */}
-      {!loadingDashboard && !errorDashboard && dashboard && (
+      {/* ── Due Diligence ── */}
+      {!loadingMain && !errorMain && dashboard && (
         <Section title="Due Diligence (Stage D & E)">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="At Stage D"          value={dashboard.dueDiligence.atStageD}         color="blue" />
-            <StatCard label="At Stage E"          value={dashboard.dueDiligence.atStageE}         color="purple" />
-            <StatCard label="Avg Days @ Stage D"  value={fmt(dashboard.dueDiligence.avgDaysAtStageD)} sub="days" color="amber" />
-            <StatCard label="Avg Days @ Stage E"  value={fmt(dashboard.dueDiligence.avgDaysAtStageE)} sub="days" color="amber" />
+            <StatCard label="At Stage D"         value={dashboard.dueDiligence.atStageD}          color="blue" />
+            <StatCard label="At Stage E"         value={dashboard.dueDiligence.atStageE}          color="purple" />
+            <StatCard label="Avg Days @ Stage D" value={fmt(dashboard.dueDiligence.avgDaysAtStageD)} sub="days" color="amber" />
+            <StatCard label="Avg Days @ Stage E" value={fmt(dashboard.dueDiligence.avgDaysAtStageE)} sub="days" color="amber" />
           </div>
         </Section>
       )}
 
-      {/* ── Certificate health donut ── */}
-      <Section title="Certificate Health">
-        {loadingDashboard ? <ChartSkeleton height={220} /> : errorDashboard ? null : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-            <ResponsiveContainer width={220} height={220}>
-              <PieChart>
-                <Pie data={certDonut} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" paddingAngle={2}>
-                  {certDonut.map((_, i) => <Cell key={i} fill={CERT_COLORS[i]} />)}
-                </Pie>
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '0.78rem' }} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', flex: 1, minWidth: 200 }}>
-              <StatCard label="Approved"      value={dashboard!.certificates.approved}     color="green" />
-              <StatCard label="Pending"       value={dashboard!.certificates.pending}      color="amber" />
-              <StatCard label="Rejected"      value={dashboard!.certificates.rejected}     color="red" />
-              <StatCard label="Expiring Soon" value={dashboard!.certificates.expiringSoon} color="red" />
-              <StatCard label="Expired"       value={dashboard!.certificates.expired}      color="red" />
-              <StatCard label="Total"         value={dashboard!.certificates.total}        color="default" />
+      {/* ── Certificate health — sourced from /insights/certificates ── */}
+      <Section title="Certificate Health (from cert-review queue)">
+        {loadingMain ? <ChartSkeleton height={240} /> : errorMain ? null : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Summary stat row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+              <StatCard label="Total Certs"    value={certData?.statusBreakdown.total}             color="default" />
+              <StatCard label="Approved"       value={certData?.statusBreakdown.approved}          color="green" />
+              <StatCard label="Pending Review" value={certData?.statusBreakdown.pending}           color="amber" />
+              <StatCard label="Rejected"       value={certData?.statusBreakdown.rejected}          color="red" />
+              <StatCard label="Expired"        value={certData?.expiryBreakdown.expired}           color="red" />
+              <StatCard label="Expiring Soon"  value={certData?.expiryBreakdown.expiringSoon}      color="red" />
+              <StatCard label="Healthy"        value={certData?.expiryBreakdown.healthy}           color="green" />
+              <StatCard label="Approval Rate"
+                value={certData?.approvalRate != null ? `${certData.approvalRate.toFixed(1)}%` : '—'}
+                color="green" />
+            </div>
+
+            {/* Dual donuts */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#6c757d', fontWeight: 600, textTransform: 'uppercase' }}>
+                  Review Status
+                </p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie data={certStatusDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" paddingAngle={2}>
+                      {certStatusDonut.map((_, i) => <Cell key={i} fill={CERT_STATUS_COLORS[i]} />)}
+                    </Pie>
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#6c757d', fontWeight: 600, textTransform: 'uppercase' }}>
+                  Expiry Status
+                </p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie data={certExpiryDonut} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" paddingAngle={2}>
+                      {certExpiryDonut.map((_, i) => <Cell key={i} fill={CERT_EXPIRY_COLORS[i]} />)}
+                    </Pie>
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         )}
@@ -358,7 +425,7 @@ export default function OverviewTab() {
 
       {/* ── Stale vendors table ── */}
       <Section title="Stale Vendors (waiting >14 days)">
-        {loadingDashboard ? <TableSkeleton rows={5} /> : errorDashboard ? null : (
+        {loadingMain ? <TableSkeleton rows={5} /> : errorMain ? null : (
           staleVendors.length === 0
             ? <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No stale vendors — pipeline is moving well.</p>
             : (
@@ -384,7 +451,7 @@ export default function OverviewTab() {
         )}
       </Section>
 
-      {/* ── AI Narrative card ── */}
+      {/* ── AI Narrative ── */}
       <Section title="AI Narrative">
         {loadingNarrative ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
