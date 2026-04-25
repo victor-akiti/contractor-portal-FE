@@ -166,14 +166,16 @@ export default function OverviewTab({ period }: { period: Period }) {
         NOT dashboard.kpis.certsPending which reflects a broader query.
       */}
       {loadingMain ? (
-        <CardsSkeleton count={8} />
+        <CardsSkeleton count={10} />
       ) : errorMain ? (
         <ErrorCard message={errorMain} onRetry={loadMain} />
       ) : dashboard && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
-          <StatCard label="Total Registered" value={dashboard.kpis.totalRegistered} color="default" />
-          <StatCard label="In Pipeline"       value={dashboard.kpis.totalInPipeline} color="blue" />
-          <StatCard label="L3 Approved"       value={dashboard.kpis.totalApproved}   color="green" />
+          <StatCard label="Total Registered"     value={dashboard.kpis.totalRegistered}     color="default" />
+          <StatCard label="In Pipeline"          value={dashboard.kpis.totalInPipeline}     color="blue" />
+          <StatCard label="L3 Approved"          value={dashboard.kpis.totalApproved}       color="green" />
+          <StatCard label="In Progress (forms)"  value={dashboard.kpis.totalInProgress}     color="default" />
+          <StatCard label="Priority in Pipeline" value={dashboard.kpis.priorityInPipeline}  color="purple" />
           <StatCard
             label="Completion Rate"
             value={fmtPct(dashboard.kpis.completionRate)}
@@ -328,16 +330,18 @@ export default function OverviewTab({ period }: { period: Period }) {
 
       {/* ── Activity cards ── */}
       {!loadingMain && !errorMain && dashboard && (
-        <Section title="Activity">
+        <Section title={`Activity (${dashboard.activity.period})`}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Progressions (30d)" value={dashboard.activity.last30Days.progressions} color="blue" />
-            <StatCard label="Approvals (30d)"    value={dashboard.activity.last30Days.approvals}    color="green" />
-            <StatCard label="Returns (30d)"      value={dashboard.activity.last30Days.returns}      color="amber" />
-            <StatCard label="Holds (30d)"        value={dashboard.activity.last30Days.holds}        color="red" />
-            <StatCard label="Submissions (30d)"  value={dashboard.activity.last30Days.submissions}  color="default" />
+            <StatCard label={`Progressions (${dashboard.activity.period})`} value={dashboard.activity.totals.progressions} color="blue" />
+            <StatCard label={`Approvals (${dashboard.activity.period})`}    value={dashboard.activity.totals.approvals}    color="green" />
+            <StatCard label={`Returns (${dashboard.activity.period})`}      value={dashboard.activity.totals.returns}      color="amber" />
+            <StatCard label={`Holds (${dashboard.activity.period})`}        value={dashboard.activity.totals.holds}        color="red" />
+            <StatCard label={`Submissions (${dashboard.activity.period})`}  value={dashboard.activity.totals.submissions}  color="default" />
             <StatCard label="Progressions (7d)"  value={dashboard.activity.last7Days.progressions}  color="blue" />
             <StatCard label="Approvals (7d)"     value={dashboard.activity.last7Days.approvals}     color="green" />
-            <StatCard label="Period Holds"       value={dashboard.holdStats.periodHolds}            color="red" />
+            <StatCard label="Returns (7d)"       value={dashboard.activity.last7Days.returns}       color="amber" />
+            <StatCard label="Holds (7d)"         value={dashboard.activity.last7Days.holds}         color="red" />
+            <StatCard label="Period Holds Total" value={dashboard.holdStats.periodHolds}            color="red" />
           </div>
         </Section>
       )}
@@ -415,7 +419,17 @@ export default function OverviewTab({ period }: { period: Period }) {
             : (
               <SortableTable
                 columns={[
-                  { key: 'companyName', label: 'Company' },
+                  { key: 'companyName', label: 'Company',
+                    render: (r) => (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {r.isPriority && (
+                          <span style={{ background: '#e67509', color: '#fff', borderRadius: '9999px', padding: '0.1rem 0.45rem', fontSize: '0.68rem', fontWeight: 700 }}>
+                            PRIORITY
+                          </span>
+                        )}
+                        {r.companyName as string}
+                      </span>
+                    )},
                   { key: 'stage',       label: 'Stage',        width: '90px' },
                   { key: 'daysWaiting', label: 'Days Waiting', width: '120px',
                     render: (r) => (
@@ -429,6 +443,7 @@ export default function OverviewTab({ period }: { period: Period }) {
                 defaultSortDir="desc"
                 rowStyle={(row) => ({
                   background: (row.daysWaiting as number) > 30 ? '#fff5f5' : '#fffdf0',
+                  borderLeft: row.isPriority ? '3px solid #e67509' : undefined,
                 })}
               />
             )

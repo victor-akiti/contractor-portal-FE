@@ -121,8 +121,8 @@ export default function TrendsTab({ period }: { period: Period }) {
       {!loading && !error && data && (
         <Section title="Hold Statistics">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Holds Requested" value={data.holdStats.totalRequested} color="amber" />
-            <StatCard label="Holds Approved"  value={data.holdStats.totalApproved}  color="green" />
+            <StatCard label="Holds Requested" value={data.holdStats.totalRequested}    color="amber" />
+            <StatCard label="Holds Approved"  value={data.holdStats.totalApprovedHolds} color="green" />
             <StatCard label="Hold Approval Rate"
               value={data.holdStats.approvalRate == null ? '—' : `${data.holdStats.approvalRate.toFixed(1)}%`}
               color="blue" />

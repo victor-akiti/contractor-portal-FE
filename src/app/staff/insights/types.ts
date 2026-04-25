@@ -117,7 +117,7 @@ export interface TrendsData {
   period: string;
   timeSeries: TimeSeriesPoint[];
   returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; unknown: number };
-  holdStats: { totalRequested: number; totalApproved: number; approvalRate: number | null };
+  holdStats: { totalRequested: number; totalApprovedHolds: number; approvalRate: number | null };
   topReturnInitiators: { name: string; count: number }[];
   topHoldInitiators: { name: string; count: number }[];
   avgReturnToResubmitDays: number | null;
@@ -217,6 +217,10 @@ export interface DashboardKpis {
   returned: number;
   parked: number;
   inProgress: number;
+  /** Form-fillers who have not yet submitted (isSubmitted=false) */
+  totalInProgress: number;
+  /** Priority vendors currently in the pipeline */
+  priorityInPipeline: number;
   certsPending: number;
   certsExpired: number;
   certsExpiringSoon: number;
@@ -252,12 +256,15 @@ export interface DashboardData {
     distribution: PipelineDistributionItem[];
     avgDwellPerStage: { stage: string; avgDays: number | null }[];
     bottleneck: { stage: string; avgDays: number | null } | null;
-    staleVendors: { companyName: string; stage: string; daysWaiting: number }[];
+    staleVendors: { companyName: string; stage: string; daysWaiting: number; isPriority: boolean }[];
   };
   trends: DashboardTrends;
   activity: {
-    last30Days: { progressions: number; approvals: number; returns: number; holds: number; submissions: number };
-    last7Days: { progressions: number; approvals: number };
+    /** Period-relative totals — changes with the period param (replaces `last30Days`) */
+    totals: { progressions: number; approvals: number; returns: number; holds: number; submissions: number };
+    /** Which period these totals correspond to (e.g. "30d") */
+    period: string;
+    last7Days: { progressions: number; approvals: number; returns: number; holds: number };
   };
   periodComparison: {
     currentPeriodProgressions: number;
@@ -271,7 +278,7 @@ export interface DashboardData {
     avgDaysAtStageD: number | null;
     avgDaysAtStageE: number | null;
   };
-  holdStats: { totalApproved: number; periodHolds: number };
+  holdStats: { totalApprovedHolds: number; periodHolds: number };
   priorityVendors?: PriorityVendors;
   flags: ExecFlag[];
 }
