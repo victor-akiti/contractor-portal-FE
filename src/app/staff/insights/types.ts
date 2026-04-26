@@ -135,7 +135,7 @@ export interface TrendsData {
   };
 }
 
-// ── Executive Summary ─────────────────────────────────────────────────────────
+// ── Shared types used across multiple responses ────────────────────────────────
 export interface ExecFlag {
   severity: 'critical' | 'warning' | 'info';
   message: string;
@@ -159,39 +159,6 @@ export interface PriorityVendors {
   urgentList: PriorityVendorUrgent[];
 }
 
-export interface ExecSummaryData {
-  generatedAt: string;
-  overview: {
-    totalCompanies: number;
-    totalInPipeline: number;
-    totalApproved: number;
-    completionRate: number | null;
-    avgCycleDays: number | null;
-    returned: number;
-    parked: number;
-    inProgress: number;
-  };
-  pipeline: {
-    stageCounts: StageCounts;
-    avgDwellPerStage: { stage: string; avgDays: number | null }[];
-    bottleneck: { stage: string; avgDays: number | null } | null;
-    staleVendors: { companyName: string; stage: string; daysWaiting: number }[];
-  };
-  activity: {
-    last30Days: { progressions: number; approvals: number; returns: number; holds: number; submissions: number };
-    last7Days: { progressions: number; approvals: number };
-  };
-  certificates: { pending: number; approved: number; rejected: number; expired: number; expiringSoon: number; total: number };
-  dueDiligence: {
-    atStageD: number;
-    atStageE: number;
-    currentlyAtDueDiligence: number;
-    avgDaysAtStageD: number | null;
-    avgDaysAtStageE: number | null;
-  };
-  priorityVendors?: PriorityVendors;
-  flags: ExecFlag[];
-}
 
 // ── AI Narrative ──────────────────────────────────────────────────────────────
 export interface NarrativeHighlight {

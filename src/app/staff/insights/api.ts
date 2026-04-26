@@ -5,7 +5,6 @@ import type {
   PerformanceData,
   CertificatesData,
   TrendsData,
-  ExecSummaryData,
   NarrativeData,
   DashboardData,
   Period,
@@ -43,11 +42,6 @@ export async function fetchTrends(period: Period = '30d'): Promise<TrendsData> {
 export async function fetchDashboard(period: Period = '30d'): Promise<DashboardData> {
   const res = await getProtected(`insights/dashboard?period=${period}`, 'Admin');
   return unwrap<DashboardData>(res);
-}
-
-export async function fetchExecSummary(period: Period = '30d'): Promise<ExecSummaryData> {
-  const res = await getProtected(`insights/executive-summary?period=${period}`, 'Admin');
-  return unwrap<ExecSummaryData>(res);
 }
 
 export async function fetchNarrative(focus: 'pipeline' | 'performance' | 'certs' | 'all' = 'all'): Promise<NarrativeData> {
