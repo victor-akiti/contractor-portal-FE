@@ -1321,7 +1321,7 @@ export default function ApprovalsContainer() {
           { label: "L2 Stage", value: "l2Stage" },
           { label: "Within Amni Review Stage", value: "l2PendingStage" },
           { label: "Priority", value: (row: any) => row?.flags?.isPriority ? "Yes" : "No" },
-          { label: "Last Updated", value: (row: any) => row?.lastUpdate ? new Date(row.lastUpdate._seconds * 1000) : new Date(row.updatedAt) },
+          { label: "Last Updated", value: (row: any) => row.vendorFormUpdatedAt ? new Date(row.vendorFormUpdatedAt) : new Date(row.updatedAt) },
           // Vendor Portal Admin details
           { label: "Portal Admin Name", value: "portalAdminName" },
           { label: "Portal Admin Email", value: "portalAdminEmail" },

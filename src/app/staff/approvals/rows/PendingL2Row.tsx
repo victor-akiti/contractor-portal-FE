@@ -38,14 +38,7 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
     return false;
   };
 
-  const getLastUpdated = () => {
-    if (companyRecord.lastUpdate)
-      return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
-    if (companyRecord.lastApproved) return new Date(companyRecord.lastApproved).toISOString();
-    if (companyRecord.approvalActivityHistory)
-      return new Date(companyRecord.approvalActivityHistory[0].date).toISOString();
-    if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
-  };
+  const getLastUpdated = () => companyRecord.vendorFormUpdatedAt ?? companyRecord.updatedAt;
 
   const getEndUserNames = () => {
     if (companyRecord.currentEndUsers && Array.isArray(companyRecord.currentEndUsers)) {
