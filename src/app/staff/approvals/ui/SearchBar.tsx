@@ -66,8 +66,8 @@ export default function SearchBar({
         />
         <select onChange={(e) => onFilterChange(e.target.value)}>
           <option value={"all"}>All Registered Vendors</option>
-          <option value={"in progress"}>In Progress</option>
-          <option value={"pending"}>Pending L2</option>
+          <option value={"in progress"}>Not Yet Submitted</option>
+          <option value={"pending"}>Within Amni Review L2</option>
           <option value={"parked"}>Completed L2</option>
           <option value={"l3"}>L3</option>
           <option value={"returned"}>Returned</option>

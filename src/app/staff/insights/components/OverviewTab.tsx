@@ -121,7 +121,7 @@ export default function OverviewTab({ period }: { period: Period }) {
   const certStatusDonut = certData
     ? [
         { name: 'Approved', value: certData.statusBreakdown.approved },
-        { name: 'Pending',  value: certData.statusBreakdown.pending },
+        { name: 'Within Amni Review', value: certData.statusBreakdown.pending },
         { name: 'Rejected', value: certData.statusBreakdown.rejected },
       ]
     : [];
@@ -174,7 +174,7 @@ export default function OverviewTab({ period }: { period: Period }) {
           <StatCard label="Total Registered"     value={dashboard.kpis.totalRegistered}     color="default" />
           <StatCard label="In Pipeline"          value={dashboard.kpis.totalInPipeline}     color="blue" />
           <StatCard label="L3 Approved"          value={dashboard.kpis.totalApproved}       color="green" />
-          <StatCard label="In Progress (forms)"  value={dashboard.kpis.totalInProgress}     color="default" />
+          <StatCard label="Not Yet Submitted"      value={dashboard.kpis.totalInProgress}     color="default" />
           <StatCard label="Priority in Pipeline" value={dashboard.kpis.priorityInPipeline}  color="purple" />
           <StatCard
             label="Completion Rate"
@@ -187,7 +187,7 @@ export default function OverviewTab({ period }: { period: Period }) {
           <StatCard label="Parked"            value={dashboard.kpis.parked}            color="red" />
           {/* Cert counts sourced from /insights/certificates — the cert-review queue */}
           <StatCard
-            label="Certs Pending Review"
+            label="Certs Within Amni Review"
             value={certData?.statusBreakdown.pending ?? '—'}
             color="amber"
           />
@@ -366,7 +366,7 @@ export default function OverviewTab({ period }: { period: Period }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
               <StatCard label="Total Certs"    value={certData?.statusBreakdown.total}             color="default" />
               <StatCard label="Approved"       value={certData?.statusBreakdown.approved}          color="green" />
-              <StatCard label="Pending Review" value={certData?.statusBreakdown.pending}           color="amber" />
+              <StatCard label="Within Amni Review" value={certData?.statusBreakdown.pending}       color="amber" />
               <StatCard label="Rejected"       value={certData?.statusBreakdown.rejected}          color="red" />
               <StatCard label="Expired"        value={certData?.expiryBreakdown.expired}           color="red" />
               <StatCard label="Expiring Soon"  value={certData?.expiryBreakdown.expiringSoon}      color="red" />

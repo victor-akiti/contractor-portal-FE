@@ -64,7 +64,7 @@ export default function ExportTab() {
           >
             <option value="all">All Vendors</option>
             <option value="approved">Approved Only</option>
-            <option value="in-progress">In Progress Only</option>
+            <option value="in-progress">Not Yet Submitted Only</option>
           </select>
         </div>
 

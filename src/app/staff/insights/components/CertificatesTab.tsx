@@ -36,7 +36,7 @@ export default function CertificatesTab() {
   const statusDonut = data
     ? [
         { name: 'Approved', value: data.statusBreakdown.approved },
-        { name: 'Pending',  value: data.statusBreakdown.pending },
+        { name: 'Within Amni Review', value: data.statusBreakdown.pending },
         { name: 'Rejected', value: data.statusBreakdown.rejected },
       ]
     : [];
@@ -61,7 +61,7 @@ export default function CertificatesTab() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
           <StatCard label="Total Certs"     value={data.statusBreakdown.total}    color="default" />
           <StatCard label="Approved"        value={data.statusBreakdown.approved} color="green" />
-          <StatCard label="Pending Review"  value={data.statusBreakdown.pending}  color="amber" />
+          <StatCard label="Within Amni Review" value={data.statusBreakdown.pending} color="amber" />
           <StatCard label="Rejected"        value={data.statusBreakdown.rejected} color="red" />
         </div>
       )}

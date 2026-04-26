@@ -158,8 +158,8 @@ export default function ApprovalsContainer() {
 
   const [approvalsTabs, setApprovalsTabs] = useState<any[]>([
     { label: "Invited", name: "invited" },
-    { label: "In Progress", name: "in-progress" },
-    { label: "Pending L2", name: "pending-l2" },
+    { label: "Not Yet Submitted", name: "in-progress" },
+    { label: "Within Amni Review L2", name: "pending-l2" },
     { label: "L3", name: "l3" },
     { label: "Completed L2", name: "completed-l2" },
     { label: "Returned To Contractor", name: "returned" },
@@ -962,7 +962,7 @@ export default function ApprovalsContainer() {
     if (exportOptions.selectedStages.includes("inProgress")) {
       fixedApprovals.inProgress?.forEach((item: any) => {
         if (String(item.companyName).toLowerCase().includes(String(vendorName).toLowerCase()))
-          push({ ...item, stage: "In Progress" });
+          push({ ...item, stage: "Not Yet Submitted" });
       });
     }
     if (exportOptions.selectedStages.includes("l2")) {
@@ -973,28 +973,28 @@ export default function ApprovalsContainer() {
               if (exportOptions.pendingL2Stages.includes("All"))
                 push({
                   ...item,
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   l2PendingStage: getL2PendingStage(item.flags),
                 });
               else {
                 const L = item.flags?.approvals?.level;
                 if (exportOptions.pendingL2Stages.includes("A") && !L)
-                  push({ ...item, l2PendingStage: "A", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "A", l2Stage: "Within Amni Review", stage: "L2" });
                 if (exportOptions.pendingL2Stages.includes("B") && L === 1)
-                  push({ ...item, l2PendingStage: "B", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "B", l2Stage: "Within Amni Review", stage: "L2" });
                 if (exportOptions.pendingL2Stages.includes("C") && L === 2)
-                  push({ ...item, l2PendingStage: "C", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "C", l2Stage: "Within Amni Review", stage: "L2" });
                 if (exportOptions.pendingL2Stages.includes("D") && L === 3)
-                  push({ ...item, l2PendingStage: "D", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "D", l2Stage: "Within Amni Review", stage: "L2" });
                 if (exportOptions.pendingL2Stages.includes("E") && L === 4)
-                  push({ ...item, l2PendingStage: "E", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "E", l2Stage: "Within Amni Review", stage: "L2" });
                 if (exportOptions.pendingL2Stages.includes("F") && L === 5)
-                  push({ ...item, l2PendingStage: "F", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "F", l2Stage: "Within Amni Review", stage: "L2" });
                 if (exportOptions.pendingL2Stages.includes("G") && L === 6)
-                  push({ ...item, l2PendingStage: "G", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "G", l2Stage: "Within Amni Review", stage: "L2" });
                 if (exportOptions.pendingL2Stages.includes("H") && L === 7)
-                  push({ ...item, l2PendingStage: "H", l2Stage: "Pending", stage: "L2" });
+                  push({ ...item, l2PendingStage: "H", l2Stage: "Within Amni Review", stage: "L2" });
               }
             }
           }
@@ -1109,7 +1109,7 @@ export default function ApprovalsContainer() {
           ...temp,
           ...fixedApprovals.inProgress.map((i: any) => ({
             ...i,
-            stage: "In Progress",
+            stage: "Not Yet Submitted",
             portalAdminName: i.contractorDetails?.name,
             portalAdminEmail: i.contractorDetails?.email,
             portalAdminPhone:
@@ -1170,7 +1170,7 @@ export default function ApprovalsContainer() {
               temp.push({
                 ...item,
                 l2PendingStage: getL2PendingStage(item.flags),
-                l2Stage: "Pending",
+                l2Stage: "Within Amni Review",
                 stage: "L2",
                 portalAdminName: item.contractorDetails?.name,
                 portalAdminEmail: item.contractorDetails?.email,
@@ -1186,7 +1186,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "A",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1200,7 +1200,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "B",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1214,7 +1214,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "C",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1228,7 +1228,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "D",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1242,7 +1242,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "E",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1256,7 +1256,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "F",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1270,7 +1270,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "G",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1284,7 +1284,7 @@ export default function ApprovalsContainer() {
                 temp.push({
                   ...item,
                   l2PendingStage: "H",
-                  l2Stage: "Pending",
+                  l2Stage: "Within Amni Review",
                   stage: "L2",
                   portalAdminName: item.contractorDetails?.name,
                   portalAdminEmail: item.contractorDetails?.email,
@@ -1319,7 +1319,7 @@ export default function ApprovalsContainer() {
           { label: "Name Verification Status", value: (row: any) => getNameVerificationStatus(row) },
           { label: "Stage", value: "stage" },
           { label: "L2 Stage", value: "l2Stage" },
-          { label: "Pending L2 Stage", value: "l2PendingStage" },
+          { label: "Within Amni Review Stage", value: "l2PendingStage" },
           { label: "Priority", value: (row: any) => row?.flags?.isPriority ? "Yes" : "No" },
           { label: "Last Updated", value: (row: any) => new Date(row.updatedAt) },
           // Vendor Portal Admin details
@@ -1444,7 +1444,7 @@ export default function ApprovalsContainer() {
       case "in-progress":
         dataToExport = (fixedApprovals.inProgress || []).map((i: any) => ({
           ...i,
-          stage: "In Progress",
+          stage: "Not Yet Submitted",
           portalAdminName: i.contractorDetails?.name,
           portalAdminEmail: i.contractorDetails?.email,
           portalAdminPhone:
@@ -1453,14 +1453,14 @@ export default function ApprovalsContainer() {
               : i.contractorDetails?.phone?.internationalNumber ||
               i.contractorDetails?.phone?.nationalNumber,
         }));
-        tabName = "In Progress";
+        tabName = "Not Yet Submitted";
         break;
 
       case "pending-l2":
         dataToExport = (fixedApprovals.pendingL2 || []).map((item: any) => ({
           ...item,
           l2PendingStage: getL2PendingStage(item.flags),
-          l2Stage: "Pending",
+          l2Stage: "Within Amni Review",
           stage: "L2",
           portalAdminName: item.contractorDetails?.name,
           portalAdminEmail: item.contractorDetails?.email,
@@ -1470,7 +1470,7 @@ export default function ApprovalsContainer() {
               : item.contractorDetails?.phone?.internationalNumber ||
               item.contractorDetails?.phone?.nationalNumber,
         }));
-        tabName = "Pending L2";
+        tabName = "Within Amni Review L2";
         break;
 
       case "l3":
@@ -1609,7 +1609,7 @@ export default function ApprovalsContainer() {
         registeredVendors.push(
           ...cachedData.inProgress.map((i: any) => ({
             ...i,
-            stage: "In Progress",
+            stage: "Not Yet Submitted",
             portalAdminName: i.contractorDetails?.name,
             portalAdminEmail: i.contractorDetails?.email,
             portalAdminPhone:
@@ -1673,7 +1673,7 @@ export default function ApprovalsContainer() {
           ...cachedData.pendingL2.map((item: any) => ({
             ...item,
             l2PendingStage: getL2PendingStage(item.flags),
-            l2Stage: "Pending",
+            l2Stage: "Within Amni Review",
             stage: "L2",
             portalAdminName: item.contractorDetails?.name,
             portalAdminEmail: item.contractorDetails?.email,
