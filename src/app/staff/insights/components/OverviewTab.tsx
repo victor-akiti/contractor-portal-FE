@@ -68,7 +68,7 @@ export default function OverviewTab({ period }: { period: Period }) {
     try {
       const [dash, certs] = await Promise.all([
         fetchDashboard(period),
-        fetchCertificates(),
+        fetchCertificates(period),
       ]);
       setDashboard(dash);
       setCertData(certs);
@@ -120,9 +120,9 @@ export default function OverviewTab({ period }: { period: Period }) {
   // Use authoritative cert counts from /insights/certificates
   const certStatusDonut = certData
     ? [
-        { name: 'Approved', value: certData.statusBreakdown.approved },
+        { name: 'Approved (period)', value: certData.statusBreakdown.approvedInPeriod },
         { name: 'Within Amni Review', value: certData.statusBreakdown.pending },
-        { name: 'Rejected', value: certData.statusBreakdown.rejected },
+        { name: 'Rejected (period)',  value: certData.statusBreakdown.rejectedInPeriod },
       ]
     : [];
 
@@ -364,10 +364,10 @@ export default function OverviewTab({ period }: { period: Period }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Summary stat row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-              <StatCard label="Total Certs"    value={certData?.statusBreakdown.total}             color="default" />
-              <StatCard label="Approved"       value={certData?.statusBreakdown.approved}          color="green" />
-              <StatCard label="Within Amni Review" value={certData?.statusBreakdown.pending}       color="amber" />
-              <StatCard label="Rejected"       value={certData?.statusBreakdown.rejected}          color="red" />
+              <StatCard label="Total Tracked"      value={certData?.statusBreakdown.totalTracked}      color="default" />
+              <StatCard label="Approved (period)"  value={certData?.statusBreakdown.approvedInPeriod} color="green" />
+              <StatCard label="Within Amni Review" value={certData?.statusBreakdown.pending}          color="amber" />
+              <StatCard label="Rejected (period)"  value={certData?.statusBreakdown.rejectedInPeriod} color="red" />
               <StatCard label="Expired"        value={certData?.expiryBreakdown.expired}           color="red" />
               <StatCard label="Expiring Soon"  value={certData?.expiryBreakdown.expiringSoon}      color="red" />
               <StatCard label="Healthy"        value={certData?.expiryBreakdown.healthy}           color="green" />

@@ -13,7 +13,12 @@ import type { TrendsData, Period } from '../types';
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
 
-const LINE_COLORS = { progressions: '#e67509', approvals: '#16a34a', returns: '#d97706', holds: '#dc2626' };
+const LINE_COLORS = {
+  progressions: '#e67509',
+  l3Approvals:  '#16a34a',
+  returns:      '#d97706',
+  holds:        '#dc2626',
+};
 const STAGE_COLORS = ['#e67509', '#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626'];
 
 export default function TrendsTab({ period }: { period: Period }) {
@@ -35,9 +40,20 @@ export default function TrendsTab({ period }: { period: Period }) {
 
   useEffect(() => { load(); }, [load]);
 
+  // Flatten labels + series arrays into chart-friendly row objects
+  const timeSeriesData = data
+    ? data.trends.labels.map((label, i) => ({
+        label,
+        progressions: data.trends.series.progressions[i] ?? 0,
+        l3Approvals:  data.trends.series.l3Approvals[i]  ?? 0,
+        returns:      data.trends.series.returns[i]      ?? 0,
+        holds:        data.trends.series.holds[i]        ?? 0,
+      }))
+    : [];
+
   const returnsByStageData = data
     ? Object.entries(data.returnsByStage)
-        .filter(([k]) => k !== 'unknown')
+        .filter(([k]) => k !== 'Unknown')
         .map(([stage, count], i) => ({ stage: `Stage ${stage}`, count, fill: STAGE_COLORS[i] }))
     : [];
 
@@ -56,13 +72,14 @@ export default function TrendsTab({ period }: { period: Period }) {
       </div>
 
       {/* ── Summary cards ── */}
-      {loading ? <CardsSkeleton count={5} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
+      {loading ? <CardsSkeleton count={6} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
           <StatCard label="Progressions"    value={data.summary.totalProgressions}   color="blue" />
           <StatCard label="L3 Approvals"    value={data.summary.totalL3Approvals}    color="green" />
           <StatCard label="Returns"         value={data.summary.totalReturns}         color="amber" />
           <StatCard label="Holds"           value={data.summary.totalHolds}           color="red" />
           <StatCard label="Submissions"     value={data.summary.totalSubmissions}     color="default" />
+          <StatCard label="Registrations"   value={data.summary.totalRegistrations}   color="blue" />
         </div>
       )}
 
@@ -84,17 +101,25 @@ export default function TrendsTab({ period }: { period: Period }) {
       )}
 
       {/* ── Line chart: time series ── */}
-      <Section title="Weekly Activity Trend">
+      <Section title={`Activity Trend (${data?.bucketSize ?? '…'} buckets)`}>
         {loading ? <ChartSkeleton height={260} /> : error ? null : (
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={data?.timeSeries ?? []} margin={{ top: 8, right: 20, bottom: 4, left: 0 }}>
+            <LineChart data={timeSeriesData} margin={{ top: 8, right: 20, bottom: 4, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="week" tick={{ fontSize: 11 }} />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
               <Legend />
               {(Object.entries(LINE_COLORS) as [string, string][]).map(([key, color]) => (
-                <Line key={key} type="monotone" dataKey={key} stroke={color} strokeWidth={2} dot={{ r: 3 }} />
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  name={key === 'l3Approvals' ? 'L3 Approvals' : key.charAt(0).toUpperCase() + key.slice(1)}
+                  stroke={color}
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                />
               ))}
             </LineChart>
           </ResponsiveContainer>
@@ -121,11 +146,25 @@ export default function TrendsTab({ period }: { period: Period }) {
       {!loading && !error && data && (
         <Section title="Hold Statistics">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Holds Requested" value={data.holdStats.totalRequested}    color="amber" />
-            <StatCard label="Holds Approved"  value={data.holdStats.totalApprovedHolds} color="green" />
+            <StatCard label="Holds Requested" value={data.holdStats.totalRequested}  color="amber" />
+            <StatCard label="Holds Approved"  value={data.holdStats.totalApproved}   color="green" />
             <StatCard label="Hold Approval Rate"
               value={data.holdStats.approvalRate == null ? '—' : `${data.holdStats.approvalRate.toFixed(1)}%`}
               color="blue" />
+          </div>
+        </Section>
+      )}
+
+      {/* ── Current pipeline snapshot ── */}
+      {!loading && !error && data && (
+        <Section title="Current Pipeline Snapshot">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+            <StatCard label="Total Registered"   value={data.currentTotals.totalRegistered} color="default" />
+            <StatCard label="L3 Approved"        value={data.currentTotals.totalApproved}   color="green" />
+            <StatCard label="In Pipeline"        value={data.currentTotals.inPipeline}      color="blue" />
+            <StatCard label="Not Yet Submitted"  value={data.currentTotals.inProgress}      color="default" />
+            <StatCard label="Returned"           value={data.currentTotals.totalReturned}   color="amber" />
+            <StatCard label="Parked"             value={data.currentTotals.totalParked}     color="red" />
           </div>
         </Section>
       )}

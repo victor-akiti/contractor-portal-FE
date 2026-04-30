@@ -5,6 +5,7 @@ import type {
   PerformanceData,
   CertificatesData,
   TrendsData,
+  ExecSummaryData,
   NarrativeData,
   DashboardData,
   Period,
@@ -19,8 +20,8 @@ function unwrap<T>(res: ApiResponse<T>): T {
   return res as T;
 }
 
-export async function fetchPipeline(): Promise<PipelineData> {
-  const res = await getProtected('insights/pipeline', 'Admin');
+export async function fetchPipeline(period: Period = '30d'): Promise<PipelineData> {
+  const res = await getProtected(`insights/pipeline?period=${period}`, 'Admin');
   return unwrap<PipelineData>(res);
 }
 
@@ -29,8 +30,8 @@ export async function fetchPerformance(period: Period = '30d'): Promise<Performa
   return unwrap<PerformanceData>(res);
 }
 
-export async function fetchCertificates(): Promise<CertificatesData> {
-  const res = await getProtected('insights/certificates', 'Admin');
+export async function fetchCertificates(period: Period = '30d'): Promise<CertificatesData> {
+  const res = await getProtected(`insights/certificates?period=${period}`, 'Admin');
   return unwrap<CertificatesData>(res);
 }
 
@@ -42,6 +43,11 @@ export async function fetchTrends(period: Period = '30d'): Promise<TrendsData> {
 export async function fetchDashboard(period: Period = '30d'): Promise<DashboardData> {
   const res = await getProtected(`insights/dashboard?period=${period}`, 'Admin');
   return unwrap<DashboardData>(res);
+}
+
+export async function fetchExecSummary(period: Period = '30d'): Promise<ExecSummaryData> {
+  const res = await getProtected(`insights/executive-summary?period=${period}`, 'Admin');
+  return unwrap<ExecSummaryData>(res);
 }
 
 export async function fetchNarrative(focus: 'pipeline' | 'performance' | 'certs' | 'all' = 'all'): Promise<NarrativeData> {

@@ -8,7 +8,7 @@ import ErrorCard from './ErrorCard';
 import SortableTable from './SortableTable';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import { fetchPipeline } from '../api';
-import type { PipelineData, PriorityVendors } from '../types';
+import type { PipelineData, PriorityVendors, Period } from '../types';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 
@@ -20,7 +20,7 @@ const fmtDate = (iso: string) => {
 
 const STAGE_COLORS = ['#e67509', '#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626', '#6b7280', '#0891b2'];
 
-export default function PipelineTab() {
+export default function PipelineTab({ period }: { period: Period }) {
   const [data, setData] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,13 +29,13 @@ export default function PipelineTab() {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchPipeline());
+      setData(await fetchPipeline(period));
     } catch {
       setError('Failed to load pipeline data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [period]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -54,18 +54,25 @@ export default function PipelineTab() {
       ]
     : [];
 
-  const dwellData = data
-    ? Object.entries(data.avgDwellPerStage).map(([stage, days]) => ({
-        stage,
-        days: days ?? 0,
-        actual: days,
-      }))
-    : [];
+  // avgDwellPerStage is now an array of { stage, avgDays, sampleSize }
+  const dwellData = (data?.avgDwellPerStage ?? []).map(d => ({
+    stage: d.stage,
+    days: d.avgDays ?? 0,
+    actual: d.avgDays,
+  }));
 
   const oldestRows = (data?.oldestPendingPerStage ?? []) as unknown as Record<string, unknown>[];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+      {/* ── Refresh + period label ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
+        <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+          ↻ Refresh
+        </button>
+      </div>
 
       {/* ── Stage count cards ── */}
       {loading ? <CardsSkeleton count={10} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
@@ -117,12 +124,25 @@ export default function PipelineTab() {
 
       {/* ── Throughput cards ── */}
       {!loading && !error && data && (
-        <Section title="Throughput">
+        <Section title={`Throughput (${data.throughput.period})`}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Progressions (7d)"     value={data.throughput.progressionsLast7Days}  color="blue" />
-            <StatCard label="Progressions (30d)"    value={data.throughput.progressionsLast30Days} color="blue" />
-            <StatCard label="L3 Approvals (7d)"     value={data.throughput.l3ApprovalsLast7Days}   color="green" />
-            <StatCard label="L3 Approvals (30d)"    value={data.throughput.l3ApprovalsLast30Days}  color="green" />
+            <StatCard label={`Progressions (${data.throughput.period})`}  value={data.throughput.periodProgressions}   color="blue" />
+            <StatCard label={`L3 Approvals (${data.throughput.period})`}  value={data.throughput.periodL3Approvals}    color="green" />
+            <StatCard label="Progressions (7d)"                           value={data.throughput.last7DaysProgressions} color="blue" />
+            <StatCard label="L3 Approvals (7d)"                           value={data.throughput.last7DaysL3Approvals}  color="green" />
+          </div>
+        </Section>
+      )}
+
+      {/* ── Summary cards ── */}
+      {!loading && !error && data && (
+        <Section title="Pipeline Summary">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+            <StatCard label="Total Registered"     value={data.summary.totalRegistered}  color="default" />
+            <StatCard label="Not Yet Submitted"    value={data.summary.totalInProgress}  color="default" />
+            <StatCard label="In Pipeline"          value={data.summary.totalInPipeline}  color="blue" />
+            <StatCard label="Completion Rate"      value={data.summary.completionRate != null ? `${data.summary.completionRate.toFixed(1)}%` : '—'} color="green" />
+            <StatCard label="Avg Cycle Days"       value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
           </div>
         </Section>
       )}

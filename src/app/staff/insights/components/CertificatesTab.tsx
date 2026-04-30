@@ -6,7 +6,7 @@ import ErrorCard from './ErrorCard';
 import SortableTable from './SortableTable';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import { fetchCertificates } from '../api';
-import type { CertificatesData } from '../types';
+import type { CertificatesData, Period } from '../types';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`);
@@ -14,7 +14,7 @@ const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFix
 const EXPIRY_COLORS = ['#dc2626', '#f59e0b', '#16a34a', '#9ca3af'];
 const STATUS_COLORS = ['#16a34a', '#f59e0b', '#dc2626', '#6b7280'];
 
-export default function CertificatesTab() {
+export default function CertificatesTab({ period }: { period: Period }) {
   const [data, setData]       = useState<CertificatesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
@@ -23,21 +23,22 @@ export default function CertificatesTab() {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchCertificates());
+      setData(await fetchCertificates(period));
     } catch {
       setError('Failed to load certificate data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [period]);
 
   useEffect(() => { load(); }, [load]);
 
+  // pending = always current queue; approvedInPeriod/rejectedInPeriod are period-relative
   const statusDonut = data
     ? [
-        { name: 'Approved', value: data.statusBreakdown.approved },
+        { name: 'Approved (period)', value: data.statusBreakdown.approvedInPeriod },
         { name: 'Within Amni Review', value: data.statusBreakdown.pending },
-        { name: 'Rejected', value: data.statusBreakdown.rejected },
+        { name: 'Rejected (period)',  value: data.statusBreakdown.rejectedInPeriod },
       ]
     : [];
 
@@ -56,13 +57,22 @@ export default function CertificatesTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
+      {/* ── Refresh + period label ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
+        <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+          ↻ Refresh
+        </button>
+      </div>
+
       {/* ── Status stat cards ── */}
-      {loading ? <CardsSkeleton count={4} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
+      {loading ? <CardsSkeleton count={5} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
-          <StatCard label="Total Certs"     value={data.statusBreakdown.total}    color="default" />
-          <StatCard label="Approved"        value={data.statusBreakdown.approved} color="green" />
-          <StatCard label="Within Amni Review" value={data.statusBreakdown.pending} color="amber" />
-          <StatCard label="Rejected"        value={data.statusBreakdown.rejected} color="red" />
+          <StatCard label="Total Tracked"        value={data.statusBreakdown.totalTracked}      color="default" />
+          <StatCard label="Approved (period)"    value={data.statusBreakdown.approvedInPeriod}  color="green" />
+          <StatCard label="Within Amni Review"   value={data.statusBreakdown.pending}           color="amber" />
+          <StatCard label="Rejected (period)"    value={data.statusBreakdown.rejectedInPeriod}  color="red" />
+          <StatCard label="Reviewed in Period"   value={data.summary.reviewedInPeriod}          color="blue" />
         </div>
       )}
 

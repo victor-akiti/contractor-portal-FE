@@ -57,7 +57,7 @@ export default function PerformanceTab({ period }: { period: Period }) {
       {/* ── Summary strip ── */}
       {loading ? <CardsSkeleton count={4} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-          <StatCard label="Total Approvers"      value={data.summary.totalApproversOnRecord} color="default" />
+          <StatCard label="Total Approvers"      value={data.summary.totalApproversInPeriod} color="default" />
           <StatCard label="Active in Period"     value={data.summary.activeApproversInPeriod} color="blue" />
           <StatCard label="Avg Response Days"    value={fmt(data.summary.systemAvgResponseDays)} sub="days" color="amber" />
           <StatCard label="Bottleneck Stage"     value={data.summary.bottleneckStage ?? '—'} color="red" />

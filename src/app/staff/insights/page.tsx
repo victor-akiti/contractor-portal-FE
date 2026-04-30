@@ -27,10 +27,10 @@ interface TabDef {
 
 const ALL_TABS: TabDef[] = [
   { key: 'overview',     label: 'Overview',     usesPeriod: true },
-  { key: 'pipeline',     label: 'Pipeline' },
+  { key: 'pipeline',     label: 'Pipeline',     usesPeriod: true },
   { key: 'performance',  label: 'Performance',  requiredRoles: PERFORMANCE_ROLES, usesPeriod: true },
   { key: 'trends',       label: 'Trends',       usesPeriod: true },
-  { key: 'certificates', label: 'Certificates' },
+  { key: 'certificates', label: 'Certificates', usesPeriod: true },
   { key: 'export',       label: 'Export',       requiredRoles: EXPORT_ROLES },
 ];
 
@@ -107,7 +107,7 @@ export default function InsightsPage() {
         ))}
         {!activePeriod && (
           <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginLeft: '0.25rem' }}>
-            (period filter applies to Overview, Performance & Trends tabs)
+            (period filter applies to the Export tab only — all other tabs are period-aware)
           </span>
         )}
       </div>
@@ -153,7 +153,7 @@ export default function InsightsPage() {
         )}
         {visited.includes('pipeline') && (
           <div style={{ display: activeTab === 'pipeline' ? 'block' : 'none' }}>
-            <PipelineTab />
+            <PipelineTab period={period} />
           </div>
         )}
         {visited.includes('performance') && visibleTabs.some(t => t.key === 'performance') && (
@@ -168,7 +168,7 @@ export default function InsightsPage() {
         )}
         {visited.includes('certificates') && (
           <div style={{ display: activeTab === 'certificates' ? 'block' : 'none' }}>
-            <CertificatesTab />
+            <CertificatesTab period={period} />
           </div>
         )}
         {visited.includes('export') && visibleTabs.some(t => t.key === 'export') && (
