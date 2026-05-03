@@ -87,13 +87,13 @@ export default function PerformanceTab({ period }: { period: Period }) {
               { key: 'totalActions',    label: 'Total Actions', width: '110px' },
               { key: 'avgResponseDays', label: 'Avg Response', width: '110px',
                 render: (r) => <ResponseDaysBadge days={r.avgResponseDays as number | null} /> },
-              { key: 'stageBreakdown',  label: 'Stages (A-F)', width: '160px',
+              { key: 'stageBreakdown',  label: 'Stages (B-G)', width: '180px',
                 render: (r) => {
-                  const s = r.stageBreakdown as { A: number; B: number; C: number; D: number; E: number; F: number };
+                  const s = r.stageBreakdown as { B: number; C: number; D: number; E: number; F: number; G: number };
                   if (!s) return '—';
                   return (
                     <span style={{ fontSize: '0.75rem', color: '#6c757d' }}>
-                      A:{s.A} B:{s.B} C:{s.C} D:{s.D} E:{s.E} F:{s.F}
+                      B:{s.B} C:{s.C} D:{s.D} E:{s.E} F:{s.F} G:{s.G}
                     </span>
                   );
                 }},
@@ -130,7 +130,7 @@ export default function PerformanceTab({ period }: { period: Period }) {
       {!loading && !error && data && (
         <Section title="Pending Vendors by Stage">
           {Object.entries(data.pendingByStage).map(([stageIdx, companies]) => {
-            const stageNames = ['Stage A', 'Stage B', 'Stage C', 'Stage D', 'Stage E', 'Stage F'];
+            const stageNames = ['Stage A', 'Stage B', 'Stage C', 'Stage D', 'Stage E', 'Stage F', 'Stage G'];
             const label = stageNames[Number(stageIdx)] ?? `Stage ${stageIdx}`;
             const isOpen = openStage === stageIdx;
             return (

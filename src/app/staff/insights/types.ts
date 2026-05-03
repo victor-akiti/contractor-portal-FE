@@ -1,12 +1,12 @@
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 export interface StageCounts {
-  inProgress: number;
   stageA: number;
   stageB: number;
   stageC: number;
   stageD: number;
   stageE: number;
   stageF: number;
+  stageG: number;
   l3: number;
   returned: number;
   parked: number;
@@ -51,7 +51,7 @@ export interface ApproverRecord {
   role: string;
   totalActions: number;
   avgResponseDays: number | null;
-  stageBreakdown: { A: number; B: number; C: number; D: number; E: number; F: number };
+  stageBreakdown: { B: number; C: number; D: number; E: number; F: number; G: number };
   returnsInitiated: number;
   holdsInitiated: number;
   progressions: number;
@@ -132,7 +132,7 @@ export interface TrendsData {
     labels: string[];
     series: TrendsSeries;
   };
-  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; Unknown: number };
+  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
   holdStats: { totalRequested: number; totalApproved: number; approvalRate: number | null };
   topReturnInitiators: { name: string; count: number }[];
   topHoldInitiators: { name: string; count: number }[];
@@ -276,7 +276,7 @@ export interface DashboardTrends {
     holds: number[];
     cumulativeApprovals: number[];
   };
-  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; Unknown: number };
+  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
 }
 
 export interface DashboardData {

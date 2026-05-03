@@ -41,13 +41,13 @@ export default function PipelineTab({ period }: { period: Period }) {
 
   const stageCounts = data
     ? [
-        { name: 'Not Yet Submitted', value: data.stageCounts.inProgress },
         { name: 'Stage A', value: data.stageCounts.stageA },
         { name: 'Stage B', value: data.stageCounts.stageB },
         { name: 'Stage C', value: data.stageCounts.stageC },
         { name: 'Stage D', value: data.stageCounts.stageD },
         { name: 'Stage E', value: data.stageCounts.stageE },
         { name: 'Stage F', value: data.stageCounts.stageF },
+        { name: 'Stage G', value: data.stageCounts.stageG },
         { name: 'Returned', value: data.stageCounts.returned },
         { name: 'Parked',   value: data.stageCounts.parked },
         { name: 'L3',       value: data.stageCounts.l3 },
@@ -77,13 +77,13 @@ export default function PipelineTab({ period }: { period: Period }) {
       {/* ── Stage count cards ── */}
       {loading ? <CardsSkeleton count={10} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.75rem' }}>
-          <StatCard label="Not Yet Submitted" value={data.stageCounts.inProgress} color="default" />
           <StatCard label="Stage A"  value={data.stageCounts.stageA}  color="default" />
           <StatCard label="Stage B"  value={data.stageCounts.stageB}  color="blue" />
           <StatCard label="Stage C"  value={data.stageCounts.stageC}  color="green" />
           <StatCard label="Stage D"  value={data.stageCounts.stageD}  color="purple" />
           <StatCard label="Stage E"  value={data.stageCounts.stageE}  color="amber" />
           <StatCard label="Stage F"  value={data.stageCounts.stageF}  color="red" />
+          <StatCard label="Stage G"  value={data.stageCounts.stageG}  color="default" />
           <StatCard label="Returned" value={data.stageCounts.returned} color="amber" />
           <StatCard label="Parked"   value={data.stageCounts.parked}  color="red" />
           <StatCard label="L3 / Done" value={data.stageCounts.l3}    color="green" />
