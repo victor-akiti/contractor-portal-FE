@@ -9,7 +9,7 @@ import ErrorCard from './ErrorCard';
 import SortableTable from './SortableTable';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import { fetchDashboard, fetchCertificates, fetchNarrative } from '../api';
-import type { DashboardData, CertificatesData, NarrativeData, PriorityVendors, Period } from '../types';
+import type { DashboardData, CertificatesData, NarrativeData, PriorityVendors, Period, StaleVendorItem } from '../types';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
@@ -135,7 +135,7 @@ export default function OverviewTab({ period }: { period: Period }) {
       ]
     : [];
 
-  const staleVendors = (dashboard?.pipeline.staleVendors ?? []) as unknown as Record<string, unknown>[];
+  const staleVendors = (dashboard?.pipeline.staleVendors ?? []) as StaleVendorItem[];
 
   const chg      = dashboard?.periodComparison.changePercent;
   const chgStr   = fmtChg(chg);
@@ -417,34 +417,46 @@ export default function OverviewTab({ period }: { period: Period }) {
           staleVendors.length === 0
             ? <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No stale vendors — pipeline is moving well.</p>
             : (
-              <SortableTable
+              <SortableTable<StaleVendorItem>
                 columns={[
                   { key: 'companyName', label: 'Company',
                     render: (r) => (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                         {r.isPriority && (
                           <span style={{ background: '#e67509', color: '#fff', borderRadius: '9999px', padding: '0.1rem 0.45rem', fontSize: '0.68rem', fontWeight: 700 }}>
                             PRIORITY
                           </span>
                         )}
-                        {r.companyName as string}
+                        {r.status === 'returned' && (
+                          <span style={{ background: '#d97706', color: '#fff', borderRadius: '9999px', padding: '0.1rem 0.45rem', fontSize: '0.68rem', fontWeight: 700 }}>
+                            RETURNED
+                          </span>
+                        )}
+                        {r.status === 'parked' && (
+                          <span style={{ background: '#dc2626', color: '#fff', borderRadius: '9999px', padding: '0.1rem 0.45rem', fontSize: '0.68rem', fontWeight: 700 }}>
+                            PARKED
+                          </span>
+                        )}
+                        {r.companyName}
                       </span>
                     )},
-                  { key: 'stage',       label: 'Stage',        width: '90px' },
+                  { key: 'stage',       label: 'Stage',        width: '100px' },
                   { key: 'daysWaiting', label: 'Days Waiting', width: '120px',
                     render: (r) => (
-                      <span style={{ color: (r.daysWaiting as number) > 30 ? '#dc2626' : '#d97706', fontWeight: 600 }}>
-                        {fmt(r.daysWaiting as number, 0)} days
+                      <span style={{ color: r.daysWaiting > 30 ? '#dc2626' : '#d97706', fontWeight: 600 }}>
+                        {fmt(r.daysWaiting, 0)} days
                       </span>
                     )},
                 ]}
                 rows={staleVendors}
                 defaultSortKey="daysWaiting"
                 defaultSortDir="desc"
-                rowStyle={(row) => ({
-                  background: (row.daysWaiting as number) > 30 ? '#fff5f5' : '#fffdf0',
-                  borderLeft: row.isPriority ? '3px solid #e67509' : undefined,
-                })}
+                rowStyle={(row) => {
+                  if (row.status === 'parked')   return { background: '#fef2f2', borderLeft: '3px solid #dc2626' };
+                  if (row.status === 'returned') return { background: '#fffbeb', borderLeft: '3px solid #d97706' };
+                  if (row.daysWaiting > 30)      return { background: '#fff5f5', borderLeft: row.isPriority ? '3px solid #e67509' : undefined };
+                  return { background: '#fffdf0', borderLeft: row.isPriority ? '3px solid #e67509' : undefined };
+                }}
               />
             )
         )}

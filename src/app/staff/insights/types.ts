@@ -21,12 +21,22 @@ export interface OldestPendingItem {
   daysWaiting: number;
 }
 
+export interface StaleVendorItem {
+  companyName: string;
+  stage: string;
+  daysWaiting: number;
+  isPriority: boolean;
+  status: 'active' | 'returned' | 'parked';
+}
+
 export interface PipelineData {
   period: string;
   stageCounts: StageCounts;
   avgDwellPerStage: { stage: string; avgDays: number | null; sampleSize: number }[];
   bottleneck: { stage: string; avgDays: number | null; sampleSize: number } | null;
   oldestPendingPerStage: OldestPendingItem[];
+  oldestReturned: OldestPendingItem | null;
+  oldestParked: OldestPendingItem | null;
   throughput: {
     period: string;
     periodProgressions: number;
@@ -203,7 +213,7 @@ export interface ExecSummaryData {
     stageCounts: StageCounts;
     avgDwellPerStage: { stage: string; avgDays: number | null; sampleSize: number }[];
     bottleneck: { stage: string; avgDays: number | null; sampleSize: number } | null;
-    staleVendors: { companyName: string; stage: string; daysWaiting: number; isPriority: boolean }[];
+    staleVendors: StaleVendorItem[];
   };
   activity: {
     period: string;
@@ -289,7 +299,7 @@ export interface DashboardData {
     distribution: PipelineDistributionItem[];
     avgDwellPerStage: { stage: string; avgDays: number | null }[];
     bottleneck: { stage: string; avgDays: number | null } | null;
-    staleVendors: { companyName: string; stage: string; daysWaiting: number; isPriority: boolean }[];
+    staleVendors: StaleVendorItem[];
   };
   trends: DashboardTrends;
   activity: {

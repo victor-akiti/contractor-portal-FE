@@ -8,7 +8,7 @@ import ErrorCard from './ErrorCard';
 import SortableTable from './SortableTable';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import { fetchPipeline } from '../api';
-import type { PipelineData, PriorityVendors, Period } from '../types';
+import type { PipelineData, PriorityVendors, OldestPendingItem, Period } from '../types';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 
@@ -180,6 +180,16 @@ export default function PipelineTab({ period }: { period: Period }) {
           />
         )}
       </Section>
+
+      {/* ── Longest-waiting returned / parked ── */}
+      {!loading && !error && data && (data.oldestReturned || data.oldestParked) && (
+        <Section title="Longest Waiting — Returned & Parked">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <OldestStatusCard label="Oldest Returned" item={data.oldestReturned} color="#d97706" bg="#fffbeb" />
+            <OldestStatusCard label="Oldest Parked"   item={data.oldestParked}   color="#dc2626" bg="#fef2f2" />
+          </div>
+        </Section>
+      )}
     </div>
   );
 }
@@ -241,6 +251,30 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function OldestStatusCard({ label, item, color, bg }: {
+  label: string;
+  item: OldestPendingItem | null;
+  color: string;
+  bg: string;
+}) {
+  if (!item) return (
+    <div style={{ background: '#f9fafb', border: '1px solid #e0e0e0', borderRadius: '0.375rem', padding: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+      <strong style={{ display: 'block', marginBottom: '0.25rem', color: '#6c757d' }}>{label}</strong>
+      None currently
+    </div>
+  );
+  return (
+    <div style={{ background: bg, border: `1px solid ${color}40`, borderLeft: `3px solid ${color}`, borderRadius: '0.375rem', padding: '1rem' }}>
+      <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color, fontWeight: 700, textTransform: 'uppercase' }}>{label}</p>
+      <p style={{ margin: '0 0 0.15rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{item.companyName}</p>
+      <p style={{ margin: 0, fontSize: '0.8rem', color: '#6c757d' }}>
+        Since {fmtDate(item.entryTime)} ·{' '}
+        <span style={{ color, fontWeight: 700 }}>{item.daysWaiting.toFixed(0)} days waiting</span>
+      </p>
     </div>
   );
 }

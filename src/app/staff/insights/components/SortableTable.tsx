@@ -19,7 +19,7 @@ interface SortableTableProps<T> {
   rowStyle?: (row: T, index: number) => React.CSSProperties;
 }
 
-export default function SortableTable<T extends Record<string, unknown>>({
+export default function SortableTable<T extends object>({
   columns,
   rows,
   defaultSortKey,
