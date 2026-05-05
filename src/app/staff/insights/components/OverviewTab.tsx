@@ -166,7 +166,7 @@ export default function OverviewTab({ period }: { period: Period }) {
         NOT dashboard.kpis.certsPending which reflects a broader query.
       */}
       {loadingMain ? (
-        <CardsSkeleton count={10} />
+        <CardsSkeleton count={11} />
       ) : errorMain ? (
         <ErrorCard message={errorMain} onRetry={loadMain} />
       ) : dashboard && (
@@ -174,7 +174,8 @@ export default function OverviewTab({ period }: { period: Period }) {
           <StatCard label="Total Registered"     value={dashboard.kpis.totalRegistered}     color="default" />
           <StatCard label="In Pipeline"          value={dashboard.kpis.totalInPipeline}     color="blue" />
           <StatCard label="L3 Approved"          value={dashboard.kpis.totalApproved}       color="green" />
-          <StatCard label="Not Yet Submitted"      value={dashboard.kpis.totalInProgress}     color="default" />
+          <StatCard label="With Contractor"         value={dashboard.kpis.totalWithContractor}  color="default" />
+          <StatCard label="Not Yet Submitted"      value={dashboard.kpis.notSubmitted}         color="default" />
           <StatCard label="Priority in Pipeline" value={dashboard.kpis.priorityInPipeline}  color="purple" />
           <StatCard
             label="Completion Rate"

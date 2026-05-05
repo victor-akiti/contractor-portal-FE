@@ -46,7 +46,7 @@ export interface PipelineData {
   };
   summary: {
     totalRegistered: number;
-    totalInProgress: number;
+    totalWithContractor: number;
     totalInPipeline: number;
     completionRate: number;
     avgCycleDays: number | null;
@@ -201,7 +201,7 @@ export interface ExecSummaryData {
   bucketSize: 'day' | 'week' | 'month';
   overview: {
     totalRegistered: number;
-    totalInProgress: number;
+    totalWithContractor: number;
     totalInPipeline: number;
     totalApproved: number;
     completionRate: number | null;
@@ -259,9 +259,10 @@ export interface DashboardKpis {
   avgCycleDays: number | null;
   returned: number;
   parked: number;
-  inProgress: number;
-  /** Form-fillers who have not yet submitted (isSubmitted=false) */
-  totalInProgress: number;
+  /** Vendors with contractor (in pipeline + returned) */
+  totalWithContractor: number;
+  /** Vendors who have not yet submitted their form */
+  notSubmitted: number;
   /** Priority vendors currently in the pipeline */
   priorityInPipeline: number;
   certsPending: number;

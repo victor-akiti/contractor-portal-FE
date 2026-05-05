@@ -139,7 +139,7 @@ export default function PipelineTab({ period }: { period: Period }) {
         <Section title="Pipeline Summary">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
             <StatCard label="Total Registered"     value={data.summary.totalRegistered}  color="default" />
-            <StatCard label="Not Yet Submitted"    value={data.summary.totalInProgress}  color="default" />
+            <StatCard label="With Contractor"       value={data.summary.totalWithContractor} color="default" />
             <StatCard label="In Pipeline"          value={data.summary.totalInPipeline}  color="blue" />
             <StatCard label="Completion Rate"      value={data.summary.completionRate != null ? `${data.summary.completionRate.toFixed(1)}%` : '—'} color="green" />
             <StatCard label="Avg Cycle Days"       value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
