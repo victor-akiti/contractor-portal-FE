@@ -1,18 +1,18 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import StatCard from './StatCard';
-import ErrorCard from './ErrorCard';
-import SortableTable from './SortableTable';
-import { CardsSkeleton, TableSkeleton } from './LoadingSkeleton';
 import { fetchPerformance } from '../api';
 import type { PerformanceData, Period } from '../types';
+import ErrorCard from './ErrorCard';
+import { CardsSkeleton, TableSkeleton } from './LoadingSkeleton';
+import SortableTable from './SortableTable';
+import StatCard from './StatCard';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 
 function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
   if (days == null) return <span style={{ color: '#9ca3af' }}>—</span>;
   const color = days < 3 ? '#16a34a' : days <= 7 ? '#d97706' : '#dc2626';
-  const bg    = days < 3 ? '#f0fdf4' : days <= 7 ? '#fffbeb' : '#fef2f2';
+  const bg = days < 3 ? '#f0fdf4' : days <= 7 ? '#fffbeb' : '#fef2f2';
   return (
     <span style={{ background: bg, color, borderRadius: '9999px', padding: '0.2rem 0.6rem', fontWeight: 600, fontSize: '0.8rem' }}>
       {days.toFixed(1)}d
@@ -21,9 +21,9 @@ function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
 }
 
 export default function PerformanceTab({ period }: { period: Period }) {
-  const [data, setData]       = useState<PerformanceData | null>(null);
+  const [data, setData] = useState<PerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [openStage, setOpenStage] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -41,7 +41,7 @@ export default function PerformanceTab({ period }: { period: Period }) {
   useEffect(() => { load(); }, [load]);
 
   const approverRows = (data?.byApprover ?? []) as unknown as Record<string, unknown>[];
-  const stageRows    = (data?.byStage ?? [])    as unknown as Record<string, unknown>[];
+  const stageRows = (data?.byStage ?? []) as unknown as Record<string, unknown>[];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -57,10 +57,10 @@ export default function PerformanceTab({ period }: { period: Period }) {
       {/* ── Summary strip ── */}
       {loading ? <CardsSkeleton count={4} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-          <StatCard label="Total Approvers"      value={data.summary.totalApproversInPeriod} color="default" />
-          <StatCard label="Active in Period"     value={data.summary.activeApproversInPeriod} color="blue" />
-          <StatCard label="Avg Response Days"    value={fmt(data.summary.systemAvgResponseDays)} sub="days" color="amber" />
-          <StatCard label="Bottleneck Stage"     value={data.summary.bottleneckStage ?? '—'} color="red" />
+          <StatCard label="Total Approvers" value={data.summary.totalApproversInPeriod} color="default" />
+          <StatCard label="Active in Period" value={data.summary.activeApproversInPeriod} color="blue" />
+          <StatCard label="Avg Response Days" value={fmt(data.summary.systemAvgResponseDays)} sub="days" color="amber" />
+          <StatCard label="Bottleneck Stage" value={data.summary.bottleneckStage ?? '—'} color="red" />
         </div>
       )}
 
@@ -82,12 +82,15 @@ export default function PerformanceTab({ period }: { period: Period }) {
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
-              { key: 'name',            label: 'Name' },
-              { key: 'role',            label: 'Role', width: '120px' },
-              { key: 'totalActions',    label: 'Total Actions', width: '110px' },
-              { key: 'avgResponseDays', label: 'Avg Response', width: '110px',
-                render: (r) => <ResponseDaysBadge days={r.avgResponseDays as number | null} /> },
-              { key: 'stageBreakdown',  label: 'Stages (B-G)', width: '180px',
+              { key: 'name', label: 'Name' },
+              { key: 'role', label: 'Role', width: '120px' },
+              { key: 'totalActions', label: 'Total Actions', width: '110px' },
+              {
+                key: 'avgResponseDays', label: 'Avg Response', width: '110px',
+                render: (r) => <ResponseDaysBadge days={r.avgResponseDays as number | null} />
+              },
+              {
+                key: 'stageBreakdown', label: 'Stages (B-G)', width: '180px',
                 render: (r) => {
                   const s = r.stageBreakdown as { B: number; C: number; D: number; E: number; F: number; G: number };
                   if (!s) return '—';
@@ -96,9 +99,10 @@ export default function PerformanceTab({ period }: { period: Period }) {
                       B:{s.B} C:{s.C} D:{s.D} E:{s.E} F:{s.F} G:{s.G}
                     </span>
                   );
-                }},
+                }
+              },
               { key: 'returnsInitiated', label: 'Returns', width: '80px' },
-              { key: 'holdsInitiated',   label: 'Holds',   width: '80px' },
+              { key: 'holdsInitiated', label: 'Holds', width: '80px' },
             ]}
             rows={approverRows}
             defaultSortKey="totalActions"
@@ -112,12 +116,16 @@ export default function PerformanceTab({ period }: { period: Period }) {
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
-              { key: 'stage',            label: 'Stage', width: '90px' },
-              { key: 'avgDwellDays',     label: 'Avg Dwell (days)', width: '140px',
-                render: (r) => <span>{fmt(r.avgDwellDays as number | null)}</span> },
-              { key: 'currentVendors',   label: 'Current Vendors', width: '130px' },
-              { key: 'responsibleRoles', label: 'Responsible Roles',
-                render: (r) => <span style={{ fontSize: '0.8rem' }}>{(r.responsibleRoles as string[])?.join(', ') || '—'}</span> },
+              { key: 'stage', label: 'Stage', width: '90px' },
+              {
+                key: 'avgDwellDays', label: 'Avg Dwell (days)', width: '140px',
+                render: (r) => <span>{fmt(r.avgDwellDays as number | null)}</span>
+              },
+              { key: 'currentVendors', label: 'Current Vendors', width: '130px' },
+              {
+                key: 'responsibleRoles', label: 'Responsible Roles',
+                render: (r) => <span style={{ fontSize: '0.8rem' }}>{(r.responsibleRoles as string[])?.join(', ') || '—'}</span>
+              },
             ]}
             rows={stageRows}
             defaultSortKey="avgDwellDays"
@@ -169,7 +177,7 @@ export default function PerformanceTab({ period }: { period: Period }) {
                                 color: c.daysWaiting > 30 ? '#dc2626' : c.daysWaiting > 14 ? '#d97706' : undefined,
                                 fontWeight: 500,
                               }}>
-                                {c.daysWaiting.toFixed(0)}d
+                                {c.daysWaiting?.toFixed(0)}d
                               </td>
                             </tr>
                           ))}

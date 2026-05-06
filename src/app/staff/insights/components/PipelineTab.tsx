@@ -1,14 +1,19 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis, YAxis,
 } from 'recharts';
-import StatCard from './StatCard';
-import ErrorCard from './ErrorCard';
-import SortableTable from './SortableTable';
-import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import { fetchPipeline } from '../api';
-import type { PipelineData, PriorityVendors, OldestPendingItem, Period } from '../types';
+import type { OldestPendingItem, Period, PipelineData, PriorityVendors } from '../types';
+import ErrorCard from './ErrorCard';
+import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
+import SortableTable from './SortableTable';
+import StatCard from './StatCard';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 
@@ -41,17 +46,17 @@ export default function PipelineTab({ period }: { period: Period }) {
 
   const stageCounts = data
     ? [
-        { name: 'Stage A', value: data.stageCounts.stageA },
-        { name: 'Stage B', value: data.stageCounts.stageB },
-        { name: 'Stage C', value: data.stageCounts.stageC },
-        { name: 'Stage D', value: data.stageCounts.stageD },
-        { name: 'Stage E', value: data.stageCounts.stageE },
-        { name: 'Stage F', value: data.stageCounts.stageF },
-        { name: 'Stage G', value: data.stageCounts.stageG },
-        { name: 'Returned', value: data.stageCounts.returned },
-        { name: 'Parked',   value: data.stageCounts.parked },
-        { name: 'L3',       value: data.stageCounts.l3 },
-      ]
+      { name: 'Stage A', value: data.stageCounts.stageA },
+      { name: 'Stage B', value: data.stageCounts.stageB },
+      { name: 'Stage C', value: data.stageCounts.stageC },
+      { name: 'Stage D', value: data.stageCounts.stageD },
+      { name: 'Stage E', value: data.stageCounts.stageE },
+      { name: 'Stage F', value: data.stageCounts.stageF },
+      { name: 'Stage G', value: data.stageCounts.stageG },
+      { name: 'Returned', value: data.stageCounts.returned },
+      { name: 'Parked', value: data.stageCounts.parked },
+      { name: 'L3', value: data.stageCounts.l3 },
+    ]
     : [];
 
   // avgDwellPerStage is now an array of { stage, avgDays, sampleSize }
@@ -77,16 +82,16 @@ export default function PipelineTab({ period }: { period: Period }) {
       {/* ── Stage count cards ── */}
       {loading ? <CardsSkeleton count={10} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.75rem' }}>
-          <StatCard label="Stage A"  value={data.stageCounts.stageA}  color="default" />
-          <StatCard label="Stage B"  value={data.stageCounts.stageB}  color="blue" />
-          <StatCard label="Stage C"  value={data.stageCounts.stageC}  color="green" />
-          <StatCard label="Stage D"  value={data.stageCounts.stageD}  color="purple" />
-          <StatCard label="Stage E"  value={data.stageCounts.stageE}  color="amber" />
-          <StatCard label="Stage F"  value={data.stageCounts.stageF}  color="red" />
-          <StatCard label="Stage G"  value={data.stageCounts.stageG}  color="default" />
+          <StatCard label="Stage A" value={data.stageCounts.stageA} color="default" />
+          <StatCard label="Stage B" value={data.stageCounts.stageB} color="blue" />
+          <StatCard label="Stage C" value={data.stageCounts.stageC} color="green" />
+          <StatCard label="Stage D" value={data.stageCounts.stageD} color="purple" />
+          <StatCard label="Stage E" value={data.stageCounts.stageE} color="amber" />
+          <StatCard label="Stage F" value={data.stageCounts.stageF} color="red" />
+          <StatCard label="Stage G" value={data.stageCounts.stageG} color="default" />
           <StatCard label="Returned" value={data.stageCounts.returned} color="amber" />
-          <StatCard label="Parked"   value={data.stageCounts.parked}  color="red" />
-          <StatCard label="L3 / Done" value={data.stageCounts.l3}    color="green" />
+          <StatCard label="Parked" value={data.stageCounts.parked} color="red" />
+          <StatCard label="L3 / Done" value={data.stageCounts.l3} color="green" />
         </div>
       )}
 
@@ -126,10 +131,10 @@ export default function PipelineTab({ period }: { period: Period }) {
       {!loading && !error && data && (
         <Section title={`Throughput (${data.throughput.period})`}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label={`Progressions (${data.throughput.period})`}  value={data.throughput.periodProgressions}   color="blue" />
-            <StatCard label={`L3 Approvals (${data.throughput.period})`}  value={data.throughput.periodL3Approvals}    color="green" />
-            <StatCard label="Progressions (7d)"                           value={data.throughput.last7DaysProgressions} color="blue" />
-            <StatCard label="L3 Approvals (7d)"                           value={data.throughput.last7DaysL3Approvals}  color="green" />
+            <StatCard label={`Progressions (${data.throughput.period})`} value={data.throughput.periodProgressions} color="blue" />
+            <StatCard label={`L3 Approvals (${data.throughput.period})`} value={data.throughput.periodL3Approvals} color="green" />
+            <StatCard label="Progressions (7d)" value={data.throughput.last7DaysProgressions} color="blue" />
+            <StatCard label="L3 Approvals (7d)" value={data.throughput.last7DaysL3Approvals} color="green" />
           </div>
         </Section>
       )}
@@ -138,11 +143,11 @@ export default function PipelineTab({ period }: { period: Period }) {
       {!loading && !error && data && (
         <Section title="Pipeline Summary">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Total Registered"     value={data.summary.totalRegistered}  color="default" />
-            <StatCard label="With Contractor"       value={data.summary.totalWithContractor} color="default" />
-            <StatCard label="In Pipeline"          value={data.summary.totalInPipeline}  color="blue" />
-            <StatCard label="Completion Rate"      value={data.summary.completionRate != null ? `${data.summary.completionRate.toFixed(1)}%` : '—'} color="green" />
-            <StatCard label="Avg Cycle Days"       value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
+            <StatCard label="Total Registered" value={data.summary.totalRegistered} color="default" />
+            <StatCard label="With Contractor" value={data.summary.totalWithContractor} color="default" />
+            <StatCard label="In Pipeline" value={data.summary.totalInPipeline} color="blue" />
+            <StatCard label="Completion Rate" value={data.summary.completionRate != null ? `${data.summary.completionRate.toFixed(1)}%` : '—'} color="green" />
+            <StatCard label="Avg Cycle Days" value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
           </div>
         </Section>
       )}
@@ -157,16 +162,20 @@ export default function PipelineTab({ period }: { period: Period }) {
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
-              { key: 'stage',       label: 'Stage', width: '80px' },
+              { key: 'stage', label: 'Stage', width: '80px' },
               { key: 'companyName', label: 'Company' },
-              { key: 'entryTime',   label: 'Entry Date', width: '130px',
-                render: (r) => <span>{fmtDate(r.entryTime as string)}</span> },
-              { key: 'daysWaiting', label: 'Days Waiting', width: '120px',
+              {
+                key: 'entryTime', label: 'Entry Date', width: '130px',
+                render: (r) => <span>{fmtDate(r.entryTime as string)}</span>
+              },
+              {
+                key: 'daysWaiting', label: 'Days Waiting', width: '120px',
                 render: (r) => (
                   <span style={{ color: (r.daysWaiting as number) > 30 ? '#dc2626' : (r.daysWaiting as number) > 14 ? '#d97706' : undefined }}>
                     {fmt(r.daysWaiting as number, 0)} days
                   </span>
-                )},
+                )
+              },
             ]}
             rows={oldestRows}
             defaultSortKey="daysWaiting"
@@ -186,7 +195,7 @@ export default function PipelineTab({ period }: { period: Period }) {
         <Section title="Longest Waiting — Returned & Parked">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <OldestStatusCard label="Oldest Returned" item={data.oldestReturned} color="#d97706" bg="#fffbeb" />
-            <OldestStatusCard label="Oldest Parked"   item={data.oldestParked}   color="#dc2626" bg="#fef2f2" />
+            <OldestStatusCard label="Oldest Parked" item={data.oldestParked} color="#dc2626" bg="#fef2f2" />
           </div>
         </Section>
       )}
@@ -215,10 +224,10 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
         {[
-          { label: 'Total',       value: pv.total,       color: '#e67509' },
-          { label: 'In Pipeline', value: pv.inPipeline,  color: '#2563eb' },
-          { label: 'Approved',    value: pv.approved,    color: '#16a34a' },
-          { label: 'Returned',    value: pv.returned,    color: '#d97706' },
+          { label: 'Total', value: pv.total, color: '#e67509' },
+          { label: 'In Pipeline', value: pv.inPipeline, color: '#2563eb' },
+          { label: 'Approved', value: pv.approved, color: '#16a34a' },
+          { label: 'Returned', value: pv.returned, color: '#d97706' },
         ].map(({ label, value, color }) => (
           <div key={label} style={{ background: '#fff', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', border: '1px solid #e0e0e0' }}>
             <div style={{ fontSize: '0.68rem', color: '#6c757d', fontWeight: 600, textTransform: 'uppercase' }}>{label}</div>
@@ -246,7 +255,7 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0', borderTop: i > 0 ? '1px solid #fee2e2' : undefined, fontSize: '0.825rem' }}>
               <span style={{ fontWeight: 500 }}>{v.companyName}</span>
               <span style={{ color: '#6c757d' }}>{v.stage}</span>
-              <span style={{ fontWeight: 700, color: '#dc2626' }}>{v.daysWaiting.toFixed(0)}d</span>
+              <span style={{ fontWeight: 700, color: '#dc2626' }}>{v.daysWaiting?.toFixed(0)}d</span>
             </div>
           ))}
         </div>
@@ -273,7 +282,7 @@ function OldestStatusCard({ label, item, color, bg }: {
       <p style={{ margin: '0 0 0.15rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{item.companyName}</p>
       <p style={{ margin: 0, fontSize: '0.8rem', color: '#6c757d' }}>
         Since {fmtDate(item.entryTime)} ·{' '}
-        <span style={{ color, fontWeight: 700 }}>{item.daysWaiting.toFixed(0)} days waiting</span>
+        <span style={{ color, fontWeight: 700 }}>{item.daysWaiting?.toFixed(0)} days waiting</span>
       </p>
     </div>
   );
