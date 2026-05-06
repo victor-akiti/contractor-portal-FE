@@ -358,12 +358,12 @@ export default function OverviewTab({ period }: { period: Period }) {
 
       {/* ── Due Diligence ── */}
       {!loadingMain && !errorMain && dashboard && (
-        <Section title="Due Diligence (Stage D & E)">
+        <Section title="Due Diligence (Stage E & F)">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="At Stage D" value={dashboard.dueDiligence.atStageD} color="blue" />
-            <StatCard label="At Stage E" value={dashboard.dueDiligence.atStageE} color="purple" />
-            <StatCard label="Avg Days @ Stage D" value={fmt(dashboard.dueDiligence.avgDaysAtStageD)} sub="days" color="amber" />
-            <StatCard label="Avg Days @ Stage E" value={fmt(dashboard.dueDiligence.avgDaysAtStageE)} sub="days" color="amber" />
+            <StatCard label="At Stage E" value={dashboard.dueDiligence.atStageD} color="blue" />
+            <StatCard label="At Stage F" value={dashboard.dueDiligence.atStageE} color="purple" />
+            <StatCard label="Avg Days @ Stage E" value={fmt(dashboard.dueDiligence.avgDaysAtStageD)} sub="days" color="amber" />
+            <StatCard label="Avg Days @ Stage F" value={fmt(dashboard.dueDiligence.avgDaysAtStageE)} sub="days" color="amber" />
           </div>
         </Section>
       )}
