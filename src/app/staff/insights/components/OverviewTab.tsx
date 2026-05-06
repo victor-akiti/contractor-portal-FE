@@ -14,31 +14,31 @@ import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton } from './LoadingSkeleton';
 import StatCard from './StatCard';
 
-const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined)        => (v == null ? '—' : `${v.toFixed(1)}%`);
-const fmtChg = (v: number | null | undefined)        =>
+const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`);
+const fmtChg = (v: number | null | undefined) =>
   v == null ? null : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 
 const FLAG_STYLES: Record<string, { bg: string; border: string; color: string }> = {
   critical: { bg: '#fef2f2', border: '#fecaca', color: '#dc2626' },
-  warning:  { bg: '#fffbeb', border: '#fde68a', color: '#b45309' },
-  info:     { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
-  success:  { bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d' },
+  warning: { bg: '#fffbeb', border: '#fde68a', color: '#b45309' },
+  info: { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
+  success: { bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d' },
 };
 
 const NARRATIVE_CHIP: Record<string, { bg: string; color: string }> = {
   critical: { bg: '#fef2f2', color: '#dc2626' },
-  warning:  { bg: '#fffbeb', color: '#b45309' },
-  info:     { bg: '#eff6ff', color: '#1d4ed8' },
-  success:  { bg: '#f0fdf4', color: '#16a34a' },
+  warning: { bg: '#fffbeb', color: '#b45309' },
+  info: { bg: '#eff6ff', color: '#1d4ed8' },
+  success: { bg: '#f0fdf4', color: '#16a34a' },
 };
 
 const TREND_SERIES: { key: string; label: string; color: string }[] = [
-  { key: 'progressions',  label: 'Progressions',  color: '#e67509' },
-  { key: 'approvals',     label: 'Approvals',     color: '#16a34a' },
+  { key: 'progressions', label: 'Progressions', color: '#e67509' },
+  { key: 'approvals', label: 'Approvals', color: '#16a34a' },
   { key: 'registrations', label: 'Registrations', color: '#2563eb' },
-  { key: 'returns',       label: 'Returns',       color: '#d97706' },
-  { key: 'holds',         label: 'Parked',        color: '#dc2626' },
+  { key: 'returns', label: 'Returns', color: '#d97706' },
+  { key: 'holds', label: 'Parked', color: '#dc2626' },
 ];
 
 function CardDivider() {
@@ -52,13 +52,13 @@ function CardDivider() {
 }
 
 export default function OverviewTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
-  const [dashboard, setDashboard]               = useState<DashboardData | null>(null);
-  const [certData,  setCertData]                = useState<CertificatesData | null>(null);
-  const [narrative, setNarrative]               = useState<NarrativeData | null>(null);
-  const [loadingMain, setLoadingMain]           = useState(true);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [certData, setCertData] = useState<CertificatesData | null>(null);
+  const [narrative, setNarrative] = useState<NarrativeData | null>(null);
+  const [loadingMain, setLoadingMain] = useState(true);
   const [loadingNarrative, setLoadingNarrative] = useState(true);
-  const [errorMain, setErrorMain]               = useState<string | null>(null);
-  const [errorNarrative, setErrorNarrative]     = useState<string | null>(null);
+  const [errorMain, setErrorMain] = useState<string | null>(null);
+  const [errorNarrative, setErrorNarrative] = useState<string | null>(null);
 
   const loadMain = useCallback(async () => {
     setLoadingMain(true);
@@ -89,31 +89,31 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
     }
   }, []);
 
-  useEffect(() => { loadMain(); },      [loadMain]);
+  useEffect(() => { loadMain(); }, [loadMain]);
   useEffect(() => { loadNarrative(); }, [loadNarrative]);
 
   const trendData = dashboard
     ? dashboard.trends.labels.map((label, i) => {
-        const s = dashboard.trends.series;
-        return {
-          label,
-          progressions:  s.progressions[i]  ?? 0,
-          approvals:     s.approvals[i]      ?? 0,
-          registrations: s.registrations[i]  ?? 0,
-          returns:       s.returns[i]        ?? 0,
-          holds:         s.holds[i]          ?? 0,
-        };
-      })
+      const s = dashboard.trends.series;
+      return {
+        label,
+        progressions: s.progressions[i] ?? 0,
+        approvals: s.approvals[i] ?? 0,
+        registrations: s.registrations[i] ?? 0,
+        returns: s.returns[i] ?? 0,
+        holds: s.holds[i] ?? 0,
+      };
+    })
     : [];
 
   // Map API shape { label, value, color } to Recharts-friendly { name, value, color }
   const distribution = (dashboard?.pipeline.distribution ?? []).map(d => ({
-    name:  d.label,
+    name: d.label,
     value: d.value,
     color: d.color,
   }));
 
-  const chg    = dashboard?.periodComparison.changePercent;
+  const chg = dashboard?.periodComparison.changePercent;
   const chgStr = fmtChg(chg);
 
   return (
@@ -183,16 +183,16 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {/* Who's in the system */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Total accounts"   value={dashboard.kpis.totalActiveAccounts} color="default" />
-            <StatCard label="Registered"       value={dashboard.kpis.totalRegistered}     color="blue" />
-            <StatCard label="Not submitted"    value={dashboard.kpis.notSubmitted}        color="default" />
+            <StatCard label="Total accounts" value={dashboard.kpis.totalActiveAccounts} color="default" />
+            <StatCard label="Registered" value={dashboard.kpis.totalRegistered} color="blue" />
+            <StatCard label="Not submitted" value={dashboard.kpis.notSubmitted} color="default" />
           </div>
           <CardDivider />
           {/* Where they are */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="In review"   value={dashboard.kpis.totalInPipeline}    color="blue" />
-            <StatCard label="Returned"    value={dashboard.kpis.returned}           color="amber" />
-            <StatCard label="Parked"      value={dashboard.kpis.parked}             color="red" />
+            <StatCard label="In review" value={dashboard.kpis.totalInPipeline} color="blue" />
+            <StatCard label="Returned" value={dashboard.kpis.returned} color="amber" />
+            <StatCard label="Parked" value={dashboard.kpis.parked} color="red" />
             {dashboard.kpis.priorityInPipeline > 0 && (
               <StatCard label="Priority in review" value={dashboard.kpis.priorityInPipeline} color="purple" />
             )}
@@ -215,9 +215,9 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
           <CardDivider />
           {/* Certificates quick look */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Certs in review"  value={certData?.statusBreakdown.pending         ?? '—'} color="amber" />
-            <StatCard label="Expired certs"    value={certData?.expiryBreakdown.expired          ?? '—'} color="red" />
-            <StatCard label="Expiring soon"    value={certData?.expiryBreakdown.expiringSoon     ?? '—'} color="amber" />
+            <StatCard label="Certs in review" value={certData?.statusBreakdown.pending ?? '—'} color="amber" />
+            <StatCard label="Expired certs" value={certData?.expiryBreakdown.expired ?? '—'} color="red" />
+            <StatCard label="Expiring soon" value={certData?.expiryBreakdown.expiringSoon ?? '—'} color="amber" />
           </div>
         </div>
       )}
@@ -337,12 +337,12 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       <Section title="Certificates" subtitle="Cert review queue and expiry status. Full breakdown is in the Certificates tab.">
         {loadingMain ? <ChartSkeleton height={80} /> : errorMain ? null : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Total tracked"     value={certData?.statusBreakdown.totalTracked}      color="default" />
-            <StatCard label="In review"         value={certData?.statusBreakdown.pending}           color="amber" />
-            <StatCard label="Approved (period)" value={certData?.statusBreakdown.approvedInPeriod}  color="brand" />
-            <StatCard label="Rejected (period)" value={certData?.statusBreakdown.rejectedInPeriod}  color="red" />
-            <StatCard label="Expired"           value={certData?.expiryBreakdown.expired}           color="red" />
-            <StatCard label="Expiring soon"     value={certData?.expiryBreakdown.expiringSoon}      color="amber" />
+            <StatCard label="Total tracked" value={certData?.statusBreakdown.totalTracked} color="default" />
+            <StatCard label="In review" value={certData?.statusBreakdown.pending} color="amber" />
+            <StatCard label="Approved (period)" value={certData?.statusBreakdown.approvedInPeriod} color="brand" />
+            <StatCard label="Rejected (period)" value={certData?.statusBreakdown.rejectedInPeriod} color="red" />
+            <StatCard label="Expired" value={certData?.expiryBreakdown.expired} color="red" />
+            <StatCard label="Expiring soon" value={certData?.expiryBreakdown.expiringSoon} color="amber" />
           </div>
         )}
       </Section>
@@ -351,8 +351,8 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 }
 
 function PriorityFastTrackCard({ pv }: { pv: PriorityVendors }) {
-  const urgentList   = pv.urgentList ?? [];
-  const urgentCount  = urgentList.length;
+  const urgentList = pv.urgentList ?? [];
+  const urgentCount = urgentList.length;
   const stageEntries = Object.entries(pv.byStage).filter(([, v]) => v > 0);
 
   return (
@@ -375,11 +375,11 @@ function PriorityFastTrackCard({ pv }: { pv: PriorityVendors }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.5rem', marginBottom: '1rem' }}>
         {[
-          { label: 'Total',       value: pv.total,      color: '#e67509' },
+          { label: 'Total', value: pv.total, color: '#e67509' },
           { label: 'In pipeline', value: pv.inPipeline, color: '#1e40af' },
-          { label: 'Approved',    value: pv.approved,   color: '#e67509' },
-          { label: 'Returned',    value: pv.returned,   color: '#92400e' },
-          { label: 'Parked',      value: pv.parked,     color: '#b91c1c' },
+          { label: 'Approved', value: pv.approved, color: '#e67509' },
+          { label: 'Returned', value: pv.returned, color: '#92400e' },
+          { label: 'Parked', value: pv.parked, color: '#b91c1c' },
           {
             label: 'Approval rate',
             value: pv.approvalRate != null ? `${pv.approvalRate.toFixed(1)}%` : '—',
