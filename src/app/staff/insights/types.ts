@@ -143,7 +143,6 @@ export interface TrendsData {
   trends: {
     labels: string[];
     series: TrendsSeries;
-    returnsByStage: { B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
   };
   holdStats: { totalRequested: number; totalApproved: number; approvalRate: number | null };
   topReturnInitiators: { name: string; count: number }[];
@@ -279,7 +278,6 @@ export interface DashboardTrends {
     holds: number[];
     cumulativeApprovals: number[];
   };
-  returnsByStage: { B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
 }
 
 export interface DashboardData {

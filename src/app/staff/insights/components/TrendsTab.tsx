@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Legend, CartesianGrid, Cell,
+  ResponsiveContainer, Legend, CartesianGrid,
 } from 'recharts';
 import StatCard from './StatCard';
 import ErrorCard from './ErrorCard';
@@ -19,7 +19,6 @@ const LINE_COLORS = {
   returns:      '#d97706',
   holds:        '#dc2626',
 };
-const STAGE_COLORS = ['#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626', '#6b7280'];
 
 function CardDivider() {
   return (
@@ -50,7 +49,6 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
 
   useEffect(() => { load(); }, [load]);
 
-  // returnsByStage is now inside data.trends
   const timeSeriesData = data
     ? data.trends.labels.map((label, i) => ({
         label,
@@ -59,12 +57,6 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
         returns:      data.trends.series.returns[i]      ?? 0,
         holds:        data.trends.series.holds[i]        ?? 0,
       }))
-    : [];
-
-  const returnsByStageData = data
-    ? Object.entries(data.trends.returnsByStage)
-        .filter(([k]) => k !== 'Unknown')
-        .map(([stage, count], i) => ({ stage: `Stage ${stage}`, count, fill: STAGE_COLORS[i] }))
     : [];
 
   const changePercent = data?.periodComparison.changePercent;
@@ -136,22 +128,6 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
                 />
               ))}
             </LineChart>
-          </ResponsiveContainer>
-        )}
-      </Section>
-
-      {/* ── Returns by stage bar chart ── */}
-      <Section title="Returns by Stage">
-        {loading ? <ChartSkeleton height={200} /> : error ? null : (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={returnsByStageData} layout="vertical" margin={{ top: 4, right: 40, bottom: 4, left: 70 }}>
-              <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
-              <YAxis dataKey="stage" type="category" tick={{ fontSize: 12 }} width={70} />
-              <Tooltip />
-              <Bar dataKey="count" name="Returns" radius={[0, 4, 4, 0]}>
-                {returnsByStageData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
-              </Bar>
-            </BarChart>
           </ResponsiveContainer>
         )}
       </Section>

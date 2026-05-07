@@ -122,12 +122,6 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       })
     : [];
 
-  const returnsByStageData = dashboard
-    ? Object.entries(dashboard.trends.returnsByStage)
-        .filter(([k]) => k !== 'Unknown')
-        .map(([stage, count]) => ({ stage: `Stage ${stage}`, count }))
-    : [];
-
   const certStatusDonut = certData
     ? [
         { name: 'Approved (period)', value: certData.statusBreakdown.approvedInPeriod },
@@ -337,20 +331,6 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
               <YAxis dataKey="stage" type="category" tick={{ fontSize: 12 }} width={70} />
               <Tooltip formatter={(v: number) => [`${v.toFixed(1)} days`, 'Avg Dwell']} />
               <Bar dataKey="days" fill="#e67509" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </Section>
-
-      {/* ── Returns by stage ── */}
-      <Section title="Returns by Stage (period)">
-        {loadingMain ? <ChartSkeleton height={180} /> : errorMain ? null : (
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={returnsByStageData} layout="vertical" margin={{ top: 4, right: 40, bottom: 4, left: 70 }}>
-              <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
-              <YAxis dataKey="stage" type="category" tick={{ fontSize: 12 }} width={70} />
-              <Tooltip />
-              <Bar dataKey="count" name="Returns" fill="#d97706" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
