@@ -82,7 +82,7 @@ export interface PerformanceData {
   byApprover: ApproverRecord[];
   byStage: StageLoad[];
   bottleneck: StageLoad | null;
-  pendingByStage: Record<string, { companyName: string; daysWaiting: number }[]>;
+  pendingByStage: Record<string, { companyName: string; daysWaiting: number | null }[]>;
   summary: {
     totalApproversInPeriod: number;
     activeApproversInPeriod: number;

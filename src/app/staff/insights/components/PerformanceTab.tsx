@@ -181,10 +181,10 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
                               <td style={{ padding: '0.5rem 0.75rem' }}>{c.companyName}</td>
                               <td style={{
                                 padding: '0.5rem 0.75rem', textAlign: 'right',
-                                color: c.daysWaiting > 30 ? '#dc2626' : c.daysWaiting > 14 ? '#d97706' : undefined,
+                                color: c.daysWaiting != null && c.daysWaiting > 30 ? '#dc2626' : c.daysWaiting != null && c.daysWaiting > 14 ? '#d97706' : undefined,
                                 fontWeight: 500,
                               }}>
-                                {c.daysWaiting.toFixed(0)}d
+                                {c.daysWaiting != null ? `${c.daysWaiting.toFixed(0)}d` : '—'}
                               </td>
                             </tr>
                           ))}
