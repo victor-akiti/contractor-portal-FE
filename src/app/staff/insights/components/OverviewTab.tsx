@@ -329,7 +329,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
         {loadingMain ? <ChartSkeleton height={200} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
-              data={dashboard!.pipeline.avgDwellPerReviewStage.map(d => ({ ...d, days: d.avgDays ?? 0 }))}
+              data={(dashboard!.pipeline.avgDwellPerReviewStage ?? []).map(d => ({ ...d, days: d.avgDays ?? 0 }))}
               layout="vertical"
               margin={{ top: 4, right: 50, bottom: 4, left: 70 }}
             >
