@@ -9,6 +9,7 @@ import type {
   NarrativeData,
   DashboardData,
   Period,
+  DateRange,
 } from './types';
 
 type ApiResponse<T> = { status: string; data: T } | T;
@@ -20,33 +21,40 @@ function unwrap<T>(res: ApiResponse<T>): T {
   return res as T;
 }
 
-export async function fetchPipeline(period: Period = '30d'): Promise<PipelineData> {
-  const res = await getProtected(`insights/pipeline?period=${period}`, 'Admin');
+function periodQS(period: Period, dateRange?: DateRange): string {
+  if (period === 'custom' && dateRange) {
+    return `period=custom&s=${dateRange.start}&e=${dateRange.end}`;
+  }
+  return `period=${period}`;
+}
+
+export async function fetchPipeline(period: Period = '30d', dateRange?: DateRange): Promise<PipelineData> {
+  const res = await getProtected(`insights/pipeline?${periodQS(period, dateRange)}`, 'Admin');
   return unwrap<PipelineData>(res);
 }
 
-export async function fetchPerformance(period: Period = '30d'): Promise<PerformanceData> {
-  const res = await getProtected(`insights/performance?period=${period}`, 'Admin');
+export async function fetchPerformance(period: Period = '30d', dateRange?: DateRange): Promise<PerformanceData> {
+  const res = await getProtected(`insights/performance?${periodQS(period, dateRange)}`, 'Admin');
   return unwrap<PerformanceData>(res);
 }
 
-export async function fetchCertificates(period: Period = '30d'): Promise<CertificatesData> {
-  const res = await getProtected(`insights/certificates?period=${period}`, 'Admin');
+export async function fetchCertificates(period: Period = '30d', dateRange?: DateRange): Promise<CertificatesData> {
+  const res = await getProtected(`insights/certificates?${periodQS(period, dateRange)}`, 'Admin');
   return unwrap<CertificatesData>(res);
 }
 
-export async function fetchTrends(period: Period = '30d'): Promise<TrendsData> {
-  const res = await getProtected(`insights/trends?period=${period}`, 'Admin');
+export async function fetchTrends(period: Period = '30d', dateRange?: DateRange): Promise<TrendsData> {
+  const res = await getProtected(`insights/trends?${periodQS(period, dateRange)}`, 'Admin');
   return unwrap<TrendsData>(res);
 }
 
-export async function fetchDashboard(period: Period = '30d'): Promise<DashboardData> {
-  const res = await getProtected(`insights/dashboard?period=${period}`, 'Admin');
+export async function fetchDashboard(period: Period = '30d', dateRange?: DateRange): Promise<DashboardData> {
+  const res = await getProtected(`insights/dashboard?${periodQS(period, dateRange)}`, 'Admin');
   return unwrap<DashboardData>(res);
 }
 
-export async function fetchExecSummary(period: Period = '30d'): Promise<ExecSummaryData> {
-  const res = await getProtected(`insights/executive-summary?period=${period}`, 'Admin');
+export async function fetchExecSummary(period: Period = '30d', dateRange?: DateRange): Promise<ExecSummaryData> {
+  const res = await getProtected(`insights/executive-summary?${periodQS(period, dateRange)}`, 'Admin');
   return unwrap<ExecSummaryData>(res);
 }
 

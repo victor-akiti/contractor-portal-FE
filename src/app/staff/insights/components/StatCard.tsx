@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 
 interface StatCardProps {
   label: string;
@@ -6,6 +7,7 @@ interface StatCardProps {
   sub?: string;
   color?: 'default' | 'green' | 'amber' | 'red' | 'blue' | 'purple';
   icon?: React.ReactNode;
+  tooltip?: string;
 }
 
 const colorMap = {
@@ -17,9 +19,10 @@ const colorMap = {
   purple:  { border: '#7c3aed', bg: '#f5f3ff', text: '#7c3aed' },
 };
 
-export default function StatCard({ label, value, sub, color = 'default', icon }: StatCardProps) {
+export default function StatCard({ label, value, sub, color = 'default', icon, tooltip }: StatCardProps) {
   const c = colorMap[color];
   const display = value === null || value === undefined ? '—' : value;
+  const [tipVisible, setTipVisible] = useState(false);
 
   return (
     <div style={{
@@ -31,17 +34,50 @@ export default function StatCard({ label, value, sub, color = 'default', icon }:
       flexDirection: 'column',
       gap: '0.25rem',
       minWidth: 0,
+      position: 'relative',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: '0.8rem', color: '#6c757d', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           {label}
         </span>
-        {icon && <span style={{ color: c.text, opacity: 0.7 }}>{icon}</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+          {icon && <span style={{ color: c.text, opacity: 0.7 }}>{icon}</span>}
+          {tooltip && (
+            <span
+              onMouseEnter={() => setTipVisible(true)}
+              onMouseLeave={() => setTipVisible(false)}
+              style={{ cursor: 'help', fontSize: '0.7rem', color: '#9ca3af', lineHeight: 1, userSelect: 'none' }}
+            >
+              ⓘ
+            </span>
+          )}
+        </div>
       </div>
       <span style={{ fontSize: '1.6rem', fontWeight: 700, color: c.text, lineHeight: 1.2 }}>
         {display}
       </span>
       {sub && <span style={{ fontSize: '0.75rem', color: '#6c757d' }}>{sub}</span>}
+
+      {tooltip && tipVisible && (
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 6px)',
+          left: 0,
+          zIndex: 50,
+          background: '#1e293b',
+          color: '#f1f5f9',
+          fontSize: '0.75rem',
+          lineHeight: 1.5,
+          padding: '0.5rem 0.75rem',
+          borderRadius: '0.375rem',
+          maxWidth: '240px',
+          whiteSpace: 'normal',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          pointerEvents: 'none',
+        }}>
+          {tooltip}
+        </div>
+      )}
     </div>
   );
 }

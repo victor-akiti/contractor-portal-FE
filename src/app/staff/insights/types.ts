@@ -32,7 +32,7 @@ export interface StaleVendorItem {
 export interface PipelineData {
   period: string;
   stageCounts: StageCounts;
-  avgDwellPerStage: { stage: string; avgDays: number | null; sampleSize: number }[];
+  avgDwellPerReviewStage: { stage: string; avgDays: number | null; sampleSize: number }[];
   bottleneck: { stage: string; avgDays: number | null; sampleSize: number } | null;
   oldestPendingPerStage: OldestPendingItem[];
   oldestReturned: OldestPendingItem | null;
@@ -45,6 +45,7 @@ export interface PipelineData {
     last7DaysL3Approvals: number;
   };
   summary: {
+    totalVendorAccounts: number;
     totalRegistered: number;
     totalWithContractor: number;
     totalInPipeline: number;
@@ -69,9 +70,10 @@ export interface ApproverRecord {
 
 export interface StageLoad {
   stage: string;
-  avgDwellDays: number | null;
+  avgCurrentDwellDays: number | null;
+  avgCompletionDwellDays: number | null;
+  completionSampleSize: number;
   currentVendors: number;
-  sampleSize: number;
   responsibleRoles: string[];
 }
 
@@ -129,7 +131,7 @@ export interface TrendsSeries {
   registrations: number[];
   submissions: number[];
   progressions: number[];
-  l3Approvals: number[];
+  approvals: number[];
   returns: number[];
   holds: number[];
   cumulativeApprovals: number[];
@@ -141,8 +143,8 @@ export interface TrendsData {
   trends: {
     labels: string[];
     series: TrendsSeries;
+    returnsByStage: { B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
   };
-  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
   holdStats: { totalRequested: number; totalApproved: number; approvalRate: number | null };
   topReturnInitiators: { name: string; count: number }[];
   topHoldInitiators: { name: string; count: number }[];
@@ -152,21 +154,12 @@ export interface TrendsData {
     prevPeriodProgressions: number;
     changePercent: number | null;
   };
-  currentTotals: {
-    totalRegistered: number;
-    totalApproved: number;
-    totalReturned: number;
-    totalParked: number;
-    inProgress: number;
-    inPipeline: number;
-  };
   summary: {
     totalReturns: number;
     totalHolds: number;
     totalProgressions: number;
     totalL3Approvals: number;
     totalSubmissions: number;
-    totalRegistrations: number;
   };
 }
 
@@ -190,7 +183,6 @@ export interface PriorityVendors {
   parked: number;
   byStage: Record<string, number>;
   approvalRate: number | null;
-  // vendors that are priority AND have been waiting >7 days — need immediate action
   urgentList: PriorityVendorUrgent[];
 }
 
@@ -200,8 +192,9 @@ export interface ExecSummaryData {
   period: string;
   bucketSize: 'day' | 'week' | 'month';
   overview: {
+    totalVendorAccounts: number;
     totalRegistered: number;
-    totalWithContractor: number;
+    notSubmitted: number;
     totalInPipeline: number;
     totalApproved: number;
     completionRate: number | null;
@@ -211,7 +204,7 @@ export interface ExecSummaryData {
   };
   pipeline: {
     stageCounts: StageCounts;
-    avgDwellPerStage: { stage: string; avgDays: number | null; sampleSize: number }[];
+    avgDwellPerReviewStage: { stage: string; avgDays: number | null; sampleSize: number }[];
     bottleneck: { stage: string; avgDays: number | null; sampleSize: number } | null;
     staleVendors: StaleVendorItem[];
   };
@@ -222,16 +215,17 @@ export interface ExecSummaryData {
   };
   certificates: { pending: number; approved: number; rejected: number; expired: number; expiringSoon: number; total: number };
   dueDiligence: {
-    atStageD: number;
     atStageE: number;
-    avgDaysAtStageD: number | null;
+    atStageF: number;
     avgDaysAtStageE: number | null;
+    avgDaysAtStageF: number | null;
   };
   priorityVendors?: PriorityVendors;
   trends: {
     labels: string[];
     series: TrendsSeries;
   };
+  tooltips: Record<string, string>;
   flags: ExecFlag[];
 }
 
@@ -252,6 +246,7 @@ export interface NarrativeData {
 
 // ── Dashboard (unified single-call response) ──────────────────────────────────
 export interface DashboardKpis {
+  totalVendorAccounts: number;
   totalRegistered: number;
   totalInPipeline: number;
   totalApproved: number;
@@ -259,11 +254,8 @@ export interface DashboardKpis {
   avgCycleDays: number | null;
   returned: number;
   parked: number;
-  /** Vendors with contractor (in pipeline + returned) */
   totalWithContractor: number;
-  /** Vendors who have not yet submitted their form */
   notSubmitted: number;
-  /** Priority vendors currently in the pipeline */
   priorityInPipeline: number;
   certsPending: number;
   certsExpired: number;
@@ -287,7 +279,7 @@ export interface DashboardTrends {
     holds: number[];
     cumulativeApprovals: number[];
   };
-  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
+  returnsByStage: { B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
 }
 
 export interface DashboardData {
@@ -298,15 +290,13 @@ export interface DashboardData {
   pipeline: {
     stageCounts: StageCounts;
     distribution: PipelineDistributionItem[];
-    avgDwellPerStage: { stage: string; avgDays: number | null }[];
+    avgDwellPerReviewStage: { stage: string; avgDays: number | null }[];
     bottleneck: { stage: string; avgDays: number | null } | null;
     staleVendors: StaleVendorItem[];
   };
   trends: DashboardTrends;
   activity: {
-    /** Period-relative totals — changes with the period param */
     totals: { progressions: number; approvals: number; returns: number; holds: number; submissions: number };
-    /** Which period these totals correspond to (e.g. "30d") */
     period: string;
     last7Days: { progressions: number; approvals: number; returns: number; holds: number };
   };
@@ -317,16 +307,22 @@ export interface DashboardData {
   };
   certificates: { pending: number; approved: number; rejected: number; expired: number; expiringSoon: number; total: number };
   dueDiligence: {
-    atStageD: number;
     atStageE: number;
-    avgDaysAtStageD: number | null;
+    atStageF: number;
     avgDaysAtStageE: number | null;
+    avgDaysAtStageF: number | null;
   };
   holdStats: { totalApprovedHolds: number; periodHolds: number };
   priorityVendors?: PriorityVendors;
+  tooltips: Record<string, string>;
   flags: ExecFlag[];
 }
 
 // ── Shared ────────────────────────────────────────────────────────────────────
-export type Period = '7d' | '14d' | '30d' | '60d' | '90d' | '180d' | '1y' | '3y' | '5y' | '10y';
+export type Period = '7d' | '14d' | '30d' | '60d' | '90d' | '180d' | '1y' | '3y' | '5y' | '10y' | 'custom';
 export type SortDir = 'asc' | 'desc';
+
+export interface DateRange {
+  start: string; // YYYY-MM-DD
+  end: string;   // YYYY-MM-DD
+}

@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
-import type { Period } from './types';
+import type { Period, DateRange } from './types';
 
 // Lazy-load heavy tab components
 const OverviewTab     = dynamic(() => import('./components/OverviewTab'),     { ssr: false });
@@ -34,7 +34,10 @@ const ALL_TABS: TabDef[] = [
   { key: 'export',       label: 'Export',       requiredRoles: EXPORT_ROLES },
 ];
 
-const ALL_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y', '3y', '5y', '10y'];
+const PRESET_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y', '3y', '5y', '10y'];
+
+// Today's date as YYYY-MM-DD for the date input max
+const todayISO = () => new Date().toISOString().slice(0, 10);
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function InsightsPage() {
@@ -43,8 +46,8 @@ export default function InsightsPage() {
 
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [visited,   setVisited]   = useState<TabKey[]>(['overview']);
-  // Global period — shared across all period-aware tabs
   const [period, setPeriod]       = useState<Period>('30d');
+  const [dateRange, setDateRange] = useState<DateRange>({ start: '', end: '' });
 
   const visibleTabs = useMemo(
     () => ALL_TABS.filter(t => !t.requiredRoles || t.requiredRoles.includes(role)),
@@ -57,6 +60,17 @@ export default function InsightsPage() {
     setActiveTab(key);
     setVisited(prev => prev.includes(key) ? prev : [...prev, key]);
   };
+
+  const handlePeriodClick = (p: Period) => {
+    setPeriod(p);
+  };
+
+  // Only pass dateRange when both dates are filled in custom mode
+  const effectiveDateRange: DateRange | undefined =
+    period === 'custom' && dateRange.start && dateRange.end ? dateRange : undefined;
+
+  // Common props for all period-aware tabs
+  const tabProps = { period, dateRange: effectiveDateRange };
 
   return (
     <div style={{ fontFamily: 'inherit', color: '#212529' }}>
@@ -71,7 +85,7 @@ export default function InsightsPage() {
         </p>
       </div>
 
-      {/* ── Global period selector (topmost control) ── */}
+      {/* ── Global period selector ── */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -86,10 +100,10 @@ export default function InsightsPage() {
         <span style={{ fontSize: '0.8rem', color: '#6c757d', fontWeight: 600, whiteSpace: 'nowrap' }}>
           PERIOD:
         </span>
-        {ALL_PERIODS.map(p => (
+        {PRESET_PERIODS.map(p => (
           <button
             key={p}
-            onClick={() => setPeriod(p)}
+            onClick={() => handlePeriodClick(p)}
             style={{
               padding: '0.25rem 0.75rem',
               border: `1px solid ${period === p ? '#e67509' : '#d1d5db'}`,
@@ -105,9 +119,47 @@ export default function InsightsPage() {
             {p}
           </button>
         ))}
-        {!activePeriod && (
-          <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginLeft: '0.25rem' }}>
-            (period filter applies to the Export tab only — all other tabs are period-aware)
+
+        {/* Custom range button */}
+        <button
+          onClick={() => handlePeriodClick('custom')}
+          style={{
+            padding: '0.25rem 0.75rem',
+            border: `1px solid ${period === 'custom' ? '#7c3aed' : '#d1d5db'}`,
+            borderRadius: '9999px',
+            background: period === 'custom' ? '#7c3aed' : '#fff',
+            color: period === 'custom' ? '#fff' : '#374151',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            fontWeight: period === 'custom' ? 600 : 400,
+            transition: 'all 0.15s',
+          }}
+        >
+          Custom
+        </button>
+
+        {/* Date inputs — visible when Custom selected */}
+        {period === 'custom' && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.25rem' }}>
+            <input
+              type="date"
+              value={dateRange.start}
+              max={dateRange.end || todayISO()}
+              onChange={e => setDateRange(r => ({ ...r, start: e.target.value }))}
+              style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff' }}
+            />
+            <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>to</span>
+            <input
+              type="date"
+              value={dateRange.end}
+              min={dateRange.start}
+              max={todayISO()}
+              onChange={e => setDateRange(r => ({ ...r, end: e.target.value }))}
+              style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff' }}
+            />
+            {(!dateRange.start || !dateRange.end) && (
+              <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Select both dates</span>
+            )}
           </span>
         )}
       </div>
@@ -148,27 +200,27 @@ export default function InsightsPage() {
       <div>
         {visited.includes('overview') && (
           <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>
-            <OverviewTab period={period} />
+            <OverviewTab {...tabProps} />
           </div>
         )}
         {visited.includes('pipeline') && (
           <div style={{ display: activeTab === 'pipeline' ? 'block' : 'none' }}>
-            <PipelineTab period={period} />
+            <PipelineTab {...tabProps} />
           </div>
         )}
         {visited.includes('performance') && visibleTabs.some(t => t.key === 'performance') && (
           <div style={{ display: activeTab === 'performance' ? 'block' : 'none' }}>
-            <PerformanceTab period={period} />
+            <PerformanceTab {...tabProps} />
           </div>
         )}
         {visited.includes('trends') && (
           <div style={{ display: activeTab === 'trends' ? 'block' : 'none' }}>
-            <TrendsTab period={period} />
+            <TrendsTab {...tabProps} />
           </div>
         )}
         {visited.includes('certificates') && (
           <div style={{ display: activeTab === 'certificates' ? 'block' : 'none' }}>
-            <CertificatesTab period={period} />
+            <CertificatesTab {...tabProps} />
           </div>
         )}
         {visited.includes('export') && visibleTabs.some(t => t.key === 'export') && (

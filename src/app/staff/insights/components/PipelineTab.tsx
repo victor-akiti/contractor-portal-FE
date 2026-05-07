@@ -1,15 +1,10 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Bar,
-  BarChart,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis, YAxis,
+  Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 import { fetchPipeline } from '../api';
-import type { OldestPendingItem, Period, PipelineData, PriorityVendors } from '../types';
+import type { DateRange, OldestPendingItem, Period, PipelineData, PriorityVendors } from '../types';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import SortableTable from './SortableTable';
@@ -25,42 +20,51 @@ const fmtDate = (iso: string) => {
 
 const STAGE_COLORS = ['#e67509', '#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626', '#6b7280', '#0891b2'];
 
-export default function PipelineTab({ period }: { period: Period }) {
-  const [data, setData] = useState<PipelineData | null>(null);
+function CardDivider() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
+      <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, #e0e0e0)' }} />
+      <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#d1d5db' }} />
+      <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, #e0e0e0)' }} />
+    </div>
+  );
+}
+
+export default function PipelineTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
+  const [data, setData]       = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchPipeline(period));
+      setData(await fetchPipeline(period, dateRange));
     } catch {
       setError('Failed to load pipeline data');
     } finally {
       setLoading(false);
     }
-  }, [period]);
+  }, [period, dateRange]);
 
   useEffect(() => { load(); }, [load]);
 
   const stageCounts = data
     ? [
-      { name: 'Stage A', value: data.stageCounts.stageA },
-      { name: 'Stage B', value: data.stageCounts.stageB },
-      { name: 'Stage C', value: data.stageCounts.stageC },
-      { name: 'Stage D', value: data.stageCounts.stageD },
-      { name: 'Stage E', value: data.stageCounts.stageE },
-      { name: 'Stage F', value: data.stageCounts.stageF },
-      { name: 'Stage G', value: data.stageCounts.stageG },
-      { name: 'Returned', value: data.stageCounts.returned },
-      { name: 'Parked', value: data.stageCounts.parked },
-      { name: 'L3', value: data.stageCounts.l3 },
-    ]
+        { name: 'Stage A', value: data.stageCounts.stageA },
+        { name: 'Stage B', value: data.stageCounts.stageB },
+        { name: 'Stage C', value: data.stageCounts.stageC },
+        { name: 'Stage D', value: data.stageCounts.stageD },
+        { name: 'Stage E', value: data.stageCounts.stageE },
+        { name: 'Stage F', value: data.stageCounts.stageF },
+        { name: 'Stage G', value: data.stageCounts.stageG },
+        { name: 'Returned', value: data.stageCounts.returned },
+        { name: 'Parked',   value: data.stageCounts.parked },
+        { name: 'L3',       value: data.stageCounts.l3 },
+      ]
     : [];
 
-  // avgDwellPerStage is now an array of { stage, avgDays, sampleSize }
-  const dwellData = (data?.avgDwellPerStage ?? []).map(d => ({
+  const dwellData = (data?.avgDwellPerReviewStage ?? []).map(d => ({
     stage: d.stage,
     days: d.avgDays ?? 0,
     actual: d.avgDays,
@@ -71,7 +75,7 @@ export default function PipelineTab({ period }: { period: Period }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* ── Refresh + period label ── */}
+      {/* ── Refresh ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
         <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
@@ -82,16 +86,16 @@ export default function PipelineTab({ period }: { period: Period }) {
       {/* ── Stage count cards ── */}
       {loading ? <CardsSkeleton count={10} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.75rem' }}>
-          <StatCard label="Stage A" value={data.stageCounts.stageA} color="default" />
-          <StatCard label="Stage B" value={data.stageCounts.stageB} color="blue" />
-          <StatCard label="Stage C" value={data.stageCounts.stageC} color="green" />
-          <StatCard label="Stage D" value={data.stageCounts.stageD} color="purple" />
-          <StatCard label="Stage E" value={data.stageCounts.stageE} color="amber" />
-          <StatCard label="Stage F" value={data.stageCounts.stageF} color="red" />
-          <StatCard label="Stage G" value={data.stageCounts.stageG} color="default" />
-          <StatCard label="Returned" value={data.stageCounts.returned} color="amber" />
-          <StatCard label="Parked" value={data.stageCounts.parked} color="red" />
-          <StatCard label="L3 / Done" value={data.stageCounts.l3} color="green" />
+          <StatCard label="Stage A"   value={data.stageCounts.stageA}   color="default" />
+          <StatCard label="Stage B"   value={data.stageCounts.stageB}   color="blue" />
+          <StatCard label="Stage C"   value={data.stageCounts.stageC}   color="green" />
+          <StatCard label="Stage D"   value={data.stageCounts.stageD}   color="purple" />
+          <StatCard label="Stage E"   value={data.stageCounts.stageE}   color="amber" />
+          <StatCard label="Stage F"   value={data.stageCounts.stageF}   color="red" />
+          <StatCard label="Stage G"   value={data.stageCounts.stageG}   color="default" />
+          <StatCard label="Returned"  value={data.stageCounts.returned} color="amber" />
+          <StatCard label="Parked"    value={data.stageCounts.parked}   color="red" />
+          <StatCard label="L3 / Done" value={data.stageCounts.l3}       color="green" />
         </div>
       )}
 
@@ -103,7 +107,7 @@ export default function PipelineTab({ period }: { period: Period }) {
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="value" name="Vendors" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="value" name="Contractors" radius={[4, 4, 0, 0]}>
                 {stageCounts.map((_, i) => <Cell key={i} fill={STAGE_COLORS[i % STAGE_COLORS.length]} />)}
               </Bar>
             </BarChart>
@@ -111,8 +115,8 @@ export default function PipelineTab({ period }: { period: Period }) {
         )}
       </Section>
 
-      {/* ── Dwell chart ── */}
-      <Section title="Avg Dwell Per Stage (days)">
+      {/* ── Dwell chart (review stages B–G only) ── */}
+      <Section title="Avg Dwell Per Review Stage (days)">
         {loading ? <ChartSkeleton height={200} /> : error ? null : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={dwellData} layout="vertical" margin={{ top: 4, right: 60, bottom: 4, left: 70 }}>
@@ -130,11 +134,16 @@ export default function PipelineTab({ period }: { period: Period }) {
       {/* ── Throughput cards ── */}
       {!loading && !error && data && (
         <Section title={`Throughput (${data.throughput.period})`}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label={`Progressions (${data.throughput.period})`} value={data.throughput.periodProgressions} color="blue" />
-            <StatCard label={`L3 Approvals (${data.throughput.period})`} value={data.throughput.periodL3Approvals} color="green" />
-            <StatCard label="Progressions (7d)" value={data.throughput.last7DaysProgressions} color="blue" />
-            <StatCard label="L3 Approvals (7d)" value={data.throughput.last7DaysL3Approvals} color="green" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <StatCard label={`Progressions (${data.throughput.period})`} value={data.throughput.periodProgressions}   color="blue" />
+              <StatCard label={`L3 Approvals (${data.throughput.period})`} value={data.throughput.periodL3Approvals}    color="green" />
+            </div>
+            <CardDivider />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <StatCard label="Progressions (7d)"   value={data.throughput.last7DaysProgressions} color="blue" />
+              <StatCard label="L3 Approvals (7d)"   value={data.throughput.last7DaysL3Approvals}  color="green" />
+            </div>
           </div>
         </Section>
       )}
@@ -142,12 +151,19 @@ export default function PipelineTab({ period }: { period: Period }) {
       {/* ── Summary cards ── */}
       {!loading && !error && data && (
         <Section title="Pipeline Summary">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Total Registered" value={data.summary.totalRegistered} color="default" />
-            <StatCard label="With Contractor" value={data.summary.totalWithContractor} color="default" />
-            <StatCard label="In Pipeline" value={data.summary.totalInPipeline} color="blue" />
-            <StatCard label="Completion Rate" value={data.summary.completionRate != null ? `${data.summary.completionRate.toFixed(1)}%` : '—'} color="green" />
-            <StatCard label="Avg Cycle Days" value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {/* Total accounts → registered → not yet submitted */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <StatCard label="All Contractor Accounts" value={data.summary.totalVendorAccounts} color="default" />
+              <StatCard label="Registered"              value={data.summary.totalRegistered}     color="blue" />
+              <StatCard label="With Contractor"         value={data.summary.totalWithContractor} color="default" />
+            </div>
+            <CardDivider />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <StatCard label="In Pipeline"     value={data.summary.totalInPipeline} color="blue" />
+              <StatCard label="Completion Rate" value={data.summary.completionRate != null ? `${data.summary.completionRate.toFixed(1)}%` : '—'} color="green" />
+              <StatCard label="Avg Cycle Days"  value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
+            </div>
           </div>
         </Section>
       )}
@@ -162,20 +178,16 @@ export default function PipelineTab({ period }: { period: Period }) {
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
-              { key: 'stage', label: 'Stage', width: '80px' },
-              { key: 'companyName', label: 'Company' },
-              {
-                key: 'entryTime', label: 'Entry Date', width: '130px',
-                render: (r) => <span>{fmtDate(r.entryTime as string)}</span>
-              },
-              {
-                key: 'daysWaiting', label: 'Days Waiting', width: '120px',
+              { key: 'stage',       label: 'Stage', width: '80px' },
+              { key: 'companyName', label: 'Contractor' },
+              { key: 'entryTime',   label: 'Entry Date', width: '130px',
+                render: (r) => <span>{fmtDate(r.entryTime as string)}</span> },
+              { key: 'daysWaiting', label: 'Days Waiting', width: '120px',
                 render: (r) => (
                   <span style={{ color: (r.daysWaiting as number) > 30 ? '#dc2626' : (r.daysWaiting as number) > 14 ? '#d97706' : undefined }}>
                     {fmt(r.daysWaiting as number, 0)} days
                   </span>
-                )
-              },
+                )},
             ]}
             rows={oldestRows}
             defaultSortKey="daysWaiting"
@@ -195,7 +207,7 @@ export default function PipelineTab({ period }: { period: Period }) {
         <Section title="Longest Waiting — Returned & Parked">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <OldestStatusCard label="Oldest Returned" item={data.oldestReturned} color="#d97706" bg="#fffbeb" />
-            <OldestStatusCard label="Oldest Parked" item={data.oldestParked} color="#dc2626" bg="#fef2f2" />
+            <OldestStatusCard label="Oldest Parked"   item={data.oldestParked}   color="#dc2626" bg="#fef2f2" />
           </div>
         </Section>
       )}
@@ -203,8 +215,32 @@ export default function PipelineTab({ period }: { period: Period }) {
   );
 }
 
+function OldestStatusCard({ label, item, color, bg }: {
+  label: string;
+  item: OldestPendingItem | null;
+  color: string;
+  bg: string;
+}) {
+  if (!item) return (
+    <div style={{ background: '#f9fafb', border: '1px solid #e0e0e0', borderRadius: '0.375rem', padding: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+      <strong style={{ display: 'block', marginBottom: '0.25rem', color: '#6c757d' }}>{label}</strong>
+      None currently
+    </div>
+  );
+  return (
+    <div style={{ background: bg, border: `1px solid ${color}40`, borderLeft: `3px solid ${color}`, borderRadius: '0.375rem', padding: '1rem' }}>
+      <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color, fontWeight: 700, textTransform: 'uppercase' }}>{label}</p>
+      <p style={{ margin: '0 0 0.15rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{item.companyName}</p>
+      <p style={{ margin: 0, fontSize: '0.8rem', color: '#6c757d' }}>
+        Since {fmtDate(item.entryTime)} ·{' '}
+        <span style={{ color, fontWeight: 700 }}>{item.daysWaiting.toFixed(0)} days waiting</span>
+      </p>
+    </div>
+  );
+}
+
 function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
-  const urgentCount = pv.urgentList.length;
+  const urgentCount  = pv.urgentList.length;
   const stageEntries = Object.entries(pv.byStage).filter(([, v]) => v > 0);
   return (
     <div style={{
@@ -214,7 +250,7 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
       padding: '1.25rem',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#e67509' }}>⚡ Priority Fast-Track Vendors</h3>
+        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#e67509' }}>⚡ Priority Fast-Track Contractors</h3>
         {urgentCount > 0 && (
           <span style={{ background: '#dc2626', color: '#fff', borderRadius: '9999px', padding: '0.2rem 0.75rem', fontSize: '0.8rem', fontWeight: 700 }}>
             {urgentCount} URGENT
@@ -224,10 +260,10 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
         {[
-          { label: 'Total', value: pv.total, color: '#e67509' },
+          { label: 'Total',       value: pv.total,      color: '#e67509' },
           { label: 'In Pipeline', value: pv.inPipeline, color: '#2563eb' },
-          { label: 'Approved', value: pv.approved, color: '#16a34a' },
-          { label: 'Returned', value: pv.returned, color: '#d97706' },
+          { label: 'Approved',    value: pv.approved,   color: '#16a34a' },
+          { label: 'Returned',    value: pv.returned,   color: '#d97706' },
         ].map(({ label, value, color }) => (
           <div key={label} style={{ background: '#fff', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', border: '1px solid #e0e0e0' }}>
             <div style={{ fontSize: '0.68rem', color: '#6c757d', fontWeight: 600, textTransform: 'uppercase' }}>{label}</div>
@@ -255,35 +291,11 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0', borderTop: i > 0 ? '1px solid #fee2e2' : undefined, fontSize: '0.825rem' }}>
               <span style={{ fontWeight: 500 }}>{v.companyName}</span>
               <span style={{ color: '#6c757d' }}>{v.stage}</span>
-              <span style={{ fontWeight: 700, color: '#dc2626' }}>{v.daysWaiting?.toFixed(0)}d</span>
+              <span style={{ fontWeight: 700, color: '#dc2626' }}>{v.daysWaiting.toFixed(0)}d</span>
             </div>
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-function OldestStatusCard({ label, item, color, bg }: {
-  label: string;
-  item: OldestPendingItem | null;
-  color: string;
-  bg: string;
-}) {
-  if (!item) return (
-    <div style={{ background: '#f9fafb', border: '1px solid #e0e0e0', borderRadius: '0.375rem', padding: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
-      <strong style={{ display: 'block', marginBottom: '0.25rem', color: '#6c757d' }}>{label}</strong>
-      None currently
-    </div>
-  );
-  return (
-    <div style={{ background: bg, border: `1px solid ${color}40`, borderLeft: `3px solid ${color}`, borderRadius: '0.375rem', padding: '1rem' }}>
-      <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color, fontWeight: 700, textTransform: 'uppercase' }}>{label}</p>
-      <p style={{ margin: '0 0 0.15rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{item.companyName}</p>
-      <p style={{ margin: 0, fontSize: '0.8rem', color: '#6c757d' }}>
-        Since {fmtDate(item.entryTime)} ·{' '}
-        <span style={{ color, fontWeight: 700 }}>{item.daysWaiting?.toFixed(0)} days waiting</span>
-      </p>
     </div>
   );
 }

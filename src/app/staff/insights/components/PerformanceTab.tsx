@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { fetchPerformance } from '../api';
-import type { PerformanceData, Period } from '../types';
+import type { DateRange, PerformanceData, Period } from '../types';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, TableSkeleton } from './LoadingSkeleton';
 import SortableTable from './SortableTable';
@@ -12,7 +12,7 @@ const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFi
 function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
   if (days == null) return <span style={{ color: '#9ca3af' }}>—</span>;
   const color = days < 3 ? '#16a34a' : days <= 7 ? '#d97706' : '#dc2626';
-  const bg = days < 3 ? '#f0fdf4' : days <= 7 ? '#fffbeb' : '#fef2f2';
+  const bg    = days < 3 ? '#f0fdf4' : days <= 7 ? '#fffbeb' : '#fef2f2';
   return (
     <span style={{ background: bg, color, borderRadius: '9999px', padding: '0.2rem 0.6rem', fontWeight: 600, fontSize: '0.8rem' }}>
       {days.toFixed(1)}d
@@ -20,28 +20,39 @@ function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
   );
 }
 
-export default function PerformanceTab({ period }: { period: Period }) {
-  const [data, setData] = useState<PerformanceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function DwellBadge({ days, label }: { days: number | null | undefined; label: string }) {
+  if (days == null) return <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>—</span>;
+  const color = days < 7 ? '#16a34a' : days <= 21 ? '#d97706' : '#dc2626';
+  return (
+    <span style={{ fontSize: '0.8rem' }}>
+      <span style={{ color, fontWeight: 600 }}>{days.toFixed(1)}d</span>
+      <span style={{ color: '#9ca3af', fontSize: '0.72rem', marginLeft: '0.2rem' }}>{label}</span>
+    </span>
+  );
+}
+
+export default function PerformanceTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
+  const [data, setData]         = useState<PerformanceData | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState<string | null>(null);
   const [openStage, setOpenStage] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchPerformance(period));
+      setData(await fetchPerformance(period, dateRange));
     } catch {
       setError('Failed to load performance data');
     } finally {
       setLoading(false);
     }
-  }, [period]);
+  }, [period, dateRange]);
 
   useEffect(() => { load(); }, [load]);
 
   const approverRows = (data?.byApprover ?? []) as unknown as Record<string, unknown>[];
-  const stageRows = (data?.byStage ?? []) as unknown as Record<string, unknown>[];
+  const stageRows    = (data?.byStage ?? [])    as unknown as Record<string, unknown>[];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -57,10 +68,10 @@ export default function PerformanceTab({ period }: { period: Period }) {
       {/* ── Summary strip ── */}
       {loading ? <CardsSkeleton count={4} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-          <StatCard label="Total Approvers" value={data.summary.totalApproversInPeriod} color="default" />
-          <StatCard label="Active in Period" value={data.summary.activeApproversInPeriod} color="blue" />
+          <StatCard label="Total Approvers"   value={data.summary.totalApproversInPeriod}   color="default" />
+          <StatCard label="Active in Period"  value={data.summary.activeApproversInPeriod}  color="blue" />
           <StatCard label="Avg Response Days" value={fmt(data.summary.systemAvgResponseDays)} sub="days" color="amber" />
-          <StatCard label="Bottleneck Stage" value={data.summary.bottleneckStage ?? '—'} color="red" />
+          <StatCard label="Bottleneck Stage"  value={data.summary.bottleneckStage ?? '—'}   color="red" />
         </div>
       )}
 
@@ -71,7 +82,11 @@ export default function PerformanceTab({ period }: { period: Period }) {
             ⚠ Bottleneck: {data.bottleneck.stage}
           </h4>
           <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151' }}>
-            Avg dwell <strong>{fmt(data.bottleneck.avgDwellDays)} days</strong> · {data.bottleneck.currentVendors} vendors currently here
+            Current dwell <strong>{fmt(data.bottleneck.avgCurrentDwellDays)} days</strong>
+            {data.bottleneck.avgCompletionDwellDays != null && (
+              <> · Hist. completion avg <strong>{fmt(data.bottleneck.avgCompletionDwellDays)} days</strong></>
+            )}
+            {' '}· {data.bottleneck.currentVendors} contractors here now
             {data.bottleneck.responsibleRoles?.length > 0 && ` · Roles: ${data.bottleneck.responsibleRoles.join(', ')}`}
           </p>
         </div>
@@ -82,15 +97,12 @@ export default function PerformanceTab({ period }: { period: Period }) {
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
-              { key: 'name', label: 'Name' },
-              { key: 'role', label: 'Role', width: '120px' },
-              { key: 'totalActions', label: 'Total Actions', width: '110px' },
-              {
-                key: 'avgResponseDays', label: 'Avg Response', width: '110px',
-                render: (r) => <ResponseDaysBadge days={r.avgResponseDays as number | null} />
-              },
-              {
-                key: 'stageBreakdown', label: 'Stages (B-G)', width: '180px',
+              { key: 'name',            label: 'Name' },
+              { key: 'role',            label: 'Role', width: '120px' },
+              { key: 'totalActions',    label: 'Total Actions', width: '110px' },
+              { key: 'avgResponseDays', label: 'Avg Response', width: '110px',
+                render: (r) => <ResponseDaysBadge days={r.avgResponseDays as number | null} /> },
+              { key: 'stageBreakdown',  label: 'Stages (B–G)', width: '180px',
                 render: (r) => {
                   const s = r.stageBreakdown as { B: number; C: number; D: number; E: number; F: number; G: number };
                   if (!s) return '—';
@@ -99,10 +111,9 @@ export default function PerformanceTab({ period }: { period: Period }) {
                       B:{s.B} C:{s.C} D:{s.D} E:{s.E} F:{s.F} G:{s.G}
                     </span>
                   );
-                }
-              },
+                }},
               { key: 'returnsInitiated', label: 'Returns', width: '80px' },
-              { key: 'holdsInitiated', label: 'Holds', width: '80px' },
+              { key: 'holdsInitiated',   label: 'Holds',   width: '80px' },
             ]}
             rows={approverRows}
             defaultSortKey="totalActions"
@@ -116,55 +127,51 @@ export default function PerformanceTab({ period }: { period: Period }) {
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
-              { key: 'stage', label: 'Stage', width: '90px' },
-              {
-                key: 'avgDwellDays', label: 'Avg Dwell (days)', width: '140px',
-                render: (r) => <span>{fmt(r.avgDwellDays as number | null)}</span>
-              },
-              { key: 'currentVendors', label: 'Current Vendors', width: '130px' },
-              {
-                key: 'responsibleRoles', label: 'Responsible Roles',
-                render: (r) => <span style={{ fontSize: '0.8rem' }}>{(r.responsibleRoles as string[])?.join(', ') || '—'}</span>
-              },
+              { key: 'stage',                label: 'Stage',              width: '90px' },
+              { key: 'avgCurrentDwellDays',  label: 'Current Dwell',      width: '130px',
+                render: (r) => <DwellBadge days={r.avgCurrentDwellDays as number | null} label="now" /> },
+              { key: 'avgCompletionDwellDays', label: 'Historical Avg',   width: '130px',
+                render: (r) => <DwellBadge days={r.avgCompletionDwellDays as number | null} label="hist." /> },
+              { key: 'currentVendors',       label: 'Contractors Here',   width: '130px' },
+              { key: 'responsibleRoles',     label: 'Responsible Roles',
+                render: (r) => <span style={{ fontSize: '0.8rem' }}>{(r.responsibleRoles as string[])?.join(', ') || '—'}</span> },
             ]}
             rows={stageRows}
-            defaultSortKey="avgDwellDays"
+            defaultSortKey="avgCurrentDwellDays"
             defaultSortDir="desc"
           />
         )}
       </Section>
 
-      {/* ── Pending by stage accordion ── */}
+      {/* ── Pending by stage accordion — keys are now "Stage B", "Stage C", etc. ── */}
       {!loading && !error && data && (
-        <Section title="Pending Vendors by Stage">
-          {Object.entries(data.pendingByStage).map(([stageIdx, companies]) => {
-            const stageNames = ['Stage A', 'Stage B', 'Stage C', 'Stage D', 'Stage E', 'Stage F', 'Stage G'];
-            const label = stageNames[Number(stageIdx)] ?? `Stage ${stageIdx}`;
-            const isOpen = openStage === stageIdx;
+        <Section title="Pending Contractors by Stage">
+          {Object.entries(data.pendingByStage).map(([stageLabel, companies]) => {
+            const isOpen = openStage === stageLabel;
             return (
-              <div key={stageIdx} style={{ marginBottom: '0.5rem', border: '1px solid #e0e0e0', borderRadius: '0.375rem' }}>
+              <div key={stageLabel} style={{ marginBottom: '0.5rem', border: '1px solid #e0e0e0', borderRadius: '0.375rem' }}>
                 <button
-                  onClick={() => setOpenStage(isOpen ? null : stageIdx)}
+                  onClick={() => setOpenStage(isOpen ? null : stageLabel)}
                   style={{
                     width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     padding: '0.75rem 1rem', background: '#f8f9fa', border: 'none', cursor: 'pointer',
                     borderRadius: isOpen ? '0.375rem 0.375rem 0 0' : '0.375rem', fontWeight: 600, fontSize: '0.9rem',
                   }}
                 >
-                  <span>{label}</span>
+                  <span>{stageLabel}</span>
                   <span style={{ color: '#6c757d', fontSize: '0.8rem' }}>
-                    {companies.length} vendor{companies.length !== 1 ? 's' : ''} {isOpen ? '▲' : '▼'}
+                    {companies.length} contractor{companies.length !== 1 ? 's' : ''} {isOpen ? '▲' : '▼'}
                   </span>
                 </button>
                 {isOpen && (
                   <div style={{ padding: '0.5rem', borderTop: '1px solid #e0e0e0' }}>
                     {companies.length === 0 ? (
-                      <p style={{ padding: '0.5rem', color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No vendors</p>
+                      <p style={{ padding: '0.5rem', color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No contractors</p>
                     ) : (
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                         <thead>
                           <tr style={{ background: '#f8f9fa' }}>
-                            <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Company</th>
+                            <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Contractor</th>
                             <th style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>Days Waiting</th>
                           </tr>
                         </thead>
@@ -177,7 +184,7 @@ export default function PerformanceTab({ period }: { period: Period }) {
                                 color: c.daysWaiting > 30 ? '#dc2626' : c.daysWaiting > 14 ? '#d97706' : undefined,
                                 fontWeight: 500,
                               }}>
-                                {c.daysWaiting?.toFixed(0)}d
+                                {c.daysWaiting.toFixed(0)}d
                               </td>
                             </tr>
                           ))}

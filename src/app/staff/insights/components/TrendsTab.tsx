@@ -8,20 +8,30 @@ import StatCard from './StatCard';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton } from './LoadingSkeleton';
 import { fetchTrends } from '../api';
-import type { TrendsData, Period } from '../types';
+import type { TrendsData, DateRange, Period } from '../types';
 
-const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
+const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined)        => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
 
 const LINE_COLORS = {
   progressions: '#e67509',
-  l3Approvals:  '#16a34a',
+  approvals:    '#16a34a',
   returns:      '#d97706',
   holds:        '#dc2626',
 };
-const STAGE_COLORS = ['#e67509', '#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626'];
+const STAGE_COLORS = ['#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626', '#6b7280'];
 
-export default function TrendsTab({ period }: { period: Period }) {
+function CardDivider() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
+      <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, #e0e0e0)' }} />
+      <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#d1d5db' }} />
+      <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, #e0e0e0)' }} />
+    </div>
+  );
+}
+
+export default function TrendsTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
   const [data, setData]       = useState<TrendsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
@@ -30,29 +40,29 @@ export default function TrendsTab({ period }: { period: Period }) {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchTrends(period));
+      setData(await fetchTrends(period, dateRange));
     } catch {
       setError('Failed to load trends data');
     } finally {
       setLoading(false);
     }
-  }, [period]);
+  }, [period, dateRange]);
 
   useEffect(() => { load(); }, [load]);
 
-  // Flatten labels + series arrays into chart-friendly row objects
+  // returnsByStage is now inside data.trends
   const timeSeriesData = data
     ? data.trends.labels.map((label, i) => ({
         label,
         progressions: data.trends.series.progressions[i] ?? 0,
-        l3Approvals:  data.trends.series.l3Approvals[i]  ?? 0,
+        approvals:    data.trends.series.approvals[i]    ?? 0,
         returns:      data.trends.series.returns[i]      ?? 0,
         holds:        data.trends.series.holds[i]        ?? 0,
       }))
     : [];
 
   const returnsByStageData = data
-    ? Object.entries(data.returnsByStage)
+    ? Object.entries(data.trends.returnsByStage)
         .filter(([k]) => k !== 'Unknown')
         .map(([stage, count], i) => ({ stage: `Stage ${stage}`, count, fill: STAGE_COLORS[i] }))
     : [];
@@ -72,18 +82,22 @@ export default function TrendsTab({ period }: { period: Period }) {
       </div>
 
       {/* ── Summary cards ── */}
-      {loading ? <CardsSkeleton count={6} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-          <StatCard label="Progressions"    value={data.summary.totalProgressions}   color="blue" />
-          <StatCard label="L3 Approvals"    value={data.summary.totalL3Approvals}    color="green" />
-          <StatCard label="Returns"         value={data.summary.totalReturns}         color="amber" />
-          <StatCard label="Holds"           value={data.summary.totalHolds}           color="red" />
-          <StatCard label="Submissions"     value={data.summary.totalSubmissions}     color="default" />
-          <StatCard label="Registrations"   value={data.summary.totalRegistrations}   color="blue" />
+      {loading ? <CardsSkeleton count={5} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+            <StatCard label="Progressions" value={data.summary.totalProgressions} color="blue" />
+            <StatCard label="L3 Approvals" value={data.summary.totalL3Approvals}  color="green" />
+          </div>
+          <CardDivider />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+            <StatCard label="Returns"     value={data.summary.totalReturns}     color="amber" />
+            <StatCard label="Holds"       value={data.summary.totalHolds}       color="red" />
+            <StatCard label="Submissions" value={data.summary.totalSubmissions} color="default" />
+          </div>
         </div>
       )}
 
-      {/* ── Period comparison badge ── */}
+      {/* ── Period comparison ── */}
       {!loading && !error && data && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <div style={{ fontSize: '0.875rem', color: '#374151' }}>
@@ -115,7 +129,7 @@ export default function TrendsTab({ period }: { period: Period }) {
                   key={key}
                   type="monotone"
                   dataKey={key}
-                  name={key === 'l3Approvals' ? 'L3 Approvals' : key.charAt(0).toUpperCase() + key.slice(1)}
+                  name={key.charAt(0).toUpperCase() + key.slice(1)}
                   stroke={color}
                   strokeWidth={2}
                   dot={{ r: 3 }}
@@ -142,29 +156,20 @@ export default function TrendsTab({ period }: { period: Period }) {
         )}
       </Section>
 
-      {/* ── Hold stats cards ── */}
+      {/* ── Hold stats ── */}
       {!loading && !error && data && (
         <Section title="Hold Statistics">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Holds Requested" value={data.holdStats.totalRequested}  color="amber" />
-            <StatCard label="Holds Approved"  value={data.holdStats.totalApproved}   color="green" />
-            <StatCard label="Hold Approval Rate"
-              value={data.holdStats.approvalRate == null ? '—' : `${data.holdStats.approvalRate.toFixed(1)}%`}
-              color="blue" />
-          </div>
-        </Section>
-      )}
-
-      {/* ── Current pipeline snapshot ── */}
-      {!loading && !error && data && (
-        <Section title="Current Pipeline Snapshot">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Total Registered"   value={data.currentTotals.totalRegistered} color="default" />
-            <StatCard label="L3 Approved"        value={data.currentTotals.totalApproved}   color="green" />
-            <StatCard label="In Pipeline"        value={data.currentTotals.inPipeline}      color="blue" />
-            <StatCard label="Not Yet Submitted"  value={data.currentTotals.inProgress}      color="default" />
-            <StatCard label="Returned"           value={data.currentTotals.totalReturned}   color="amber" />
-            <StatCard label="Parked"             value={data.currentTotals.totalParked}     color="red" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <StatCard label="Holds Requested" value={data.holdStats.totalRequested} color="amber" />
+              <StatCard label="Holds Approved"  value={data.holdStats.totalApproved}  color="green" />
+            </div>
+            <CardDivider />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <StatCard label="Hold Approval Rate"
+                value={data.holdStats.approvalRate == null ? '—' : `${data.holdStats.approvalRate.toFixed(1)}%`}
+                color="blue" />
+            </div>
           </div>
         </Section>
       )}
