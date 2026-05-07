@@ -69,10 +69,7 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
       ]
     : [];
 
-  const reviewerRows = (data?.reviewerPerformance ?? []).map(r => ({
-    ...r,
-    total: r.total ?? (r.approved + r.rejected),
-  })) as unknown as Record<string, unknown>[];
+  const reviewerRows = (data?.reviewerPerformance ?? []) as unknown as Record<string, unknown>[];
   const pendingRows  = (data?.pendingByCompany?.slice(0, 10) ?? []) as unknown as Record<string, unknown>[];
 
   return (
