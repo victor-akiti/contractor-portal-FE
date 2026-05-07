@@ -10,7 +10,7 @@ export interface StageCounts {
   l3: number;
   returned: number;
   parked: number;
-  parkRequested: number;
+  parkRequested?: number;
 }
 
 export interface OldestPendingItem {
@@ -246,7 +246,6 @@ export interface NarrativeData {
 
 // ── Dashboard (unified single-call response) ──────────────────────────────────
 export interface DashboardKpis {
-  totalVendorAccounts: number;
   totalRegistered: number;
   totalInPipeline: number;
   totalApproved: number;
@@ -279,7 +278,7 @@ export interface DashboardTrends {
     holds: number[];
     cumulativeApprovals: number[];
   };
-  returnsByStage: { B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
+  returnsByStage: { A: number; B: number; C: number; D: number; E: number; F: number; G: number; Unknown: number };
 }
 
 export interface DashboardData {
@@ -290,8 +289,9 @@ export interface DashboardData {
   pipeline: {
     stageCounts: StageCounts;
     distribution: PipelineDistributionItem[];
-    avgDwellPerReviewStage: { stage: string; avgDays: number | null }[];
-    bottleneck: { stage: string; avgDays: number | null } | null;
+    avgDwellPerStage: { stage: string; avgDays: number | null; sampleSize: number }[];
+    avgCompletionDwellPerStage?: { stage: string; level: number; avgDays: number | null; sampleSize: number }[];
+    bottleneck: { stage: string; avgDays: number | null; vendorCount?: number } | null;
     staleVendors: StaleVendorItem[];
   };
   trends: DashboardTrends;
@@ -307,14 +307,14 @@ export interface DashboardData {
   };
   certificates: { pending: number; approved: number; rejected: number; expired: number; expiringSoon: number; total: number };
   dueDiligence: {
+    atStageD: number;
     atStageE: number;
-    atStageF: number;
+    avgDaysAtStageD: number | null;
     avgDaysAtStageE: number | null;
-    avgDaysAtStageF: number | null;
   };
   holdStats: { totalApprovedHolds: number; periodHolds: number };
   priorityVendors?: PriorityVendors;
-  tooltips: Record<string, string>;
+  tooltips?: Record<string, string>;
   flags: ExecFlag[];
 }
 

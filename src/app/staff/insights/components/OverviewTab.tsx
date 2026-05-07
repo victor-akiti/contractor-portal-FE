@@ -124,7 +124,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 
   const returnsByStageData = dashboard
     ? Object.entries(dashboard.trends.returnsByStage)
-        .filter(([k]) => k !== 'Unknown')
+        .filter(([k]) => k !== 'Unknown' && k !== 'A')
         .map(([stage, count]) => ({ stage: `Stage ${stage}`, count }))
     : [];
 
@@ -174,7 +174,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 
           {/* Group 1: All Accounts → Registered → Not Yet Submitted */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="All Contractor Accounts" value={dashboard.kpis.totalVendorAccounts} color="default" tooltip={tips.totalVendorAccounts} />
+            <StatCard label="All Contractor Accounts" value={dashboard.kpis.totalRegistered + dashboard.kpis.notSubmitted} color="default" tooltip={tips?.totalVendorAccounts} />
             <StatCard label="Registered"              value={dashboard.kpis.totalRegistered}      color="blue"    tooltip={tips.totalRegistered} />
             <StatCard label="Not Yet Submitted"       value={dashboard.kpis.notSubmitted}         color="default" tooltip={tips.notSubmitted} />
           </div>
@@ -325,11 +325,11 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       </Section>
 
       {/* ── Avg dwell per review stage ── */}
-      <Section title="Avg Dwell Per Review Stage (days)" tooltip={tips.avgDwellPerReviewStage}>
+      <Section title="Avg Dwell Per Review Stage (days)" tooltip={tips?.avgDwellPerReviewStage}>
         {loadingMain ? <ChartSkeleton height={200} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
-              data={(dashboard!.pipeline.avgDwellPerReviewStage ?? []).map(d => ({ ...d, days: d.avgDays ?? 0 }))}
+              data={(dashboard!.pipeline.avgDwellPerStage ?? []).map(d => ({ ...d, days: d.avgDays ?? 0 }))}
               layout="vertical"
               margin={{ top: 4, right: 50, bottom: 4, left: 70 }}
             >
@@ -381,12 +381,12 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 
       {/* ── Due Diligence (Stage E = VMO, Stage F = C&P HOD) ── */}
       {!loadingMain && !errorMain && dashboard && (
-        <Section title="Due Diligence (Stage E & F)" tooltip={tips.dueDiligence}>
+        <Section title="Due Diligence (Stage D & E)" tooltip={tips?.dueDiligence}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="At Stage E (VMO)"      value={dashboard.dueDiligence.atStageE}              color="blue" />
-            <StatCard label="At Stage F (C&P HOD)"  value={dashboard.dueDiligence.atStageF}              color="purple" />
+            <StatCard label="At Stage D (VMO)"      value={dashboard.dueDiligence.atStageD}              color="blue" />
+            <StatCard label="At Stage E (C&P HOD)"  value={dashboard.dueDiligence.atStageE}              color="purple" />
+            <StatCard label="Avg Days @ Stage D"     value={fmt(dashboard.dueDiligence.avgDaysAtStageD)}  sub="days" color="amber" />
             <StatCard label="Avg Days @ Stage E"     value={fmt(dashboard.dueDiligence.avgDaysAtStageE)}  sub="days" color="amber" />
-            <StatCard label="Avg Days @ Stage F"     value={fmt(dashboard.dueDiligence.avgDaysAtStageF)}  sub="days" color="amber" />
           </div>
         </Section>
       )}
