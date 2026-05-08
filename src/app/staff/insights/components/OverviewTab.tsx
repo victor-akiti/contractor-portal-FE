@@ -177,9 +177,9 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 
           {/* Group 2: Pipeline → Returned → Parked → Priority */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="In Pipeline"          value={dashboard.kpis.totalInPipeline}    color="blue"   tooltip={tips.totalInPipeline} />
-            <StatCard label="Returned"             value={dashboard.kpis.returned}           color="amber"  tooltip={tips.returned} />
-            <StatCard label="Parked"               value={dashboard.kpis.parked}             color="red"    tooltip={tips.parked} />
+            <StatCard label="Within Amni Review"      value={dashboard.kpis.totalInPipeline}    color="blue"   tooltip={tips.totalInPipeline} />
+            <StatCard label="Returned to Contractor" value={dashboard.kpis.returned}           color="amber"  tooltip={tips.returned} />
+            <StatCard label="Parked / Completed L2"  value={dashboard.kpis.parked}             color="red"    tooltip={tips.parked} />
             <StatCard label="Priority Contractors" value={dashboard.kpis.priorityInPipeline} color="purple" tooltip={tips.priorityInPipeline} />
           </div>
 
@@ -210,7 +210,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
             <StatCard label="Total Certs Tracked"
               value={certData?.statusBreakdown.totalTracked ?? '—'}
               color="default" />
-            <StatCard label="Certs Pending Review"
+            <StatCard label="Cert Review Backlog"
               value={certData?.statusBreakdown.pending ?? '—'}
               color="amber"
               tooltip={tips.certsPending} />

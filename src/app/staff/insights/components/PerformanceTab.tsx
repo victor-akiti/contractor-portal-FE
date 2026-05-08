@@ -93,7 +93,7 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
       )}
 
       {/* ── Approver table ── */}
-      <Section title="Approver Performance">
+      <Section title={`Approver Performance (${period})`}>
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
@@ -112,8 +112,8 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
                     </span>
                   );
                 }},
-              { key: 'returnsInitiated', label: 'Returns', width: '80px' },
-              { key: 'holdsInitiated',   label: 'Holds',   width: '80px' },
+              { key: 'returnsInitiated', label: 'Returns to Contractor', width: '150px' },
+              { key: 'holdsInitiated',   label: 'Park Reqs',             width: '90px' },
             ]}
             rows={approverRows}
             defaultSortKey="totalActions"

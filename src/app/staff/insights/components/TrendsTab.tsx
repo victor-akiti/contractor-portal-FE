@@ -13,12 +13,12 @@ import type { TrendsData, DateRange, Period } from '../types';
 const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
 const fmtPct = (v: number | null | undefined)        => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
 
-const LINE_COLORS = {
-  progressions: '#e67509',
-  approvals:    '#16a34a',
-  returns:      '#d97706',
-  holds:        '#dc2626',
-};
+const LINE_SERIES = [
+  { key: 'progressions', name: 'Stage Progressions',      color: '#e67509' },
+  { key: 'approvals',    name: 'L3 Approvals',            color: '#16a34a' },
+  { key: 'returns',      name: 'Returned to Contractor',  color: '#d97706' },
+  { key: 'holds',        name: 'Park Requests',           color: '#dc2626' },
+];
 
 function CardDivider() {
   return (
@@ -82,9 +82,9 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
           </div>
           <CardDivider />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Returns"     value={data.summary.totalReturns}     color="amber" />
-            <StatCard label="Holds"       value={data.summary.totalHolds}       color="red" />
-            <StatCard label="Submissions" value={data.summary.totalSubmissions} color="default" />
+            <StatCard label="Returned to Contractor" value={data.summary.totalReturns}     color="amber" />
+            <StatCard label="Park Requests"          value={data.summary.totalHolds}       color="red" />
+            <StatCard label="Submissions"            value={data.summary.totalSubmissions} color="default" />
           </div>
         </div>
       )}
@@ -95,7 +95,7 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
           <div style={{ fontSize: '0.875rem', color: '#374151' }}>
             <strong>vs Previous Period:</strong>{' '}
             <span style={{ color: changeColor, fontWeight: 700 }}>{fmtPct(changePercent)}</span>
-            {' '}progressions ({data.periodComparison.currentPeriodProgressions} vs {data.periodComparison.prevPeriodProgressions})
+            {' '}stage progressions ({data.periodComparison.currentPeriodProgressions} vs {data.periodComparison.prevPeriodProgressions})
           </div>
           {data.avgReturnToResubmitDays != null && (
             <div style={{ fontSize: '0.875rem', color: '#374151' }}>
@@ -116,12 +116,12 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
               <Legend />
-              {(Object.entries(LINE_COLORS) as [string, string][]).map(([key, color]) => (
+              {LINE_SERIES.map(({ key, name, color }) => (
                 <Line
                   key={key}
                   type="monotone"
                   dataKey={key}
-                  name={key.charAt(0).toUpperCase() + key.slice(1)}
+                  name={name}
                   stroke={color}
                   strokeWidth={2}
                   dot={{ r: 3 }}
@@ -132,17 +132,17 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
         )}
       </Section>
 
-      {/* ── Hold stats ── */}
+      {/* ── Park request stats ── */}
       {!loading && !error && data && (
-        <Section title="Hold Statistics">
+        <Section title="Park Request Statistics">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="Holds Requested" value={data.holdStats.totalRequested} color="amber" />
-              <StatCard label="Holds Approved"  value={data.holdStats.totalApproved}  color="green" />
+              <StatCard label="Park Requests"          value={data.holdStats.totalRequested} color="amber" />
+              <StatCard label="Park Requests Approved" value={data.holdStats.totalApproved}  color="green" />
             </div>
             <CardDivider />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="Hold Approval Rate"
+              <StatCard label="Park Approval Rate"
                 value={data.holdStats.approvalRate == null ? '—' : `${data.holdStats.approvalRate.toFixed(1)}%`}
                 color="blue" />
             </div>
@@ -153,10 +153,10 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
       {/* ── Top initiators ── */}
       {!loading && !error && data && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <Section title="Top Return Initiators">
+          <Section title="Top 'Return to Contractor' Initiators">
             <RankedList items={data.topReturnInitiators} color="#d97706" />
           </Section>
-          <Section title="Top Hold Initiators">
+          <Section title="Top Park Request Initiators">
             <RankedList items={data.topHoldInitiators} color="#dc2626" />
           </Section>
         </div>

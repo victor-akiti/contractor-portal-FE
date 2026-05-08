@@ -58,8 +58,8 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
         { name: 'Stage E', value: data.stageCounts.stageE },
         { name: 'Stage F', value: data.stageCounts.stageF },
         { name: 'Stage G', value: data.stageCounts.stageG },
-        { name: 'Returned', value: data.stageCounts.returned },
-        { name: 'Parked',   value: data.stageCounts.parked },
+        { name: 'Returned to Contractor', value: data.stageCounts.returned },
+        { name: 'Parked / Completed L2', value: data.stageCounts.parked },
         { name: 'L3',       value: data.stageCounts.l3 },
       ]
     : [];
@@ -93,8 +93,8 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
           <StatCard label="Stage E"   value={data.stageCounts.stageE}   color="amber" />
           <StatCard label="Stage F"   value={data.stageCounts.stageF}   color="red" />
           <StatCard label="Stage G"   value={data.stageCounts.stageG}   color="default" />
-          <StatCard label="Returned"  value={data.stageCounts.returned} color="amber" />
-          <StatCard label="Parked"    value={data.stageCounts.parked}   color="red" />
+          <StatCard label="Returned to Contractor" value={data.stageCounts.returned} color="amber" />
+          <StatCard label="Parked / Completed L2" value={data.stageCounts.parked}   color="red" />
           <StatCard label="L3 / Done" value={data.stageCounts.l3}       color="green" />
         </div>
       )}
@@ -160,7 +160,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
             </div>
             <CardDivider />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="In Pipeline"     value={data.summary.totalInPipeline} color="blue" />
+              <StatCard label="Within Amni Review" value={data.summary.totalInPipeline} color="blue" />
               <StatCard label="Completion Rate" value={data.summary.completionRate != null ? `${data.summary.completionRate.toFixed(1)}%` : '—'} color="green" />
               <StatCard label="Avg Cycle Days"  value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
             </div>
