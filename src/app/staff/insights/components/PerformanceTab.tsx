@@ -51,17 +51,12 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
 
   useEffect(() => { load(); }, [load]);
 
-  const TEST_NAMES = new Set(['Victor Izu-Akiti']);
-  const isTestAccount = (r: { name?: unknown; role?: unknown }) =>
-    r.role === 'Admin' || TEST_NAMES.has(r.name as string);
-
   const bottleneckEntry = data?.bottleneck
     ? (data.byStage.find(s => s.stage === data.bottleneck!.stage) ?? data.bottleneck)
     : null;
 
-  const approverRows = (data?.byApprover ?? [])
-    .filter(r => !isTestAccount(r)) as unknown as Record<string, unknown>[];
-  const stageRows = (data?.byStage ?? []) as unknown as Record<string, unknown>[];
+  const approverRows = (data?.byApprover ?? []) as unknown as Record<string, unknown>[];
+  const stageRows    = (data?.byStage ?? [])    as unknown as Record<string, unknown>[];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

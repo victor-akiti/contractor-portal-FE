@@ -154,10 +154,10 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
       {!loading && !error && data && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <Section title="Top 'Return to Contractor' Initiators">
-            <RankedList items={data.topReturnInitiators.filter(i => i.name !== 'Victor Izu-Akiti')} color="#d97706" />
+            <RankedList items={data.topReturnInitiators} color="#d97706" />
           </Section>
           <Section title="Top Park Initiators">
-            <RankedList items={data.topHoldInitiators.filter(i => i.name !== 'Victor Izu-Akiti')} color="#dc2626" />
+            <RankedList items={data.topHoldInitiators} color="#dc2626" />
           </Section>
         </div>
       )}
