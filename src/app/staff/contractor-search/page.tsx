@@ -616,7 +616,7 @@ export default function VendorSearchPage() {
             <header className={styles.pageHeader}>
                 <h2 className={styles.pageTitle}>Contractor Search</h2>
                 <p className={styles.pageSubtitle}>
-                    Search for contractors quickly by name, amni categorization, or contractor stated activities.
+                    Search for contractors quickly by name, Amni's categorization, or contractor stated activities.
                 </p>
             </header>
 
