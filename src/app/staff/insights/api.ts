@@ -28,39 +28,104 @@ function periodQS(period: Period, dateRange?: DateRange): string {
   return `period=${period}`;
 }
 
-export async function fetchPipeline(period: Period = '30d', dateRange?: DateRange): Promise<PipelineData> {
-  const res = await getProtected(`insights/pipeline?${periodQS(period, dateRange)}`, 'Admin');
-  return unwrap<PipelineData>(res);
+// ── Request cache ─────────────────────────────────────────────────────────────
+// inflightCache deduplicates concurrent calls for the same key.
+// resultCache serves TTL-fresh results without a network round-trip.
+
+const inflightCache = new Map<string, Promise<unknown>>();
+const resultCache   = new Map<string, { data: unknown; ts: number }>();
+const CACHE_TTL_MS  = 3 * 60_000; // 3 minutes
+
+function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const inflight = inflightCache.get(key);
+  if (inflight) return inflight as Promise<T>;
+
+  const cached = resultCache.get(key);
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+    return Promise.resolve(cached.data as T);
+  }
+
+  const p = fetcher()
+    .then(data => {
+      resultCache.set(key, { data, ts: Date.now() });
+      inflightCache.delete(key);
+      return data;
+    })
+    .catch(err => {
+      inflightCache.delete(key);
+      throw err;
+    });
+
+  inflightCache.set(key, p as Promise<unknown>);
+  return p;
 }
 
-export async function fetchPerformance(period: Period = '30d', dateRange?: DateRange): Promise<PerformanceData> {
-  const res = await getProtected(`insights/performance?${periodQS(period, dateRange)}`, 'Admin');
-  return unwrap<PerformanceData>(res);
+// ── Prefetch ──────────────────────────────────────────────────────────────────
+// Fires all period-sensitive fetches in parallel so tab switches hit the cache.
+
+export function prefetchAll(period: Period = '30d', dateRange?: DateRange): void {
+  fetchDashboard(period, dateRange);
+  fetchPipeline(period, dateRange);
+  fetchPerformance(period, dateRange);
+  fetchTrends(period, dateRange);
+  fetchCertificates(period, dateRange);
 }
 
-export async function fetchCertificates(period: Period = '30d', dateRange?: DateRange): Promise<CertificatesData> {
-  const res = await getProtected(`insights/certificates?${periodQS(period, dateRange)}`, 'Admin');
-  return unwrap<CertificatesData>(res);
+// ── Fetch functions ───────────────────────────────────────────────────────────
+
+export function fetchPipeline(period: Period = '30d', dateRange?: DateRange): Promise<PipelineData> {
+  const qs = periodQS(period, dateRange);
+  return cachedFetch(`pipeline::${qs}`, async () => {
+    const res = await getProtected(`insights/pipeline?${qs}`, 'Admin');
+    return unwrap<PipelineData>(res);
+  });
 }
 
-export async function fetchTrends(period: Period = '30d', dateRange?: DateRange): Promise<TrendsData> {
-  const res = await getProtected(`insights/trends?${periodQS(period, dateRange)}`, 'Admin');
-  return unwrap<TrendsData>(res);
+export function fetchPerformance(period: Period = '30d', dateRange?: DateRange): Promise<PerformanceData> {
+  const qs = periodQS(period, dateRange);
+  return cachedFetch(`performance::${qs}`, async () => {
+    const res = await getProtected(`insights/performance?${qs}`, 'Admin');
+    return unwrap<PerformanceData>(res);
+  });
 }
 
-export async function fetchDashboard(period: Period = '30d', dateRange?: DateRange): Promise<DashboardData> {
-  const res = await getProtected(`insights/dashboard?${periodQS(period, dateRange)}`, 'Admin');
-  return unwrap<DashboardData>(res);
+export function fetchCertificates(period: Period = '30d', dateRange?: DateRange): Promise<CertificatesData> {
+  const qs = periodQS(period, dateRange);
+  return cachedFetch(`certificates::${qs}`, async () => {
+    const res = await getProtected(`insights/certificates?${qs}`, 'Admin');
+    return unwrap<CertificatesData>(res);
+  });
 }
 
-export async function fetchExecSummary(period: Period = '30d', dateRange?: DateRange): Promise<ExecSummaryData> {
-  const res = await getProtected(`insights/executive-summary?${periodQS(period, dateRange)}`, 'Admin');
-  return unwrap<ExecSummaryData>(res);
+export function fetchTrends(period: Period = '30d', dateRange?: DateRange): Promise<TrendsData> {
+  const qs = periodQS(period, dateRange);
+  return cachedFetch(`trends::${qs}`, async () => {
+    const res = await getProtected(`insights/trends?${qs}`, 'Admin');
+    return unwrap<TrendsData>(res);
+  });
 }
 
-export async function fetchNarrative(focus: 'pipeline' | 'performance' | 'certs' | 'all' = 'all'): Promise<NarrativeData> {
-  const res = await getProtected(`insights/narrative?focus=${focus}`, 'Admin');
-  return unwrap<NarrativeData>(res);
+export function fetchDashboard(period: Period = '30d', dateRange?: DateRange): Promise<DashboardData> {
+  const qs = periodQS(period, dateRange);
+  return cachedFetch(`dashboard::${qs}`, async () => {
+    const res = await getProtected(`insights/dashboard?${qs}`, 'Admin');
+    return unwrap<DashboardData>(res);
+  });
+}
+
+export function fetchExecSummary(period: Period = '30d', dateRange?: DateRange): Promise<ExecSummaryData> {
+  const qs = periodQS(period, dateRange);
+  return cachedFetch(`executive-summary::${qs}`, async () => {
+    const res = await getProtected(`insights/executive-summary?${qs}`, 'Admin');
+    return unwrap<ExecSummaryData>(res);
+  });
+}
+
+export function fetchNarrative(focus: 'pipeline' | 'performance' | 'certs' | 'all' = 'all'): Promise<NarrativeData> {
+  return cachedFetch(`narrative::${focus}`, async () => {
+    const res = await getProtected(`insights/narrative?focus=${focus}`, 'Admin');
+    return unwrap<NarrativeData>(res);
+  });
 }
 
 export async function downloadExport(path: string, filename: string): Promise<void> {

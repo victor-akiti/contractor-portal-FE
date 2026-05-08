@@ -1,8 +1,10 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
 import type { Period, DateRange } from './types';
+import { prefetchAll } from './api';
 
 // Lazy-load heavy tab components
 const OverviewTab     = dynamic(() => import('./components/OverviewTab'),     { ssr: false });
@@ -36,16 +38,34 @@ const ALL_TABS: TabDef[] = [
 
 const PRESET_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y'];
 
-// Today's date as YYYY-MM-DD for the date input max
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-// ── Component ──────────────────────────────────────────────────────────────────
+// ── Suspense wrapper — required for useSearchParams in App Router ─────────────
 export default function InsightsPage() {
+  return (
+    <Suspense>
+      <InsightsPageInner />
+    </Suspense>
+  );
+}
+
+// ── Component ──────────────────────────────────────────────────────────────────
+function InsightsPageInner() {
+  const searchParams = useSearchParams();
+  const router       = useRouter();
   const user = useSelector((state: { user: { user: { role?: string } | null } }) => state.user.user);
   const role = user?.role ?? '';
 
-  const [activeTab, setActiveTab] = useState<TabKey>('overview');
-  const [visited,   setVisited]   = useState<TabKey[]>(['overview']);
+  // Initialise active tab from URL — only read once on mount
+  const [activeTab, setActiveTab] = useState<TabKey>(() => {
+    const t = searchParams.get('tab') as TabKey;
+    return t && ALL_TABS.some(d => d.key === t) ? t : 'overview';
+  });
+  const [visited, setVisited] = useState<TabKey[]>(() => {
+    const t = searchParams.get('tab') as TabKey;
+    const initial = t && ALL_TABS.some(d => d.key === t) ? t : 'overview';
+    return [initial];
+  });
   const [period, setPeriod]       = useState<Period>('30d');
   const [dateRange, setDateRange] = useState<DateRange>({ start: '', end: '' });
 
@@ -54,20 +74,25 @@ export default function InsightsPage() {
     [role],
   );
 
-  const activePeriod = visibleTabs.find(t => t.key === activeTab)?.usesPeriod;
+  // Only pass dateRange when both dates are filled in custom mode
+  const effectiveDateRange: DateRange | undefined =
+    period === 'custom' && dateRange.start && dateRange.end ? dateRange : undefined;
+
+  // Fire all tab fetches in parallel whenever period changes so tabs load instantly
+  useEffect(() => {
+    prefetchAll(period, effectiveDateRange);
+  }, [period, effectiveDateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTabClick = (key: TabKey) => {
     setActiveTab(key);
     setVisited(prev => prev.includes(key) ? prev : [...prev, key]);
+    router.replace(`?tab=${key}`, { scroll: false });
   };
 
   const handlePeriodClick = (p: Period) => {
     setPeriod(p);
+    if (p !== 'custom') setDateRange({ start: '', end: '' });
   };
-
-  // Only pass dateRange when both dates are filled in custom mode
-  const effectiveDateRange: DateRange | undefined =
-    period === 'custom' && dateRange.start && dateRange.end ? dateRange : undefined;
 
   // Common props for all period-aware tabs
   const tabProps = { period, dateRange: effectiveDateRange };
