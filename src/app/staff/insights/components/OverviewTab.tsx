@@ -168,7 +168,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 
           {/* Group 1: All Accounts → Registered → Not Yet Submitted */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="All Contractor Accounts" value={dashboard.kpis.totalVendorAccounts} color="default" tooltip={tips.totalVendorAccounts} />
+            <StatCard label="All Contractor Accounts" value={dashboard.kpis.totalActiveAccounts} color="default" tooltip={tips.totalActiveAccounts} />
             <StatCard label="Registered"              value={dashboard.kpis.totalRegistered}      color="blue"    tooltip={tips.totalRegistered} />
             <StatCard label="Not Yet Submitted"       value={dashboard.kpis.notSubmitted}         color="default" tooltip={tips.notSubmitted} />
           </div>

@@ -45,7 +45,7 @@ export interface PipelineData {
     last7DaysL3Approvals: number;
   };
   summary: {
-    totalVendorAccounts: number;
+    totalActiveAccounts: number;
     totalRegistered: number;
     totalWithContractor: number;
     totalInPipeline: number;
@@ -191,7 +191,7 @@ export interface ExecSummaryData {
   period: string;
   bucketSize: 'day' | 'week' | 'month';
   overview: {
-    totalVendorAccounts: number;
+    totalActiveAccounts: number;
     totalRegistered: number;
     notSubmitted: number;
     totalInPipeline: number;
@@ -245,7 +245,7 @@ export interface NarrativeData {
 
 // ── Dashboard (unified single-call response) ──────────────────────────────────
 export interface DashboardKpis {
-  totalVendorAccounts: number;
+  totalActiveAccounts: number;
   totalRegistered: number;
   totalInPipeline: number;
   totalApproved: number;

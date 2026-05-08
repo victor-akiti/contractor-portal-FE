@@ -34,7 +34,7 @@ const ALL_TABS: TabDef[] = [
   { key: 'export',       label: 'Export',       requiredRoles: EXPORT_ROLES },
 ];
 
-const PRESET_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y', '3y', '5y', '10y'];
+const PRESET_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y'];
 
 // Today's date as YYYY-MM-DD for the date input max
 const todayISO = () => new Date().toISOString().slice(0, 10);

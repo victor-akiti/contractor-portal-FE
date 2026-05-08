@@ -51,8 +51,17 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
 
   useEffect(() => { load(); }, [load]);
 
-  const approverRows = (data?.byApprover ?? []) as unknown as Record<string, unknown>[];
-  const stageRows    = (data?.byStage ?? [])    as unknown as Record<string, unknown>[];
+  const TEST_NAMES = new Set(['Victor Izu-Akiti']);
+  const isTestAccount = (r: { name?: unknown; role?: unknown }) =>
+    r.role === 'Admin' || TEST_NAMES.has(r.name as string);
+
+  const bottleneckEntry = data?.bottleneck
+    ? (data.byStage.find(s => s.stage === data.bottleneck!.stage) ?? data.bottleneck)
+    : null;
+
+  const approverRows = (data?.byApprover ?? [])
+    .filter(r => !isTestAccount(r)) as unknown as Record<string, unknown>[];
+  const stageRows = (data?.byStage ?? []) as unknown as Record<string, unknown>[];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -76,18 +85,18 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
       )}
 
       {/* ── Bottleneck card ── */}
-      {!loading && !error && data?.bottleneck && (
+      {!loading && !error && bottleneckEntry && (
         <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', padding: '1rem 1.25rem' }}>
           <h4 style={{ margin: '0 0 0.5rem', color: '#dc2626', fontSize: '0.95rem', fontWeight: 600 }}>
-            ⚠ Bottleneck: {data.bottleneck.stage}
+            ⚠ Bottleneck: {bottleneckEntry.stage}
           </h4>
           <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151' }}>
-            Current dwell <strong>{fmt(data.bottleneck.avgCurrentDwellDays)} days</strong>
-            {data.bottleneck.avgCompletionDwellDays != null && (
-              <> · Hist. completion avg <strong>{fmt(data.bottleneck.avgCompletionDwellDays)} days</strong></>
+            Current dwell <strong>{fmt(bottleneckEntry.avgCurrentDwellDays)} days</strong>
+            {bottleneckEntry.avgCompletionDwellDays != null && (
+              <> · Hist. completion avg <strong>{fmt(bottleneckEntry.avgCompletionDwellDays)} days</strong></>
             )}
-            {' '}· {data.bottleneck.currentVendors} contractors here now
-            {data.bottleneck.responsibleRoles?.length > 0 && ` · Roles: ${data.bottleneck.responsibleRoles.join(', ')}`}
+            {' '}· {bottleneckEntry.currentVendors} contractors here now
+            {bottleneckEntry.responsibleRoles?.length > 0 && ` · Roles: ${bottleneckEntry.responsibleRoles.join(', ')}`}
           </p>
         </div>
       )}
@@ -113,7 +122,7 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
                   );
                 }},
               { key: 'returnsInitiated', label: 'Returns to Contractor', width: '150px' },
-              { key: 'holdsInitiated',   label: 'Park Reqs',             width: '90px' },
+              { key: 'holdsInitiated',   label: 'Parked',                width: '90px' },
             ]}
             rows={approverRows}
             defaultSortKey="totalActions"

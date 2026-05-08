@@ -154,7 +154,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {/* Total accounts → registered → not yet submitted */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="All Contractor Accounts" value={data.summary.totalVendorAccounts} color="default" />
+              <StatCard label="All Contractor Accounts" value={data.summary.totalActiveAccounts} color="default" />
               <StatCard label="Registered"              value={data.summary.totalRegistered}     color="blue" />
               <StatCard label="With Contractor"         value={data.summary.totalWithContractor} color="default" />
             </div>

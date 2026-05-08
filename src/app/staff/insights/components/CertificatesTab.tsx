@@ -69,7 +69,9 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
       ]
     : [];
 
-  const reviewerRows = (data?.reviewerPerformance ?? []) as unknown as Record<string, unknown>[];
+  const TEST_NAMES = new Set(['Victor Izu-Akiti']);
+  const reviewerRows = (data?.reviewerPerformance ?? [])
+    .filter(r => r.role !== 'Admin' && !TEST_NAMES.has(r.name)) as unknown as Record<string, unknown>[];
   const pendingRows  = (data?.pendingByCompany?.slice(0, 10) ?? []) as unknown as Record<string, unknown>[];
 
   return (

@@ -17,7 +17,7 @@ const LINE_SERIES = [
   { key: 'progressions', name: 'Stage Progressions',      color: '#e67509' },
   { key: 'approvals',    name: 'L3 Approvals',            color: '#16a34a' },
   { key: 'returns',      name: 'Returned to Contractor',  color: '#d97706' },
-  { key: 'holds',        name: 'Park Requests',           color: '#dc2626' },
+  { key: 'holds',        name: 'Parked',                   color: '#dc2626' },
 ];
 
 function CardDivider() {
@@ -83,7 +83,7 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
           <CardDivider />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
             <StatCard label="Returned to Contractor" value={data.summary.totalReturns}     color="amber" />
-            <StatCard label="Park Requests"          value={data.summary.totalHolds}       color="red" />
+            <StatCard label="Parked"                 value={data.summary.totalHolds}       color="red" />
             <StatCard label="Submissions"            value={data.summary.totalSubmissions} color="default" />
           </div>
         </div>
@@ -134,15 +134,15 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
 
       {/* ── Park request stats ── */}
       {!loading && !error && data && (
-        <Section title="Park Request Statistics">
+        <Section title="Parked Statistics">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="Park Requests"          value={data.holdStats.totalRequested} color="amber" />
-              <StatCard label="Park Requests Approved" value={data.holdStats.totalApproved}  color="green" />
+              <StatCard label="Parked"          value={data.holdStats.totalRequested} color="amber" />
+              <StatCard label="Parked Approved" value={data.holdStats.totalApproved}  color="green" />
             </div>
             <CardDivider />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="Park Approval Rate"
+              <StatCard label="Park Rate"
                 value={data.holdStats.approvalRate == null ? '—' : `${data.holdStats.approvalRate.toFixed(1)}%`}
                 color="blue" />
             </div>
@@ -154,10 +154,10 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
       {!loading && !error && data && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <Section title="Top 'Return to Contractor' Initiators">
-            <RankedList items={data.topReturnInitiators} color="#d97706" />
+            <RankedList items={data.topReturnInitiators.filter(i => i.name !== 'Victor Izu-Akiti')} color="#d97706" />
           </Section>
-          <Section title="Top Park Request Initiators">
-            <RankedList items={data.topHoldInitiators} color="#dc2626" />
+          <Section title="Top Park Initiators">
+            <RankedList items={data.topHoldInitiators.filter(i => i.name !== 'Victor Izu-Akiti')} color="#dc2626" />
           </Section>
         </div>
       )}
