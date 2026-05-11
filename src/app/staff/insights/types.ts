@@ -1,4 +1,4 @@
-// ── Pipeline ──────────────────────────────────────────────────────────────────
+// ── Shared low-level shapes ────────────────────────────────────────────────────
 export interface StageCounts {
   stageA: number;
   stageB: number;
@@ -13,12 +13,16 @@ export interface StageCounts {
   parkRequested: number;
 }
 
-export interface OldestPendingItem {
+export interface DwellEntry {
   stage: string;
-  companyName: string;
-  companyId: string;
-  entryTime: string;
-  daysWaiting: number;
+  avgDays: number | null;
+  vendorCount: number;
+}
+
+export interface Bottleneck {
+  stage: string;
+  avgDays: number;
+  level: number;
 }
 
 export interface StaleVendorItem {
@@ -27,16 +31,19 @@ export interface StaleVendorItem {
   daysWaiting: number;
   isPriority: boolean;
   status: 'active' | 'returned' | 'parked';
+  returnedAt: string | null;
 }
 
+// ── Pipeline ──────────────────────────────────────────────────────────────────
 export interface PipelineData {
   period: string;
   stageCounts: StageCounts;
-  avgDwellPerReviewStage: { stage: string; avgDays: number | null; sampleSize: number }[];
-  bottleneck: { stage: string; avgDays: number | null; sampleSize: number } | null;
-  oldestPendingPerStage: OldestPendingItem[];
-  oldestReturned: OldestPendingItem | null;
-  oldestParked: OldestPendingItem | null;
+  avgDwellPerReviewStage: DwellEntry[];
+  avgCompletionDwellPerStage: { stage: string; level: number; avgDays: number | null; sampleSize: number }[];
+  bottleneck: Bottleneck | null;
+  oldestPendingPerStage: Record<string, { companyName: string; daysWaiting: number | null } | null>;
+  oldestReturned: { companyName: string; daysWaiting: number; returnedAt: string | null } | null;
+  oldestParked: { companyName: string; daysWaiting: number } | null;
   throughput: {
     period: string;
     periodProgressions: number;
@@ -44,10 +51,17 @@ export interface PipelineData {
     last7DaysProgressions: number;
     last7DaysL3Approvals: number;
   };
+  parkStats: {
+    currentlyParked: number;
+    periodRequests: number;
+    periodApproved: number;
+    approvalRate: number | null;
+  };
   summary: {
     totalActiveAccounts: number;
     totalRegistered: number;
-    totalWithContractor: number;
+    notSubmitted: number;
+    returned: number;
     totalInPipeline: number;
     completionRate: number;
     avgCycleDays: number | null;
@@ -81,7 +95,7 @@ export interface PerformanceData {
   period: string;
   byApprover: ApproverRecord[];
   byStage: StageLoad[];
-  bottleneck: StageLoad | null;
+  bottleneck: Bottleneck | null;
   pendingByStage: Record<string, { companyName: string; daysWaiting: number | null }[]>;
   summary: {
     totalApproversInPeriod: number;
@@ -164,14 +178,8 @@ export interface TrendsData {
 
 // ── Shared types used across multiple responses ────────────────────────────────
 export interface ExecFlag {
-  severity: 'critical' | 'warning' | 'info';
+  severity: 'critical' | 'warning' | 'info' | 'success';
   message: string;
-}
-
-export interface PriorityVendorUrgent {
-  companyName: string;
-  stage: string;
-  daysWaiting: number;
 }
 
 export interface PriorityVendors {
@@ -182,7 +190,7 @@ export interface PriorityVendors {
   parked: number;
   byStage: Record<string, number>;
   approvalRate: number | null;
-  urgentList: PriorityVendorUrgent[];
+  urgentList: StaleVendorItem[];
 }
 
 // ── Executive Summary ─────────────────────────────────────────────────────────
@@ -203,14 +211,15 @@ export interface ExecSummaryData {
   };
   pipeline: {
     stageCounts: StageCounts;
-    avgDwellPerReviewStage: { stage: string; avgDays: number | null; sampleSize: number }[];
-    bottleneck: { stage: string; avgDays: number | null; sampleSize: number } | null;
+    avgDwellPerReviewStage: DwellEntry[];
+    avgCompletionDwellPerStage: { stage: string; level: number; avgDays: number | null; sampleSize: number }[];
+    bottleneck: Bottleneck | null;
     staleVendors: StaleVendorItem[];
   };
   activity: {
     period: string;
     totals: { progressions: number; approvals: number; returns: number; holds: number; submissions: number };
-    last7Days: { progressions: number; approvals: number; returns: number; holds: number };
+    last7Days: { progressions: number; approvals: number };
   };
   certificates: { pending: number; approved: number; rejected: number; expired: number; expiringSoon: number; total: number };
   dueDiligence: {
@@ -253,7 +262,6 @@ export interface DashboardKpis {
   avgCycleDays: number | null;
   returned: number;
   parked: number;
-  totalWithContractor: number;
   notSubmitted: number;
   priorityInPipeline: number;
   certsPending: number;
@@ -262,9 +270,9 @@ export interface DashboardKpis {
 }
 
 export interface PipelineDistributionItem {
-  label: string;
-  value: number;
-  color: string;
+  stage: string;
+  count: number;
+  percent: number;
 }
 
 export interface DashboardTrends {
@@ -288,8 +296,9 @@ export interface DashboardData {
   pipeline: {
     stageCounts: StageCounts;
     distribution: PipelineDistributionItem[];
-    avgDwellPerReviewStage: { stage: string; avgDays: number | null }[];
-    bottleneck: { stage: string; avgDays: number | null } | null;
+    avgDwellPerReviewStage: DwellEntry[];
+    avgCompletionDwellPerStage: { stage: string; level: number; avgDays: number | null; sampleSize: number }[];
+    bottleneck: Bottleneck | null;
     staleVendors: StaleVendorItem[];
   };
   trends: DashboardTrends;

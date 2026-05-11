@@ -51,8 +51,9 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
 
   useEffect(() => { load(); }, [load]);
 
+  // Look up bottleneck from byStage — StageLoad has the full detail fields (avgCurrentDwellDays, currentVendors, etc.)
   const bottleneckEntry = data?.bottleneck
-    ? (data.byStage.find(s => s.stage === data.bottleneck!.stage) ?? data.bottleneck)
+    ? (data.byStage.find(s => s.stage === data.bottleneck!.stage) ?? null)
     : null;
 
   const approverRows = (data?.byApprover ?? []) as unknown as Record<string, unknown>[];

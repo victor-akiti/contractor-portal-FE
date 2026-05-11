@@ -25,6 +25,7 @@ const FLAG_STYLES: Record<string, { bg: string; border: string; color: string; i
   critical: { bg: '#fef2f2', border: '#fecaca', color: '#dc2626', icon: '🔴' },
   warning:  { bg: '#fffbeb', border: '#fde68a', color: '#b45309', icon: '🟡' },
   info:     { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8', icon: 'ℹ️' },
+  success:  { bg: '#f0fdf4', border: '#bbf7d0', color: '#15803d', icon: '✅' },
 };
 
 const NARRATIVE_CHIP: Record<string, { bg: string; color: string }> = {
@@ -44,8 +45,9 @@ const TREND_SERIES: { key: string; label: string; color: string; dashed?: boolea
   { key: 'cumulativeApprovals', label: 'Cumulative Approvals', color: '#059669', dashed: true },
 ];
 
-const CERT_STATUS_COLORS = ['#16a34a', '#f59e0b', '#dc2626'];
-const CERT_EXPIRY_COLORS = ['#dc2626', '#f59e0b', '#16a34a', '#9ca3af'];
+const CERT_STATUS_COLORS  = ['#16a34a', '#f59e0b', '#dc2626'];
+const CERT_EXPIRY_COLORS  = ['#dc2626', '#f59e0b', '#16a34a', '#9ca3af'];
+const DIST_COLORS         = ['#e67509', '#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626', '#6b7280', '#0891b2', '#f97316', '#84cc16'];
 
 // ── Card group divider ────────────────────────────────────────────────────────
 function CardDivider() {
@@ -283,19 +285,19 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
               <PieChart>
                 <Pie
                   data={dashboard!.pipeline.distribution}
-                  dataKey="value"
-                  nameKey="label"
+                  dataKey="count"
+                  nameKey="stage"
                   cx="50%"
                   cy="50%"
                   innerRadius={55}
                   outerRadius={90}
                   paddingAngle={2}
                 >
-                  {dashboard!.pipeline.distribution.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
+                  {dashboard!.pipeline.distribution.map((_, i) => (
+                    <Cell key={i} fill={DIST_COLORS[i % DIST_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(v: number, name: string) => [`${v} contractors`, name]} />
                 <Legend wrapperStyle={{ fontSize: '0.78rem' }} />
               </PieChart>
             </ResponsiveContainer>
