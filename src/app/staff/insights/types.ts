@@ -10,7 +10,6 @@ export interface StageCounts {
   l3: number;
   returned: number;
   parked: number;
-  parkRequested: number;
 }
 
 export interface DwellEntry {
@@ -190,7 +189,7 @@ export interface PriorityVendors {
   parked: number;
   byStage: Record<string, number>;
   approvalRate: number | null;
-  urgentList: StaleVendorItem[];
+  urgentList?: StaleVendorItem[];  // present in dashboard, absent in exec-summary
 }
 
 // ── Executive Summary ─────────────────────────────────────────────────────────

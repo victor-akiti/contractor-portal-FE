@@ -526,7 +526,8 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 // ── Priority Fast-Track card ──────────────────────────────────────────────────
 function PriorityFastTrackCard({ pv }: { pv: PriorityVendors }) {
   const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-  const urgentCount  = pv.urgentList.length;
+  const urgentList   = pv.urgentList ?? [];
+  const urgentCount  = urgentList.length;
   const stageEntries = Object.entries(pv.byStage).filter(([, v]) => v > 0);
 
   return (
@@ -589,7 +590,7 @@ function PriorityFastTrackCard({ pv }: { pv: PriorityVendors }) {
               </tr>
             </thead>
             <tbody>
-              {pv.urgentList.map((v, i) => (
+              {urgentList.map((v, i) => (
                 <tr key={i} style={{ borderTop: i > 0 ? '1px solid #fee2e2' : undefined }}>
                   <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{v.companyName}</td>
                   <td style={{ padding: '0.35rem 0.5rem', color: '#6c757d' }}>{v.stage}</td>
