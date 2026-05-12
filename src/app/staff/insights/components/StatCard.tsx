@@ -5,18 +5,19 @@ interface StatCardProps {
   label: string;
   value: string | number | null | undefined;
   sub?: string;
-  color?: 'default' | 'green' | 'amber' | 'red' | 'blue' | 'purple';
+  color?: 'default' | 'brand' | 'green' | 'amber' | 'red' | 'blue' | 'purple';
   icon?: React.ReactNode;
   tooltip?: string;
 }
 
 const colorMap = {
-  default: { border: '#e67509', bg: '#fff8f3', text: '#e67509' },
-  green:   { border: '#16a34a', bg: '#f0fdf4', text: '#16a34a' },
-  amber:   { border: '#d97706', bg: '#fffbeb', text: '#d97706' },
-  red:     { border: '#dc2626', bg: '#fef2f2', text: '#dc2626' },
-  blue:    { border: '#2563eb', bg: '#eff6ff', text: '#2563eb' },
-  purple:  { border: '#7c3aed', bg: '#f5f3ff', text: '#7c3aed' },
+  default: { border: '#d1d5db', bg: '#f9fafb', text: '#374151' },
+  brand:   { border: '#e67509', bg: '#fff8f3', text: '#e67509' },
+  green:   { border: '#86efac', bg: '#f0fdf4', text: '#15803d' },
+  amber:   { border: '#fcd34d', bg: '#fffbeb', text: '#92400e' },
+  red:     { border: '#fca5a5', bg: '#fff5f5', text: '#b91c1c' },
+  blue:    { border: '#93c5fd', bg: '#eff6ff', text: '#1e40af' },
+  purple:  { border: '#c4b5fd', bg: '#faf5ff', text: '#7e22ce' },
 };
 
 export default function StatCard({ label, value, sub, color = 'default', icon, tooltip }: StatCardProps) {
@@ -27,17 +28,17 @@ export default function StatCard({ label, value, sub, color = 'default', icon, t
   return (
     <div style={{
       background: c.bg,
-      borderLeft: `4px solid ${c.border}`,
+      borderLeft: `3px solid ${c.border}`,
       borderRadius: '0.5rem',
-      padding: '1rem 1.25rem',
+      padding: '0.875rem 1.125rem',
       display: 'flex',
       flexDirection: 'column',
-      gap: '0.25rem',
+      gap: '0.2rem',
       minWidth: 0,
       position: 'relative',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '0.8rem', color: '#6c757d', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <span style={{ fontSize: '0.75rem', color: '#6c757d', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
           {label}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -53,10 +54,10 @@ export default function StatCard({ label, value, sub, color = 'default', icon, t
           )}
         </div>
       </div>
-      <span style={{ fontSize: '1.6rem', fontWeight: 700, color: c.text, lineHeight: 1.2 }}>
+      <span style={{ fontSize: '1.5rem', fontWeight: 700, color: c.text, lineHeight: 1.2 }}>
         {display}
       </span>
-      {sub && <span style={{ fontSize: '0.75rem', color: '#6c757d' }}>{sub}</span>}
+      {sub && <span style={{ fontSize: '0.72rem', color: '#6c757d' }}>{sub}</span>}
 
       {tooltip && tipVisible && (
         <div style={{

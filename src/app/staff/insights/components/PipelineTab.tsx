@@ -10,22 +10,22 @@ import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import SortableTable from './SortableTable';
 import StatCard from './StatCard';
 
-const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`);
+const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined)        => (v == null ? '—' : `${v.toFixed(1)}%`);
 
-const fmtDate = (iso: string | null | undefined) => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-};
+const STAGE_COLORS = [
+  '#e67509', '#2563eb', '#16a34a', '#7c3aed',
+  '#d97706', '#dc2626', '#6b7280', '#0891b2', '#f97316', '#84cc16',
+];
 
-const STAGE_COLORS = ['#e67509', '#2563eb', '#16a34a', '#7c3aed', '#d97706', '#dc2626', '#6b7280', '#0891b2', '#f97316', '#84cc16'];
+// Strip "Stage " prefix so we just show the letter e.g. "B" not "Stage B"
+const stageLabel = (s: string) => s.replace(/^Stage\s+/i, '').trim();
 
 function CardDivider() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
       <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, #e0e0e0)' }} />
-      <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#d1d5db' }} />
+      <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#d1d5db' }} />
       <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, #e0e0e0)' }} />
     </div>
   );
@@ -43,7 +43,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
       setData(await fetchPipeline(period, dateRange));
     } catch (err) {
       console.error('[PipelineTab] fetch error', err);
-      setError('Failed to load pipeline data');
+      setError('Could not load pipeline data');
     } finally {
       setLoading(false);
     }
@@ -51,39 +51,36 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
 
   useEffect(() => { load(); }, [load]);
 
-  // Stage distribution bar chart data
   const stageCounts = data
     ? [
-        { name: 'Stage A',                   value: data.stageCounts.stageA },
-        { name: 'Stage B',                   value: data.stageCounts.stageB },
-        { name: 'Stage C',                   value: data.stageCounts.stageC },
-        { name: 'Stage D',                   value: data.stageCounts.stageD },
-        { name: 'Stage E',                   value: data.stageCounts.stageE },
-        { name: 'Stage F',                   value: data.stageCounts.stageF },
-        { name: 'Stage G',                   value: data.stageCounts.stageG },
-        { name: 'Returned to Contractor',    value: data.stageCounts.returned },
-        { name: 'Parked',                        value: data.stageCounts.parked },
-        { name: 'Approved (L3)',                  value: data.stageCounts.l3 },
+        { name: 'Stage A',                value: data.stageCounts.stageA },
+        { name: 'Stage B',                value: data.stageCounts.stageB },
+        { name: 'Stage C',                value: data.stageCounts.stageC },
+        { name: 'Stage D',                value: data.stageCounts.stageD },
+        { name: 'Stage E',                value: data.stageCounts.stageE },
+        { name: 'Stage F',                value: data.stageCounts.stageF },
+        { name: 'Stage G',                value: data.stageCounts.stageG },
+        { name: 'Returned',               value: data.stageCounts.returned },
+        { name: 'Parked',                 value: data.stageCounts.parked },
+        { name: 'Approved (L3)',          value: data.stageCounts.l3 },
       ]
     : [];
 
-  // Current-wait dwell (vendors waiting right now)
   const dwellData = (data?.avgDwellPerReviewStage ?? []).map(d => ({
-    stage: d.stage,
-    days: d.avgDays ?? 0,
-    actual: d.avgDays,
+    stage:   d.stage,
+    days:    d.avgDays ?? 0,
+    actual:  d.avgDays,
     vendors: d.vendorCount,
   }));
 
-  // Historical completion dwell (how long each stage took)
   const completionDwellData = (data?.avgCompletionDwellPerStage ?? []).map(d => ({
-    stage: d.stage,
-    days: d.avgDays ?? 0,
-    actual: d.avgDays,
+    stage:   d.stage,
+    days:    d.avgDays ?? 0,
+    actual:  d.avgDays,
     samples: d.sampleSize,
   }));
 
-  // Oldest pending per stage — API returns Record<stageName, { companyName, daysWaiting } | null>
+  // Record<stageName, { companyName, daysWaiting } | null>
   const oldestRows = Object.entries(data?.oldestPendingPerStage ?? {})
     .filter((entry): entry is [string, { companyName: string; daysWaiting: number | null }] => entry[1] != null)
     .map(([stage, v]) => ({ stage, companyName: v.companyName, daysWaiting: v.daysWaiting }))
@@ -92,37 +89,37 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* ── Refresh ── */}
+      {/* Refresh */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
         <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
-          ↻ Refresh
+          Refresh
         </button>
       </div>
 
-      {/* ── Current pipeline snapshot (live, not period-filtered) ── */}
+      {/* Live stage counts */}
       {loading ? <CardsSkeleton count={10} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-            Current Pipeline Snapshot
+          <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+            Live snapshot - not filtered by period
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Stage A"                   value={data.stageCounts.stageA}   color="default" />
-            <StatCard label="Stage B"                   value={data.stageCounts.stageB}   color="blue" />
-            <StatCard label="Stage C"                   value={data.stageCounts.stageC}   color="green" />
-            <StatCard label="Stage D"                   value={data.stageCounts.stageD}   color="purple" />
-            <StatCard label="Stage E"                   value={data.stageCounts.stageE}   color="amber" />
-            <StatCard label="Stage F"                   value={data.stageCounts.stageF}   color="red" />
-            <StatCard label="Stage G"                   value={data.stageCounts.stageG}   color="default" />
-            <StatCard label="Returned to Contractor"    value={data.stageCounts.returned} color="amber" />
-            <StatCard label="Parked"                      value={data.stageCounts.parked}   color="red" />
-            <StatCard label="Approved (L3)"             value={data.stageCounts.l3}       color="green" />
+            <StatCard label="Stage A"        value={data.stageCounts.stageA}   color="default" />
+            <StatCard label="Stage B"        value={data.stageCounts.stageB}   color="blue" />
+            <StatCard label="Stage C"        value={data.stageCounts.stageC}   color="blue" />
+            <StatCard label="Stage D"        value={data.stageCounts.stageD}   color="purple" />
+            <StatCard label="Stage E"        value={data.stageCounts.stageE}   color="amber" />
+            <StatCard label="Stage F"        value={data.stageCounts.stageF}   color="amber" />
+            <StatCard label="Stage G"        value={data.stageCounts.stageG}   color="default" />
+            <StatCard label="Returned"       value={data.stageCounts.returned} color="amber" />
+            <StatCard label="Parked"         value={data.stageCounts.parked}   color="red" />
+            <StatCard label="Approved (L3)"  value={data.stageCounts.l3}       color="brand" />
           </div>
         </div>
       )}
 
-      {/* ── Stage bar chart ── */}
-      <Section title="Stage Distribution" subtitle="Live count of contractors at each stage of the registration pipeline right now. Not filtered by the selected period — this is the current state.">
+      {/* Stage bar chart */}
+      <Section title="Stage distribution" subtitle="Live count at each stage right now. Not filtered by period.">
         {loading ? <ChartSkeleton height={220} /> : error ? null : (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={stageCounts} margin={{ top: 4, right: 16, bottom: 40, left: 0 }}>
@@ -137,19 +134,19 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
         )}
       </Section>
 
-      {/* ── Period throughput ── */}
+      {/* Period throughput */}
       {!loading && !error && data && (
-        <Section title={`Period Throughput (${data.throughput.period})`}>
+        <Section title={`What moved this period (${data.throughput.period})`}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Stage Progressions" value={data.throughput.periodProgressions} color="blue" />
-            <StatCard label="L3 Approvals"       value={data.throughput.periodL3Approvals}  color="green" />
+            <StatCard label="Stage progressions" value={data.throughput.periodProgressions} color="blue" />
+            <StatCard label="Approved (L3)"      value={data.throughput.periodL3Approvals}  color="brand" />
           </div>
         </Section>
       )}
 
-      {/* ── Dwell charts side-by-side: current wait vs historical completion ── */}
+      {/* Dwell charts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-        <Section title="Current Avg Wait Per Stage" subtitle="How long the contractors currently sitting at each review stage have been waiting. A longer bar means vendors are backing up there right now. This is the same metric used to identify the bottleneck.">
+        <Section title="Current avg wait per stage" subtitle="How long contractors are currently sitting at each stage. Same metric used for the bottleneck.">
           {loading ? <ChartSkeleton height={220} /> : error ? null : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={dwellData} layout="vertical" margin={{ top: 4, right: 50, bottom: 4, left: 70 }}>
@@ -158,7 +155,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
                 <Tooltip
                   formatter={(v: number, _: string, props: { payload?: { actual?: number | null; vendors?: number } }) => [
                     props.payload?.actual == null ? '—' : `${v.toFixed(1)} days`,
-                    `Avg Wait (${props.payload?.vendors ?? '?'} contractors)`,
+                    `Avg wait (${props.payload?.vendors ?? '?'} contractors)`,
                   ]}
                 />
                 <Bar dataKey="days" fill="#2563eb" radius={[0, 4, 4, 0]} />
@@ -167,7 +164,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
           )}
         </Section>
 
-        <Section title="Historical Avg Time Per Stage" subtitle="Based on contractors who have already been approved and moved through each stage. Shows how long each stage typically takes to process. This will differ from the live-wait chart — a stage can be the current bottleneck without having a high historical average (e.g. a recent slowdown not yet reflected in past data).">
+        <Section title="Historical avg time per stage" subtitle="Based on contractors who already completed each stage. A stage can be the current bottleneck without a high historical average if the slowdown is recent.">
           {loading ? <ChartSkeleton height={220} /> : error ? null : completionDwellData.length === 0 ? (
             <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No historical data yet</p>
           ) : (
@@ -178,7 +175,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
                 <Tooltip
                   formatter={(v: number, _: string, props: { payload?: { actual?: number | null; samples?: number } }) => [
                     props.payload?.actual == null ? '—' : `${v.toFixed(1)} days`,
-                    `Avg Completion (n=${props.payload?.samples ?? '?'})`,
+                    `Avg completion (n=${props.payload?.samples ?? '?'})`,
                   ]}
                 />
                 <Bar dataKey="days" fill="#e67509" radius={[0, 4, 4, 0]} />
@@ -188,82 +185,85 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
         </Section>
       </div>
 
-      {/* ── Bottleneck ── */}
+      {/* Bottleneck */}
       {!loading && !error && data?.bottleneck && (
         <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.5rem', padding: '1rem 1.25rem' }}>
-          <h4 style={{ margin: '0 0 0.4rem', color: '#dc2626', fontSize: '0.95rem', fontWeight: 600 }}>
-            ⚠ Bottleneck: {data.bottleneck.stage}
+          <h4 style={{ margin: '0 0 0.35rem', color: '#dc2626', fontSize: '0.95rem', fontWeight: 600 }}>
+            Bottleneck: {data.bottleneck.stage}
           </h4>
           <p style={{ margin: '0 0 0.25rem', fontSize: '0.875rem', color: '#374151' }}>
-            Contractors currently waiting here have been there an average of <strong>{fmt(data.bottleneck.avgDays)} days</strong> — the longest of any review stage.
+            Contractors here have been waiting an average of <strong>{fmt(data.bottleneck.avgDays)} days</strong> - the longest of any review stage right now.
           </p>
-          <p style={{ margin: 0, fontSize: '0.78rem', color: '#9ca3af' }}>
-            This is based on current live wait, not historical averages. The &quot;Historical Avg Time&quot; chart above may show a different figure for this stage.
+          <p style={{ margin: 0, fontSize: '0.75rem', color: '#9ca3af' }}>
+            This is based on the current live wait, not historical averages. The historical chart above may show a different number.
           </p>
         </div>
       )}
 
-      {/* ── Park stats ── */}
+      {/* Park stats */}
       {!loading && !error && data && (
-        <Section title="Park / Hold Statistics" subtitle="Park requests place a contractor on hold during the review process. 'Currently Parked' is the live count; the period figures track requests raised and decided within the selected timeframe.">
+        <Section title="Park requests" subtitle="Parks put a contractor on hold during review. Currently parked is live. The period numbers cover requests raised and decided within the selected timeframe.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p style={{ margin: 0, fontSize: '0.75rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-              Current
+            <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+              Right now
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="Currently Parked" value={data.parkStats.currentlyParked} color="red" />
+              <StatCard label="Currently parked" value={data.parkStats.currentlyParked} color="red" />
             </div>
             <CardDivider />
-            <p style={{ margin: 0, fontSize: '0.75rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-              Period ({data.throughput.period})
+            <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+              This period ({data.throughput.period})
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="Park Requests"  value={data.parkStats.periodRequests}  color="amber" />
-              <StatCard label="Park Approved"  value={data.parkStats.periodApproved}  color="green" />
-              <StatCard label="Approval Rate"  value={fmtPct(data.parkStats.approvalRate)} color="blue" />
+              <StatCard label="Park requests"   value={data.parkStats.periodRequests}  color="default" />
+              <StatCard label="Approved parks"  value={data.parkStats.periodApproved}  color="green" />
+              <StatCard label="Approval rate"   value={fmtPct(data.parkStats.approvalRate)} color="blue" />
             </div>
           </div>
         </Section>
       )}
 
-      {/* ── Totals summary (fixed counts — not period-filtered) ── */}
+      {/* Account summary */}
       {!loading && !error && data && (
-        <Section title="Account Summary">
-          <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#9ca3af' }}>
-            All-time totals — not filtered by the selected period.
+        <Section title="Account summary">
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.78rem', color: '#9ca3af' }}>
+            All-time totals, not filtered by period.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="All Contractor Accounts" value={data.summary.totalActiveAccounts} color="default" />
-              <StatCard label="Registered"              value={data.summary.totalRegistered}     color="blue" />
-              <StatCard label="Not Yet Submitted"       value={data.summary.notSubmitted}        color="default" />
+              <StatCard label="Total accounts"   value={data.summary.totalActiveAccounts} color="default" />
+              <StatCard label="Registered"       value={data.summary.totalRegistered}     color="blue" />
+              <StatCard label="Not submitted"    value={data.summary.notSubmitted}        color="default" />
             </div>
             <CardDivider />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <StatCard label="Within Amni Review"      value={data.summary.totalInPipeline}    color="blue" />
-              <StatCard label="Returned to Contractor"  value={data.summary.returned}           color="amber" />
-              <StatCard label="Completion Rate"         value={fmtPct(data.summary.completionRate)} color="green" />
-              <StatCard label="Avg Cycle Days"          value={fmt(data.summary.avgCycleDays)} sub="days" color="amber" />
+              <StatCard label="In review"         value={data.summary.totalInPipeline}             color="blue" />
+              <StatCard label="Returned"          value={data.summary.returned}                    color="amber" />
+              <StatCard label="Approval rate"     value={fmtPct(data.summary.completionRate)}
+                sub="of registered contractors"  color="brand" />
+              <StatCard label="Avg time to approve" value={fmt(data.summary.avgCycleDays)}
+                sub="days"                       color="default" />
             </div>
           </div>
         </Section>
       )}
 
-      {/* ── Priority Fast-Track ── */}
+      {/* Priority contractors */}
       {!loading && !error && data?.priorityVendors && data.priorityVendors.total > 0 && (
         <PipelinePriorityCard pv={data.priorityVendors} />
       )}
 
-      {/* ── Oldest pending per stage ── */}
-      <Section title="Oldest Pending Per Stage" subtitle="The single longest-waiting contractor at each review stage right now. Helps identify specific cases that may need a nudge.">
+      {/* Oldest pending per stage */}
+      <Section title="Longest waiting per stage" subtitle="The one contractor waiting the longest at each stage right now.">
         {loading ? <TableSkeleton rows={6} /> : error ? null : oldestRows.length === 0 ? (
           <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No pending contractors</p>
         ) : (
           <SortableTable
             columns={[
-              { key: 'stage',       label: 'Stage',        width: '100px' },
+              { key: 'stage', label: 'Stage', width: '80px',
+                render: (r) => <span style={{ fontWeight: 600 }}>{stageLabel(r.stage as string)}</span> },
               { key: 'companyName', label: 'Contractor' },
-              { key: 'daysWaiting', label: 'Days Waiting', width: '130px',
+              { key: 'daysWaiting', label: 'Days waiting', width: '120px',
                 render: (r) => {
                   const d = r.daysWaiting as number | null;
                   return (
@@ -285,52 +285,6 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
           />
         )}
       </Section>
-
-      {/* ── Longest-waiting returned / parked ── */}
-      {!loading && !error && data && (data.oldestReturned || data.oldestParked) && (
-        <Section title="Longest Waiting — Returned & Parked">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <OldestReturnedCard item={data.oldestReturned} />
-            <OldestParkedCard   item={data.oldestParked} />
-          </div>
-        </Section>
-      )}
-    </div>
-  );
-}
-
-function OldestReturnedCard({ item }: { item: { companyName: string; daysWaiting: number; returnedAt: string | null } | null }) {
-  if (!item) return <OldestEmpty label="Oldest Returned" />;
-  return (
-    <div style={{ background: '#fffbeb', border: '1px solid #d97706a0', borderLeft: '3px solid #d97706', borderRadius: '0.375rem', padding: '1rem' }}>
-      <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color: '#d97706', fontWeight: 700, textTransform: 'uppercase' }}>Oldest Returned</p>
-      <p style={{ margin: '0 0 0.15rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{item.companyName}</p>
-      <p style={{ margin: 0, fontSize: '0.8rem', color: '#6c757d' }}>
-        {item.returnedAt ? <>Returned {fmtDate(item.returnedAt)} · </> : null}
-        <span style={{ color: '#d97706', fontWeight: 700 }}>{item.daysWaiting.toFixed(0)} days waiting</span>
-      </p>
-    </div>
-  );
-}
-
-function OldestParkedCard({ item }: { item: { companyName: string; daysWaiting: number } | null }) {
-  if (!item) return <OldestEmpty label="Oldest Parked" />;
-  return (
-    <div style={{ background: '#fef2f2', border: '1px solid #dc2626a0', borderLeft: '3px solid #dc2626', borderRadius: '0.375rem', padding: '1rem' }}>
-      <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color: '#dc2626', fontWeight: 700, textTransform: 'uppercase' }}>Oldest Parked</p>
-      <p style={{ margin: '0 0 0.15rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{item.companyName}</p>
-      <p style={{ margin: 0, fontSize: '0.8rem', color: '#6c757d' }}>
-        <span style={{ color: '#dc2626', fontWeight: 700 }}>{item.daysWaiting.toFixed(0)} days waiting</span>
-      </p>
-    </div>
-  );
-}
-
-function OldestEmpty({ label }: { label: string }) {
-  return (
-    <div style={{ background: '#f9fafb', border: '1px solid #e0e0e0', borderRadius: '0.375rem', padding: '1rem', color: '#9ca3af', fontSize: '0.875rem' }}>
-      <strong style={{ display: 'block', marginBottom: '0.25rem', color: '#6c757d' }}>{label}</strong>
-      None currently
     </div>
   );
 }
@@ -346,10 +300,10 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
       padding: '1.25rem',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#e67509' }}>⚡ Priority Fast-Track Contractors</h3>
+        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#e67509' }}>Priority contractors</h3>
         {urgentCount > 0 && (
           <span style={{ background: '#dc2626', color: '#fff', borderRadius: '9999px', padding: '0.2rem 0.75rem', fontSize: '0.8rem', fontWeight: 700 }}>
-            {urgentCount} URGENT
+            {urgentCount} over 7 days
           </span>
         )}
       </div>
@@ -357,13 +311,13 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
         {[
           { label: 'Total',       value: pv.total,      color: '#e67509' },
-          { label: 'In Pipeline', value: pv.inPipeline, color: '#2563eb' },
-          { label: 'Approved',    value: pv.approved,   color: '#16a34a' },
-          { label: 'Returned',    value: pv.returned,   color: '#d97706' },
+          { label: 'In pipeline', value: pv.inPipeline, color: '#1e40af' },
+          { label: 'Approved',    value: pv.approved,   color: '#e67509' },
+          { label: 'Returned',    value: pv.returned,   color: '#92400e' },
         ].map(({ label, value, color }) => (
-          <div key={label} style={{ background: '#fff', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', border: '1px solid #e0e0e0' }}>
+          <div key={label} style={{ background: '#fff', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', border: '1px solid #e5e7eb' }}>
             <div style={{ fontSize: '0.68rem', color: '#6c757d', fontWeight: 600, textTransform: 'uppercase' }}>{label}</div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 700, color }}>{value}</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, color }}>{value}</div>
           </div>
         ))}
       </div>
@@ -380,8 +334,8 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
 
       {urgentCount > 0 && (
         <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.375rem', padding: '0.75rem' }}>
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#dc2626', fontWeight: 700 }}>
-            Needs immediate action (priority + &gt;7 days waiting):
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#dc2626', fontWeight: 600 }}>
+            Needs attention - priority and over 7 days waiting:
           </p>
           {(pv.urgentList ?? []).map((v, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0', borderTop: i > 0 ? '1px solid #fee2e2' : undefined, fontSize: '0.825rem' }}>
@@ -398,9 +352,9 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
 
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '0.5rem', padding: '1.25rem' }}>
-      <h3 style={{ margin: subtitle ? '0 0 0.25rem' : '0 0 1rem', fontSize: '1rem', fontWeight: 600, color: '#343a40' }}>{title}</h3>
-      {subtitle && <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#6c757d', lineHeight: 1.5 }}>{subtitle}</p>}
+    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '1.25rem' }}>
+      <h3 style={{ margin: subtitle ? '0 0 0.25rem' : '0 0 1rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{title}</h3>
+      {subtitle && <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: '#6c757d', lineHeight: 1.5 }}>{subtitle}</p>}
       {children}
     </div>
   );

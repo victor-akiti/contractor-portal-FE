@@ -28,12 +28,12 @@ interface TabDef {
 }
 
 const ALL_TABS: TabDef[] = [
-  { key: 'overview',     label: 'Overview',     usesPeriod: true },
-  { key: 'pipeline',     label: 'Pipeline',     usesPeriod: true },
-  { key: 'performance',  label: 'Performance',  requiredRoles: PERFORMANCE_ROLES, usesPeriod: true },
-  { key: 'trends',       label: 'Trends',       usesPeriod: true },
-  { key: 'certificates', label: 'Certificates', usesPeriod: true },
-  { key: 'export',       label: 'Export',       requiredRoles: EXPORT_ROLES },
+  { key: 'overview',     label: 'Overview',      usesPeriod: true },
+  { key: 'pipeline',     label: 'Pipeline',      usesPeriod: true },
+  { key: 'trends',       label: 'Trends',        usesPeriod: true },
+  { key: 'performance',  label: 'Performance',   requiredRoles: PERFORMANCE_ROLES, usesPeriod: true },
+  { key: 'certificates', label: 'Certificates',  usesPeriod: true },
+  { key: 'export',       label: 'Export',        requiredRoles: EXPORT_ROLES },
 ];
 
 const PRESET_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y'];
