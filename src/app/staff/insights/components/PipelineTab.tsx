@@ -201,7 +201,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
 
       {/* Park stats */}
       {!loading && !error && data && (
-        <Section title="Park requests" subtitle="Parks put a contractor on hold during review. Currently parked is live. The period numbers cover requests raised and decided within the selected timeframe.">
+        <Section title="Park requests" subtitle="Contractors put on hold during review.  The period numbers cover requests raised and decided within the selected timeframe.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
               Right now
