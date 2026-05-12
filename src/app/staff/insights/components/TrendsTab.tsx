@@ -150,17 +150,6 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
         </Section>
       )}
 
-      {/* ── Top initiators ── */}
-      {!loading && !error && data && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <Section title="Top 'Return to Contractor' Initiators">
-            <RankedList items={data.topReturnInitiators} color="#d97706" />
-          </Section>
-          <Section title="Top Park Initiators">
-            <RankedList items={data.topHoldInitiators} color="#dc2626" />
-          </Section>
-        </div>
-      )}
     </div>
   );
 }
