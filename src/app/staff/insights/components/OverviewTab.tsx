@@ -181,7 +181,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
             <StatCard label="Within Amni Review"      value={dashboard.kpis.totalInPipeline}    color="blue"   tooltip={tips.totalInPipeline} />
             <StatCard label="Returned to Contractor" value={dashboard.kpis.returned}           color="amber"  tooltip={tips.returned} />
-            <StatCard label="Parked / Completed L2"  value={dashboard.kpis.parked}             color="red"    tooltip={tips.parked} />
+            <StatCard label="Parked"                  value={dashboard.kpis.parked}             color="red"    tooltip={tips.parked} />
             <StatCard label="Priority Contractors" value={dashboard.kpis.priorityInPipeline} color="purple" tooltip={tips.priorityInPipeline} />
           </div>
 
@@ -251,7 +251,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       )}
 
       {/* ── Trends line chart ── */}
-      <Section title={`Activity Trends (${dashboard?.bucketSize ?? '…'} buckets)`}>
+      <Section title={`Activity Trends (${dashboard?.bucketSize ?? '…'} buckets)`} subtitle="Registration and pipeline activity over the selected period, grouped into time buckets. Shows whether the pipeline is accelerating or slowing down.">
         {loadingMain ? <ChartSkeleton height={260} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={trendChartData} margin={{ top: 8, right: 20, bottom: 4, left: 0 }}>
@@ -278,7 +278,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       </Section>
 
       {/* ── Pipeline distribution doughnut ── */}
-      <Section title="Pipeline Distribution">
+      <Section title="Pipeline Distribution" subtitle="Where contractors currently sit across all pipeline stages. The bottleneck is the stage where the average current wait is longest.">
         {loadingMain ? <ChartSkeleton height={220} /> : errorMain ? null : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
             <ResponsiveContainer width={220} height={220}>
@@ -321,7 +321,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       </Section>
 
       {/* ── Avg dwell per review stage ── */}
-      <Section title="Avg Dwell Per Review Stage (days)" tooltip={tips.avgDwellPerReviewStage}>
+      <Section title="Avg Wait Per Review Stage (live)" subtitle="How long contractors currently sitting at each review stage have been waiting. Based on live pipeline state — not historical. High bars indicate where contractors are backing up right now." tooltip={tips.avgDwellPerReviewStage}>
         {loadingMain ? <ChartSkeleton height={200} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
@@ -433,7 +433,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       </Section>
 
       {/* ── Stale contractors table ── */}
-      <Section title="Stale Contractors (waiting >14 days)" tooltip={tips.staleVendors}>
+      <Section title="Stale Contractors (waiting >14 days)" subtitle="Contractors who have been at their current stage for more than 14 days without progressing. Up to 10 shown, sorted by wait time. These may need a follow-up." tooltip={tips.staleVendors}>
         {loadingMain ? <TableSkeleton rows={5} /> : errorMain ? null : (
           staleVendors.length === 0
             ? <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No stale contractors — pipeline is moving well.</p>
@@ -607,15 +607,16 @@ function PriorityFastTrackCard({ pv }: { pv: PriorityVendors }) {
   );
 }
 
-function Section({ title, children, tooltip }: { title: string; children: React.ReactNode; tooltip?: string }) {
+function Section({ title, subtitle, children, tooltip }: { title: string; subtitle?: string; children: React.ReactNode; tooltip?: string }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '0.5rem', padding: '1.25rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: subtitle ? '0.2rem' : '1rem' }}>
         <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#343a40' }}>{title}</h3>
         {tooltip && (
           <span title={tooltip} style={{ cursor: 'help', fontSize: '0.7rem', color: '#9ca3af' }}>ⓘ</span>
         )}
       </div>
+      {subtitle && <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#6c757d', lineHeight: 1.5 }}>{subtitle}</p>}
       {children}
     </div>
   );

@@ -62,8 +62,8 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
         { name: 'Stage F',                   value: data.stageCounts.stageF },
         { name: 'Stage G',                   value: data.stageCounts.stageG },
         { name: 'Returned to Contractor',    value: data.stageCounts.returned },
-        { name: 'Parked / Completed L2',     value: data.stageCounts.parked },
-        { name: 'L3',                        value: data.stageCounts.l3 },
+        { name: 'Parked',                        value: data.stageCounts.parked },
+        { name: 'Approved (L3)',                  value: data.stageCounts.l3 },
       ]
     : [];
 
@@ -115,14 +115,14 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
             <StatCard label="Stage F"                   value={data.stageCounts.stageF}   color="red" />
             <StatCard label="Stage G"                   value={data.stageCounts.stageG}   color="default" />
             <StatCard label="Returned to Contractor"    value={data.stageCounts.returned} color="amber" />
-            <StatCard label="Parked / Completed L2"     value={data.stageCounts.parked}   color="red" />
-            <StatCard label="L3 / Approved"             value={data.stageCounts.l3}       color="green" />
+            <StatCard label="Parked"                      value={data.stageCounts.parked}   color="red" />
+            <StatCard label="Approved (L3)"             value={data.stageCounts.l3}       color="green" />
           </div>
         </div>
       )}
 
       {/* ── Stage bar chart ── */}
-      <Section title="Stage Distribution (current)">
+      <Section title="Stage Distribution" subtitle="Live count of contractors at each stage of the registration pipeline right now. Not filtered by the selected period — this is the current state.">
         {loading ? <ChartSkeleton height={220} /> : error ? null : (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={stageCounts} margin={{ top: 4, right: 16, bottom: 40, left: 0 }}>
@@ -149,7 +149,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
 
       {/* ── Dwell charts side-by-side: current wait vs historical completion ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-        <Section title="Avg Wait Per Stage (current vendors)">
+        <Section title="Current Avg Wait Per Stage" subtitle="How long the contractors currently sitting at each review stage have been waiting. A longer bar means vendors are backing up there right now. This is the same metric used to identify the bottleneck.">
           {loading ? <ChartSkeleton height={220} /> : error ? null : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={dwellData} layout="vertical" margin={{ top: 4, right: 50, bottom: 4, left: 70 }}>
@@ -167,7 +167,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
           )}
         </Section>
 
-        <Section title="Avg Completion Time Per Stage (historical)">
+        <Section title="Historical Avg Time Per Stage" subtitle="Based on contractors who have already been approved and moved through each stage. Shows how long each stage typically takes to process. This will differ from the live-wait chart — a stage can be the current bottleneck without having a high historical average (e.g. a recent slowdown not yet reflected in past data).">
           {loading ? <ChartSkeleton height={220} /> : error ? null : completionDwellData.length === 0 ? (
             <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No historical data yet</p>
           ) : (
@@ -194,15 +194,18 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
           <h4 style={{ margin: '0 0 0.4rem', color: '#dc2626', fontSize: '0.95rem', fontWeight: 600 }}>
             ⚠ Bottleneck: {data.bottleneck.stage}
           </h4>
-          <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151' }}>
-            Avg <strong>{fmt(data.bottleneck.avgDays)} days</strong> to clear this stage
+          <p style={{ margin: '0 0 0.25rem', fontSize: '0.875rem', color: '#374151' }}>
+            Contractors currently waiting here have been there an average of <strong>{fmt(data.bottleneck.avgDays)} days</strong> — the longest of any review stage.
+          </p>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: '#9ca3af' }}>
+            This is based on current live wait, not historical averages. The &quot;Historical Avg Time&quot; chart above may show a different figure for this stage.
           </p>
         </div>
       )}
 
       {/* ── Park stats ── */}
       {!loading && !error && data && (
-        <Section title="Park / Hold Statistics">
+        <Section title="Park / Hold Statistics" subtitle="Park requests place a contractor on hold during the review process. 'Currently Parked' is the live count; the period figures track requests raised and decided within the selected timeframe.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <p style={{ margin: 0, fontSize: '0.75rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
               Current
@@ -252,7 +255,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
       )}
 
       {/* ── Oldest pending per stage ── */}
-      <Section title="Oldest Pending Per Stage">
+      <Section title="Oldest Pending Per Stage" subtitle="The single longest-waiting contractor at each review stage right now. Helps identify specific cases that may need a nudge.">
         {loading ? <TableSkeleton rows={6} /> : error ? null : oldestRows.length === 0 ? (
           <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No pending contractors</p>
         ) : (
@@ -393,10 +396,11 @@ function PipelinePriorityCard({ pv }: { pv: PriorityVendors }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '0.5rem', padding: '1.25rem' }}>
-      <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: '#343a40' }}>{title}</h3>
+      <h3 style={{ margin: subtitle ? '0 0 0.25rem' : '0 0 1rem', fontSize: '1rem', fontWeight: 600, color: '#343a40' }}>{title}</h3>
+      {subtitle && <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#6c757d', lineHeight: 1.5 }}>{subtitle}</p>}
       {children}
     </div>
   );
