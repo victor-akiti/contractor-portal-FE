@@ -41,11 +41,6 @@ const TREND_SERIES: { key: string; label: string; color: string }[] = [
   { key: 'holds',         label: 'Parked',        color: '#dc2626' },
 ];
 
-const DIST_COLORS = [
-  '#e67509', '#2563eb', '#16a34a', '#7c3aed',
-  '#d97706', '#dc2626', '#6b7280', '#0891b2',
-];
-
 function CardDivider() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.25rem 0' }}>
@@ -111,10 +106,11 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       })
     : [];
 
-  // Ensure each distribution item has a `name` field Recharts can use
+  // Map API shape { label, value, color } to Recharts-friendly { name, value, color }
   const distribution = (dashboard?.pipeline.distribution ?? []).map(d => ({
-    name:  d.stage,
-    value: d.count,
+    name:  d.label,
+    value: d.value,
+    color: d.color,
   }));
 
   const chg    = dashboard?.periodComparison.changePercent;
@@ -276,8 +272,8 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
                   outerRadius={88}
                   paddingAngle={2}
                 >
-                  {distribution.map((_, i) => (
-                    <Cell key={i} fill={DIST_COLORS[i % DIST_COLORS.length]} />
+                  {distribution.map((d, i) => (
+                    <Cell key={i} fill={d.color} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(v: number, name: string) => [`${v} contractors`, name]} />
@@ -289,9 +285,9 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
             {/* Custom legend + bottleneck */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, minWidth: 160 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                {distribution.map((d, i) => (
+                {distribution.map((d) => (
                   <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem' }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 2, background: DIST_COLORS[i % DIST_COLORS.length], flexShrink: 0 }} />
+                    <div style={{ width: 10, height: 10, borderRadius: 2, background: d.color, flexShrink: 0 }} />
                     <span style={{ color: '#374151', flex: 1 }}>{d.name}</span>
                     <span style={{ color: '#6c757d', fontWeight: 600 }}>{d.value}</span>
                   </div>

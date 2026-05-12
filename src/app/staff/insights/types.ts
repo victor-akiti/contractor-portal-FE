@@ -269,9 +269,9 @@ export interface DashboardKpis {
 }
 
 export interface PipelineDistributionItem {
-  stage: string;
-  count: number;
-  percent: number;
+  label: string;
+  value: number;
+  color: string;
 }
 
 export interface DashboardTrends {
