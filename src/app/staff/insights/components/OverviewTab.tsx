@@ -130,7 +130,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       </div>
 
       {/* 1. Overview Summary */}
-      <Section title="Overview Summary">
+      {/* <Section title="Overview Summary">
         {loadingNarrative ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[80, 60, 70].map((w, i) => (
@@ -158,21 +158,9 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
             )}
           </div>
         ) : null}
-      </Section>
+      </Section> */}
 
-      {/* 2. Flags */}
-      {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          {dashboard.flags.map((flag, i) => {
-            const s = FLAG_STYLES[flag.severity] ?? FLAG_STYLES.info;
-            return (
-              <div key={i} style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color, borderRadius: '0.375rem', padding: '0.6rem 1rem', fontSize: '0.875rem' }}>
-                {flag.message}
-              </div>
-            );
-          })}
-        </div>
-      )}
+
 
       {/* 3. KPI cards */}
       {loadingMain ? (
@@ -205,7 +193,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
               color="brand" />
             <StatCard label="Approval rate"
               value={fmtPct(dashboard.kpis.completionRate)}
-              sub={chgStr ? `${chgStr} vs last period - of registered` : 'of registered contractors'}
+              sub={''}
               color="brand" />
             <StatCard label="Avg time to approve"
               value={fmt(dashboard.kpis.avgCycleDays)}
@@ -219,6 +207,20 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
             <StatCard label="Expired certs" value={certData?.expiryBreakdown.expired ?? '—'} color="red" />
             <StatCard label="Expiring soon" value={certData?.expiryBreakdown.expiringSoon ?? '—'} color="amber" />
           </div>
+        </div>
+      )}
+
+      {/* 2. Flags */}
+      {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          {dashboard.flags.map((flag, i) => {
+            const s = FLAG_STYLES[flag.severity] ?? FLAG_STYLES.info;
+            return (
+              <div key={i} style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color, borderRadius: '0.375rem', padding: '0.6rem 1rem', fontSize: '0.875rem' }}>
+                {flag.message}
+              </div>
+            );
+          })}
         </div>
       )}
 
