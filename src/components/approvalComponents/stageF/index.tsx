@@ -54,6 +54,7 @@ const StageF = () => {
     })
     const [updating, setUpdating] = useState(false)
     const [revertReason, setRevertReason] = useState("")
+    const [parkReason, setParkReason] = useState("")
     const [errorText, setErrorText] = useState("")
     const params = useParams()
     const [vendorData, setVendorData] = useState({
@@ -586,7 +587,7 @@ const StageF = () => {
             try {
                 setUpdating(true)
                 const recommendForHoldRequest = await postProtected(`approvals/hold/direct/${vendorID}`, {
-
+                    reason: parkReason
                 }, user.role)
 
                 if (recommendForHoldRequest.status === "OK") {
@@ -655,12 +656,12 @@ const StageF = () => {
 
                     // Map level numbers to stage names and descriptions
                     const stageInfo = [
-                        { name: 'A to B', description: 'Initial Application Review' },
-                        { name: 'B to C', description: 'Supervisor Review' },
-                        { name: 'C to D', description: 'End User Assignment & Review' },
-                        { name: 'D to E', description: 'Due Diligence' },
-                        { name: 'E to F', description: 'HOD Final Review' },
-                        // { name: 'F', description: 'Executive Approval' }
+                        { name: 'B to A', description: 'Initial Application Review' },
+                        { name: 'C to D', description: 'Supervisor Review' },
+                        { name: 'D to E', description: 'End User Assignment & Review' },
+                        { name: 'E to F', description: 'Due Diligence' },
+                        { name: 'F to G', description: 'HOD Final Review' },
+                        // { name: 'G', description: 'Executive Approval' }
                     ];
 
                     // Collect all level approvals (level0, level1, etc.)
@@ -748,7 +749,7 @@ const StageF = () => {
                             </div>
 
                             <div>
-                                <textarea rows={5} placeholder="Notes for Vendor" onChange={(event) => setRevertReason(event.target.value)}></textarea>
+                                <textarea required rows={5} placeholder="Notes for C & P team" onChange={(event) => setRevertReason(event.target.value)}></textarea>
 
                                 <div>
                                     <button onClick={() => returnToStageE()}>RETURN {updating && <ButtonLoadingIcon />}</button>
@@ -766,6 +767,7 @@ const StageF = () => {
                             <div>
                                 <p>Complete registration for now without adding to 	&#39;Approved Contractors&#39; list.</p>
 
+                                <textarea required rows={5} placeholder="Notes for C & P team" onChange={(event) => setParkReason(event.target.value)}></textarea>
                                 <div>
                                     <button onClick={() => parkAtL2()}>COMPLETE {updating && <ButtonLoadingIcon />}</button>
                                 </div>
