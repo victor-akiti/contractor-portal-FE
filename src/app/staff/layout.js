@@ -28,6 +28,10 @@ import styles from "./styles/styles.module.css"
 // -----------------------------------
 const ADMIN_ROLES = ["Admin", "HOD"]
 const ERROR_TRACKER_ROLES = ["Admin", "IT Admin"]
+const INSIGHTS_ROLES = [
+  "Admin", "HOD", "VRM", "C&P Admin", "Executive Approver",
+  "IT Admin", "Amni Staff", "C and P Staff", "Insurance Officer",
+]
 
 const MENU_ITEMS = [
   { href: "/staff/approvals", label: "Registration Approvals" },
@@ -38,6 +42,7 @@ const MENU_ITEMS = [
   { href: "/staff/forms", label: "Forms", adminOnly: true },
   { href: "/staff/userManagement", label: "Roles & User Management", adminOnly: true },
   { href: "/staff/error-tracker", label: "Error Tracker", requiredRoles: ERROR_TRACKER_ROLES },
+  { href: "/staff/insights", label: "Approval Insights", requiredRoles: INSIGHTS_ROLES },
   { href: "/staff/settings", label: "Account Settings" },
 ]
 

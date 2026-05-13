@@ -66,7 +66,7 @@ export const getNameVerificationStatus = (company: any): string => {
         }
     }
 
-    if (company.stage === "In Progress") {
+    if (company.stage === "Not Yet Submitted") {
         return "Unchecked";
     }
 

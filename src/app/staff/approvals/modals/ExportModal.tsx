@@ -49,7 +49,7 @@ export default function ExportModal(props:Props){
           <div className={styles.exportOptionsDiv}>
             <div onChange={()=> toggleExportOptions("selectedStages","inProgress")}>
               <input type="checkbox" name="stage" checked={exportOptions.selectedStages.includes("inProgress")} readOnly/>
-              <label>In Progress</label>
+              <label>Not Yet Submitted</label>
             </div>
             <div onChange={()=> toggleExportOptions("selectedStages","l2")}>
               <input type="checkbox" name="stage" checked={exportOptions.selectedStages.includes("l2")} readOnly/>
