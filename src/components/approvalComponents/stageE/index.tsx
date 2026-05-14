@@ -8,11 +8,11 @@ import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
 
 
+import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import errorIcon from "@/assets/images/red_alert_circle.svg"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import CertificateHistoryModal from "@/components/certificateHistory"
 import Modal from "@/components/modal"
-import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -1038,6 +1038,9 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                             <div className={styles.dueDiligenceView}>
                                 <div className={styles.ddCheckDiv}>
                                     <h5>Company Registration</h5>
+                                    {
+                                        approvalData?.dueDiligence?.registrationCheck?.flagMessage && <p className={styles.flagMessage}>{approvalData?.dueDiligence?.registrationCheck?.flagMessage}</p>
+                                    }
 
                                     {
                                         approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
@@ -1049,6 +1052,10 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                                     <h5>Internet Check</h5>
 
                                     {
+                                        approvalData?.dueDiligence?.internetCheck?.flagMessage && <p className={styles.flagMessage}>{approvalData?.dueDiligence?.internetCheck?.flagMessage}</p>
+                                    }
+
+                                    {
                                         approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.internetCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
                                     }
 
@@ -1058,8 +1065,13 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                                     <h5>Reference Check</h5>
 
                                     {
+                                        approvalData?.dueDiligence?.referenceCheck?.flagMessage && <p className={styles.flagMessage}>{approvalData?.dueDiligence?.referenceCheck?.flagMessage}</p>
+                                    }
+
+                                    {
                                         approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
                                     }
+
 
                                 </div>
 
