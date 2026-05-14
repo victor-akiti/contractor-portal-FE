@@ -99,7 +99,7 @@ const extractCertificatesFromFormPages = (pages: any[], vendorID?: string): { ex
                                 expiryDate: entry.expiryDate,
                                 issueDate: entry.issueDate,
                                 url: entry.url || "",
-                                updateCode: field.updateCode || "",
+                                updateCode: entry.updateCode || field.updateCode || "",
                                 vendorID,
                             }
                             if (validity === "expiring") expiring.push(cert)
