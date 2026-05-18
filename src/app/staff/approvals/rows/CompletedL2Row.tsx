@@ -2,6 +2,7 @@ import moment from "moment";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
+import { userFacingStageLetter } from "../stageHelpers";
 
 export default function CompletedL2Row({ index, companyRecord, revertToL2, user }: any) {
   const getLastUpdated = () => companyRecord.vendorFormUpdatedAt ?? companyRecord.updatedAt;
@@ -52,7 +53,7 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user 
         {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
-        <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
+        <span className={styles.stageBadge}>{`Stage ${userFacingStageLetter(getCurrentStage())}`}</span>
       </td>
       <td>
         <p>{companyRecord?.flags?.hold?.reason ?? "—"}</p>

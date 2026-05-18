@@ -838,6 +838,25 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                 />
             )}
 
+            {
+                approvalData?.flags?.reverts?.stage5?.status === "active" && (
+                    <div style={{
+                        background: "#fff7ed",
+                        borderLeft: "4px solid #d97706",
+                        padding: "0.85rem 1rem",
+                        margin: "0 0 1rem 0",
+                        borderRadius: "0.25rem"
+                    }}>
+                        <h4 style={{ margin: "0 0 0.4rem 0", color: "#9a3412" }}>Returned by Executive Approver for additional research</h4>
+                        <p style={{ margin: "0 0 0.4rem 0", whiteSpace: "pre-wrap" }}>{approvalData.flags.reverts.stage5.reason}</p>
+                        <p style={{ margin: 0, fontSize: "0.85em", color: "#6b7280" }}>
+                            {approvalData.flags.reverts.stage5.returnedBy?.name || "Executive Approver"}
+                            {approvalData.flags.reverts.stage5.returnedAt && ` · ${moment(approvalData.flags.reverts.stage5.returnedAt).format("DD/MM/YYYY")}`}
+                        </p>
+                    </div>
+                )
+            }
+
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>
 

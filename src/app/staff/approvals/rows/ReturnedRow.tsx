@@ -3,6 +3,7 @@ import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
 import { userCanTogglePriority } from "../utils";
+import { userFacingStageLetter } from "../stageHelpers";
 
 interface ReturnedRowProps {
   index: number;
@@ -84,7 +85,7 @@ export default function ReturnedRow({
         </div>
       </td>
       <td>
-        <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
+        <span className={styles.stageBadge}>{`Stage ${userFacingStageLetter(getCurrentStage())}`}</span>
       </td>
       <td>
         <div className={styles.actionsContainer}>
