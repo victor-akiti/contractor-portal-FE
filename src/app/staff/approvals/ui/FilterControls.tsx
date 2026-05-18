@@ -1,5 +1,4 @@
 import styles from '../styles/styles.module.css'
-import { userFacingStageLetter } from '../stageHelpers'
 import StageLegend from './StageLegend'
 
 interface Props {
@@ -104,7 +103,7 @@ export default function FilterControls({
             setActiveFilter(stage)
             filterL2Companies(stage)
           },
-          `Completed Stage ${userFacingStageLetter(stage)}${getFilterCount(stage)}`
+          `Completed Stage ${stage}${getFilterCount(stage)}`
         )
       )}
       {renderNameSearchInput()}
