@@ -1,15 +1,15 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import StatCard from './StatCard';
-import ErrorCard from './ErrorCard';
-import SortableTable from './SortableTable';
-import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { fetchCertificates } from '../api';
 import type { CertificatesData, DateRange, Period } from '../types';
+import ErrorCard from './ErrorCard';
+import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
+import SortableTable from './SortableTable';
+import StatCard from './StatCard';
 
-const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined)        => (v == null ? '—' : `${v.toFixed(1)}%`);
+const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`);
 
 const EXPIRY_COLORS = ['#dc2626', '#f59e0b', '#16a34a', '#9ca3af'];
 const STATUS_COLORS = ['#16a34a', '#f59e0b', '#dc2626', '#6b7280'];
@@ -26,9 +26,9 @@ function CardDivider() {
 }
 
 export default function CertificatesTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
-  const [data, setData]       = useState<CertificatesData | null>(null);
+  const [data, setData] = useState<CertificatesData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -46,31 +46,31 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
 
   const statusDonut = data
     ? [
-        { name: 'Approved (period)', value: data.statusBreakdown.approvedInPeriod },
-        { name: 'Pending Review',    value: data.statusBreakdown.pending },
-        { name: 'Rejected (period)', value: data.statusBreakdown.rejectedInPeriod },
-      ]
+      { name: 'Approved (period)', value: data.statusBreakdown.approvedInPeriod },
+      { name: 'Pending Review', value: data.statusBreakdown.pending },
+      { name: 'Rejected (period)', value: data.statusBreakdown.rejectedInPeriod },
+    ]
     : [];
 
   const expiryDonut = data
     ? [
-        { name: 'Expired',       value: data.expiryBreakdown.expired },
-        { name: 'Expiring Soon', value: data.expiryBreakdown.expiringSoon },
-        { name: 'Healthy',       value: data.expiryBreakdown.healthy },
-        { name: 'No Expiry',     value: data.expiryBreakdown.noExpiry },
-      ]
+      { name: 'Expired', value: data.expiryBreakdown.expired },
+      { name: 'Expiring Soon', value: data.expiryBreakdown.expiringSoon },
+      { name: 'Healthy', value: data.expiryBreakdown.healthy },
+      { name: 'No Expiry', value: data.expiryBreakdown.noExpiry },
+    ]
     : [];
 
   const healthDonut = data
     ? [
-        { name: 'Healthy',       value: data.expiryBreakdown.healthy },
-        { name: 'Expiring Soon', value: data.expiryBreakdown.expiringSoon },
-        { name: 'Expired',       value: data.expiryBreakdown.expired },
-      ]
+      { name: 'Healthy', value: data.expiryBreakdown.healthy },
+      { name: 'Expiring Soon', value: data.expiryBreakdown.expiringSoon },
+      { name: 'Expired', value: data.expiryBreakdown.expired },
+    ]
     : [];
 
   const reviewerRows = (data?.reviewerPerformance ?? []) as unknown as Record<string, unknown>[];
-  const pendingRows  = (data?.pendingByCompany?.slice(0, 10) ?? []) as unknown as Record<string, unknown>[];
+  const pendingRows = (data?.pendingByCompany?.slice(0, 10) ?? []) as unknown as Record<string, unknown>[];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -88,31 +88,33 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
 
           {/* Group 1: review status */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
+          {/* <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
             <StatCard label="Total Certs Tracked" value={data.statusBreakdown.totalTracked}      color="default" />
             <StatCard label="Approved (period)"   value={data.statusBreakdown.approvedInPeriod}  color="green" />
             <StatCard label="Pending Review"      value={data.statusBreakdown.pending}           color="amber" />
             <StatCard label="Rejected (period)"   value={data.statusBreakdown.rejectedInPeriod}  color="red" />
-          </div>
+          </div> */}
 
-          <CardDivider />
+          {/* <CardDivider /> */}
 
           {/* Group 2: health / expiry */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Healthy"       value={data.expiryBreakdown.healthy}      color="green" />
+            <StatCard label="Total Certs Tracked" value={data.statusBreakdown.totalTracked} color="default" />
+            <StatCard label="No Expiry" value={data.expiryBreakdown.noExpiry} color="default" />
+            <StatCard label="Healthy" value={data.expiryBreakdown.healthy} color="green" />
             <StatCard label="Expiring Soon" value={data.expiryBreakdown.expiringSoon} color="amber" />
-            <StatCard label="Expired"       value={data.expiryBreakdown.expired}      color="red" />
+            <StatCard label="Expired" value={data.expiryBreakdown.expired} color="red" />
           </div>
 
           <CardDivider />
 
           {/* Group 3: performance metrics */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
-            <StatCard label="Approval Rate"          value={fmtPct(data.approvalRate)}      color="green" />
-            <StatCard label="Avg Review Days"        value={fmt(data.avgReviewDays)} sub="days" color="blue" />
-            <StatCard label="Reviewed in Period"     value={data.summary.reviewedInPeriod}  color="blue" />
-            <StatCard label="Contractors w/ Pending" value={data.companiesWithPendingCerts} color="amber" />
-            <StatCard label="Critical Expiry"        value={data.summary.criticalExpiry}    color="red" />
+            <StatCard label="Approval Rate" value={fmtPct(data.approvalRate)} color="green" />
+            <StatCard label="Avg Review Days" value={fmt(data.avgReviewDays)} sub="days" color="blue" />
+            <StatCard label="Reviewed in Period" value={data.summary.reviewedInPeriod} color="blue" />
+            <StatCard label="Contractors with Pending Reviews" value={data.companiesWithPendingCerts} color="amber" />
+            {/* <StatCard label="Critical Expiry" value={data.summary.criticalExpiry} color="red" /> */}
           </div>
         </div>
       )}
@@ -146,10 +148,10 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   {[
-                    { label: 'Healthy',       value: data.expiryBreakdown.healthy,      color: '#16a34a' },
+                    { label: 'Healthy', value: data.expiryBreakdown.healthy, color: '#16a34a' },
                     { label: 'Expiring Soon', value: data.expiryBreakdown.expiringSoon, color: '#d97706' },
-                    { label: 'Expired',       value: data.expiryBreakdown.expired,      color: '#dc2626' },
-                    { label: 'No Expiry',     value: data.expiryBreakdown.noExpiry,     color: '#9ca3af' },
+                    { label: 'Expired', value: data.expiryBreakdown.expired, color: '#dc2626' },
+                    { label: 'No Expiry', value: data.expiryBreakdown.noExpiry, color: '#9ca3af' },
                   ].map(({ label, value, color }) => (
                     <div key={label} style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: '1.1rem', fontWeight: 700, color }}>{value}</div>
@@ -211,12 +213,14 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
           <SortableTable
             columns={[
               { key: 'companyName', label: 'Contractor' },
-              { key: 'pendingCerts', label: 'Pending Certificates', width: '180px',
+              {
+                key: 'pendingCerts', label: 'Pending Certificates', width: '180px',
                 render: (r) => (
                   <span style={{ fontWeight: 600, color: '#d97706' }}>
                     {r.pendingCerts as number}
                   </span>
-                )},
+                )
+              },
             ]}
             rows={pendingRows}
             defaultSortKey="pendingCerts"
@@ -230,13 +234,15 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
         {loading ? <TableSkeleton rows={5} /> : error ? null : (
           <SortableTable
             columns={[
-              { key: 'name',         label: 'Name' },
-              { key: 'role',         label: 'Role', width: '120px' },
-              { key: 'approved',     label: 'Approved', width: '90px' },
-              { key: 'rejected',     label: 'Rejected', width: '90px' },
-              { key: 'total',        label: 'Total', width: '80px' },
-              { key: 'avgReviewDays', label: 'Avg Review Days', width: '130px',
-                render: (r) => <span>{fmt(r.avgReviewDays as number | null)} days</span> },
+              { key: 'name', label: 'Name' },
+              { key: 'role', label: 'Role', width: '120px' },
+              { key: 'approved', label: 'Approved', width: '90px' },
+              { key: 'rejected', label: 'Rejected', width: '90px' },
+              { key: 'total', label: 'Total', width: '80px' },
+              {
+                key: 'avgReviewDays', label: 'Avg Review Days', width: '130px',
+                render: (r) => <span>{fmt(r.avgReviewDays as number | null)} days</span>
+              },
             ]}
             rows={reviewerRows}
             defaultSortKey="total"
