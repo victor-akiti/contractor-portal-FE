@@ -678,7 +678,7 @@ const StageF = () => {
 
                     // Map level numbers to stage names and descriptions
                     const stageInfo = [
-                        { name: 'B to A', description: 'Initial Application Review' },
+                        { name: 'B to C', description: 'Initial Application Review' },
                         { name: 'C to D', description: 'Supervisor Review' },
                         { name: 'D to E', description: 'End User Assignment & Review' },
                         { name: 'E to F', description: 'Due Diligence' },
