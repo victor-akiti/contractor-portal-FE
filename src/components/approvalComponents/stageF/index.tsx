@@ -749,7 +749,7 @@ const StageF = () => {
                             </div>
 
                             <div>
-                                <textarea required rows={5} placeholder="Notes for C & P team" onChange={(event) => setRevertReason(event.target.value)}></textarea>
+                                <textarea required rows={5} placeholder="Notes for the Contracts & Procurement team" onChange={(event) => setRevertReason(event.target.value)}></textarea>
 
                                 <div>
                                     <button onClick={() => returnToStageE()}>RETURN {updating && <ButtonLoadingIcon />}</button>
