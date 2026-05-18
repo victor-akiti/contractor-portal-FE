@@ -224,21 +224,6 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
         </div>
       )}
 
-      {/* 4. Period activity bar */}
-      {!loadingMain && !errorMain && dashboard && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem', padding: '0.75rem 1rem', background: '#f8f9fa', border: '1px solid #e5e7eb', borderRadius: '0.5rem', fontSize: '0.875rem', color: '#374151' }}>
-          <span style={{ fontWeight: 600, color: '#6c757d', marginRight: '0.25rem' }}>{dashboard.activity.period}</span>
-          <span><strong style={{ color: '#e67509' }}>{dashboard.activity.totals.progressions}</strong> progressions</span>
-          <span style={{ color: '#d1d5db' }}>·</span>
-          <span><strong style={{ color: '#15803d' }}>{dashboard.activity.totals.approvals}</strong> approvals</span>
-          <span style={{ color: '#d1d5db' }}>·</span>
-          <span><strong>{dashboard.activity.totals.returns}</strong> returns</span>
-          <span style={{ color: '#d1d5db' }}>·</span>
-          <span><strong>{dashboard.activity.totals.holds}</strong> parked</span>
-          <span style={{ color: '#d1d5db' }}>·</span>
-          <span><strong>{dashboard.activity.totals.submissions}</strong> new submissions</span>
-        </div>
-      )}
 
       {/* 5. Activity trend */}
       <Section title="Activity over time" subtitle="What's been happening over the selected period. Are things moving or backing up?">
