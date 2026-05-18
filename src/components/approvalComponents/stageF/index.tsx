@@ -565,7 +565,7 @@ const StageF = () => {
 
     const returnToStageE = async () => {
         try {
-            const returnToStageERequest = await postProtected(`approvals/revert/${vendorID}`, {
+            const returnToStageERequest = await postProtected(`approvals/return/previous-stage/${vendorID}`, {
                 revertReason
             }, user.role)
 
@@ -646,6 +646,28 @@ const StageF = () => {
 
                     <p>{approvalData?.flags?.hodRemarkForEA}</p>
                 </div>
+            }
+
+            {
+                Array.isArray(approvalData?.flags?.reverts?.history) &&
+                approvalData.flags.reverts.history.filter((h: any) => h?.fromLevel === 5).length > 0 &&
+                !actionResponse.actionResponseCode && (
+                    <div className={styles.hodRemarkDiv}>
+                        <h4>Your previous return remarks (resolved)</h4>
+                        {approvalData.flags.reverts.history
+                            .filter((h: any) => h?.fromLevel === 5)
+                            .map((entry: any, idx: number) => (
+                                <div key={idx} style={{ marginBottom: "0.75rem", paddingBottom: "0.5rem", borderBottom: "1px solid #e5e7eb" }}>
+                                    <p style={{ margin: "0 0 0.25rem 0" }}><strong>Reason:</strong> {entry.reason}</p>
+                                    <p style={{ margin: "0", fontSize: "0.85em", color: "#6b7280" }}>
+                                        Returned {entry.returnedAt ? moment(entry.returnedAt).format("DD/MM/YYYY") : ""}
+                                        {entry.resolvedAt && ` · Resolved ${moment(entry.resolvedAt).format("DD/MM/YYYY")}`}
+                                        {entry.resolvedBy?.name && ` by ${entry.resolvedBy.name}`}
+                                    </p>
+                                </div>
+                            ))}
+                    </div>
+                )
             }
 
             {
