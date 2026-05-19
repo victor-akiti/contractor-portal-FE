@@ -36,10 +36,6 @@ const ALL_TABS: TabDef[] = [
   { key: 'export',       label: 'Export',        requiredRoles: EXPORT_ROLES },
 ];
 
-const PRESET_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y'];
-
-const todayISO = () => new Date().toISOString().slice(0, 10);
-
 // ── Suspense wrapper — required for useSearchParams in App Router ─────────────
 export default function InsightsPage() {
   return (
@@ -89,13 +85,18 @@ function InsightsPageInner() {
     router.replace(`?tab=${key}`, { scroll: false });
   };
 
-  const handlePeriodClick = (p: Period) => {
+  const handlePeriodChange = (p: Period, dr: DateRange) => {
     setPeriod(p);
-    if (p !== 'custom') setDateRange({ start: '', end: '' });
+    setDateRange(dr);
   };
 
   // Common props for all period-aware tabs
-  const tabProps = { period, dateRange: effectiveDateRange };
+  const tabProps = {
+    period,
+    dateRange: effectiveDateRange,
+    rawDateRange: dateRange,
+    onPeriodChange: handlePeriodChange,
+  };
 
   return (
     <div style={{ fontFamily: 'inherit', color: '#212529' }}>
@@ -108,85 +109,6 @@ function InsightsPageInner() {
         <p style={{ margin: 0, color: '#6c757d', fontSize: '0.9rem' }}>
           Analytics and reporting for the contractor registration pipeline.
         </p>
-      </div>
-
-      {/* ── Global period selector ── */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        flexWrap: 'wrap',
-        padding: '0.75rem 1rem',
-        background: '#f8f9fa',
-        border: '1px solid #e0e0e0',
-        borderRadius: '0.5rem',
-        marginBottom: '1.25rem',
-      }}>
-        <span style={{ fontSize: '0.8rem', color: '#6c757d', fontWeight: 600, whiteSpace: 'nowrap' }}>
-          PERIOD:
-        </span>
-        {PRESET_PERIODS.map(p => (
-          <button
-            key={p}
-            onClick={() => handlePeriodClick(p)}
-            style={{
-              padding: '0.25rem 0.75rem',
-              border: `1px solid ${period === p ? '#e67509' : '#d1d5db'}`,
-              borderRadius: '9999px',
-              background: period === p ? '#e67509' : '#fff',
-              color: period === p ? '#fff' : '#374151',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              fontWeight: period === p ? 600 : 400,
-              transition: 'all 0.15s',
-            }}
-          >
-            {p}
-          </button>
-        ))}
-
-        {/* Custom range button */}
-        <button
-          onClick={() => handlePeriodClick('custom')}
-          style={{
-            padding: '0.25rem 0.75rem',
-            border: `1px solid ${period === 'custom' ? '#7c3aed' : '#d1d5db'}`,
-            borderRadius: '9999px',
-            background: period === 'custom' ? '#7c3aed' : '#fff',
-            color: period === 'custom' ? '#fff' : '#374151',
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            fontWeight: period === 'custom' ? 600 : 400,
-            transition: 'all 0.15s',
-          }}
-        >
-          Custom
-        </button>
-
-        {/* Date inputs — visible when Custom selected */}
-        {period === 'custom' && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.25rem' }}>
-            <input
-              type="date"
-              value={dateRange.start}
-              max={dateRange.end || todayISO()}
-              onChange={e => setDateRange(r => ({ ...r, start: e.target.value }))}
-              style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff' }}
-            />
-            <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>to</span>
-            <input
-              type="date"
-              value={dateRange.end}
-              min={dateRange.start}
-              max={todayISO()}
-              onChange={e => setDateRange(r => ({ ...r, end: e.target.value }))}
-              style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff' }}
-            />
-            {(!dateRange.start || !dateRange.end) && (
-              <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Select both dates</span>
-            )}
-          </span>
-        )}
       </div>
 
       {/* ── Tab bar ── */}
