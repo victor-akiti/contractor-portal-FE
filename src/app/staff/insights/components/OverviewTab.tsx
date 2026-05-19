@@ -336,7 +336,7 @@ export default function OverviewTab({ period, dateRange, rawDateRange, onPeriodC
       )}
 
       {/* 9. Certificates brief */}
-      <Section title="Certificates" subtitle={`Cert review queue and expiry health. \"Approved\" and \"Rejected\" counts are for the selected period. Everything else is a live count. Full details are in the Certificates tab.`}>
+      <Section title="Certificates" subtitle={`Cert review queue and expiry health. "Approved" and "Rejected" counts are for the selected period. Everything else is a live count. Full details are in the Certificates tab.`}>
         {loadingMain ? <ChartSkeleton height={80} /> : errorMain ? null : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
             <StatCard label="Total tracked" value={certData?.statusBreakdown.totalTracked} color="default" />
