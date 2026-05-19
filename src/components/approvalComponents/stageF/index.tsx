@@ -54,6 +54,7 @@ const StageF = () => {
     })
     const [updating, setUpdating] = useState(false)
     const [revertReason, setRevertReason] = useState("")
+    const [parkReason, setParkReason] = useState("")
     const [errorText, setErrorText] = useState("")
     const params = useParams()
     const [vendorData, setVendorData] = useState({
@@ -564,7 +565,7 @@ const StageF = () => {
 
     const returnToStageE = async () => {
         try {
-            const returnToStageERequest = await postProtected(`approvals/revert/${vendorID}`, {
+            const returnToStageERequest = await postProtected(`approvals/return/previous-stage/${vendorID}`, {
                 revertReason
             }, user.role)
 
@@ -586,7 +587,7 @@ const StageF = () => {
             try {
                 setUpdating(true)
                 const recommendForHoldRequest = await postProtected(`approvals/hold/direct/${vendorID}`, {
-
+                    reason: parkReason
                 }, user.role)
 
                 if (recommendForHoldRequest.status === "OK") {
@@ -648,6 +649,28 @@ const StageF = () => {
             }
 
             {
+                Array.isArray(approvalData?.flags?.reverts?.history) &&
+                approvalData.flags.reverts.history.filter((h: any) => h?.fromLevel === 5).length > 0 &&
+                !actionResponse.actionResponseCode && (
+                    <div className={styles.hodRemarkDiv}>
+                        <h4>Your previous return remarks (resolved)</h4>
+                        {approvalData.flags.reverts.history
+                            .filter((h: any) => h?.fromLevel === 5)
+                            .map((entry: any, idx: number) => (
+                                <div key={idx} style={{ marginBottom: "0.75rem", paddingBottom: "0.5rem", borderBottom: "1px solid #e5e7eb" }}>
+                                    <p style={{ margin: "0 0 0.25rem 0" }}><strong>Reason:</strong> {entry.reason}</p>
+                                    <p style={{ margin: "0", fontSize: "0.85em", color: "#6b7280" }}>
+                                        Returned {entry.returnedAt ? moment(entry.returnedAt).format("DD/MM/YYYY") : ""}
+                                        {entry.resolvedAt && ` · Resolved ${moment(entry.resolvedAt).format("DD/MM/YYYY")}`}
+                                        {entry.resolvedBy?.name && ` by ${entry.resolvedBy.name}`}
+                                    </p>
+                                </div>
+                            ))}
+                    </div>
+                )
+            }
+
+            {
                 approvalData?.flags?.approvals && !actionResponse.actionResponseCode && (() => {
                     // Extract all level approvals from the approvals object
                     const approvals = approvalData.flags.approvals;
@@ -655,12 +678,12 @@ const StageF = () => {
 
                     // Map level numbers to stage names and descriptions
                     const stageInfo = [
-                        { name: 'A to B', description: 'Initial Application Review' },
-                        { name: 'B to C', description: 'Supervisor Review' },
-                        { name: 'C to D', description: 'End User Assignment & Review' },
-                        { name: 'D to E', description: 'Due Diligence' },
-                        { name: 'E to F', description: 'HOD Final Review' },
-                        // { name: 'F', description: 'Executive Approval' }
+                        { name: 'B to C', description: 'Initial Application Review' },
+                        { name: 'C to D', description: 'Supervisor Review' },
+                        { name: 'D to E', description: 'End User Assignment & Review' },
+                        { name: 'E to F', description: 'Due Diligence' },
+                        { name: 'F to G', description: 'HOD Final Review' },
+                        // { name: 'G', description: 'Executive Approval' }
                     ];
 
                     // Collect all level approvals (level0, level1, etc.)
@@ -748,7 +771,7 @@ const StageF = () => {
                             </div>
 
                             <div>
-                                <textarea rows={5} placeholder="Notes for Vendor" onChange={(event) => setRevertReason(event.target.value)}></textarea>
+                                <textarea required rows={5} placeholder="Notes for the Contracts & Procurement team" onChange={(event) => setRevertReason(event.target.value)}></textarea>
 
                                 <div>
                                     <button onClick={() => returnToStageE()}>RETURN {updating && <ButtonLoadingIcon />}</button>
@@ -766,6 +789,7 @@ const StageF = () => {
                             <div>
                                 <p>Complete registration for now without adding to 	&#39;Approved Contractors&#39; list.</p>
 
+                                <textarea required rows={5} placeholder="Notes for C & P team" onChange={(event) => setParkReason(event.target.value)}></textarea>
                                 <div>
                                     <button onClick={() => parkAtL2()}>COMPLETE {updating && <ButtonLoadingIcon />}</button>
                                 </div>

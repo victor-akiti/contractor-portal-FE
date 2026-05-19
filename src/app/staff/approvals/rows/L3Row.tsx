@@ -2,14 +2,7 @@ import moment from "moment";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
 export default function L3Row({ index, companyRecord, revertToL2, user, togglePriority }: any) {
-  const getLastUpdated = () => {
-    if (companyRecord.lastUpdate)
-      return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
-    if (companyRecord.lastApproved) return new Date(companyRecord.lastApproved).toISOString();
-    if (companyRecord.approvalActivityHistory)
-      return new Date(companyRecord.approvalActivityHistory[0].date).toISOString();
-    if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
-  };
+  const getLastUpdated = () => companyRecord.vendorFormUpdatedAt ?? companyRecord.updatedAt;
   const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
 
   return (

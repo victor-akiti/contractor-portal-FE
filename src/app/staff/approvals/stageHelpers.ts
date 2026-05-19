@@ -4,6 +4,18 @@
 export const APPROVAL_STAGES = ["A", "B", "C", "D", "E", "F"] as const;
 export type ApprovalStage = (typeof APPROVAL_STAGES)[number];
 
+// Internal-letter -> user-facing-letter shift. "Not Yet Submitted" is the
+// new user-facing "Stage A"; internal A becomes B, ..., internal F becomes G.
+// Anything not in the map (e.g. "L3", "G", "H") passes through unchanged.
+const STAGE_LETTER_SHIFT: Record<string, string> = {
+    A: "B", B: "C", C: "D", D: "E", E: "F", F: "G",
+};
+
+export const userFacingStageLetter = (internal: string | undefined | null): string => {
+    if (!internal) return "";
+    return STAGE_LETTER_SHIFT[internal] ?? internal;
+};
+
 export const deriveLevel = (flags: any): number => {
     // 🔑 Single source of truth:
     // Prefer flags.approvals.level if present (new shape),
@@ -66,7 +78,7 @@ export const getNameVerificationStatus = (company: any): string => {
         }
     }
 
-    if (company.stage === "In Progress") {
+    if (company.stage === "Not Yet Submitted") {
         return "Unchecked";
     }
 

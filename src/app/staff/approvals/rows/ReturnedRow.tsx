@@ -3,6 +3,7 @@ import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
 import { userCanTogglePriority } from "../utils";
+import { userFacingStageLetter } from "../stageHelpers";
 
 interface ReturnedRowProps {
   index: number;
@@ -23,14 +24,7 @@ export default function ReturnedRow({
   onCheckChange
 }: ReturnedRowProps) {
 
-  const getLastUpdated = () => {
-    if (companyRecord.lastUpdate)
-      return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
-    if (companyRecord.lastApproved) return new Date(companyRecord.lastApproved).toISOString();
-    if (companyRecord.approvalActivityHistory)
-      return new Date(companyRecord.approvalActivityHistory[0].date).toISOString();
-    if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
-  };
+  const getLastUpdated = () => companyRecord.vendorFormUpdatedAt ?? companyRecord.updatedAt;
 
   const getCurrentStage = () => {
     const level = companyRecord?.flags?.approvals?.level ?? companyRecord?.flags?.level ?? 0;
@@ -91,7 +85,7 @@ export default function ReturnedRow({
         </div>
       </td>
       <td>
-        <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
+        <span className={styles.stageBadge}>{`Stage ${userFacingStageLetter(getCurrentStage())}`}</span>
       </td>
       <td>
         <div className={styles.actionsContainer}>

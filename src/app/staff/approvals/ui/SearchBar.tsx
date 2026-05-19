@@ -66,8 +66,8 @@ export default function SearchBar({
         />
         <select onChange={(e) => onFilterChange(e.target.value)}>
           <option value={"all"}>All Registered Vendors</option>
-          <option value={"in progress"}>In Progress</option>
-          <option value={"pending"}>Pending L2</option>
+          <option value={"in progress"}>Not Yet Submitted</option>
+          <option value={"pending"}>Within Amni Review L2</option>
           <option value={"parked"}>Completed L2</option>
           <option value={"l3"}>L3</option>
           <option value={"returned"}>Returned</option>
@@ -86,7 +86,7 @@ export default function SearchBar({
                 <div key={idx} className={styles.searchResultItem}>
                   <div className={styles.searchResultMetaData}>
                     <p>{String(item.companyName).toUpperCase()}</p>
-                    <p>{(item?.displayStage ?? capitalizeWord(String(item?.flags?.stage))) + (item?.flags?.status === "returned" ? " (Returned)" : "")}</p>
+                    <p>{(item?.flags?.status?.toLowerCase() === "parked" || item?.flags?.status?.toLowerCase() === "suspended") ? "Parked" : (item?.displayStage ?? capitalizeWord(String(item?.flags?.stage))) + (item?.flags?.status?.toLowerCase() === "returned" ? " (Returned)" : "")}</p>
                   </div>
                   <div className={styles.searchResultsActionButtons}>
                     <Link href={`/staff/vendor/${item?._id}`}>

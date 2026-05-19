@@ -2,16 +2,10 @@ import moment from "moment";
 import Link from "next/link";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
+import { userFacingStageLetter } from "../stageHelpers";
 
 export default function CompletedL2Row({ index, companyRecord, revertToL2, user }: any) {
-  const getLastUpdated = () => {
-    if (companyRecord.lastUpdate)
-      return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
-    if (companyRecord.lastApproved) return new Date(companyRecord.lastApproved).toISOString();
-    if (companyRecord.approvalActivityHistory)
-      return new Date(companyRecord.approvalActivityHistory[0].date).toISOString();
-    if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
-  };
+  const getLastUpdated = () => companyRecord.vendorFormUpdatedAt ?? companyRecord.updatedAt;
 
   const hasAdminPermissions = (role: string) => ["Admin", "HOD"].includes(role);
 
@@ -59,7 +53,7 @@ export default function CompletedL2Row({ index, companyRecord, revertToL2, user 
         {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
-        <span className={styles.stageBadge}>{`Stage ${getCurrentStage()}`}</span>
+        <span className={styles.stageBadge}>{`Stage ${userFacingStageLetter(getCurrentStage())}`}</span>
       </td>
       <td>
         <p>{companyRecord?.flags?.hold?.reason ?? "—"}</p>

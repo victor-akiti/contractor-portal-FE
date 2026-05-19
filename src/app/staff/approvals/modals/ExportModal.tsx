@@ -1,5 +1,6 @@
 import Modal from '@/components/modal'
 import styles from '../styles/styles.module.css'
+import { userFacingStageLetter } from '../stageHelpers'
 
 interface Props{
   exportOptions:any
@@ -49,7 +50,7 @@ export default function ExportModal(props:Props){
           <div className={styles.exportOptionsDiv}>
             <div onChange={()=> toggleExportOptions("selectedStages","inProgress")}>
               <input type="checkbox" name="stage" checked={exportOptions.selectedStages.includes("inProgress")} readOnly/>
-              <label>In Progress</label>
+              <label>Not Yet Submitted</label>
             </div>
             <div onChange={()=> toggleExportOptions("selectedStages","l2")}>
               <input type="checkbox" name="stage" checked={exportOptions.selectedStages.includes("l2")} readOnly/>
@@ -78,7 +79,7 @@ export default function ExportModal(props:Props){
                 {["All","A","B","C","D","E","F","G","H"].map(key=>(
                   <div key={key} onChange={()=> toggleExportOptions("pendingL2Stages", key)}>
                     <input type="checkbox" checked={exportOptions.pendingL2Stages.includes(key)} disabled={key!=="All" && exportOptions.pendingL2Stages.includes("All")} readOnly/>
-                    <label>{key==="All"?"All Stages":`Stage ${key}`}</label>
+                    <label>{key==="All"?"All Stages":`Stage ${userFacingStageLetter(key)}`}</label>
                   </div>
                 ))}
               </div>

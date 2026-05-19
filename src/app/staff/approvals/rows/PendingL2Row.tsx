@@ -1,6 +1,6 @@
 import moment from "moment";
 import Link from "next/link";
-import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers } from "../stageHelpers";
+import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers, userFacingStageLetter } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
 import { userCanTogglePriority } from "../utils";
@@ -38,14 +38,7 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
     return false;
   };
 
-  const getLastUpdated = () => {
-    if (companyRecord.lastUpdate)
-      return new Date(companyRecord.lastUpdate._seconds * 1000).toISOString();
-    if (companyRecord.lastApproved) return new Date(companyRecord.lastApproved).toISOString();
-    if (companyRecord.approvalActivityHistory)
-      return new Date(companyRecord.approvalActivityHistory[0].date).toISOString();
-    if (companyRecord.updatedAt) return new Date(companyRecord.updatedAt).toISOString();
-  };
+  const getLastUpdated = () => companyRecord.vendorFormUpdatedAt ?? companyRecord.updatedAt;
 
   const getEndUserNames = () => {
     if (companyRecord.currentEndUsers && Array.isArray(companyRecord.currentEndUsers)) {
@@ -79,13 +72,13 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
         {/* <p>{companyRecord?.vendorAppAdminProfile?.email ? companyRecord?.vendorAppAdminProfile?.email : companyRecord?.contractorDetails?.email}</p> */}
       </td>
       <td>
-        <span className={styles.stageBadge}>{`Stage ${currentStage}`}</span>
+        <span className={styles.stageBadge}>{`Stage ${userFacingStageLetter(currentStage)}`}</span>
       </td>
       {shouldShowEndUsers(activeFilter) && <td>{getEndUserNames()}</td>}
       <td>
         <div className={styles.actionsContainer}>
           {userCanViewActions() && (
-            <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${nextStage}`}</Link>
+            <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${userFacingStageLetter(nextStage)}`}</Link>
           )}
           {togglePriority && userCanTogglePriority(user) && (
             <button
