@@ -12,6 +12,7 @@ import type {
 } from '../types';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton } from './LoadingSkeleton';
+import PeriodSelector from './PeriodSelector';
 import StatCard from './StatCard';
 
 const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
@@ -51,7 +52,14 @@ function CardDivider() {
   );
 }
 
-export default function OverviewTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
+interface OverviewTabProps {
+  period: Period;
+  dateRange?: DateRange;
+  rawDateRange: DateRange;
+  onPeriodChange: (p: Period, dr: DateRange) => void;
+}
+
+export default function OverviewTab({ period, dateRange, rawDateRange, onPeriodChange }: OverviewTabProps) {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [certData, setCertData] = useState<CertificatesData | null>(null);
   const [narrative, setNarrative] = useState<NarrativeData | null>(null);
@@ -119,16 +127,6 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* Refresh */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button
-          onClick={loadMain}
-          style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer', color: '#374151' }}
-        >
-          Refresh
-        </button>
-      </div>
-
       {/* 1. Overview Summary */}
       {/* <Section title="Overview Summary">
         {loadingNarrative ? (
@@ -187,7 +185,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 
             <StatCard label="Approval rate"
               value={fmtPct(dashboard.kpis.completionRate)}
-              sub={''}
+              sub={`Total registered contractors: ${dashboard.kpis.totalRegistered}`}
               color="brand" />
             <StatCard label="Avg time to approve"
               value={fmt(dashboard.kpis.avgCycleDays)}
@@ -213,8 +211,22 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
         </div>
       )}
 
+      {/* Period selector — sits between the live KPI cards above and the period-filtered charts below */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+        <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Activity &amp; trends — filtered by period
+        </p>
+        <PeriodSelector
+          period={period}
+          rawDateRange={rawDateRange}
+          onChange={onPeriodChange}
+          onRefresh={loadMain}
+          loading={loadingMain}
+        />
+      </div>
+
       {/* 2. Flags */}
-      {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
+      {/* {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           {dashboard.flags.map((flag, i) => {
             const s = FLAG_STYLES[flag.severity] ?? FLAG_STYLES.info;
@@ -225,11 +237,11 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
             );
           })}
         </div>
-      )}
+      )} */}
 
 
       {/* 5. Activity trend */}
-      <Section title="Activity over time" subtitle="What's been happening over the selected period. Are things moving or backing up?">
+      <Section title="Activity over time" subtitle="How busy the pipeline has been over the selected period — new registrations, progressions through stages, approvals, and returns. A flat line means things have slowed down.">
         {loadingMain ? <ChartSkeleton height={240} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={trendData} margin={{ top: 8, right: 20, bottom: 4, left: 0 }}>
@@ -247,7 +259,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       </Section>
 
       {/* 6. Pipeline distribution */}
-      <Section title="Where contractors are right now" subtitle="Current split across all pipeline stages. The stage with the longest average wait is the bottleneck.">
+      <Section title="Where contractors are right now" subtitle="Live snapshot of how contractors are spread across the pipeline. This doesn't change with the period — it shows what's happening at this moment. The bottleneck is the stage where contractors are waiting the longest.">
         {loadingMain ? <ChartSkeleton height={220} /> : errorMain ? null : (
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', flexWrap: 'wrap' }}>
             {distribution.length > 0 ? (
@@ -301,7 +313,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       </Section>
 
       {/* 7. Avg wait per stage */}
-      <Section title="How long each stage is taking" subtitle="Average time contractors have been waiting at each review stage right now. High bars mean things are piling up there.">
+      <Section title="How long each stage is taking" subtitle="Average time contractors are currently sitting at each review stage. The longer the bar, the more work has piled up there. This feeds directly into the bottleneck calculation above.">
         {loadingMain ? <ChartSkeleton height={200} /> : errorMain ? null : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
@@ -324,7 +336,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       )}
 
       {/* 9. Certificates brief */}
-      <Section title="Certificates" subtitle="Cert review queue and expiry status. Full breakdown is in the Certificates tab.">
+      <Section title="Certificates" subtitle={`Cert review queue and expiry health. "Approved" and "Rejected" counts are for the selected period. Everything else is a live count. Full details are in the Certificates tab.`}>
         {loadingMain ? <ChartSkeleton height={80} /> : errorMain ? null : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
             <StatCard label="Total tracked" value={certData?.statusBreakdown.totalTracked} color="default" />
