@@ -187,7 +187,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
 
             <StatCard label="Approval rate"
               value={fmtPct(dashboard.kpis.completionRate)}
-              sub={''}
+              sub={`Total registered contractors: ${dashboard.kpis.totalRegistered}`}
               color="brand" />
             <StatCard label="Avg time to approve"
               value={fmt(dashboard.kpis.avgCycleDays)}
@@ -214,7 +214,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
       )}
 
       {/* 2. Flags */}
-      {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
+      {/* {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           {dashboard.flags.map((flag, i) => {
             const s = FLAG_STYLES[flag.severity] ?? FLAG_STYLES.info;
@@ -225,7 +225,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
             );
           })}
         </div>
-      )}
+      )} */}
 
 
       {/* 5. Activity trend */}
