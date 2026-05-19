@@ -8,6 +8,7 @@ import {
 import StatCard from './StatCard';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton } from './LoadingSkeleton';
+import PeriodSelector from './PeriodSelector';
 import { fetchTrends, fetchPerformance } from '../api';
 import type { TrendsData, PerformanceData, DateRange, Period } from '../types';
 
@@ -33,7 +34,14 @@ function CardDivider() {
   );
 }
 
-export default function TrendsTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
+interface TrendsTabProps {
+  period: Period;
+  dateRange?: DateRange;
+  rawDateRange: DateRange;
+  onPeriodChange: (p: Period, dr: DateRange) => void;
+}
+
+export default function TrendsTab({ period, dateRange, rawDateRange, onPeriodChange }: TrendsTabProps) {
   const [data, setData]         = useState<TrendsData | null>(null);
   const [perfData, setPerfData] = useState<PerformanceData | null>(null);
   const [loading, setLoading]   = useState(true);
@@ -85,13 +93,13 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* Refresh */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
-        <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
-          Refresh
-        </button>
-      </div>
+      <PeriodSelector
+        period={period}
+        rawDateRange={rawDateRange}
+        onChange={onPeriodChange}
+        onRefresh={load}
+        loading={loading}
+      />
 
       {/* Summary cards */}
       {loading ? <CardsSkeleton count={5} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
@@ -125,7 +133,7 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
       )}
 
       {/* Activity trend line chart */}
-      <Section title={`Activity over time (${data?.bucketSize ?? '...'} buckets)`} subtitle="Progressions, approvals, returns and parks over the period. Gives you a feel for whether things are speeding up or slowing down.">
+      <Section title={`Activity over time (${data?.bucketSize ?? '...'} buckets)`} subtitle="How activity has changed over the selected period — each data point is a day, week, or month depending on how wide the range is. Look for patterns: are approvals keeping pace with progressions? Are returns spiking?">
         {loading ? <ChartSkeleton height={260} /> : error ? null : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={timeSeriesData} margin={{ top: 8, right: 20, bottom: 4, left: 0 }}>
@@ -143,7 +151,7 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
       </Section>
 
       {/* Progressions by stage */}
-      <Section title="Progressions by stage" subtitle="How many times contractors moved forward at each stage this period. Tallied from all approver actions. Stages with zero actions are hidden.">
+      <Section title="Progressions by stage" subtitle="Where approvers spent their time this period — each bar is the total forward movements at that stage. Stages with zero activity are hidden. A very tall bar means that stage had the most review work.">
         {loading ? <ChartSkeleton height={200} /> : error ? null : stageProgressions.length === 0 ? (
           <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No stage activity recorded for this period</p>
         ) : (
@@ -164,7 +172,7 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
 
       {/* Park statistics */}
       {!loading && !error && data && (
-        <Section title="Park statistics" subtitle="Parks put a contractor on hold during review. These numbers cover the selected period.">
+        <Section title="Park statistics" subtitle="A park temporarily pauses a contractor's review — typically while waiting on documents or a decision. These numbers show how many parks were requested and approved in the selected period.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
               <StatCard label="Park requests"      value={data.holdStats.totalRequested} color="default" />
