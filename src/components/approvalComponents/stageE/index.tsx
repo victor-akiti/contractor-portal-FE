@@ -8,11 +8,11 @@ import { useEffect, useRef, useState } from "react"
 import styles from "./styles/styles.module.css"
 
 
+import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import errorIcon from "@/assets/images/red_alert_circle.svg"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import CertificateHistoryModal from "@/components/certificateHistory"
 import Modal from "@/components/modal"
-import PendingCertsConfirmModal from "@/app/staff/approvals/modals/PendingCertsConfirmModal"
 import staffApi from "@/redux/apis/staffApi"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -838,6 +838,25 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                 />
             )}
 
+            {
+                approvalData?.flags?.reverts?.stage5?.status === "active" && (
+                    <div style={{
+                        background: "#fff7ed",
+                        borderLeft: "4px solid #d97706",
+                        padding: "0.85rem 1rem",
+                        margin: "0 0 1rem 0",
+                        borderRadius: "0.25rem"
+                    }}>
+                        <h4 style={{ margin: "0 0 0.4rem 0", color: "#9a3412" }}>Returned by Executive Approver for additional research</h4>
+                        <p style={{ margin: "0 0 0.4rem 0", whiteSpace: "pre-wrap" }}>{approvalData.flags.reverts.stage5.reason}</p>
+                        <p style={{ margin: 0, fontSize: "0.85em", color: "#6b7280" }}>
+                            {approvalData.flags.reverts.stage5.returnedBy?.name || "Executive Approver"}
+                            {approvalData.flags.reverts.stage5.returnedAt && ` · ${moment(approvalData.flags.reverts.stage5.returnedAt).format("DD/MM/YYYY")}`}
+                        </p>
+                    </div>
+                )
+            }
+
             <div className={styles.approvalHeader}>
                 <h1>{approvalData.companyName}</h1>
 
@@ -1038,6 +1057,9 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                             <div className={styles.dueDiligenceView}>
                                 <div className={styles.ddCheckDiv}>
                                     <h5>Company Registration</h5>
+                                    {
+                                        approvalData?.dueDiligence?.registrationCheck?.flagMessage && <p className={styles.flagMessage}>{approvalData?.dueDiligence?.registrationCheck?.flagMessage}</p>
+                                    }
 
                                     {
                                         approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.registrationCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
@@ -1049,6 +1071,10 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                                     <h5>Internet Check</h5>
 
                                     {
+                                        approvalData?.dueDiligence?.internetCheck?.flagMessage && <p className={styles.flagMessage}>{approvalData?.dueDiligence?.internetCheck?.flagMessage}</p>
+                                    }
+
+                                    {
                                         approvalData?.dueDiligence?.internetCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.internetCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
                                     }
 
@@ -1058,8 +1084,13 @@ const StageE = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
                                     <h5>Reference Check</h5>
 
                                     {
+                                        approvalData?.dueDiligence?.referenceCheck?.flagMessage && <p className={styles.flagMessage}>{approvalData?.dueDiligence?.referenceCheck?.flagMessage}</p>
+                                    }
+
+                                    {
                                         approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url && <Link href={approvalData?.dueDiligence?.referenceCheck?.finding[0]?.url} target="_blank">VIEW FINDINGS</Link>
                                     }
+
 
                                 </div>
 

@@ -29,8 +29,8 @@ import styles from "./styles/styles.module.css"
 const ADMIN_ROLES = ["Admin", "HOD"]
 const ERROR_TRACKER_ROLES = ["Admin", "IT Admin"]
 const INSIGHTS_ROLES = [
-  "Admin", "HOD", "VRM", "C&P Admin", "Executive Approver",
-  "IT Admin", "Amni Staff", "C and P Staff", "Insurance Officer",
+  "Admin", "HOD", "VRM", "Executive Approver",
+  //"IT Admin", "Amni Staff", "C and P Staff", "Insurance Officer",
 ]
 
 const MENU_ITEMS = [

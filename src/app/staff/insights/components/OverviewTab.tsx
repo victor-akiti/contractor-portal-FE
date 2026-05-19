@@ -171,29 +171,23 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {/* Who's in the system */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Total accounts" value={dashboard.kpis.totalActiveAccounts} color="default" />
-            <StatCard label="Registered" value={dashboard.kpis.totalRegistered} color="blue" />
-            <StatCard label="Not submitted" value={dashboard.kpis.notSubmitted} color="default" />
-          </div>
-          <CardDivider />
-          {/* Where they are */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="In review" value={dashboard.kpis.totalInPipeline} color="blue" />
-            <StatCard label="Returned" value={dashboard.kpis.returned} color="amber" />
-            <StatCard label="Parked" value={dashboard.kpis.parked} color="red" />
-            {dashboard.kpis.priorityInPipeline > 0 && (
-              <StatCard label="Priority in review" value={dashboard.kpis.priorityInPipeline} color="purple" />
-            )}
+            <StatCard label="Approved"
+              value={dashboard.kpis.totalApproved}
+              sub={`out of ${dashboard.kpis.totalRegistered} total registered contractors (${fmtPct((dashboard.kpis.totalApproved * 100) / dashboard.kpis.totalRegistered)})`}
+              color="brand" />
+            <StatCard label="Within Amni Review" value={dashboard.kpis.totalInPipeline} color="blue"
+              sub={`${fmtPct((dashboard.kpis.totalInPipeline * 100) / dashboard.kpis.totalRegistered)} of total registered contractors ${dashboard.kpis.priorityInPipeline > 0 ? `of which ${dashboard.kpis.priorityInPipeline} are priority` : ''} `}
+            />
+            {/* <StatCard label="Registered" value={dashboard.kpis.totalRegistered} color="blue" /> */}
+            <StatCard label="Not Yet Submitted" value={dashboard.kpis.notSubmitted} color="default" />
           </div>
           <CardDivider />
           {/* How we're doing */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Approved"
-              value={dashboard.kpis.totalApproved}
-              color="brand" />
+
             <StatCard label="Approval rate"
               value={fmtPct(dashboard.kpis.completionRate)}
-              sub={''}
+              sub={`Total registered contractors: ${dashboard.kpis.totalRegistered}`}
               color="brand" />
             <StatCard label="Avg time to approve"
               value={fmt(dashboard.kpis.avgCycleDays)}
@@ -201,17 +195,26 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
               color="default" />
           </div>
           <CardDivider />
-          {/* Certificates quick look */}
+          {/* Where they are */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+            <StatCard label="Returned to Contractor" sub={`Out of ${dashboard.kpis.totalRegistered} total registered contractors (${fmtPct((dashboard.kpis.returned * 100) / dashboard.kpis.totalRegistered)})`} value={dashboard.kpis.returned} color="amber" />
+            <StatCard label="Parked" sub={`Out of ${dashboard.kpis.totalRegistered} total registered contractors (${fmtPct((dashboard.kpis.parked * 100) / dashboard.kpis.totalRegistered)})`} value={dashboard.kpis.parked} color="red" />
+            {/* {dashboard.kpis.priorityInPipeline > 0 && (
+              <StatCard label="Priority in review" value={dashboard.kpis.priorityInPipeline} color="purple" />
+            )} */}
+          </div>
+          <CardDivider />
+          {/* Certificates quick look */}
+          {/* <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
             <StatCard label="Certs in review" value={certData?.statusBreakdown.pending ?? '—'} color="amber" />
             <StatCard label="Expired certs" value={certData?.expiryBreakdown.expired ?? '—'} color="red" />
             <StatCard label="Expiring soon" value={certData?.expiryBreakdown.expiringSoon ?? '—'} color="amber" />
-          </div>
+          </div> */}
         </div>
       )}
 
       {/* 2. Flags */}
-      {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
+      {/* {!loadingMain && !errorMain && dashboard && dashboard.flags.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           {dashboard.flags.map((flag, i) => {
             const s = FLAG_STYLES[flag.severity] ?? FLAG_STYLES.info;
@@ -222,7 +225,7 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
             );
           })}
         </div>
-      )}
+      )} */}
 
 
       {/* 5. Activity trend */}
