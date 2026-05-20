@@ -1,6 +1,6 @@
 import moment from "moment";
 import Link from "next/link";
-import { deriveLevel, getNextStageFromFlags, getStageFromFlags, shouldShowEndUsers, userFacingStageLetter } from "../stageHelpers";
+import { deriveLevel, getStageFromFlags, shouldShowEndUsers, userFacingStageLetter } from "../stageHelpers";
 import styles from "../styles/styles.module.css";
 import PriorityBadge from "../ui/PriorityBadge";
 import { userCanTogglePriority } from "../utils";
@@ -49,7 +49,6 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
   };
 
   const currentStage = getStageFromFlags(companyRecord?.flags);
-  const nextStage = getNextStageFromFlags(companyRecord?.flags);
 
   return (
     <tr
@@ -78,7 +77,7 @@ export default function PendingL2Row({ index, companyRecord, user, activeFilter,
       <td>
         <div className={styles.actionsContainer}>
           {userCanViewActions() && (
-            <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${userFacingStageLetter(nextStage)}`}</Link>
+            <Link href={`/staff/approvals/${companyRecord._id}`}>{`PROCESS STAGE ${userFacingStageLetter(currentStage)}`}</Link>
           )}
           {togglePriority && userCanTogglePriority(user) && (
             <button
