@@ -875,6 +875,7 @@ const ViewVendorPage = () => {
 
     const submitNewApprovalStage = async (e) => {
         e.preventDefault();
+        const stageLabel = e.target[0]?.options[e.target[0].selectedIndex].text;
         const stage = Number(e.target[0]?.value || 0); //To be dynamic based on selection
 
         updateNewApprovalStage("status", "requesting");
@@ -883,7 +884,7 @@ const ViewVendorPage = () => {
                 `approvals/change-stage/${vendorID}`,
                 {
                     newStage: stage,
-                    reason: "Returning to previous stage per request.",
+                    reason: `Moving to stage ${stageLabel} per request from C and P team.`,
                     role: user?.user?.role,
                 },
                 user?.user?.role,
@@ -1214,17 +1215,17 @@ const ViewVendorPage = () => {
                                                 }}
                                             >
                                                 {[
-                                                    { label: "Stage A", value: 0 },
-                                                    { label: "Stage B", value: 1 },
-                                                    { label: "Stage C", value: 2 },
-                                                    { label: "Stage D", value: 3 },
-                                                    { label: "Stage E", value: 4 },
+                                                    { label: "Stage B", value: 0 },
+                                                    { label: "Stage C", value: 1 },
+                                                    { label: "Stage D", value: 2 },
+                                                    { label: "Stage E", value: 3 },
+                                                    { label: "Stage F", value: 4 },
                                                 ]
-                                                    .filter((x) => {
-                                                        const level =
-                                                            approvalData?.flags?.approvals?.level || approvalData?.flags?.level;
-                                                        return x.value < level;
-                                                    })
+                                                    // .filter((x) => {
+                                                    //     const level =
+                                                    //         approvalData?.flags?.approvals?.level || approvalData?.flags?.level;
+                                                    //     return x.value < level;
+                                                    // })
                                                     .map((item, index) => (
                                                         <option key={index} value={item.value}>
                                                             {item.label}
