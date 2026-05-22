@@ -40,6 +40,7 @@ const MENU_ITEMS = [
   { href: "/staff/jobCategories", label: "Job Categories" },
   { href: "/staff/events", label: "Events" },
   { href: "/staff/forms", label: "Forms", adminOnly: true },
+  { href: "/staff/form-templates", label: "Form Templates", adminOnly: true },
   { href: "/staff/userManagement", label: "Roles & User Management", adminOnly: true },
   { href: "/staff/error-tracker", label: "Error Tracker", requiredRoles: ERROR_TRACKER_ROLES },
   { href: "/staff/insights", label: "Approval Insights", requiredRoles: INSIGHTS_ROLES },
