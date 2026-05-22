@@ -1,152 +1,123 @@
 'use client'
 import { getProtected } from "@/requests/get"
 import moment from "moment"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
+const LIMIT = 100
+
 const Events = () => {
     const [events, setEvents] = useState([])
-    const [fixedEvents, setFixedEvents] = useState([])
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [total, setTotal] = useState(0)
+    const [loading, setLoading] = useState(false)
+
     const [searchBy, setSearchBy] = useState("all")
-    const [filterRange, setFilterRange] = useState({
-        startDate: null,
-        endDate: null
-    })
+    const [search, setSearch] = useState("")
+    const [filterRange, setFilterRange] = useState({ startDate: "", endDate: "" })
+    const [appliedRange, setAppliedRange] = useState({ startDate: "", endDate: "" })
 
     const startDateRef = useRef(null)
     const endDateRef = useRef(null)
     const searchInputRef = useRef(null)
-
-
-    useEffect(() => {
-        fetchAllEvents()
-    }, [])
+    const debounceRef = useRef(null)
 
     const user = useSelector((state) => state.user.user)
 
-    const fetchAllEvents= async () => {
+    const fetchEvents = useCallback(async (opts = {}) => {
+        const p = opts.page ?? page
+        const s = opts.search ?? search
+        const sb = opts.searchBy ?? searchBy
+        const range = opts.range ?? appliedRange
+
+        const params = new URLSearchParams({ page: String(p), limit: String(LIMIT) })
+        if (s) { params.set("search", s); params.set("searchBy", sb) }
+        if (range.startDate) params.set("startDate", range.startDate)
+        if (range.endDate) params.set("endDate", range.endDate)
+
+        setLoading(true)
         try {
-            const fetchAllEventsRequest = await getProtected("events/all", user.role)
-
-            if (fetchAllEventsRequest.status === "OK") {
-                setEvents(fetchAllEventsRequest.data)
-                setFixedEvents(fetchAllEventsRequest.data)
+            const res = await getProtected(`events/all?${params.toString()}`, user.role)
+            if (res.status === "OK") {
+                setEvents(res.data.events || [])
+                setTotal(res.data.total || 0)
+                setTotalPages(res.data.totalPages || 1)
             }
-            
         } catch (error) {
-            console.error({error});
+            console.error({ error })
+        } finally {
+            setLoading(false)
         }
+    }, [page, search, searchBy, appliedRange, user.role])
+
+    useEffect(() => { fetchEvents() }, [fetchEvents])
+
+    const onSearchChange = (value) => {
+        setSearch(value)
+        setPage(1)
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => {
+            fetchEvents({ search: value, page: 1 })
+        }, 400)
     }
 
-    const searchEvents = async (searchTerm) => {
-        let tempEvents = [...fixedEvents]
-
-        if (searchBy === "all") {
-            tempEvents = tempEvents.filter(event => {
-                if ((event.vendorName && event.vendorName.toLowerCase().includes(searchTerm.toLowerCase())) || (event.userName && event.userName.toLowerCase().includes(searchTerm.toLowerCase()))) {
-                    return event
-                }
-            })
-
-        } else if (searchBy === "company") {
-            tempEvents = tempEvents.filter(event => {
-                if ((event.vendorName && event.vendorName.toLowerCase().includes(searchTerm.toLowerCase()))) {
-                    return event
-                }
-            })
-        } else if (searchBy === "user") {
-            tempEvents = tempEvents.filter(event => {
-                if ((event.userName && event.userName.toLowerCase().includes(searchTerm.toLowerCase()))) {
-                    return event
-                }
-            })
-        }
-
-
-        setEvents(tempEvents)
-        
+    const onSearchByChange = (value) => {
+        setSearchBy(value)
+        setPage(1)
+        fetchEvents({ searchBy: value, page: 1 })
     }
-    
-    const filterEventsByDate = () => {
-        let tempEvents = [...fixedEvents]
 
-        {
-            if (filterRange.startDate && filterRange.endDate) {
-                tempEvents = tempEvents.filter(event => {
-                    const eventTimestamp = new Date(event.createdAt).getTime()
-                    const startDateTimestamp = new Date(filterRange.startDate).getTime()
-                    const endDateTimestamp = new Date(filterRange.endDate).getTime()
-        
-                    if ((eventTimestamp >= startDateTimestamp && eventTimestamp <= endDateTimestamp)) {
-                        return event
-                    } else if (startDateTimestamp === endDateTimestamp) {
-                        const eventDate = new Date(event.createdAt)
-                        const startDate = new Date(filterRange.startDate)
-                        
-        
-                        if (eventDate.getDate() === startDate.getDate() + 1 && eventDate.getMonth() === startDate.getMonth() && eventDate.getFullYear() === startDate.getFullYear()) {
-                            return event
-                        }
-                    }
-                })
-            }
-        }
-
-        setEvents(tempEvents)
+    const applyDateFilter = () => {
+        setAppliedRange(filterRange)
+        setPage(1)
+        fetchEvents({ range: filterRange, page: 1 })
     }
 
     const resetSearchAndFilter = () => {
-        let tempEvents = [...fixedEvents]
-
-        startDateRef.current.value = null
-        endDateRef.current.value = null
-        searchInputRef.current.value = null
-
-        setEvents(tempEvents)
+        if (startDateRef.current) startDateRef.current.value = ""
+        if (endDateRef.current) endDateRef.current.value = ""
+        if (searchInputRef.current) searchInputRef.current.value = ""
+        setSearch("")
+        setSearchBy("all")
+        setFilterRange({ startDate: "", endDate: "" })
+        setAppliedRange({ startDate: "", endDate: "" })
+        setPage(1)
+        fetchEvents({ search: "", searchBy: "all", range: { startDate: "", endDate: "" }, page: 1 })
     }
 
     const updateFilterRange = (date, type) => {
-        let tempFilterRange = {...filterRange}
-        tempFilterRange[type] = date
-        
-        if (type === "startDate" && filterRange.endDate) {
-            let startDate = new Date(date).getTime()
-            let endDate = new Date(filterRange.endDate).getTime()
-
-            if (startDate > endDate) {
-                endDateRef.current.value = date
-                tempFilterRange.endDate = date
-            }
-        } else if (type === "endDate" && filterRange.startDate) {
-            let startDate = new Date(filterRange.startDate).getTime()
-            let endDate = new Date(date).getTime()
-
-            if (startDate > endDate) {
-                startDateRef.current.value = date
-                tempFilterRange.startDate = date
-            }
+        const next = { ...filterRange, [type]: date }
+        if (type === "startDate" && filterRange.endDate && new Date(date) > new Date(filterRange.endDate)) {
+            if (endDateRef.current) endDateRef.current.value = date
+            next.endDate = date
+        } else if (type === "endDate" && filterRange.startDate && new Date(filterRange.startDate) > new Date(date)) {
+            if (startDateRef.current) startDateRef.current.value = date
+            next.startDate = date
         }
-
-        setFilterRange(tempFilterRange)
+        setFilterRange(next)
     }
-    
 
+    const goToPage = (p) => {
+        const next = Math.min(Math.max(1, p), totalPages)
+        if (next === page) return
+        setPage(next)
+        fetchEvents({ page: next })
+    }
 
     return (
         <div className={styles.events}>
             <h2>Events</h2>
 
             <div className={styles.searchDiv}>
-                <input placeholder="Search event logs" onChange={event => searchEvents(event.target.value)} ref={searchInputRef} />
+                <input placeholder="Search event logs" onChange={event => onSearchChange(event.target.value)} ref={searchInputRef} />
 
-                <select onChange={event => setSearchBy(event.target.value)}>
+                <select value={searchBy} onChange={event => onSearchByChange(event.target.value)}>
                     <option value="all">Search all</option>
                     <option value="company">Search by company name</option>
                     <option value="user">Search by user name</option>
                 </select>
-
-                {/* <button>Search</button> */}
             </div>
 
             <div className={styles.filterDiv}>
@@ -157,51 +128,36 @@ const Events = () => {
 
                     <input type="date" placeholder="End date" onChange={event => updateFilterRange(event.target.value, "endDate")} ref={endDateRef} />
 
-                    <button onClick={() => filterEventsByDate()}>Filter</button>
+                    <button onClick={applyDateFilter}>Filter</button>
 
-                    <button className={styles.resetButton} onClick={() => resetSearchAndFilter()}>Reset</button>
+                    <button className={styles.resetButton} onClick={resetSearchAndFilter}>Reset</button>
                 </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "12px 0" }}>
+                <button disabled={page <= 1 || loading} onClick={() => goToPage(page - 1)}>Prev</button>
+                <span>Page {page} of {totalPages} ({total} total)</span>
+                <button disabled={page >= totalPages || loading} onClick={() => goToPage(page + 1)}>Next</button>
+                {loading && <span>Loading…</span>}
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <td>
-                            Company Name
-                        </td>
-
-                        <td>
-                            Event
-                        </td>
-
-                        <td>
-                            User
-                        </td>
-
-                        <td>
-                            Time
-                        </td>
+                        <td>Company Name</td>
+                        <td>Event</td>
+                        <td>User</td>
+                        <td>Time</td>
                     </tr>
                 </thead>
 
                 <tbody>
                     {
-                        events.map((event, index) => <tr key={index} className={index%2 === 0 && styles.darkBackground}>
-                            <td>
-                                {event.vendorName}
-                            </td>
-
-                            <td>
-                                {event.eventDescription ? event.eventDescription : event.eventName}
-                            </td>
-
-                            <td>
-                                {event.userName ? event.userName : event?.userID?.name ? event.userID.name : "Name Unavailable"}
-                            </td>
-
-                            <td>
-                                {moment(event.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
-                            </td>
+                        events.map((event, index) => <tr key={event._id || index} className={index%2 === 0 ? styles.darkBackground : undefined}>
+                            <td>{event.vendorName}</td>
+                            <td>{event.eventDescription ? event.eventDescription : event.eventName}</td>
+                            <td>{event.userName ? event.userName : event?.userID?.name ? event.userID.name : "Name Unavailable"}</td>
+                            <td>{moment(event.createdAt).format("MMMM Do YYYY, h:mm:ss a")}</td>
                         </tr>)
                     }
                 </tbody>
