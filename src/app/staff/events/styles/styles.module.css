@@ -91,4 +91,57 @@
 }
 .events table tbody .darkBackground {
   background-color: rgba(0, 0, 0, 0.0509803922);
-}/*# sourceMappingURL=styles.module.css.map */
+}
+.events .paginationDiv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  font-size: 0.875rem;
+  color: #495057;
+}
+.events .paginationDiv[data-position="top"] {
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+.events .paginationDiv > div {
+  display: flex;
+  gap: 8px;
+}
+.events .paginationControls {
+  align-items: center;
+}
+.events .pageSizeSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+}
+.events .pageSizeSelector select {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  color: #495057;
+  cursor: pointer;
+}
+.events .pageSizeSelector select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.events .paginationDiv button {
+  color: #fff;
+  background-color: #868e96;
+  border: 1px solid rgba(0, 0, 0, 0);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+.events .paginationDiv button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/*# sourceMappingURL=styles.module.css.map */
