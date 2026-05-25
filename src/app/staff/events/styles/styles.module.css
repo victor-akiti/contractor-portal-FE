@@ -100,9 +100,35 @@
   font-size: 0.875rem;
   color: #495057;
 }
+.events .paginationDiv[data-position="top"] {
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
 .events .paginationDiv > div {
   display: flex;
   gap: 8px;
+}
+.events .paginationControls {
+  align-items: center;
+}
+.events .pageSizeSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+}
+.events .pageSizeSelector select {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  color: #495057;
+  cursor: pointer;
+}
+.events .pageSizeSelector select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .events .paginationDiv button {
   color: #fff;

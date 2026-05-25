@@ -5,13 +5,15 @@ import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
-const PAGE_SIZE = 100
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 500]
+const DEFAULT_PAGE_SIZE = 100
 
 const Events = () => {
     const [searchInput, setSearchInput] = useState("")
     const [search, setSearch] = useState("")
     const [searchBy, setSearchBy] = useState("all")
     const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
     const [appliedRange, setAppliedRange] = useState({ startDate: "", endDate: "" })
     const [filterRange, setFilterRange] = useState({ startDate: "", endDate: "" })
 
@@ -30,16 +32,16 @@ const Events = () => {
         return () => clearTimeout(handle)
     }, [searchInput])
 
-    // Reset to first page when search scope changes
+    // Reset to first page when search scope or page size changes
     useEffect(() => {
         setPage(1)
-    }, [searchBy])
+    }, [searchBy, pageSize])
 
     const { data, isFetching, isLoading } = useGetAllEventsQuery(
         {
             userRole: user?.role,
             page,
-            limit: PAGE_SIZE,
+            limit: pageSize,
             search,
             searchBy,
             startDate: appliedRange.startDate || undefined,
@@ -100,6 +102,38 @@ const Events = () => {
         if (clamped !== currentPage) setPage(clamped)
     }
 
+    const renderPaginationBar = (position) => (
+        <div className={styles.paginationDiv} data-position={position}>
+            <span>
+                {isLoading || isFetching
+                    ? "Loading…"
+                    : total === 0
+                        ? "No events"
+                        : `Page ${currentPage} of ${totalPages} — ${total.toLocaleString()} events`}
+            </span>
+
+            <div className={styles.paginationControls}>
+                <label className={styles.pageSizeSelector}>
+                    <span>Rows per page:</span>
+                    <select
+                        value={pageSize}
+                        onChange={event => setPageSize(parseInt(event.target.value, 10))}
+                        disabled={isFetching}
+                    >
+                        {PAGE_SIZE_OPTIONS.map(size => (
+                            <option key={size} value={size}>{size}</option>
+                        ))}
+                    </select>
+                </label>
+
+                <button onClick={() => goToPage(1)} disabled={currentPage <= 1 || isFetching}>First</button>
+                <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1 || isFetching}>Prev</button>
+                <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage >= totalPages || isFetching}>Next</button>
+                <button onClick={() => goToPage(totalPages)} disabled={currentPage >= totalPages || isFetching}>Last</button>
+            </div>
+        </div>
+    )
+
     return (
         <div className={styles.events}>
             <h2>Events</h2>
@@ -132,6 +166,8 @@ const Events = () => {
                 </div>
             </div>
 
+            {renderPaginationBar("top")}
+
             <table>
                 <thead>
                     <tr>
@@ -154,22 +190,7 @@ const Events = () => {
                 </tbody>
             </table>
 
-            <div className={styles.paginationDiv}>
-                <span>
-                    {isLoading || isFetching
-                        ? "Loading…"
-                        : total === 0
-                            ? "No events"
-                            : `Page ${currentPage} of ${totalPages} — ${total.toLocaleString()} events`}
-                </span>
-
-                <div>
-                    <button onClick={() => goToPage(1)} disabled={currentPage <= 1 || isFetching}>First</button>
-                    <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1 || isFetching}>Prev</button>
-                    <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage >= totalPages || isFetching}>Next</button>
-                    <button onClick={() => goToPage(totalPages)} disabled={currentPage >= totalPages || isFetching}>Last</button>
-                </div>
-            </div>
+            {renderPaginationBar("bottom")}
         </div>
     )
 }
