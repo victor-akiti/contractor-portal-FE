@@ -1,5 +1,5 @@
 'use client'
-import { getProtected } from "@/requests/get"
+import { useGetAllEventsQuery } from "@/redux/features/eventsSlice"
 import moment from "moment"
 import { useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
@@ -7,7 +7,6 @@ import styles from "./styles/styles.module.css"
 
 const Events = () => {
     const [events, setEvents] = useState([])
-    const [fixedEvents, setFixedEvents] = useState([])
     const [searchBy, setSearchBy] = useState("all")
     const [filterRange, setFilterRange] = useState({
         startDate: null,
@@ -18,28 +17,18 @@ const Events = () => {
     const endDateRef = useRef(null)
     const searchInputRef = useRef(null)
 
-
-    useEffect(() => {
-        fetchAllEvents()
-    }, [])
-
     const user = useSelector((state) => state.user.user)
 
-    const fetchAllEvents= async () => {
-        try {
-            const fetchAllEventsRequest = await getProtected("events/all", user.role)
+    const { data: fixedEvents = [] } = useGetAllEventsQuery(
+        { userRole: user?.role },
+        { skip: !user?.role }
+    )
 
-            if (fetchAllEventsRequest.status === "OK") {
-                setEvents(fetchAllEventsRequest.data)
-                setFixedEvents(fetchAllEventsRequest.data)
-            }
-            
-        } catch (error) {
-            console.error({error});
-        }
-    }
+    useEffect(() => {
+        setEvents(fixedEvents)
+    }, [fixedEvents])
 
-    const searchEvents = async (searchTerm) => {
+    const searchEvents = (searchTerm) => {
         let tempEvents = [...fixedEvents]
 
         if (searchBy === "all") {
@@ -65,9 +54,9 @@ const Events = () => {
 
 
         setEvents(tempEvents)
-        
+
     }
-    
+
     const filterEventsByDate = () => {
         let tempEvents = [...fixedEvents]
 
@@ -77,14 +66,14 @@ const Events = () => {
                     const eventTimestamp = new Date(event.createdAt).getTime()
                     const startDateTimestamp = new Date(filterRange.startDate).getTime()
                     const endDateTimestamp = new Date(filterRange.endDate).getTime()
-        
+
                     if ((eventTimestamp >= startDateTimestamp && eventTimestamp <= endDateTimestamp)) {
                         return event
                     } else if (startDateTimestamp === endDateTimestamp) {
                         const eventDate = new Date(event.createdAt)
                         const startDate = new Date(filterRange.startDate)
-                        
-        
+
+
                         if (eventDate.getDate() === startDate.getDate() + 1 && eventDate.getMonth() === startDate.getMonth() && eventDate.getFullYear() === startDate.getFullYear()) {
                             return event
                         }
@@ -109,7 +98,7 @@ const Events = () => {
     const updateFilterRange = (date, type) => {
         let tempFilterRange = {...filterRange}
         tempFilterRange[type] = date
-        
+
         if (type === "startDate" && filterRange.endDate) {
             let startDate = new Date(date).getTime()
             let endDate = new Date(filterRange.endDate).getTime()
@@ -130,7 +119,7 @@ const Events = () => {
 
         setFilterRange(tempFilterRange)
     }
-    
+
 
 
     return (
