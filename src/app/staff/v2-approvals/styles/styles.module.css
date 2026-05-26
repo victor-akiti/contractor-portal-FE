@@ -1,0 +1,170 @@
+/* V2 Approvals queue styles. */
+
+.page {
+    padding: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.pageTitle { margin: 0 0 6px 0; font-size: 1.5rem; color: #1a1a1a; }
+.pageSubtitle {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #666;
+    max-width: 680px;
+    line-height: 1.45;
+}
+
+.headerMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.miniChip {
+    background: #f3f3f3;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    color: #555;
+}
+
+.filtersBar {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.filtersBar label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: #666;
+    font-weight: 600;
+}
+
+.filtersBar select {
+    padding: 8px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: white;
+    min-width: 220px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.btnLink {
+    background: none;
+    border: none;
+    color: #f47c20;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 8px 0;
+}
+
+.tableWrap {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+
+.table thead th {
+    text-align: left;
+    padding: 12px 16px;
+    background: #fafafa;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid #ececec;
+}
+
+.table tbody td { padding: 14px 16px; border-bottom: 1px solid #f3f3f3; }
+.table tbody tr:hover { background: #fafafa; cursor: pointer; }
+
+.rowLink {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+}
+
+.nameCell { display: flex; flex-direction: column; gap: 4px; }
+.nameText { font-weight: 600; color: #1a1a1a; }
+.descText { color: #777; font-size: 0.85rem; }
+.dim { color: #999; }
+
+.stagePill {
+    display: inline-block;
+    background: #f47c20;
+    color: white;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.statusBadge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.status_draft { background: #f0f0f0; color: #777; }
+.status_pending { background: #fff4e0; color: #6b4500; }
+.status_returned { background: #fde6e6; color: #a32525; }
+.status_park_requested { background: #ecdbff; color: #5b2a99; }
+.status_parked { background: #e0e0e0; color: #444; }
+.status_approved { background: #e6f6e8; color: #1f7a2a; }
+
+.emptyState {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 56px 24px;
+    text-align: center;
+    color: #666;
+}
+
+.emptyState h4 { margin: 0 0 8px 0; color: #333; }
+.emptyState p { margin: 0; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+
+.errorBanner {
+    background: #fff1f0;
+    border: 1px solid #ffccc7;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
