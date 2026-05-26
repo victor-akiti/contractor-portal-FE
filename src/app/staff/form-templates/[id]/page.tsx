@@ -6,6 +6,7 @@ import SuccessMessage from "@/components/successMessage"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { patchProtected } from "@/requests/patch"
+import { putProtected } from "@/requests/put"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -70,26 +71,78 @@ const TemplateDetailPage = () => {
     const [publishError, setPublishError] = useState("")
     const [publishSuccess, setPublishSuccess] = useState("")
 
+    // Draft schema editor state
+    const [draftSchemaText, setDraftSchemaText] = useState("")
+    const [draftSchemaLoaded, setDraftSchemaLoaded] = useState(false)
+    const [draftSaving, setDraftSaving] = useState(false)
+    const [draftSaveError, setDraftSaveError] = useState("")
+    const [draftSaveSuccess, setDraftSaveSuccess] = useState("")
+    const [schemaParseError, setSchemaParseError] = useState("")
+
     const canEdit = ["Admin", "HOD"].includes(user?.role)
 
     const fetchAll = async () => {
         try {
             setLoading(true)
             setFetchError("")
-            const [t, v, g] = await Promise.all([
+            const [t, v, g, d] = await Promise.all([
                 getProtected(`api/v2/form-templates/${params.id}`, user?.role),
                 getProtected(`api/v2/form-templates/${params.id}/versions`, user?.role),
                 getProtected(`api/v2/form-templates/${params.id}/groups`, user?.role),
+                getProtected(`api/v2/form-templates/${params.id}/draft`, user?.role),
             ])
             if (t?.status === "OK") setTemplate(t.data.template)
             else setFetchError(t?.error?.message || "Failed to load template")
             if (v?.status === "OK") setVersions(v.data?.versions || [])
             if (g?.status === "OK") setGroups(g.data?.groups || [])
+            if (d?.status === "OK") {
+                const draftSchema = d.data?.draft?.schema
+                if (draftSchema) {
+                    setDraftSchemaText(JSON.stringify(draftSchema, null, 2))
+                } else {
+                    setDraftSchemaText(JSON.stringify({ version: 1, pages: [] }, null, 2))
+                }
+                setDraftSchemaLoaded(true)
+            }
         } catch (error: any) {
             console.error({ error })
             setFetchError(error?.message || "Failed to load template")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const saveDraftSchema = async () => {
+        if (!template) return
+        setDraftSaveError("")
+        setDraftSaveSuccess("")
+        setSchemaParseError("")
+        let parsed: any
+        try {
+            parsed = JSON.parse(draftSchemaText)
+        } catch (e: any) {
+            setSchemaParseError(`Invalid JSON: ${e?.message || "could not parse"}`)
+            return
+        }
+        try {
+            setDraftSaving(true)
+            const result = await putProtected(
+                `api/v2/form-templates/${template._id}/draft`,
+                { schema: parsed },
+                user?.role,
+            )
+            if (result?.status === "OK") {
+                setDraftSaveSuccess(
+                    `Draft saved (v${result.data?.draft?.versionNumber ?? "?"}). Publish to make it current.`,
+                )
+                await fetchAll()
+            } else {
+                setDraftSaveError(result?.error?.message || "Save failed")
+            }
+        } catch (error: any) {
+            setDraftSaveError(error?.message || "Unexpected error")
+        } finally {
+            setDraftSaving(false)
         }
     }
 
@@ -250,18 +303,52 @@ const TemplateDetailPage = () => {
                 </div>
             )}
 
-            {/* Schema editor placeholder */}
+            {/* Schema editor — JSON paste for now; drag-and-drop UI is a follow-up. */}
             <section className={detailStyles.section}>
-                <h3 className={detailStyles.sectionTitle}>Form schema</h3>
-                <div className={detailStyles.placeholder}>
-                    <p>
-                        The drag-and-drop schema editor is the next piece of work.
-                        For now this page covers metadata and version management; pages,
-                        sections and fields are still authored against the legacy
-                        <code> pages.js</code> form. When the editor lands, this section
-                        becomes the canvas.
-                    </p>
+                <div className={detailStyles.sectionHeader}>
+                    <h3 className={detailStyles.sectionTitle}>Form schema</h3>
+                    <span className={styles.dim}>
+                        Edits go to the working draft. Publish to make them current.
+                    </span>
                 </div>
+                {!draftSchemaLoaded ? (
+                    <div className={detailStyles.placeholder}>
+                        <p>Loading draft schema…</p>
+                    </div>
+                ) : (
+                    <div className={detailStyles.schemaEditor}>
+                        <textarea
+                            className={detailStyles.schemaTextarea}
+                            value={draftSchemaText}
+                            onChange={(e) => {
+                                setDraftSchemaText(e.target.value)
+                                setSchemaParseError("")
+                                setDraftSaveSuccess("")
+                            }}
+                            rows={24}
+                            spellCheck={false}
+                            disabled={!canEdit || draftSaving}
+                            placeholder='{ "version": 1, "pages": [] }'
+                        />
+                        <div className={detailStyles.schemaActions}>
+                            <div className={detailStyles.schemaMessages}>
+                                {schemaParseError && <ErrorText text={schemaParseError} />}
+                                {draftSaveError && <ErrorText text={draftSaveError} />}
+                                {draftSaveSuccess && <SuccessMessage message={draftSaveSuccess} />}
+                            </div>
+                            {canEdit && (
+                                <button
+                                    className={styles.btnPrimary}
+                                    onClick={saveDraftSchema}
+                                    disabled={draftSaving}
+                                >
+                                    Save draft
+                                    {draftSaving && <ButtonLoadingIcon />}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
             </section>
 
             {/* Version history */}
