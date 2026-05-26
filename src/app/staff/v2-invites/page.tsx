@@ -1,0 +1,523 @@
+'use client'
+import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
+import ErrorText from "@/components/errorText"
+import Modal from "@/components/modal"
+import SuccessMessage from "@/components/successMessage"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import { useEffect, useMemo, useState } from "react"
+import { useSelector } from "react-redux"
+import styles from "./styles/styles.module.css"
+
+// V2 Invites — parallel invite surface (InviteV2).
+//
+// Flow:
+//   1. Staff create an invite against a contractor group (status=pending_hod).
+//   2. HOD reviews and approves or rejects from the queue tab.
+//   3. On approve, the invite email is sent and the row shows the hash link
+//      (useful for testing when email delivery is not set up yet).
+
+type ApprovalStatus = "pending_hod" | "approved" | "rejected" | "used" | "expired"
+
+interface Group {
+    _id: string
+    name: string
+    isActive?: boolean
+}
+
+interface InviteV2 {
+    _id: string
+    fname: string
+    lname: string
+    name: string
+    email: string
+    phone?: any
+    companyName: string
+    groupId?: Group | string | null
+    formVersionId?: string | null
+    approvalStatus: ApprovalStatus
+    hash: string
+    expiry?: string
+    createdAt?: string
+    approvedAt?: string
+    rejectedAt?: string
+    rejectedReason?: string
+    invitedBy?: { name?: string; email?: string }
+    approvedBy?: { name?: string; email?: string }
+    rejectedBy?: { name?: string; email?: string }
+}
+
+const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
+    { key: "pending_hod", label: "Pending HOD" },
+    { key: "approved", label: "Approved" },
+    { key: "used", label: "Used" },
+    { key: "rejected", label: "Rejected" },
+    { key: "expired", label: "Expired" },
+    { key: "all", label: "All" },
+]
+
+const V2InvitesPage = () => {
+    const user = useSelector((state: any) => state.user.user)
+
+    const [activeTab, setActiveTab] = useState<ApprovalStatus | "all">("pending_hod")
+    const [invites, setInvites] = useState<InviteV2[]>([])
+    const [groups, setGroups] = useState<Group[]>([])
+    const [loading, setLoading] = useState(true)
+    const [fetchError, setFetchError] = useState("")
+
+    // Create modal
+    const [showCreate, setShowCreate] = useState(false)
+    const [cFname, setCFname] = useState("")
+    const [cLname, setCLname] = useState("")
+    const [cEmail, setCEmail] = useState("")
+    const [cPhone, setCPhone] = useState("")
+    const [cCompany, setCCompany] = useState("")
+    const [cGroupId, setCGroupId] = useState("")
+    const [creating, setCreating] = useState(false)
+    const [createError, setCreateError] = useState("")
+    const [createSuccess, setCreateSuccess] = useState("")
+
+    // Approve / reject state
+    const [actingId, setActingId] = useState<string | null>(null)
+    const [rejectingId, setRejectingId] = useState<string | null>(null)
+    const [rejectReason, setRejectReason] = useState("")
+    const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null)
+    const [copied, setCopied] = useState<string | null>(null)
+
+    const canCreate = ["Admin", "HOD", "IT Admin", "VRM", "CO", "Supervisor"].includes(user?.role)
+    const canHodAct = ["Admin", "HOD"].includes(user?.role)
+    const canResend = ["Admin", "HOD", "IT Admin", "VRM"].includes(user?.role)
+
+    const fetchInvites = async (tab: ApprovalStatus | "all") => {
+        try {
+            setLoading(true)
+            setFetchError("")
+            const qs = tab === "all" ? "" : `?status=${tab}`
+            const result = await getProtected(`api/v2/invites${qs}`, user?.role)
+            if (result?.status === "OK") {
+                setInvites(result.data?.invites || [])
+            } else {
+                setFetchError(result?.error?.message || "Failed to load invites")
+            }
+        } catch (e: any) {
+            setFetchError(e?.message || "Failed to load")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchGroups = async () => {
+        try {
+            const result = await getProtected("api/v2/groups", user?.role)
+            if (result?.status === "OK") setGroups(result.data?.groups || [])
+        } catch {
+            // non-fatal — create modal will surface the empty state
+        }
+    }
+
+    useEffect(() => {
+        if (user?.role) {
+            fetchInvites(activeTab)
+            fetchGroups()
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.role, activeTab])
+
+    const openCreate = () => {
+        setCFname("")
+        setCLname("")
+        setCEmail("")
+        setCPhone("")
+        setCCompany("")
+        setCGroupId(groups[0]?._id || "")
+        setCreateError("")
+        setCreateSuccess("")
+        setShowCreate(true)
+    }
+
+    const submitCreate = async () => {
+        if (!cFname.trim() || !cLname.trim() || !cEmail.trim() || !cCompany.trim() || !cGroupId) {
+            setCreateError("First name, last name, email, company, and group are all required.")
+            return
+        }
+        try {
+            setCreating(true)
+            setCreateError("")
+            const payload: any = {
+                fname: cFname.trim(),
+                lname: cLname.trim(),
+                email: cEmail.trim(),
+                companyName: cCompany.trim(),
+                groupId: cGroupId,
+            }
+            if (cPhone.trim()) payload.phone = { number: cPhone.trim() }
+            const result = await postProtected("api/v2/invites", payload, user?.role)
+            if (result?.status === "OK") {
+                setCreateSuccess(`Invite created for ${cEmail.trim()} — waiting for HOD approval.`)
+                await fetchInvites(activeTab)
+                setTimeout(() => setShowCreate(false), 900)
+            } else {
+                setCreateError(result?.error?.message || "Create failed")
+            }
+        } catch (e: any) {
+            setCreateError(e?.message || "Unexpected error")
+        } finally {
+            setCreating(false)
+        }
+    }
+
+    const approve = async (id: string) => {
+        try {
+            setActingId(id)
+            setRowError(null)
+            const result = await postProtected(`api/v2/invites/${id}/approve`, {}, user?.role)
+            if (result?.status === "OK") {
+                await fetchInvites(activeTab)
+            } else {
+                setRowError({ id, message: result?.error?.message || "Approve failed" })
+            }
+        } catch (e: any) {
+            setRowError({ id, message: e?.message || "Unexpected error" })
+        } finally {
+            setActingId(null)
+        }
+    }
+
+    const openReject = (id: string) => {
+        setRejectingId(id)
+        setRejectReason("")
+        setRowError(null)
+    }
+
+    const submitReject = async () => {
+        if (!rejectingId) return
+        if (!rejectReason.trim()) {
+            setRowError({ id: rejectingId, message: "A reason is required to reject." })
+            return
+        }
+        try {
+            setActingId(rejectingId)
+            const result = await postProtected(
+                `api/v2/invites/${rejectingId}/reject`,
+                { reason: rejectReason.trim() },
+                user?.role,
+            )
+            if (result?.status === "OK") {
+                setRejectingId(null)
+                setRejectReason("")
+                await fetchInvites(activeTab)
+            } else {
+                setRowError({ id: rejectingId, message: result?.error?.message || "Reject failed" })
+            }
+        } catch (e: any) {
+            setRowError({ id: rejectingId, message: e?.message || "Unexpected error" })
+        } finally {
+            setActingId(null)
+        }
+    }
+
+    const resend = async (id: string) => {
+        try {
+            setActingId(id)
+            setRowError(null)
+            const result = await postProtected(`api/v2/invites/${id}/resend`, {}, user?.role)
+            if (result?.status !== "OK") {
+                setRowError({ id, message: result?.error?.message || "Resend failed" })
+            }
+        } catch (e: any) {
+            setRowError({ id, message: e?.message || "Unexpected error" })
+        } finally {
+            setActingId(null)
+        }
+    }
+
+    const copyLink = async (hash: string) => {
+        const link = `${window.location.origin}/contractor/v2/form/${hash}`
+        try {
+            await navigator.clipboard.writeText(link)
+            setCopied(hash)
+            setTimeout(() => setCopied(null), 1500)
+        } catch {
+            // Older browsers — fall back to selection
+            window.prompt("Copy this link:", link)
+        }
+    }
+
+    const groupName = (g: Group | string | null | undefined): string => {
+        if (!g) return "—"
+        if (typeof g === "string") return g
+        return g.name || "—"
+    }
+
+    const statusCounts = useMemo(() => {
+        const counts: Record<string, number> = {}
+        invites.forEach((i) => { counts[i.approvalStatus] = (counts[i.approvalStatus] || 0) + 1 })
+        return counts
+    }, [invites])
+
+    return (
+        <div className={styles.page}>
+            <div className={styles.pageHeader}>
+                <div>
+                    <h2 className={styles.pageTitle}>V2 Invites</h2>
+                    <p className={styles.pageSubtitle}>
+                        Parallel invite surface. Staff create invites against a contractor
+                        group; the HOD approves before the email goes out. The form attached
+                        to the invite is determined by the group's current published template.
+                    </p>
+                </div>
+                {canCreate && (
+                    <button className={styles.btnPrimary} onClick={openCreate}>
+                        + New invite
+                    </button>
+                )}
+            </div>
+
+            <div className={styles.tabs}>
+                {STATUS_TABS.map((t) => (
+                    <button
+                        key={t.key}
+                        className={`${styles.tab} ${activeTab === t.key ? styles.tabActive : ""}`}
+                        onClick={() => setActiveTab(t.key)}
+                    >
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {loading && (
+                <div className={styles.emptyState}>
+                    <ButtonLoadingIcon />
+                    <p>Loading invites…</p>
+                </div>
+            )}
+
+            {!loading && fetchError && (
+                <div className={styles.errorBanner}>
+                    <ErrorText text={fetchError} />
+                    <button className={styles.btnLink} onClick={() => fetchInvites(activeTab)}>Retry</button>
+                </div>
+            )}
+
+            {!loading && !fetchError && invites.length === 0 && (
+                <div className={styles.emptyState}>
+                    <h4>No invites in this view</h4>
+                    <p>
+                        {activeTab === "pending_hod"
+                            ? "No invites are currently awaiting HOD approval."
+                            : `No invites with status "${activeTab}".`}
+                    </p>
+                </div>
+            )}
+
+            {!loading && !fetchError && invites.length > 0 && (
+                <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Contractor</th>
+                                <th>Email</th>
+                                <th>Group</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th className={styles.actionCol}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {invites.map((inv) => (
+                                <tr key={inv._id}>
+                                    <td>
+                                        <div className={styles.nameCell}>
+                                            <span className={styles.nameText}>{inv.name}</span>
+                                            <span className={styles.descText}>{inv.companyName}</span>
+                                        </div>
+                                    </td>
+                                    <td>{inv.email}</td>
+                                    <td>{groupName(inv.groupId)}</td>
+                                    <td>
+                                        <span className={`${styles.statusBadge} ${styles[`status_${inv.approvalStatus}`]}`}>
+                                            {inv.approvalStatus.replace("_", " ")}
+                                        </span>
+                                    </td>
+                                    <td className={styles.dim}>
+                                        {inv.createdAt
+                                            ? new Date(inv.createdAt).toLocaleDateString("en-NG")
+                                            : "—"}
+                                    </td>
+                                    <td className={styles.actionCol}>
+                                        <div className={styles.actionsRow}>
+                                            {inv.approvalStatus === "pending_hod" && canHodAct && (
+                                                <>
+                                                    <button
+                                                        className={styles.btnApprove}
+                                                        disabled={actingId === inv._id}
+                                                        onClick={() => approve(inv._id)}
+                                                    >
+                                                        Approve
+                                                        {actingId === inv._id && <ButtonLoadingIcon />}
+                                                    </button>
+                                                    <button
+                                                        className={styles.btnReject}
+                                                        disabled={actingId === inv._id}
+                                                        onClick={() => openReject(inv._id)}
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                </>
+                                            )}
+                                            {(inv.approvalStatus === "approved" || inv.approvalStatus === "used") && (
+                                                <>
+                                                    <button
+                                                        className={styles.btnLink}
+                                                        onClick={() => copyLink(inv.hash)}
+                                                    >
+                                                        {copied === inv.hash ? "Copied" : "Copy link"}
+                                                    </button>
+                                                    {inv.approvalStatus === "approved" && canResend && (
+                                                        <button
+                                                            className={styles.btnSecondary}
+                                                            disabled={actingId === inv._id}
+                                                            onClick={() => resend(inv._id)}
+                                                        >
+                                                            Resend
+                                                            {actingId === inv._id && <ButtonLoadingIcon />}
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+                                            {inv.approvalStatus === "rejected" && inv.rejectedReason && (
+                                                <span className={styles.rejectReason} title={inv.rejectedReason}>
+                                                    {inv.rejectedReason}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {rowError?.id === inv._id && (
+                                            <div className={styles.rowError}>
+                                                <ErrorText text={rowError.message} />
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {showCreate && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>New invite</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.formGrid}>
+                                <div className={styles.formRow}>
+                                    <label>First name <span className={styles.required}>*</span></label>
+                                    <input value={cFname} onChange={(e) => setCFname(e.target.value)} disabled={creating} />
+                                </div>
+                                <div className={styles.formRow}>
+                                    <label>Last name <span className={styles.required}>*</span></label>
+                                    <input value={cLname} onChange={(e) => setCLname(e.target.value)} disabled={creating} />
+                                </div>
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Email <span className={styles.required}>*</span></label>
+                                <input type="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} disabled={creating} />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Phone</label>
+                                <input value={cPhone} onChange={(e) => setCPhone(e.target.value)} disabled={creating} />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Company name <span className={styles.required}>*</span></label>
+                                <input value={cCompany} onChange={(e) => setCCompany(e.target.value)} disabled={creating} />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Group <span className={styles.required}>*</span></label>
+                                {groups.length === 0 ? (
+                                    <div className={styles.inlineWarning}>
+                                        No contractor groups defined. Create a group first.
+                                    </div>
+                                ) : (
+                                    <select value={cGroupId} onChange={(e) => setCGroupId(e.target.value)} disabled={creating}>
+                                        <option value="">Select a group…</option>
+                                        {groups.map((g) => (
+                                            <option key={g._id} value={g._id}>{g.name}</option>
+                                        ))}
+                                    </select>
+                                )}
+                                <p className={styles.helpText}>
+                                    The form attached to the invite is the group's current published template version,
+                                    stamped at the moment HOD approves.
+                                </p>
+                            </div>
+
+                            {createError && <div className={styles.modalError}><ErrorText text={createError} /></div>}
+                            {createSuccess && <div className={styles.modalSuccess}><SuccessMessage message={createSuccess} /></div>}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button className={styles.btnSecondary} onClick={() => setShowCreate(false)} disabled={creating}>
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitCreate}
+                                disabled={creating || groups.length === 0}
+                            >
+                                Create invite
+                                {creating && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {rejectingId && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Reject invite</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.formRow}>
+                                <label>Reason <span className={styles.required}>*</span></label>
+                                <textarea
+                                    rows={4}
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
+                                    placeholder="Tell the team that created this invite why it cannot proceed."
+                                    disabled={actingId === rejectingId}
+                                />
+                            </div>
+                            {rowError?.id === rejectingId && (
+                                <div className={styles.modalError}>
+                                    <ErrorText text={rowError.message} />
+                                </div>
+                            )}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setRejectingId(null)}
+                                disabled={actingId === rejectingId}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnReject}
+                                onClick={submitReject}
+                                disabled={actingId === rejectingId || !rejectReason.trim()}
+                            >
+                                Reject
+                                {actingId === rejectingId && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+        </div>
+    )
+}
+
+export default V2InvitesPage
