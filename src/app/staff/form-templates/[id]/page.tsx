@@ -3,6 +3,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
+import FormBuilder, { FormSchema } from "@/components/form/FormBuilder"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { patchProtected } from "@/requests/patch"
@@ -71,13 +72,12 @@ const TemplateDetailPage = () => {
     const [publishError, setPublishError] = useState("")
     const [publishSuccess, setPublishSuccess] = useState("")
 
-    // Draft schema editor state
-    const [draftSchemaText, setDraftSchemaText] = useState("")
-    const [draftSchemaLoaded, setDraftSchemaLoaded] = useState(false)
+    // Draft schema editor state — now uses the visual FormBuilder.
+    const [draftSchema, setDraftSchema] = useState<FormSchema | null>(null)
+    const [draftSchemaDirty, setDraftSchemaDirty] = useState(false)
     const [draftSaving, setDraftSaving] = useState(false)
     const [draftSaveError, setDraftSaveError] = useState("")
     const [draftSaveSuccess, setDraftSaveSuccess] = useState("")
-    const [schemaParseError, setSchemaParseError] = useState("")
 
     const canEdit = ["Admin", "HOD"].includes(user?.role)
 
@@ -96,13 +96,9 @@ const TemplateDetailPage = () => {
             if (v?.status === "OK") setVersions(v.data?.versions || [])
             if (g?.status === "OK") setGroups(g.data?.groups || [])
             if (d?.status === "OK") {
-                const draftSchema = d.data?.draft?.schema
-                if (draftSchema) {
-                    setDraftSchemaText(JSON.stringify(draftSchema, null, 2))
-                } else {
-                    setDraftSchemaText(JSON.stringify({ version: 1, pages: [] }, null, 2))
-                }
-                setDraftSchemaLoaded(true)
+                const loaded = d.data?.draft?.schema
+                setDraftSchema(loaded || { version: 1, pages: [] })
+                setDraftSchemaDirty(false)
             }
         } catch (error: any) {
             console.error({ error })
@@ -113,28 +109,21 @@ const TemplateDetailPage = () => {
     }
 
     const saveDraftSchema = async () => {
-        if (!template) return
+        if (!template || !draftSchema) return
         setDraftSaveError("")
         setDraftSaveSuccess("")
-        setSchemaParseError("")
-        let parsed: any
-        try {
-            parsed = JSON.parse(draftSchemaText)
-        } catch (e: any) {
-            setSchemaParseError(`Invalid JSON: ${e?.message || "could not parse"}`)
-            return
-        }
         try {
             setDraftSaving(true)
             const result = await putProtected(
                 `api/v2/form-templates/${template._id}/draft`,
-                { schema: parsed },
+                { schema: draftSchema },
                 user?.role,
             )
             if (result?.status === "OK") {
                 setDraftSaveSuccess(
                     `Draft saved (v${result.data?.draft?.versionNumber ?? "?"}). Publish to make it current.`,
                 )
+                setDraftSchemaDirty(false)
                 await fetchAll()
             } else {
                 setDraftSaveError(result?.error?.message || "Save failed")
@@ -311,28 +300,26 @@ const TemplateDetailPage = () => {
                         Edits go to the working draft. Publish to make them current.
                     </span>
                 </div>
-                {!draftSchemaLoaded ? (
+                {!draftSchema ? (
                     <div className={detailStyles.placeholder}>
                         <p>Loading draft schema…</p>
                     </div>
                 ) : (
-                    <div className={detailStyles.schemaEditor}>
-                        <textarea
-                            className={detailStyles.schemaTextarea}
-                            value={draftSchemaText}
-                            onChange={(e) => {
-                                setDraftSchemaText(e.target.value)
-                                setSchemaParseError("")
+                    <div className={detailStyles.builderWrap}>
+                        <FormBuilder
+                            value={draftSchema}
+                            onChange={(next) => {
+                                setDraftSchema(next)
+                                setDraftSchemaDirty(true)
                                 setDraftSaveSuccess("")
                             }}
-                            rows={24}
-                            spellCheck={false}
                             disabled={!canEdit || draftSaving}
-                            placeholder='{ "version": 1, "pages": [] }'
                         />
-                        <div className={detailStyles.schemaActions}>
-                            <div className={detailStyles.schemaMessages}>
-                                {schemaParseError && <ErrorText text={schemaParseError} />}
+                        <div className={detailStyles.builderSaveBar}>
+                            <div className={detailStyles.builderSaveMessages}>
+                                {draftSchemaDirty && (
+                                    <span className={detailStyles.dirtyDot}>● Unsaved changes</span>
+                                )}
                                 {draftSaveError && <ErrorText text={draftSaveError} />}
                                 {draftSaveSuccess && <SuccessMessage message={draftSaveSuccess} />}
                             </div>
@@ -340,7 +327,7 @@ const TemplateDetailPage = () => {
                                 <button
                                     className={styles.btnPrimary}
                                     onClick={saveDraftSchema}
-                                    disabled={draftSaving}
+                                    disabled={draftSaving || !draftSchemaDirty}
                                 >
                                     Save draft
                                     {draftSaving && <ButtonLoadingIcon />}
