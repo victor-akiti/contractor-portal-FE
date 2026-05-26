@@ -40,6 +40,7 @@ interface Remark {
     sectionKey: string
     text: string
     authorName?: string
+    authorEmail?: string
     authorRole?: string
     cycleNumber: number
     status: "active" | "addressed" | "withdrawn"
