@@ -1,0 +1,366 @@
+/* V2 Submission detail styles. */
+
+.page {
+    padding: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.breadcrumbs { margin-bottom: 12px; }
+
+.crumbLink {
+    color: #f47c20;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.headerCard {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 24px;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.headerMain { flex: 1 1 360px; min-width: 0; }
+.title { margin: 0 0 4px 0; font-size: 1.4rem; color: #1a1a1a; }
+.subtitle { margin: 0 0 12px 0; color: #777; font-size: 0.92rem; }
+
+.chipRow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.stagePill {
+    display: inline-block;
+    background: #f47c20;
+    color: white;
+    border-radius: 12px;
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.stagePillL3 {
+    display: inline-block;
+    background: #1f7a2a;
+    color: white;
+    border-radius: 12px;
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.cycle {
+    background: #f3f3f3;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    color: #555;
+    font-weight: 600;
+}
+
+.metaPill {
+    background: #f9f9f9;
+    border: 1px solid #ececec;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    color: #666;
+}
+
+.statusBadge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.status_draft { background: #f0f0f0; color: #777; }
+.status_pending { background: #fff4e0; color: #6b4500; }
+.status_returned { background: #fde6e6; color: #a32525; }
+.status_park_requested { background: #ecdbff; color: #5b2a99; }
+.status_parked { background: #e0e0e0; color: #444; }
+.status_approved { background: #e6f6e8; color: #1f7a2a; }
+
+.headerActions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex: 0 1 320px;
+}
+
+.btnPrimary {
+    background: #f47c20;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.btnPrimary:disabled { background: #ccc; cursor: not-allowed; }
+
+.btnSecondary {
+    background: white;
+    color: #333;
+    border: 1px solid #d0d0d0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.btnSuccess {
+    background: #1f7a2a;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btnDanger {
+    background: white;
+    color: #c0392b;
+    border: 1px solid #f3c4be;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.btnLink {
+    background: none;
+    border: none;
+    color: #f47c20;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #ececec;
+    margin-bottom: 16px;
+}
+
+.tab {
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    cursor: pointer;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.tabActive {
+    color: #f47c20;
+    border-bottom-color: #f47c20;
+    font-weight: 600;
+}
+
+.tabBody {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 20px 24px;
+}
+
+.emptyState {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 36px 24px;
+    text-align: center;
+    color: #777;
+}
+
+.errorBanner {
+    background: #fff1f0;
+    border: 1px solid #ffccc7;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dim { color: #999; font-size: 0.85rem; }
+
+/* Remarks panel */
+.remarksPanel {
+    margin-top: 22px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 16px;
+}
+
+.remarksPanel h4 { margin: 0 0 10px 0; color: #333; }
+
+.remarksPanel ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+
+.remarksPanel li {
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #fafafa;
+}
+
+.remarkHead {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.remarkText { margin: 0; color: #333; font-size: 0.9rem; line-height: 1.45; }
+
+.remarkFoot {
+    margin-top: 6px;
+    display: flex;
+    gap: 10px;
+    color: #999;
+    font-size: 0.78rem;
+}
+
+.remarkStatus {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.rstat_active { background: #fff4e0; color: #6b4500; }
+.rstat_addressed { background: #e6f6e8; color: #1f7a2a; }
+.rstat_withdrawn { background: #f0f0f0; color: #777; }
+
+/* Comments */
+.commentComposer { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.commentComposer textarea {
+    padding: 10px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+.commentActions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
+
+.commentList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.commentItem {
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #fafafa;
+}
+.commentHead {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 4px;
+}
+.commentText { margin: 0; color: #333; font-size: 0.92rem; line-height: 1.45; white-space: pre-wrap; }
+
+.commentItem textarea {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.92rem;
+}
+
+/* History */
+.historyList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.historyItem {
+    border-left: 3px solid #f47c20;
+    background: #fafafa;
+    padding: 10px 14px;
+    border-radius: 4px;
+}
+.historyHead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.historyHead strong { color: #1a1a1a; font-size: 0.92rem; }
+.historyText { margin: 4px 0 0 0; color: #555; font-size: 0.88rem; line-height: 1.4; }
+
+/* Modals */
+.modalCard {
+    width: min(640px, 95vw);
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.modalHeader { padding: 18px 24px; border-bottom: 1px solid #ececec; }
+.modalHeader h3 { margin: 0; font-size: 1.1rem; }
+.modalSub { margin: 6px 0 0 0; color: #777; font-size: 0.85rem; line-height: 1.45; }
+
+.modalBody {
+    padding: 18px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modalActions {
+    padding: 14px 24px;
+    border-top: 1px solid #ececec;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: #fafafa;
+}
+
+.remarkRow {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.remarkRow input,
+.remarkRow textarea,
+.modalBody textarea {
+    padding: 8px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    width: 100%;
+}
