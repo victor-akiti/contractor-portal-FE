@@ -49,6 +49,10 @@ const TYPE_ICON: Record<string, string> = Object.fromEntries(
 const TYPE_HAS_OPTIONS = new Set(FIELD_TYPES.filter((t) => t.hasOptions).map((t) => t.value))
 const TEXT_TYPES = new Set(["shortText", "longText", "email", "phone"])
 const NUMERIC_TYPES = new Set(["number"])
+const FILE_TYPES = new Set(["file", "certificate"])
+
+// File-format catalogue — matches the legacy builder's options.
+const FILE_FORMATS = ["PDF", "JPG", "PNG", "SVG", "GIF", "DOC", "DOCX", "XLS", "XLSX", "PPT", "PPTM"]
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface Validation {
@@ -70,12 +74,33 @@ interface Field {
     key: string
     type: FieldType
     label: string
+    approvalLabel?: string
+    defaultValue?: string
     helpText?: string
     placeholder?: string
     required?: boolean
+    enabled?: boolean
     options?: Array<{ key: string; label: string }>
     validation?: Validation
     visibleIf?: VisibleIf | null
+
+    // allowMultiple: vendor can add repeated instances of this field.
+    allowMultiple?: boolean
+    addFieldText?: string
+    addedFieldLabel?: string
+
+    // Number-specific
+    isCurrency?: boolean
+
+    // File / certificate
+    maxAllowedFiles?: number
+    allowedFormats?: string[]
+    allowSelectPreviouslyUploadedFile?: boolean
+    hasExpiryDate?: boolean
+
+    // textBlock — rich content (HTML or markdown). We store as string;
+    // the renderer decides how to display.
+    text?: string
 }
 
 interface Section {
@@ -84,6 +109,15 @@ interface Section {
     description?: string
     layout?: "single" | "double"
     fields: Field[]
+
+    // allowMultiple: vendor can add repeated instances of this section.
+    allowMultiple?: boolean
+    addSectionText?: string
+    addedSectionLabel?: string
+
+    // Visibility flags for downstream views.
+    hideOnApproval?: boolean
+    hideOnView?: boolean
 }
 
 interface Page {
@@ -251,12 +285,24 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
                 type,
                 label: `${TYPE_LABEL[type]} field`,
                 required: false,
+                enabled: true,
             }
             if (TYPE_HAS_OPTIONS.has(type)) {
                 def.options = [
                     { key: "option1", label: "Option 1" },
                     { key: "option2", label: "Option 2" },
                 ]
+            }
+            if (type === "file") {
+                def.maxAllowedFiles = 1
+                def.allowedFormats = ["PDF", "JPG", "PNG"]
+                def.allowSelectPreviouslyUploadedFile = true
+            }
+            if (type === "certificate") {
+                def.maxAllowedFiles = 1
+                def.allowedFormats = ["PDF", "JPG", "PNG"]
+                def.allowSelectPreviouslyUploadedFile = true
+                def.hasExpiryDate = true
             }
             sec.fields.push(def)
             newIdx = sec.fields.length - 1
@@ -579,10 +625,27 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                     <p className={styles.sectionDescCanvas}>{section.description}</p>
                                 )}
                             </div>
-                            <span className={styles.sectionMeta}>
-                                {section.fields.length} field{section.fields.length === 1 ? "" : "s"}
-                                {section.layout === "double" && " · 2-column"}
-                            </span>
+                            <div className={styles.sectionMetaWrap}>
+                                <span className={styles.sectionMeta}>
+                                    {section.fields.length} field{section.fields.length === 1 ? "" : "s"}
+                                    {section.layout === "double" && " · 2-column"}
+                                </span>
+                                <div className={styles.sectionBadges}>
+                                    {section.allowMultiple && (
+                                        <span className={styles.tagBadge}>repeats</span>
+                                    )}
+                                    {section.hideOnApproval && (
+                                        <span className={styles.tagBadgeDim} title="Hidden from approval view">
+                                            no-approval
+                                        </span>
+                                    )}
+                                    {section.hideOnView && (
+                                        <span className={styles.tagBadgeDim} title="Hidden from read-only view">
+                                            no-view
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         <div
@@ -604,7 +667,9 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                 return (
                                     <button
                                         key={field.key + fieldIdx}
-                                        className={`${styles.fieldRow} ${isFieldSel ? styles.selected : ""}`}
+                                        className={`${styles.fieldRow} ${isFieldSel ? styles.selected : ""} ${
+                                            field.enabled === false ? styles.fieldDisabled : ""
+                                        }`}
                                         onClick={() =>
                                             onSelect({ type: "field", pageIdx, secIdx, fieldIdx })
                                         }
@@ -614,7 +679,23 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                             {field.label || "(unlabelled)"}
                                             {field.required && <span className={styles.reqStar}>*</span>}
                                         </span>
-                                        <span className={styles.fieldRowType}>{field.type}</span>
+                                        <div className={styles.fieldRowMeta}>
+                                            {field.allowMultiple && (
+                                                <span className={styles.miniBadge}>repeats</span>
+                                            )}
+                                            {field.enabled === false && (
+                                                <span className={styles.miniBadge}>disabled</span>
+                                            )}
+                                            {field.type === "certificate" && field.hasExpiryDate && (
+                                                <span className={styles.miniBadge}>expires</span>
+                                            )}
+                                            {field.visibleIf && (
+                                                <span className={styles.miniBadge} title="Has visibility rule">
+                                                    conditional
+                                                </span>
+                                            )}
+                                            <span className={styles.fieldRowType}>{field.type}</span>
+                                        </div>
                                     </button>
                                 )
                             })}
@@ -826,6 +907,72 @@ const SectionInspector = ({
                     placeholder="Helper text shown under the section heading"
                 />
             </FieldBox>
+
+            <SubBlock
+                title="Repeat section"
+                action={
+                    <label className={styles.toggleLabel}>
+                        <input
+                            type="checkbox"
+                            checked={!!section.allowMultiple}
+                            onChange={(e) => onUpdate({ allowMultiple: e.target.checked })}
+                            disabled={disabled}
+                        />
+                        <span>Allow multiple</span>
+                    </label>
+                }
+            >
+                {section.allowMultiple ? (
+                    <>
+                        <FieldBox label="‘Add another section’ button text">
+                            <input
+                                value={section.addSectionText || ""}
+                                onChange={(e) => onUpdate({ addSectionText: e.target.value })}
+                                disabled={disabled}
+                                placeholder="+ Add another"
+                            />
+                        </FieldBox>
+                        <FieldBox label="Repeated instance label">
+                            <input
+                                value={section.addedSectionLabel || ""}
+                                onChange={(e) => onUpdate({ addedSectionLabel: e.target.value })}
+                                disabled={disabled}
+                                placeholder='e.g. "Branch #{n}"'
+                            />
+                        </FieldBox>
+                    </>
+                ) : (
+                    <p className={styles.dim}>
+                        Off — contractors see this section exactly once.
+                    </p>
+                )}
+            </SubBlock>
+
+            <SubBlock title="Visibility">
+                <div className={styles.toggleGrid}>
+                    <label className={styles.toggleLabel}>
+                        <input
+                            type="checkbox"
+                            checked={!!section.hideOnApproval}
+                            onChange={(e) => onUpdate({ hideOnApproval: e.target.checked })}
+                            disabled={disabled}
+                        />
+                        <span>Hide on approval view</span>
+                    </label>
+                    <label className={styles.toggleLabel}>
+                        <input
+                            type="checkbox"
+                            checked={!!section.hideOnView}
+                            onChange={(e) => onUpdate({ hideOnView: e.target.checked })}
+                            disabled={disabled}
+                        />
+                        <span>Hide on read-only view</span>
+                    </label>
+                </div>
+                <p className={styles.dim}>
+                    Useful for sections that are contractor-facing only or staff-facing only.
+                </p>
+            </SubBlock>
         </div>
     )
 }
@@ -868,7 +1015,36 @@ const FieldInspector = ({
             ]
         }
         if (!TYPE_HAS_OPTIONS.has(type)) patch.options = undefined
+
+        // File / certificate defaults — preserve existing if already a file-type.
+        if (FILE_TYPES.has(type)) {
+            if (field.maxAllowedFiles == null) patch.maxAllowedFiles = 1
+            if (!field.allowedFormats || field.allowedFormats.length === 0) {
+                patch.allowedFormats = ["PDF", "JPG", "PNG"]
+            }
+            if (field.allowSelectPreviouslyUploadedFile == null) {
+                patch.allowSelectPreviouslyUploadedFile = true
+            }
+            if (type === "certificate" && field.hasExpiryDate == null) {
+                patch.hasExpiryDate = true
+            }
+        } else {
+            // Moving away from a file type — clear file-specific props so the
+            // schema stays clean.
+            patch.maxAllowedFiles = undefined
+            patch.allowedFormats = undefined
+            patch.allowSelectPreviouslyUploadedFile = undefined
+            patch.hasExpiryDate = undefined
+        }
+
         onUpdate(patch)
+    }
+
+    const toggleFormat = (fmt: string) => {
+        const current = new Set(field.allowedFormats || [])
+        if (current.has(fmt)) current.delete(fmt)
+        else current.add(fmt)
+        onUpdate({ allowedFormats: Array.from(current) })
     }
 
     const updateOption = (i: number, patch: Partial<{ key: string; label: string }>) => {
@@ -975,7 +1151,7 @@ const FieldInspector = ({
                     ))}
                 </select>
             </FieldBox>
-            <div className={styles.toggleRow}>
+            <div className={styles.toggleGrid}>
                 <label className={styles.toggleLabel}>
                     <input
                         type="checkbox"
@@ -985,7 +1161,28 @@ const FieldInspector = ({
                     />
                     <span>Required</span>
                 </label>
+                <label className={styles.toggleLabel}>
+                    <input
+                        type="checkbox"
+                        checked={field.enabled !== false}
+                        onChange={(e) => onUpdate({ enabled: e.target.checked })}
+                        disabled={disabled}
+                    />
+                    <span>Enabled</span>
+                </label>
+                {field.type === "number" && (
+                    <label className={styles.toggleLabel}>
+                        <input
+                            type="checkbox"
+                            checked={!!field.isCurrency}
+                            onChange={(e) => onUpdate({ isCurrency: e.target.checked })}
+                            disabled={disabled}
+                        />
+                        <span>Currency</span>
+                    </label>
+                )}
             </div>
+
             <FieldBox label="Help text">
                 <input
                     value={field.helpText || ""}
@@ -994,7 +1191,7 @@ const FieldInspector = ({
                     placeholder="Shown under the field"
                 />
             </FieldBox>
-            {field.type !== "textBlock" && (
+            {field.type !== "textBlock" && !FILE_TYPES.has(field.type) && (
                 <FieldBox label="Placeholder">
                     <input
                         value={field.placeholder || ""}
@@ -1002,6 +1199,164 @@ const FieldInspector = ({
                         disabled={disabled}
                     />
                 </FieldBox>
+            )}
+
+            <SubBlock title="Approval & defaults">
+                <FieldBox label="Approval label">
+                    <input
+                        value={field.approvalLabel || ""}
+                        onChange={(e) => onUpdate({ approvalLabel: e.target.value })}
+                        disabled={disabled}
+                        placeholder="Different label for the approval view (optional)"
+                    />
+                </FieldBox>
+                {field.type !== "textBlock" && !FILE_TYPES.has(field.type) && (
+                    <FieldBox label="Default value">
+                        <input
+                            value={field.defaultValue || ""}
+                            onChange={(e) => onUpdate({ defaultValue: e.target.value })}
+                            disabled={disabled}
+                            placeholder="Pre-fills the field for the contractor"
+                        />
+                    </FieldBox>
+                )}
+            </SubBlock>
+
+            {field.type === "textBlock" && (
+                <SubBlock title="Content">
+                    <FieldBox label="Body text">
+                        <textarea
+                            rows={5}
+                            value={field.text || ""}
+                            onChange={(e) => onUpdate({ text: e.target.value })}
+                            disabled={disabled}
+                            placeholder="Markdown / HTML rendered as a static block"
+                        />
+                    </FieldBox>
+                    <p className={styles.dim}>
+                        Plain text or simple HTML. Shown to the contractor as a non-input block.
+                    </p>
+                </SubBlock>
+            )}
+
+            {!FILE_TYPES.has(field.type) && field.type !== "textBlock" && (
+                <SubBlock
+                    title="Repeat field"
+                    action={
+                        <label className={styles.toggleLabel}>
+                            <input
+                                type="checkbox"
+                                checked={!!field.allowMultiple}
+                                onChange={(e) => onUpdate({ allowMultiple: e.target.checked })}
+                                disabled={disabled}
+                            />
+                            <span>Allow multiple</span>
+                        </label>
+                    }
+                >
+                    {field.allowMultiple ? (
+                        <>
+                            <FieldBox label="‘Add another’ button text">
+                                <input
+                                    value={field.addFieldText || ""}
+                                    onChange={(e) => onUpdate({ addFieldText: e.target.value })}
+                                    disabled={disabled}
+                                    placeholder="+ Add another"
+                                />
+                            </FieldBox>
+                            <FieldBox label="Repeated instance label">
+                                <input
+                                    value={field.addedFieldLabel || ""}
+                                    onChange={(e) => onUpdate({ addedFieldLabel: e.target.value })}
+                                    disabled={disabled}
+                                    placeholder='e.g. "Director #{n}"'
+                                />
+                            </FieldBox>
+                        </>
+                    ) : (
+                        <p className={styles.dim}>
+                            Off — contractors see a single instance of this field.
+                        </p>
+                    )}
+                </SubBlock>
+            )}
+
+            {FILE_TYPES.has(field.type) && (
+                <SubBlock title={field.type === "certificate" ? "Certificate upload" : "File upload"}>
+                    <div className={styles.twoCol}>
+                        <FieldBox label="Max files allowed">
+                            <input
+                                type="number"
+                                min={1}
+                                value={field.maxAllowedFiles ?? 1}
+                                onChange={(e) =>
+                                    onUpdate({
+                                        maxAllowedFiles:
+                                            e.target.value === "" ? undefined : Number(e.target.value),
+                                    })
+                                }
+                                disabled={disabled}
+                            />
+                        </FieldBox>
+                        <div className={styles.fieldBox}>
+                            <label>Re-use previous</label>
+                            <label className={styles.toggleLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={!!field.allowSelectPreviouslyUploadedFile}
+                                    onChange={(e) =>
+                                        onUpdate({ allowSelectPreviouslyUploadedFile: e.target.checked })
+                                    }
+                                    disabled={disabled}
+                                />
+                                <span>Allow picking previously uploaded files</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className={styles.fieldBox}>
+                        <label>Allowed formats</label>
+                        <div className={styles.formatGrid}>
+                            {FILE_FORMATS.map((fmt) => {
+                                const selected = (field.allowedFormats || []).includes(fmt)
+                                return (
+                                    <button
+                                        key={fmt}
+                                        type="button"
+                                        className={`${styles.formatChip} ${selected ? styles.formatChipOn : ""}`}
+                                        onClick={() => toggleFormat(fmt)}
+                                        disabled={disabled}
+                                    >
+                                        {fmt}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </div>
+
+                    {field.type === "certificate" && (
+                        <>
+                            <label className={styles.toggleLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={!!field.hasExpiryDate}
+                                    onChange={(e) => onUpdate({ hasExpiryDate: e.target.checked })}
+                                    disabled={disabled}
+                                />
+                                <span>Has expiry date</span>
+                            </label>
+                            <div className={styles.certNote}>
+                                <strong>Certificate tracking:</strong> each upload is recorded with{" "}
+                                <code>issueDate</code>, <code>expiryDate</code> (when enabled),{" "}
+                                <code>certStatus</code> (pending → approved/rejected), and{" "}
+                                <code>updateCode</code> (stable slot ID so re-uploads replace in-place rather than
+                                creating duplicates). Re-uploads automatically flip status back to{" "}
+                                <em>pending</em> for staff re-review. Expiry status is computed at view time —
+                                no cron needed.
+                            </div>
+                        </>
+                    )}
+                </SubBlock>
             )}
 
             {hasOpts && (

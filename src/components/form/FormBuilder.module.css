@@ -187,13 +187,41 @@
 /* ── Two-column body: canvas + inspector ──────────────────────────────── */
 .body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: minmax(0, 1fr) 400px;
     gap: 16px;
     align-items: start;
 }
 
-@media (max-width: 1024px) {
+/* Drop the inspector below the canvas at narrow widths. */
+@media (max-width: 1180px) {
     .body { grid-template-columns: 1fr; }
+    .inspector {
+        position: static;
+        max-height: none;
+    }
+}
+
+/* Page tabs scroll horizontally on small screens rather than wrap and
+   take three rows of vertical space. */
+@media (max-width: 720px) {
+    .pageTabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+    .pageTab { flex-shrink: 0; }
+    .pageTabAdd { flex-shrink: 0; }
+}
+
+@media (max-width: 560px) {
+    .toolbar { padding: 8px 10px; }
+    .toolbarRight { width: 100%; justify-content: flex-start; }
+    .countPill { font-size: 0.72rem; padding: 3px 8px; }
+    .pageTitleCanvas { font-size: 1.1rem; }
+    .fieldRowsContainer.doubleCol {
+        grid-template-columns: 1fr;
+    }
+    .twoCol { grid-template-columns: 1fr; }
 }
 
 /* ── Canvas (left) ────────────────────────────────────────────────────── */
@@ -256,6 +284,45 @@
 .sectionTitleCanvas { margin: 0; font-size: 1rem; color: #1a1a1a; font-weight: 600; }
 .sectionDescCanvas { margin: 4px 0 0 0; color: #777; font-size: 0.85rem; }
 .sectionMeta { color: #999; font-size: 0.78rem; flex-shrink: 0; }
+
+.sectionMetaWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.sectionBadges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.tagBadge {
+    background: #fff5ed;
+    color: #b85a06;
+    border: 1px solid #ffd5b3;
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.tagBadgeDim {
+    background: #f5f5f5;
+    color: #888;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
 
 .fieldRowsContainer {
     padding: 12px 14px;
@@ -336,6 +403,28 @@
     background: #f3f3f3;
     border-radius: 10px;
 }
+
+.fieldRowMeta {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.miniBadge {
+    background: #fff5ed;
+    color: #b85a06;
+    border-radius: 8px;
+    padding: 1px 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.fieldDisabled { opacity: 0.55; }
+.fieldDisabled .fieldRowIcon { background: #ececec; }
 
 .sectionFooter {
     padding: 8px 14px 14px;
@@ -497,6 +586,12 @@
 
 /* ── Toggle row ───────────────────────────────────────────────────────── */
 .toggleRow { padding: 4px 0; }
+.toggleGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    padding: 4px 0;
+}
 .toggleLabel {
     display: inline-flex;
     align-items: center;
@@ -506,6 +601,52 @@
     cursor: pointer;
 }
 .toggleLabel input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+
+/* ── Allowed-format chip grid ─────────────────────────────────────────── */
+.formatGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 6px;
+}
+
+.formatChip {
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #666;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    text-align: center;
+}
+.formatChip:hover:not(:disabled) { border-color: #999; color: #333; }
+.formatChipOn {
+    background: #e67509;
+    color: white;
+    border-color: #e67509;
+}
+.formatChip:disabled { color: #ccc; cursor: not-allowed; }
+
+/* ── Certificate explainer panel ──────────────────────────────────────── */
+.certNote {
+    background: #fff5ed;
+    border: 1px solid #ffd5b3;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #6b3d04;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+.certNote code {
+    background: white;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: #b85a06;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
 
 /* ── SubBlock (options / validation / visibility) ─────────────────────── */
 .subBlock {
