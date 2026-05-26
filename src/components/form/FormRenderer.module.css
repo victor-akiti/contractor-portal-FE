@@ -1,0 +1,217 @@
+/* FormRenderer component styles. Self-contained — no dependencies on
+   page-level styles. The renderer is used in both the contractor view
+   and the staff review view. */
+
+.renderer {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.emptyState {
+    padding: 48px 24px;
+    text-align: center;
+    color: #888;
+    border: 1px dashed #d0d0d0;
+    border-radius: 8px;
+}
+
+.page {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 24px 28px;
+}
+
+.pageTitle {
+    margin: 0 0 4px 0;
+    font-size: 1.2rem;
+    color: #1a1a1a;
+}
+
+.pageDesc {
+    margin: 0 0 20px 0;
+    color: #666;
+    font-size: 0.92rem;
+}
+
+.section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.section:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.sectionHeader {
+    margin-bottom: 16px;
+}
+
+.sectionTitle {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.sectionDesc {
+    margin: 0;
+    color: #777;
+    font-size: 0.88rem;
+}
+
+.sectionFields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+.sectionFieldsDouble {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+@media (max-width: 720px) {
+    .sectionFieldsDouble {
+        grid-template-columns: 1fr;
+    }
+}
+
+.fieldRow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.fieldLabel {
+    font-size: 0.88rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.required {
+    color: #d34141;
+    margin-left: 4px;
+}
+
+.fieldHelp {
+    margin: 4px 0 0 0;
+    font-size: 0.82rem;
+    color: #888;
+    line-height: 1.4;
+}
+
+.fieldError {
+    margin: 4px 0 0 0;
+    font-size: 0.82rem;
+    color: #d34141;
+}
+
+.fieldRow input,
+.fieldRow textarea,
+.fieldRow select {
+    padding: 10px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.15s ease;
+}
+
+.fieldRow input:focus,
+.fieldRow textarea:focus,
+.fieldRow select:focus {
+    outline: none;
+    border-color: #f47c20;
+}
+
+.fieldRow input:disabled,
+.fieldRow textarea:disabled,
+.fieldRow select:disabled {
+    background: #f9f9f9;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.optionsGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px 0;
+}
+
+.optionLabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    color: #333;
+}
+
+.optionLabel input {
+    width: 16px;
+    height: 16px;
+}
+
+.textBlock {
+    background: #f9f9f9;
+    border-left: 3px solid #d0d0d0;
+    padding: 10px 14px;
+    border-radius: 4px;
+    color: #555;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.textBlock p {
+    margin: 0;
+}
+
+.unsupported {
+    padding: 10px 12px;
+    background: #fff4e0;
+    border: 1px solid #f5d99c;
+    border-radius: 6px;
+    color: #8a5a00;
+    font-size: 0.85rem;
+}
+
+/* ─ Remarks panel (active reviewer notes) ─ */
+
+.remarksPanel {
+    background: #fff4e0;
+    border: 1px solid #f5d99c;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.88rem;
+    color: #6b4500;
+}
+
+.remarksHeader {
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #8a5a00;
+}
+
+.remarksPanel ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.remarkAuthor {
+    margin-left: 6px;
+    color: #999;
+    font-style: italic;
+    font-size: 0.82rem;
+}
