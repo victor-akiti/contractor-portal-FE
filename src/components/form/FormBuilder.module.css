@@ -786,3 +786,9 @@
 .importTextarea:focus { outline: none; border-color: #e67509; }
 
 .modalFooter { display: flex; justify-content: flex-end; gap: 10px; }
+
+.miniBadgeEba {
+    background: #2256a3;
+    color: white;
+    border-color: #2256a3;
+}

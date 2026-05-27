@@ -92,6 +92,12 @@ interface Field {
     validation?: Validation
     visibleIf?: VisibleIf | null
 
+    // EBA — "Editable by Amni": when true, this field can be edited by
+    // VRM at Stage B (and at Stage E if also visible there). Downstream
+    // reviewers (Supervisor at C, HOD at F) see edits highlighted with
+    // a full audit trail and can flag / return.
+    eba?: boolean
+
     // allowMultiple: vendor can add repeated instances of this field.
     allowMultiple?: boolean
     addFieldText?: string
@@ -773,6 +779,11 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                             {field.type === "currency" && field.defaultCurrency && (
                                                 <span className={styles.miniBadge}>{field.defaultCurrency}</span>
                                             )}
+                                            {field.eba && (
+                                                <span className={`${styles.miniBadge} ${styles.miniBadgeEba}`} title="Editable by Amni (VRM at Stage B, Stage E)">
+                                                    EBA
+                                                </span>
+                                            )}
                                             {field.visibleIf && (
                                                 <span className={styles.miniBadge} title="Has visibility rule">
                                                     conditional
@@ -1338,6 +1349,30 @@ const FieldInspector = ({
                         disabled={disabled}
                     />
                 </FieldBox>
+            )}
+
+            {field.type !== "textBlock" && (
+                <SubBlock
+                    title="Editable by Amni (EBA)"
+                    action={
+                        <label className={styles.toggleLabel}>
+                            <input
+                                type="checkbox"
+                                checked={!!field.eba}
+                                onChange={(e) => onUpdate({ eba: e.target.checked })}
+                                disabled={disabled}
+                            />
+                            <span>EBA-enabled</span>
+                        </label>
+                    }
+                >
+                    <p className={styles.dim}>
+                        When enabled, VRM can edit this field at Stage B (and at Stage E if
+                        also present in that stage's view). Downstream reviewers
+                        (Supervisor at C, HOD at F) see the edit highlighted with a full
+                        audit trail and can flag or return.
+                    </p>
+                </SubBlock>
             )}
 
             <SubBlock title="Approval & defaults">
