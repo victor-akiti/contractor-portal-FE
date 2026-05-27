@@ -75,7 +75,10 @@ interface Field {
     allowMultiple?: boolean
     addFieldText?: string
     addedFieldLabel?: string
-    isCurrency?: boolean
+    // Currency-specific (only when type === "currency")
+    currencyOptions?: string[]
+    defaultCurrency?: string
+    allowCurrencyChange?: boolean
     maxAllowedFiles?: number
     allowedFormats?: string[]
     allowSelectPreviouslyUploadedFile?: boolean
@@ -157,11 +160,29 @@ const isSectionVisible = (section: Section, mode: FormMode): boolean => {
     return true
 }
 
-const formatCurrency = (n: number | string): string => {
+const formatNumberGrouped = (n: number | string): string => {
     if (n === "" || n === null || n === undefined) return ""
     const num = typeof n === "number" ? n : Number(String(n).replace(/,/g, ""))
     if (Number.isNaN(num)) return String(n)
     return num.toLocaleString("en-NG", { maximumFractionDigits: 2 })
+}
+
+// Format an amount with the ISO currency code. Falls back to "<code> <amount>"
+// when the code isn't supported by Intl on the host runtime.
+const formatCurrencyValue = (amount: number | string, currency?: string): string => {
+    if (amount === "" || amount === null || amount === undefined) return ""
+    const num = typeof amount === "number" ? amount : Number(String(amount).replace(/,/g, ""))
+    if (Number.isNaN(num)) return String(amount)
+    if (!currency) return formatNumberGrouped(num)
+    try {
+        return new Intl.NumberFormat("en-NG", {
+            style: "currency",
+            currency,
+            maximumFractionDigits: 2,
+        }).format(num)
+    } catch {
+        return `${currency} ${formatNumberGrouped(num)}`
+    }
 }
 
 // ── Validation ──────────────────────────────────────────────────────────────
@@ -250,6 +271,34 @@ export function validateSchema(
                 return
             }
             const { min, max } = field.validation
+            if (min != null && num < min) {
+                errors[errKey] = `${field.label} must be at least ${min}`
+                return
+            }
+            if (max != null && num > max) {
+                errors[errKey] = `${field.label} must be at most ${max}`
+                return
+            }
+        }
+
+        if (field.type === "currency") {
+            const obj = (v && typeof v === "object" && !Array.isArray(v)) ? v : null
+            const amount = obj?.amount
+            const currency = obj?.currency
+            if (amount === undefined || amount === null || amount === "") {
+                if (required) errors[errKey] = `${field.label} amount is required`
+                return
+            }
+            const num = typeof amount === "number" ? amount : Number(amount)
+            if (Number.isNaN(num)) {
+                errors[errKey] = `${field.label} amount must be a number`
+                return
+            }
+            if (!currency) {
+                errors[errKey] = `${field.label} currency is required`
+                return
+            }
+            const { min, max } = field.validation || {}
             if (min != null && num < min) {
                 errors[errKey] = `${field.label} must be at least ${min}`
                 return
@@ -430,19 +479,6 @@ const FormRenderer = ({
                 )
 
             case "number":
-                if (field.isCurrency && readOnly) {
-                    return (
-                        <div key={errKey} className={styles.fieldRow}>
-                            {labelEl}
-                            <div className={styles.readonlyValue}>
-                                {effectiveValue === "" || effectiveValue == null
-                                    ? <span className={styles.placeholderText}>—</span>
-                                    : formatCurrency(effectiveValue)}
-                            </div>
-                            {helpEl}
-                        </div>
-                    )
-                }
                 return (
                     <div key={errKey} className={styles.fieldRow}>
                         {labelEl}
@@ -460,15 +496,88 @@ const FormRenderer = ({
                                 onValueChange(e.target.value === "" ? "" : Number(e.target.value))
                             }
                         />
-                        {field.isCurrency && (
+                        {helpEl}
+                        {errEl}
+                    </div>
+                )
+
+            case "currency": {
+                const obj = (effectiveValue && typeof effectiveValue === "object" && !Array.isArray(effectiveValue))
+                    ? (effectiveValue as { amount?: any; currency?: string })
+                    : null
+                const currencyChoices =
+                    field.currencyOptions && field.currencyOptions.length > 0
+                        ? field.currencyOptions
+                        : ["NGN"]
+                const currentCurrency =
+                    obj?.currency || field.defaultCurrency || currencyChoices[0]
+                const currentAmount =
+                    obj?.amount === undefined || obj?.amount === null ? "" : obj.amount
+
+                if (readOnly) {
+                    return (
+                        <div key={errKey} className={styles.fieldRow}>
+                            {labelEl}
+                            <div className={styles.readonlyValue}>
+                                {currentAmount === "" ? (
+                                    <span className={styles.placeholderText}>—</span>
+                                ) : (
+                                    formatCurrencyValue(currentAmount, currentCurrency)
+                                )}
+                            </div>
+                            {helpEl}
+                        </div>
+                    )
+                }
+
+                const emit = (next: { amount?: any; currency?: string }) => {
+                    onValueChange({
+                        amount: next.amount !== undefined ? next.amount : currentAmount,
+                        currency: next.currency !== undefined ? next.currency : currentCurrency,
+                    })
+                }
+
+                const canChangeCurrency =
+                    field.allowCurrencyChange !== false && currencyChoices.length > 1
+                return (
+                    <div key={errKey} className={styles.fieldRow}>
+                        {labelEl}
+                        <div className={styles.currencyInputRow}>
+                            <select
+                                aria-label="currency"
+                                className={styles.currencySelect}
+                                value={currentCurrency}
+                                disabled={disabled || !canChangeCurrency}
+                                onChange={(e) => emit({ currency: e.target.value })}
+                            >
+                                {currencyChoices.map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                            <input
+                                id={`field-${errKey}`}
+                                type="number"
+                                step="0.01"
+                                inputMode="decimal"
+                                placeholder={field.placeholder || "0.00"}
+                                value={currentAmount === "" ? "" : (currentAmount as number)}
+                                disabled={disabled}
+                                onChange={(e) =>
+                                    emit({ amount: e.target.value === "" ? "" : Number(e.target.value) })
+                                }
+                                className={styles.currencyAmount}
+                            />
+                        </div>
+                        {currentAmount !== "" && (
                             <p className={styles.fieldHelp}>
-                                Currency value — displays as {formatCurrency(effectiveValue || 0)}
+                                Displays as {formatCurrencyValue(currentAmount, currentCurrency)}
                             </p>
                         )}
                         {helpEl}
                         {errEl}
                     </div>
                 )
+            }
 
             case "date":
                 return (

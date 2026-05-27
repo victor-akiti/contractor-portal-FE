@@ -321,3 +321,34 @@
     border-radius: 10px;
     padding: 1px 8px;
 }
+
+/* Currency input — code dropdown + amount input side-by-side. */
+.currencyInputRow {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.currencySelect {
+    padding: 8px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fafafa;
+    font-weight: 600;
+    color: #333;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88rem;
+}
+
+.currencySelect:focus { outline: none; border-color: #e67509; }
+.currencySelect:disabled { color: #777; cursor: not-allowed; }
+
+.currencyAmount {
+    padding: 8px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+.currencyAmount:focus { outline: none; border-color: #e67509; }
