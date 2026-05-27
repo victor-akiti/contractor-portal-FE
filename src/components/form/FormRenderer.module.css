@@ -215,3 +215,109 @@
     font-style: italic;
     font-size: 0.82rem;
 }
+
+/* Repeated section instances */
+.sectionInstance {
+    background: #fafafa;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+}
+.sectionInstanceHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #ececec;
+}
+.instanceLabel {
+    font-weight: 700;
+    color: #555;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Repeated field instances */
+.multiFieldWrap {
+    border: 1px dashed #ececec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.multiFieldHeader {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.multiFieldInstance {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+.multiFieldInstanceLabel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 0.82rem;
+    color: #666;
+    font-weight: 600;
+}
+
+.addInstanceBtn {
+    background: white;
+    color: #e67509;
+    border: 1px dashed #e67509;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.88rem;
+    align-self: flex-start;
+}
+.addInstanceBtn:hover { background: #fff5ed; }
+
+.removeInstanceBtn {
+    background: none;
+    border: none;
+    color: #c0392b;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* textBlock */
+.textBlockTitle { font-weight: 600; margin: 0 0 6px 0; color: #1a1a1a; }
+.textBlockBody { color: #444; font-size: 0.92rem; line-height: 1.55; }
+
+/* readonly currency */
+.readonlyValue {
+    padding: 8px 12px;
+    background: #fafafa;
+    border: 1px solid #ececec;
+    border-radius: 6px;
+    color: #1a1a1a;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+}
+.placeholderText { color: #999; }
+
+/* disabled tag */
+.disabledTag {
+    margin-left: 6px;
+    color: #999;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #f3f3f3;
+    border-radius: 10px;
+    padding: 1px 8px;
+}

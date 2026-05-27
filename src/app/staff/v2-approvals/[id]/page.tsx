@@ -13,6 +13,24 @@ import { useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles.module.css"
 
+interface Certificate {
+    _id: string
+    fieldKey: string
+    updateCode: string
+    url: string
+    name?: string
+    label?: string
+    issueDate?: string
+    expiryDate?: string
+    certStatus: "pending" | "approved" | "rejected"
+    reviewRemarks?: string
+    reviewedBy?: { name?: string; email?: string; role?: string }
+    reviewedAt?: string
+    isReUpload?: boolean
+    trackingStatus?: string
+    createdAt?: string
+}
+
 // V2 Submission detail — single submission review surface.
 //
 // Tabs:
@@ -118,7 +136,12 @@ const V2SubmissionDetailPage = () => {
     const id = params?.id
     const user = useSelector((state: any) => state.user.user)
 
-    const [tab, setTab] = useState<"form" | "comments" | "history">("form")
+    const [tab, setTab] = useState<"form" | "certificates" | "comments" | "history">("form")
+    const [certificates, setCertificates] = useState<Certificate[]>([])
+    const [certActingId, setCertActingId] = useState<string | null>(null)
+    const [certError, setCertError] = useState("")
+    const [rejectingCertId, setRejectingCertId] = useState<string | null>(null)
+    const [certRejectReason, setCertRejectReason] = useState("")
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
     const [submission, setSubmission] = useState<Submission | null>(null)
@@ -153,9 +176,10 @@ const V2SubmissionDetailPage = () => {
         try {
             setLoading(true)
             setError("")
-            const [s, c] = await Promise.all([
+            const [s, c, cert] = await Promise.all([
                 getProtected(`api/v2/submissions/${id}`, role),
                 getProtected(`api/v2/submissions/${id}/comments`, role),
+                getProtected(`api/v2/submissions/${id}/certificates`, role),
             ])
             if (s?.status === "OK") {
                 setSubmission(s.data?.submission || null)
@@ -165,6 +189,7 @@ const V2SubmissionDetailPage = () => {
                 setError(s?.error?.message || "Failed to load submission")
             }
             if (c?.status === "OK") setComments(c.data?.comments || [])
+            if (cert?.status === "OK") setCertificates(cert.data?.certificates || [])
         } catch (e: any) {
             setError(e?.message || "Failed to load")
         } finally {
@@ -280,6 +305,55 @@ const V2SubmissionDetailPage = () => {
             setCommentError(e?.message || "Unexpected error")
         } finally {
             setPostingComment(false)
+        }
+    }
+
+    const approveCertificate = async (certId: string) => {
+        try {
+            setCertActingId(certId)
+            setCertError("")
+            const result = await putProtected(
+                `api/v2/certificates/${certId}/review`,
+                { decision: "approved" },
+                role,
+            )
+            if (result?.status === "OK") {
+                await fetchAll()
+            } else {
+                setCertError(result?.error?.message || "Approve failed")
+            }
+        } catch (e: any) {
+            setCertError(e?.message || "Unexpected error")
+        } finally {
+            setCertActingId(null)
+        }
+    }
+
+    const submitRejectCertificate = async () => {
+        if (!rejectingCertId) return
+        if (!certRejectReason.trim()) {
+            setCertError("A reason is required to reject.")
+            return
+        }
+        try {
+            setCertActingId(rejectingCertId)
+            setCertError("")
+            const result = await putProtected(
+                `api/v2/certificates/${rejectingCertId}/review`,
+                { decision: "rejected", remarks: certRejectReason.trim() },
+                role,
+            )
+            if (result?.status === "OK") {
+                setRejectingCertId(null)
+                setCertRejectReason("")
+                await fetchAll()
+            } else {
+                setCertError(result?.error?.message || "Reject failed")
+            }
+        } catch (e: any) {
+            setCertError(e?.message || "Unexpected error")
+        } finally {
+            setCertActingId(null)
         }
     }
 
@@ -488,6 +562,12 @@ const V2SubmissionDetailPage = () => {
                     Form
                 </button>
                 <button
+                    className={`${styles.tab} ${tab === "certificates" ? styles.tabActive : ""}`}
+                    onClick={() => setTab("certificates")}
+                >
+                    Certificates ({certificates.filter((c) => c.trackingStatus !== "untracked - updated").length})
+                </button>
+                <button
                     className={`${styles.tab} ${tab === "comments" ? styles.tabActive : ""}`}
                     onClick={() => setTab("comments")}
                 >
@@ -541,6 +621,153 @@ const V2SubmissionDetailPage = () => {
                                 ))}
                             </ul>
                         </div>
+                    )}
+                </div>
+            )}
+
+            {tab === "certificates" && (
+                <div className={styles.tabBody}>
+                    {certError && <ErrorText text={certError} />}
+                    {certificates.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <p>No certificates uploaded for this submission.</p>
+                        </div>
+                    ) : (
+                        <ul className={styles.certList}>
+                            {certificates.map((c) => {
+                                const isCurrent = c.trackingStatus !== "untracked - updated"
+                                const exp = c.expiryDate ? new Date(c.expiryDate) : null
+                                const now = new Date()
+                                const expStatus =
+                                    exp == null
+                                        ? null
+                                        : exp.getTime() < now.getTime()
+                                          ? "expired"
+                                          : exp.getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000
+                                            ? "expiring"
+                                            : "healthy"
+                                return (
+                                    <li
+                                        key={c._id}
+                                        className={`${styles.certItem} ${
+                                            !isCurrent ? styles.certSuperseded : ""
+                                        }`}
+                                    >
+                                        <div className={styles.certHead}>
+                                            <strong>{c.label || c.fieldKey}</strong>
+                                            <span className={styles.dim}>
+                                                {c.name} · slot {c.updateCode.slice(-6)}
+                                            </span>
+                                            {!isCurrent && (
+                                                <span className={styles.certBadgeNeutral}>superseded</span>
+                                            )}
+                                            <span
+                                                className={`${styles.certBadge} ${
+                                                    styles[`certStatus_${c.certStatus}`] || ""
+                                                }`}
+                                            >
+                                                {c.certStatus}
+                                            </span>
+                                            {c.isReUpload && (
+                                                <span className={styles.certBadgeInfo}>re-upload</span>
+                                            )}
+                                            {expStatus && (
+                                                <span className={`${styles.certBadge} ${styles[`expiry_${expStatus}`]}`}>
+                                                    {expStatus}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className={styles.certBody}>
+                                            <a
+                                                href={c.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={styles.btnLink}
+                                            >
+                                                Open file
+                                            </a>
+                                            {c.issueDate && (
+                                                <span className={styles.dim}>
+                                                    Issued {new Date(c.issueDate).toLocaleDateString("en-NG")}
+                                                </span>
+                                            )}
+                                            {c.expiryDate && (
+                                                <span className={styles.dim}>
+                                                    Expires {new Date(c.expiryDate).toLocaleDateString("en-NG")}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {c.reviewRemarks && (
+                                            <div className={styles.certRemarks}>
+                                                <strong>{c.reviewedBy?.name || "Reviewer"}:</strong>{" "}
+                                                {c.reviewRemarks}
+                                            </div>
+                                        )}
+                                        {isCurrent && c.certStatus === "pending" && (
+                                            <div className={styles.certActions}>
+                                                <button
+                                                    className={styles.btnApprove}
+                                                    disabled={certActingId === c._id}
+                                                    onClick={() => approveCertificate(c._id)}
+                                                >
+                                                    Approve
+                                                    {certActingId === c._id && <ButtonLoadingIcon />}
+                                                </button>
+                                                <button
+                                                    className={styles.btnDanger}
+                                                    disabled={certActingId === c._id}
+                                                    onClick={() => {
+                                                        setRejectingCertId(c._id)
+                                                        setCertRejectReason("")
+                                                    }}
+                                                >
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    )}
+
+                    {rejectingCertId && (
+                        <Modal>
+                            <div className={styles.modalCard}>
+                                <div className={styles.modalHeader}>
+                                    <h3>Reject certificate</h3>
+                                    <p className={styles.modalSub}>
+                                        Tell the contractor why this certificate isn't acceptable. They'll see
+                                        the reason inline when they re-upload.
+                                    </p>
+                                </div>
+                                <div className={styles.modalBody}>
+                                    <textarea
+                                        rows={4}
+                                        value={certRejectReason}
+                                        onChange={(e) => setCertRejectReason(e.target.value)}
+                                        placeholder="e.g. Document is illegible, please re-upload a clearer scan."
+                                    />
+                                    {certError && <ErrorText text={certError} />}
+                                </div>
+                                <div className={styles.modalActions}>
+                                    <button
+                                        className={styles.btnSecondary}
+                                        onClick={() => setRejectingCertId(null)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className={styles.btnDanger}
+                                        onClick={submitRejectCertificate}
+                                        disabled={!certRejectReason.trim() || certActingId === rejectingCertId}
+                                    >
+                                        Reject
+                                        {certActingId === rejectingCertId && <ButtonLoadingIcon />}
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
                     )}
                 </div>
             )}
