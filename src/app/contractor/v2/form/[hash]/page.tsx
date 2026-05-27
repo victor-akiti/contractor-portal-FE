@@ -12,9 +12,10 @@
 //   3. "Submit" button fires POST /by-hash/:hash/submit (first cycle) or
 //      /resubmit (subsequent cycles, after a return).
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
-import FormRenderer from "@/components/form/FormRenderer"
+import FormRenderer, { validateSchema } from "@/components/form/FormRenderer"
+import { FileFieldValue } from "@/components/form/FileFieldUploader"
 import { BACKEND_BASE_URL } from "@/lib/config"
 import styles from "./styles.module.css"
 
@@ -80,6 +81,7 @@ const ContractorFormPage = () => {
     const [saveSuccess, setSaveSuccess] = useState("")
     const [submitting, setSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState("")
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
     const fetchSubmission = async () => {
         try {
@@ -139,8 +141,25 @@ const ContractorFormPage = () => {
     }
 
     const submitOrResubmit = async () => {
-        if (!submission) return
+        if (!submission || !formVersion) return
         const isResubmit = submission.status === "returned"
+
+        // Block submit if there are validation errors.
+        const errs = validateSchema(formVersion.schema, answers, "fill")
+        setValidationErrors(errs)
+        if (Object.keys(errs).length > 0) {
+            setSubmitError(
+                `Please fix ${Object.keys(errs).length} field${
+                    Object.keys(errs).length === 1 ? "" : "s"
+                } before submitting.`,
+            )
+            // Scroll to the first error if possible
+            const firstKey = Object.keys(errs)[0]
+            const el = document.querySelector(`[id^="field-${firstKey}"]`)
+            el?.scrollIntoView({ behavior: "smooth", block: "center" })
+            return
+        }
+
         if (!confirm(
             isResubmit
                 ? "Resubmit this application to the reviewer? Make sure all remarks have been addressed."
@@ -170,6 +189,44 @@ const ContractorFormPage = () => {
             setSubmitting(false)
         }
     }
+
+    // Build a per-field map of files already uploaded across the form so the
+    // FileFieldUploader's "re-use a previously uploaded file" picker has
+    // something to show. We walk all file/cert field values in the current
+    // answers and group by every field that allows re-use.
+    const previousFilesByField = useMemo<Record<string, FileFieldValue[]>>(() => {
+        if (!formVersion?.schema) return {}
+        const allFiles: FileFieldValue[] = []
+        const visit = (val: any) => {
+            if (!val) return
+            if (Array.isArray(val)) {
+                for (const v of val) {
+                    if (v && typeof v === "object" && (v as any).url && (v as any).updateCode) {
+                        allFiles.push(v as FileFieldValue)
+                    } else if (v && typeof v === "object") {
+                        Object.values(v).forEach(visit)
+                    }
+                }
+            }
+        }
+        Object.values(answers).forEach(visit)
+
+        const out: Record<string, FileFieldValue[]> = {}
+        const pages = (formVersion.schema as any).pages || []
+        for (const p of pages) {
+            for (const s of p.sections || []) {
+                for (const f of s.fields || []) {
+                    if (
+                        (f.type === "file" || f.type === "certificate") &&
+                        f.allowSelectPreviouslyUploadedFile
+                    ) {
+                        out[f.key] = allFiles
+                    }
+                }
+            }
+        }
+        return out
+    }, [answers, formVersion])
 
     if (loading) {
         return (
@@ -230,6 +287,9 @@ const ContractorFormPage = () => {
                     mode={readOnly && !isReturned ? "view" : "fill"}
                     onChange={handleChange}
                     activeRemarksBySection={remarksBySection}
+                    uploadAuthHash={hash}
+                    previousFilesByField={previousFilesByField}
+                    errors={validationErrors}
                 />
 
                 {!readOnly || isReturned ? (
