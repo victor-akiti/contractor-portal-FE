@@ -352,3 +352,32 @@
     font-size: 0.95rem;
 }
 .currencyAmount:focus { outline: none; border-color: #e67509; }
+
+.currencyRadioRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.currencyRadioOption {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+    color: #333;
+    cursor: pointer;
+    padding: 4px 10px;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: white;
+}
+
+.currencyRadioOption:has(input:checked) {
+    border-color: #e67509;
+    background: #fff5ed;
+    color: #b85a06;
+    font-weight: 600;
+}
+
+.currencyRadioOption input { cursor: pointer; }

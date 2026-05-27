@@ -79,6 +79,7 @@ interface Field {
     currencyOptions?: string[]
     defaultCurrency?: string
     allowCurrencyChange?: boolean
+    currencyDisplay?: "dropdown" | "radio"
     maxAllowedFiles?: number
     allowedFormats?: string[]
     allowSelectPreviouslyUploadedFile?: boolean
@@ -538,22 +539,43 @@ const FormRenderer = ({
                 }
 
                 const canChangeCurrency =
-                    field.allowCurrencyChange !== false && currencyChoices.length > 1
+                    (field as any).allowCurrencyChange !== false && currencyChoices.length > 1
+                const display: "dropdown" | "radio" =
+                    (field as any).currencyDisplay === "radio" ? "radio" : "dropdown"
                 return (
                     <div key={errKey} className={styles.fieldRow}>
                         {labelEl}
-                        <div className={styles.currencyInputRow}>
-                            <select
-                                aria-label="currency"
-                                className={styles.currencySelect}
-                                value={currentCurrency}
-                                disabled={disabled || !canChangeCurrency}
-                                onChange={(e) => emit({ currency: e.target.value })}
-                            >
+                        {display === "radio" && canChangeCurrency && (
+                            <div className={styles.currencyRadioRow}>
                                 {currencyChoices.map((c) => (
-                                    <option key={c} value={c}>{c}</option>
+                                    <label key={c} className={styles.currencyRadioOption}>
+                                        <input
+                                            type="radio"
+                                            name={`currency-${errKey}`}
+                                            value={c}
+                                            checked={currentCurrency === c}
+                                            disabled={disabled}
+                                            onChange={() => emit({ currency: c })}
+                                        />
+                                        <span>{c}</span>
+                                    </label>
                                 ))}
-                            </select>
+                            </div>
+                        )}
+                        <div className={styles.currencyInputRow}>
+                            {(display === "dropdown" || !canChangeCurrency) && (
+                                <select
+                                    aria-label="currency"
+                                    className={styles.currencySelect}
+                                    value={currentCurrency}
+                                    disabled={disabled || !canChangeCurrency}
+                                    onChange={(e) => emit({ currency: e.target.value })}
+                                >
+                                    {currencyChoices.map((c) => (
+                                        <option key={c} value={c}>{c}</option>
+                                    ))}
+                                </select>
+                            )}
                             <input
                                 id={`field-${errKey}`}
                                 type="number"
