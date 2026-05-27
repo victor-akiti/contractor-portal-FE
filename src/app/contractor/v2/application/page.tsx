@@ -1,22 +1,22 @@
 'use client'
 
-// Contractor V2 form-fill page.
-// Route: /contractor/v2/form/[hash]
-// Auth: invite hash IS the token. No Firebase login required.
+// V2 contractor application page.
 //
-// Flow:
-//   1. GET /api/v2/submissions/by-hash/:hash — loads (or creates) the
-//      SubmissionV2, returns it + the FormVersion schema + active remarks.
-//   2. Contractor edits answers. PATCH /by-hash/:hash/answers fires on
-//      "Save draft" (no continuous autosave for MVP — explicit button).
-//   3. "Submit" button fires POST /by-hash/:hash/submit (first cycle) or
-//      /resubmit (subsequent cycles, after a return).
+// Route: /contractor/v2/application
+// Auth: Firebase (contractor logged in as Vendor — gated by /contractor layout).
+//
+// Replaces the earlier hash-authed /contractor/v2/form/[hash] page. The
+// invite is now only a registration gate; once the contractor has a login,
+// they reach this page via the contractor dashboard and read/write their
+// SubmissionV2 through /api/v2/submissions/mine.
 
-import { useEffect, useMemo, useState } from "react"
-import { useParams } from "next/navigation"
 import FormRenderer, { validateSchema } from "@/components/form/FormRenderer"
 import { FileFieldValue } from "@/components/form/FileFieldUploader"
-import { BACKEND_BASE_URL } from "@/lib/config"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import { patchProtected } from "@/requests/patch"
+import { useEffect, useMemo, useState } from "react"
+import { useSelector } from "react-redux"
 import styles from "./styles.module.css"
 
 interface FormVersion {
@@ -44,31 +44,9 @@ interface Remark {
     cycleNumber?: number
 }
 
-const callPlain = async (path: string, init?: RequestInit) => {
-    const res = await fetch(`${BACKEND_BASE_URL}/${path}`, {
-        ...init,
-        headers: {
-            "Content-Type": "application/json",
-            ...(init?.headers || {}),
-        },
-    })
-    if (!res.ok) {
-        // Try to parse a structured error body
-        let message = `Request failed with status ${res.status}`
-        try {
-            const body = await res.json()
-            message = body?.message || body?.error?.message || message
-        } catch {
-            // ignore
-        }
-        return { status: "FAILED", error: { message } }
-    }
-    return res.json()
-}
-
-const ContractorFormPage = () => {
-    const params = useParams<{ hash: string }>()
-    const hash = params?.hash
+const V2ApplicationPage = () => {
+    const user = useSelector((state: any) => state.user.user)
+    const role = user?.role
 
     const [submission, setSubmission] = useState<Submission | null>(null)
     const [formVersion, setFormVersion] = useState<FormVersion | null>(null)
@@ -87,17 +65,16 @@ const ContractorFormPage = () => {
         try {
             setLoading(true)
             setFetchError("")
-            const result = await callPlain(`api/v2/submissions/by-hash/${hash}`)
+            const result = await getProtected("api/v2/submissions/mine", role)
             if (result?.status === "OK") {
                 const sub = result.data.submission as Submission
                 setSubmission(sub)
                 setFormVersion(result.data.formVersion as FormVersion)
                 setRemarks((result.data.remarks || []) as Remark[])
-                // Mongoose Map serialises to an object over JSON.
                 const a = sub.answers
                 setAnswers(a && typeof a === "object" ? (a as Record<string, any>) : {})
             } else {
-                setFetchError(result?.error?.message || "Could not load the form.")
+                setFetchError(result?.error?.message || "Could not load your application.")
             }
         } catch (e: any) {
             setFetchError(e?.message || "Could not reach the server.")
@@ -107,9 +84,9 @@ const ContractorFormPage = () => {
     }
 
     useEffect(() => {
-        if (hash) fetchSubmission()
+        if (role) fetchSubmission()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hash])
+    }, [role])
 
     const handleChange = (changes: Record<string, any>) => {
         setAnswers((prev) => ({ ...prev, ...changes }))
@@ -123,10 +100,11 @@ const ContractorFormPage = () => {
             setSaving(true)
             setSaveError("")
             setSaveSuccess("")
-            const result = await callPlain(`api/v2/submissions/by-hash/${hash}/answers`, {
-                method: "PATCH",
-                body: JSON.stringify({ answers }),
-            })
+            const result = await patchProtected(
+                "api/v2/submissions/mine/answers",
+                { answers },
+                role,
+            )
             if (result?.status === "OK") {
                 setSubmission(result.data.submission)
                 setSaveSuccess("Draft saved.")
@@ -144,7 +122,6 @@ const ContractorFormPage = () => {
         if (!submission || !formVersion) return
         const isResubmit = submission.status === "returned"
 
-        // Block submit if there are validation errors.
         const errs = validateSchema(formVersion.schema, answers, "fill")
         setValidationErrors(errs)
         if (Object.keys(errs).length > 0) {
@@ -153,30 +130,31 @@ const ContractorFormPage = () => {
                     Object.keys(errs).length === 1 ? "" : "s"
                 } before submitting.`,
             )
-            // Scroll to the first error if possible
             const firstKey = Object.keys(errs)[0]
-            const el = document.querySelector(`[id^="field-${firstKey}"]`)
-            el?.scrollIntoView({ behavior: "smooth", block: "center" })
+            document
+                .querySelector(`[id^="field-${firstKey}"]`)
+                ?.scrollIntoView({ behavior: "smooth", block: "center" })
             return
         }
 
-        if (!confirm(
-            isResubmit
-                ? "Resubmit this application to the reviewer? Make sure all remarks have been addressed."
-                : "Submit this application? You won't be able to edit it after this unless it's returned to you."
-        )) return
+        if (
+            !confirm(
+                isResubmit
+                    ? "Resubmit this application to the reviewer? Make sure all remarks have been addressed."
+                    : "Submit this application? You won't be able to edit it after this unless it's returned to you.",
+            )
+        )
+            return
 
         try {
             setSubmitting(true)
             setSubmitError("")
             // Save any pending edits first.
-            await callPlain(`api/v2/submissions/by-hash/${hash}/answers`, {
-                method: "PATCH",
-                body: JSON.stringify({ answers }),
-            })
-            const result = await callPlain(
-                `api/v2/submissions/by-hash/${hash}/${isResubmit ? "resubmit" : "submit"}`,
-                { method: "POST", body: JSON.stringify({}) }
+            await patchProtected("api/v2/submissions/mine/answers", { answers }, role)
+            const result = await postProtected(
+                `api/v2/submissions/mine/${isResubmit ? "resubmit" : "submit"}`,
+                {},
+                role,
             )
             if (result?.status === "OK") {
                 await fetchSubmission()
@@ -190,10 +168,6 @@ const ContractorFormPage = () => {
         }
     }
 
-    // Build a per-field map of files already uploaded across the form so the
-    // FileFieldUploader's "re-use a previously uploaded file" picker has
-    // something to show. We walk all file/cert field values in the current
-    // answers and group by every field that allows re-use.
     const previousFilesByField = useMemo<Record<string, FileFieldValue[]>>(() => {
         if (!formVersion?.schema) return {}
         const allFiles: FileFieldValue[] = []
@@ -231,7 +205,9 @@ const ContractorFormPage = () => {
     if (loading) {
         return (
             <div className={styles.page}>
-                <div className={styles.card}><p>Loading…</p></div>
+                <div className={styles.card}>
+                    <p>Loading your application…</p>
+                </div>
             </div>
         )
     }
@@ -241,7 +217,9 @@ const ContractorFormPage = () => {
             <div className={styles.page}>
                 <div className={styles.card}>
                     <h2 className={styles.title}>Application Form</h2>
-                    <div className={styles.errorBanner}>{fetchError || "Could not load form."}</div>
+                    <div className={styles.errorBanner}>
+                        {fetchError || "Could not load your application."}
+                    </div>
                 </div>
             </div>
         )
@@ -287,7 +265,6 @@ const ContractorFormPage = () => {
                     mode={readOnly && !isReturned ? "view" : "fill"}
                     onChange={handleChange}
                     activeRemarksBySection={remarksBySection}
-                    uploadAuthHash={hash}
                     previousFilesByField={previousFilesByField}
                     errors={validationErrors}
                 />
@@ -318,4 +295,4 @@ const ContractorFormPage = () => {
     )
 }
 
-export default ContractorFormPage
+export default V2ApplicationPage
