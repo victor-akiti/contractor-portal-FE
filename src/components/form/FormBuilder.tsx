@@ -28,6 +28,7 @@ const FIELD_TYPES = [
     { value: "email",        label: "Email",           icon: "@",   hasOptions: false },
     { value: "phone",        label: "Phone",           icon: "☎",   hasOptions: false },
     { value: "number",       label: "Number",          icon: "#",   hasOptions: false },
+    { value: "currency",     label: "Currency",        icon: "$",   hasOptions: false },
     { value: "date",         label: "Date",            icon: "📅",  hasOptions: false },
     { value: "dropdown",     label: "Dropdown",        icon: "▾",   hasOptions: true  },
     { value: "radioButtons", label: "Radio buttons",   icon: "◉",   hasOptions: true  },
@@ -48,11 +49,17 @@ const TYPE_ICON: Record<string, string> = Object.fromEntries(
 )
 const TYPE_HAS_OPTIONS = new Set(FIELD_TYPES.filter((t) => t.hasOptions).map((t) => t.value))
 const TEXT_TYPES = new Set(["shortText", "longText", "email", "phone"])
-const NUMERIC_TYPES = new Set(["number"])
+const NUMERIC_TYPES = new Set(["number", "currency"])
 const FILE_TYPES = new Set(["file", "certificate"])
+const CURRENCY_TYPES = new Set(["currency"])
 
 // File-format catalogue — matches the legacy builder's options.
 const FILE_FORMATS = ["PDF", "JPG", "PNG", "SVG", "GIF", "DOC", "DOCX", "XLS", "XLSX", "PPT", "PPTM"]
+
+// Default currency catalogue. The builder author picks a subset (or types in
+// any 3-letter ISO code via the chip grid). All currencies render with their
+// ISO code; symbol mapping is in the renderer for the common cases.
+const DEFAULT_CURRENCY_CHOICES = ["NGN", "USD", "EUR", "GBP", "CAD", "ZAR", "GHS", "KES"]
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface Validation {
@@ -89,8 +96,11 @@ interface Field {
     addFieldText?: string
     addedFieldLabel?: string
 
-    // Number-specific
-    isCurrency?: boolean
+    // Currency-specific (only when type === "currency")
+    // Stores answer as { amount: number, currency: string }.
+    currencyOptions?: string[]
+    defaultCurrency?: string
+    allowCurrencyChange?: boolean
 
     // File / certificate
     maxAllowedFiles?: number
@@ -303,6 +313,11 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
                 def.allowedFormats = ["PDF", "JPG", "PNG"]
                 def.allowSelectPreviouslyUploadedFile = true
                 def.hasExpiryDate = true
+            }
+            if (type === "currency") {
+                def.currencyOptions = ["NGN", "USD"]
+                def.defaultCurrency = "NGN"
+                def.allowCurrencyChange = true
             }
             sec.fields.push(def)
             newIdx = sec.fields.length - 1
@@ -689,6 +704,9 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                             {field.type === "certificate" && field.hasExpiryDate && (
                                                 <span className={styles.miniBadge}>expires</span>
                                             )}
+                                            {field.type === "currency" && field.defaultCurrency && (
+                                                <span className={styles.miniBadge}>{field.defaultCurrency}</span>
+                                            )}
                                             {field.visibleIf && (
                                                 <span className={styles.miniBadge} title="Has visibility rule">
                                                     conditional
@@ -1029,14 +1047,45 @@ const FieldInspector = ({
                 patch.hasExpiryDate = true
             }
         } else {
-            // Moving away from a file type — clear file-specific props so the
-            // schema stays clean.
             patch.maxAllowedFiles = undefined
             patch.allowedFormats = undefined
             patch.allowSelectPreviouslyUploadedFile = undefined
             patch.hasExpiryDate = undefined
         }
 
+        // Currency defaults — only relevant when switching INTO currency.
+        if (CURRENCY_TYPES.has(type)) {
+            if (!field.currencyOptions || field.currencyOptions.length === 0) {
+                patch.currencyOptions = ["NGN", "USD"]
+            }
+            if (!field.defaultCurrency) {
+                patch.defaultCurrency = (patch.currencyOptions || field.currencyOptions || ["NGN"])[0]
+            }
+            if (field.allowCurrencyChange == null) patch.allowCurrencyChange = true
+        } else {
+            patch.currencyOptions = undefined
+            patch.defaultCurrency = undefined
+            patch.allowCurrencyChange = undefined
+        }
+
+        onUpdate(patch)
+    }
+
+    const toggleCurrency = (code: string) => {
+        const current = new Set(field.currencyOptions || [])
+        if (current.has(code)) {
+            // Don't allow removing the last currency.
+            if (current.size === 1) return
+            current.delete(code)
+        } else {
+            current.add(code)
+        }
+        const next = Array.from(current)
+        const patch: Partial<Field> = { currencyOptions: next }
+        // If the default currency was just removed, fall back to the first remaining one.
+        if (field.defaultCurrency && !next.includes(field.defaultCurrency)) {
+            patch.defaultCurrency = next[0]
+        }
         onUpdate(patch)
     }
 
@@ -1170,17 +1219,6 @@ const FieldInspector = ({
                     />
                     <span>Enabled</span>
                 </label>
-                {field.type === "number" && (
-                    <label className={styles.toggleLabel}>
-                        <input
-                            type="checkbox"
-                            checked={!!field.isCurrency}
-                            onChange={(e) => onUpdate({ isCurrency: e.target.checked })}
-                            disabled={disabled}
-                        />
-                        <span>Currency</span>
-                    </label>
-                )}
             </div>
 
             <FieldBox label="Help text">
@@ -1398,6 +1436,62 @@ const FieldInspector = ({
                     <button className={styles.btnDashed} onClick={addOption} disabled={disabled}>
                         + Add option
                     </button>
+                </SubBlock>
+            )}
+
+            {CURRENCY_TYPES.has(field.type) && (
+                <SubBlock title="Currency">
+                    <div className={styles.fieldBox}>
+                        <label>Available currencies</label>
+                        <div className={styles.formatGrid}>
+                            {Array.from(
+                                new Set([...DEFAULT_CURRENCY_CHOICES, ...(field.currencyOptions || [])]),
+                            ).map((code) => {
+                                const on = (field.currencyOptions || []).includes(code)
+                                return (
+                                    <button
+                                        key={code}
+                                        type="button"
+                                        className={`${styles.formatChip} ${on ? styles.formatChipOn : ""}`}
+                                        onClick={() => toggleCurrency(code)}
+                                        disabled={disabled}
+                                    >
+                                        {code}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                        <p className={styles.dim}>
+                            Contractors will pick from the highlighted set. Keep at least one.
+                        </p>
+                    </div>
+                    <div className={styles.twoCol}>
+                        <FieldBox label="Default currency">
+                            <select
+                                value={field.defaultCurrency || (field.currencyOptions || ["NGN"])[0]}
+                                onChange={(e) => onUpdate({ defaultCurrency: e.target.value })}
+                                disabled={disabled}
+                            >
+                                {(field.currencyOptions || []).map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                        </FieldBox>
+                        <div className={styles.fieldBox}>
+                            <label>Contractor can change</label>
+                            <label className={styles.toggleLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={field.allowCurrencyChange !== false}
+                                    onChange={(e) =>
+                                        onUpdate({ allowCurrencyChange: e.target.checked })
+                                    }
+                                    disabled={disabled}
+                                />
+                                <span>Allow currency change</span>
+                            </label>
+                        </div>
+                    </div>
                 </SubBlock>
             )}
 
