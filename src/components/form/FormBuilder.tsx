@@ -19,6 +19,7 @@
 //   • Sticky inspector with breadcrumbs back up to the selection root.
 
 import { useCallback, useMemo, useRef, useState } from "react"
+import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import styles from "./FormBuilder.module.css"
 
 // ── Field-type registry ─────────────────────────────────────────────────────
@@ -187,6 +188,7 @@ const reorder = <T,>(arr: T[], from: number, to: number): T[] => {
 // ═══════════════════════════════════════════════════════════════════════════
 const FormBuilder = ({ value, onChange, disabled }: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const { confirm, dialog: confirmDialog } = useConfirmDialog()
     const [selection, setSelection] = useState<Selection | null>(null)
     const [importText, setImportText] = useState("")
     const [importError, setImportError] = useState("")
@@ -231,8 +233,14 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
         mutate((d) => { d.pages[idx] = { ...d.pages[idx], ...patch } })
     }
 
-    const deletePage = (idx: number) => {
-        if (!confirm(`Delete page "${pages[idx]?.title}" and all its sections?`)) return
+    const deletePage = async (idx: number) => {
+        const ok = await confirm({
+            headerText: "Delete page?",
+            bodyText: `"${pages[idx]?.title}" and all its sections + fields will be removed from the draft. This cannot be undone unless you have a JSON export.`,
+            confirmText: "Delete page",
+            destructive: true,
+        })
+        if (!ok) return
         mutate((d) => { d.pages.splice(idx, 1) })
         setSelection(null)
     }
@@ -265,10 +273,16 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
         })
     }
 
-    const deleteSection = (pageIdx: number, secIdx: number) => {
+    const deleteSection = async (pageIdx: number, secIdx: number) => {
         const sec = pages[pageIdx]?.sections[secIdx]
         if (!sec) return
-        if (!confirm(`Delete section "${sec.title}" and all its fields?`)) return
+        const ok = await confirm({
+            headerText: "Delete section?",
+            bodyText: `"${sec.title}" and all ${sec.fields.length} field${sec.fields.length === 1 ? "" : "s"} inside it will be removed from the draft.`,
+            confirmText: "Delete section",
+            destructive: true,
+        })
+        if (!ok) return
         mutate((d) => { d.pages[pageIdx].sections.splice(secIdx, 1) })
         setSelection({ type: "page", pageIdx })
     }
@@ -333,10 +347,16 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
         })
     }
 
-    const deleteField = (pageIdx: number, secIdx: number, fieldIdx: number) => {
+    const deleteField = async (pageIdx: number, secIdx: number, fieldIdx: number) => {
         const f = pages[pageIdx]?.sections[secIdx]?.fields[fieldIdx]
         if (!f) return
-        if (!confirm(`Delete field "${f.label}"?`)) return
+        const ok = await confirm({
+            headerText: "Delete field?",
+            bodyText: `"${f.label}" will be removed from the draft. Any visibility rules that depend on this field will need to be updated.`,
+            confirmText: "Delete field",
+            destructive: true,
+        })
+        if (!ok) return
         mutate((d) => { d.pages[pageIdx].sections[secIdx].fields.splice(fieldIdx, 1) })
         setSelection({ type: "section", pageIdx, secIdx })
     }
@@ -390,6 +410,7 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
     // ── Render ───────────────────────────────────────────────────────────────
     return (
         <div className={styles.builder}>
+            {confirmDialog}
             <div className={styles.toolbar}>
                 <div className={styles.toolbarLeft}>
                     <button className={styles.btnGhost} onClick={exportJson} disabled={disabled}>
