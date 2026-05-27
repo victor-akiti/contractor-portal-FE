@@ -6,7 +6,7 @@ import { faCaretDown, faEnvelope, faUserCircle } from "@fortawesome/free-solid-s
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./styles/styles.module.css";
@@ -32,10 +32,26 @@ const Layout = ({ children }: LayoutProps) => {
   const user = useSelector((state: any) => state.user.user);
   const dispatch = useDispatch();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Public V2 routes — the invite hash is the auth token. These pages
+  // load their own data over /api/v2 endpoints that validate the hash,
+  // so they don't need the staff/Firebase login gate this layout enforces.
+  const isPublicV2Route = pathname?.startsWith("/contractor/v2/form/");
 
   useEffect(() => {
+    if (isPublicV2Route) {
+      setIsLoading(false);
+      return;
+    }
     getCurrentAuthState();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPublicV2Route]);
+
+  // Public V2 form: render the page bare, with no chrome and no auth gate.
+  if (isPublicV2Route) {
+    return <>{children}</>;
+  }
 
   // Close menu when clicking outside
   useEffect(() => {
