@@ -11,6 +11,7 @@ import { putProtected } from "@/requests/put"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { useSelector } from "react-redux"
 import styles from "../styles/styles.module.css"
 import detailStyles from "./styles/detail.module.css"
@@ -54,6 +55,7 @@ const TemplateDetailPage = () => {
     const params = useParams<{ id: string }>()
     const router = useRouter()
     const user = useSelector((state: any) => state.user.user)
+    const { confirm, dialog: confirmDialog } = useConfirmDialog()
 
     const [template, setTemplate] = useState<FormTemplate | null>(null)
     const [versions, setVersions] = useState<FormVersion[]>([])
@@ -186,7 +188,13 @@ const TemplateDetailPage = () => {
         if (!template) return
         const draftId = template.workingDraftId
         if (!draftId) return
-        if (!confirm("Publish the working draft? It becomes the new current version.")) return
+        const ok = await confirm({
+            headerText: "Publish working draft?",
+            bodyText:
+                "The current draft will become the active version of this template. Existing groups bound to this template will start using it for new invites. Submissions already in progress aren't affected.",
+            confirmText: "Publish",
+        })
+        if (!ok) return
         try {
             setPublishing(true)
             setPublishError("")
@@ -238,6 +246,7 @@ const TemplateDetailPage = () => {
 
     return (
         <div className={styles.page}>
+            {confirmDialog}
             <div className={detailStyles.backRow}>
                 <Link className={styles.btnLink} href="/staff/form-templates">
                     ← All templates

@@ -12,6 +12,7 @@
 
 import FormRenderer, { validateSchema } from "@/components/form/FormRenderer"
 import { FileFieldValue } from "@/components/form/FileFieldUploader"
+import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { patchProtected } from "@/requests/patch"
@@ -47,6 +48,7 @@ interface Remark {
 const V2ApplicationPage = () => {
     const user = useSelector((state: any) => state.user.user)
     const role = user?.role
+    const { confirm, dialog: confirmDialog } = useConfirmDialog()
 
     const [submission, setSubmission] = useState<Submission | null>(null)
     const [formVersion, setFormVersion] = useState<FormVersion | null>(null)
@@ -137,14 +139,14 @@ const V2ApplicationPage = () => {
             return
         }
 
-        if (
-            !confirm(
-                isResubmit
-                    ? "Resubmit this application to the reviewer? Make sure all remarks have been addressed."
-                    : "Submit this application? You won't be able to edit it after this unless it's returned to you.",
-            )
-        )
-            return
+        const ok = await confirm({
+            headerText: isResubmit ? "Resubmit application?" : "Submit application?",
+            bodyText: isResubmit
+                ? "Make sure all reviewer remarks have been addressed. You won't be able to edit the application again until it's returned to you."
+                : "Once submitted, you won't be able to edit this application unless a reviewer returns it to you.",
+            confirmText: isResubmit ? "Resubmit" : "Submit",
+        })
+        if (!ok) return
 
         try {
             setSubmitting(true)
@@ -238,6 +240,7 @@ const V2ApplicationPage = () => {
 
     return (
         <div className={styles.page}>
+            {confirmDialog}
             <div className={styles.card}>
                 <header className={styles.header}>
                     <h2 className={styles.title}>{submission.companyName || "Application form"}</h2>
