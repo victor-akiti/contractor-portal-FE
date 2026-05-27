@@ -114,6 +114,40 @@ const TemplateDetailPage = () => {
         if (!template || !draftSchema) return
         setDraftSaveError("")
         setDraftSaveSuccess("")
+
+        // Hard gate: any duplicate keys across pages/sections/fields blocks
+        // the save. The builder surfaces these inline, but we re-check here
+        // in case the schema arrived via Import JSON or a stale draft.
+        const seen = new Map<string, string>() // key → "page" / "section in X" / "field in Y"
+        const dupes: string[] = []
+        ;(draftSchema.pages || []).forEach((p) => {
+            const pk = p?.key
+            if (pk) {
+                if (seen.has(pk)) dupes.push(`"${pk}" (page collides with ${seen.get(pk)})`)
+                else seen.set(pk, "page")
+            }
+            ;(p.sections || []).forEach((s) => {
+                const sk = s?.key
+                if (sk) {
+                    if (seen.has(sk)) dupes.push(`"${sk}" (section collides with ${seen.get(sk)})`)
+                    else seen.set(sk, `section "${s.title}"`)
+                }
+                ;(s.fields || []).forEach((f) => {
+                    const fk = f?.key
+                    if (fk) {
+                        if (seen.has(fk)) dupes.push(`"${fk}" (field collides with ${seen.get(fk)})`)
+                        else seen.set(fk, `field "${f.label}"`)
+                    }
+                })
+            })
+        })
+        if (dupes.length > 0) {
+            setDraftSaveError(
+                `Duplicate keys must be unique across the form: ${dupes.slice(0, 3).join("; ")}${dupes.length > 3 ? `; +${dupes.length - 3} more` : ""}.`,
+            )
+            return
+        }
+
         try {
             setDraftSaving(true)
             const result = await putProtected(

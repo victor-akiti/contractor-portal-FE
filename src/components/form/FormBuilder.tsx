@@ -102,6 +102,10 @@ interface Field {
     currencyOptions?: string[]
     defaultCurrency?: string
     allowCurrencyChange?: boolean
+    // How the currency picker is rendered to the contractor. The legacy form
+    // expressed currency via dropdowns / radio groups, so we mirror that as
+    // an explicit choice rather than locking everyone to a dropdown.
+    currencyDisplay?: "dropdown" | "radio"
 
     // File / certificate
     maxAllowedFiles?: number
@@ -199,12 +203,43 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
     const activePageIdx = selection?.pageIdx ?? 0
     const activePage = pages[activePageIdx] || pages[0] || null
 
-    // Cross-field key uniqueness lookups
+    // Cross-field key uniqueness lookups — used by the visibility-rule
+    // field picker so it can't reference a section/page key.
     const allFieldKeys = useMemo(() => {
         const out: string[] = []
         pages.forEach((p) => p.sections.forEach((s) => s.fields.forEach((f) => out.push(f.key))))
         return out
     }, [pages])
+
+    // ALL keys in the schema (pages + sections + fields). Section keys and
+    // field keys are technically allowed to overlap by the JSON shape, but
+    // we treat the whole tree as one namespace so visibility rules + remark
+    // anchors + hideOnApproval semantics are unambiguous. The inspector uses
+    // this to surface duplicate-key errors live and to suffix auto-derived
+    // keys so collisions can't slip through silently.
+    const allKeys = useMemo(() => {
+        const out = new Set<string>()
+        pages.forEach((p) => {
+            if (p.key) out.add(p.key)
+            p.sections.forEach((s) => {
+                if (s.key) out.add(s.key)
+                s.fields.forEach((f) => { if (f.key) out.add(f.key) })
+            })
+        })
+        return out
+    }, [pages])
+
+    // Build "taken set excluding self" — the inspector passes its own current
+    // key so a row doesn't fail its own uniqueness check.
+    const keysExcluding = useCallback(
+        (self: string | undefined) => {
+            if (!self) return allKeys
+            const copy = new Set(allKeys)
+            copy.delete(self)
+            return copy
+        },
+        [allKeys],
+    )
 
     // ── Schema mutators ──────────────────────────────────────────────────────
     const mutate = useCallback(
@@ -332,6 +367,7 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
                 def.currencyOptions = ["NGN", "USD"]
                 def.defaultCurrency = "NGN"
                 def.allowCurrencyChange = true
+                def.currencyDisplay = "dropdown"
             }
             sec.fields.push(def)
             newIdx = sec.fields.length - 1
@@ -491,6 +527,7 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
                                     page={pages[selection.pageIdx]}
                                     pageIdx={selection.pageIdx}
                                     totalPages={pages.length}
+                                    takenKeys={keysExcluding(pages[selection.pageIdx].key)}
                                     disabled={disabled}
                                     onUpdate={(patch) => updatePage(selection.pageIdx, patch)}
                                     onDelete={() => deletePage(selection.pageIdx)}
@@ -502,6 +539,9 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
                                     secIdx={selection.secIdx}
                                     totalSections={pages[selection.pageIdx].sections.length}
                                     pageTitle={pages[selection.pageIdx].title}
+                                    takenKeys={keysExcluding(
+                                        pages[selection.pageIdx].sections[selection.secIdx].key,
+                                    )}
                                     disabled={disabled}
                                     onUpdate={(patch) =>
                                         updateSection(selection.pageIdx, selection.secIdx, patch)
@@ -522,6 +562,11 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
                                         pages[selection.pageIdx].sections[selection.secIdx].fields.length
                                     }
                                     allFieldKeys={allFieldKeys}
+                                    takenKeys={keysExcluding(
+                                        pages[selection.pageIdx].sections[selection.secIdx].fields[
+                                            selection.fieldIdx
+                                        ].key,
+                                    )}
                                     sectionTitle={pages[selection.pageIdx].sections[selection.secIdx].title}
                                     disabled={disabled}
                                     onUpdate={(patch) =>
@@ -668,7 +713,7 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                 </span>
                                 <div className={styles.sectionBadges}>
                                     {section.allowMultiple && (
-                                        <span className={styles.tagBadge}>repeats</span>
+                                        <span className={styles.tagBadge}>multiples allowed</span>
                                     )}
                                     {section.hideOnApproval && (
                                         <span className={styles.tagBadgeDim} title="Hidden from approval view">
@@ -717,7 +762,7 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                         </span>
                                         <div className={styles.fieldRowMeta}>
                                             {field.allowMultiple && (
-                                                <span className={styles.miniBadge}>repeats</span>
+                                                <span className={styles.miniBadge}>multiples allowed</span>
                                             )}
                                             {field.enabled === false && (
                                                 <span className={styles.miniBadge}>disabled</span>
@@ -779,6 +824,7 @@ interface PageInspectorProps {
     page: Page
     pageIdx: number
     totalPages: number
+    takenKeys: Set<string>
     disabled?: boolean
     onUpdate: (patch: Partial<Page>) => void
     onDelete: () => void
@@ -786,14 +832,25 @@ interface PageInspectorProps {
 }
 
 const PageInspector = ({
-    page, pageIdx, totalPages, disabled, onUpdate, onDelete, onMove,
+    page, pageIdx, totalPages, takenKeys, disabled, onUpdate, onDelete, onMove,
 }: PageInspectorProps) => {
     const [keyEdited, setKeyEdited] = useState(false)
-    const keyInvalid = page.key && !KEY_RE.test(page.key)
+    const keyInvalid = !!page.key && !KEY_RE.test(page.key)
+    const keyDuplicate = !!page.key && takenKeys.has(page.key)
+    const keyError = keyInvalid
+        ? "Must start with a-z, then a-z/0-9/_"
+        : keyDuplicate
+          ? "This key is already used elsewhere in the form. Keys must be unique."
+          : undefined
 
     const onTitleChange = (title: string) => {
         const patch: Partial<Page> = { title }
-        if (!keyEdited) patch.key = toCamelKey(title) || page.key
+        // Auto-derive into a free slot so renaming a page can't silently
+        // collide with an existing key.
+        if (!keyEdited) {
+            const base = toCamelKey(title) || page.key
+            patch.key = takenKeys.has(base) ? uniqueKey(base, new Set(takenKeys)) : base
+        }
         onUpdate(patch)
     }
 
@@ -829,9 +886,9 @@ const PageInspector = ({
             <FieldBox label="Title">
                 <input value={page.title} onChange={(e) => onTitleChange(e.target.value)} disabled={disabled} />
             </FieldBox>
-            <FieldBox label="Key" error={keyInvalid ? "Must start with a-z, then a-z/0-9/_" : undefined}>
+            <FieldBox label="Key" error={keyError}>
                 <input
-                    className={`${styles.codeInput} ${keyInvalid ? styles.invalid : ""}`}
+                    className={`${styles.codeInput} ${keyError ? styles.invalid : ""}`}
                     value={page.key}
                     onChange={(e) => { setKeyEdited(true); onUpdate({ key: e.target.value }) }}
                     disabled={disabled}
@@ -858,6 +915,7 @@ interface SectionInspectorProps {
     secIdx: number
     totalSections: number
     pageTitle: string
+    takenKeys: Set<string>
     disabled?: boolean
     onUpdate: (patch: Partial<Section>) => void
     onDelete: () => void
@@ -866,14 +924,24 @@ interface SectionInspectorProps {
 }
 
 const SectionInspector = ({
-    section, secIdx, totalSections, pageTitle, disabled, onUpdate, onDelete, onMove, onUp,
+    section, secIdx, totalSections, pageTitle, takenKeys,
+    disabled, onUpdate, onDelete, onMove, onUp,
 }: SectionInspectorProps) => {
     const [keyEdited, setKeyEdited] = useState(false)
-    const keyInvalid = section.key && !KEY_RE.test(section.key)
+    const keyInvalid = !!section.key && !KEY_RE.test(section.key)
+    const keyDuplicate = !!section.key && takenKeys.has(section.key)
+    const keyError = keyInvalid
+        ? "Must start with a-z, then a-z/0-9/_"
+        : keyDuplicate
+          ? "This key is already used elsewhere in the form. Keys must be unique."
+          : undefined
 
     const onTitleChange = (title: string) => {
         const patch: Partial<Section> = { title }
-        if (!keyEdited) patch.key = toCamelKey(title) || section.key
+        if (!keyEdited) {
+            const base = toCamelKey(title) || section.key
+            patch.key = takenKeys.has(base) ? uniqueKey(base, new Set(takenKeys)) : base
+        }
         onUpdate(patch)
     }
 
@@ -911,9 +979,9 @@ const SectionInspector = ({
             <FieldBox label="Title">
                 <input value={section.title} onChange={(e) => onTitleChange(e.target.value)} disabled={disabled} />
             </FieldBox>
-            <FieldBox label="Key" error={keyInvalid ? "Must start with a-z, then a-z/0-9/_" : undefined}>
+            <FieldBox label="Key" error={keyError}>
                 <input
-                    className={`${styles.codeInput} ${keyInvalid ? styles.invalid : ""}`}
+                    className={`${styles.codeInput} ${keyError ? styles.invalid : ""}`}
                     value={section.key}
                     onChange={(e) => { setKeyEdited(true); onUpdate({ key: e.target.value }) }}
                     disabled={disabled}
@@ -948,7 +1016,7 @@ const SectionInspector = ({
             </FieldBox>
 
             <SubBlock
-                title="Repeat section"
+                title="Multiples allowed"
                 action={
                     <label className={styles.toggleLabel}>
                         <input
@@ -1024,6 +1092,7 @@ interface FieldInspectorProps {
     fieldIdx: number
     totalFields: number
     allFieldKeys: string[]
+    takenKeys: Set<string>
     sectionTitle: string
     disabled?: boolean
     onUpdate: (patch: Partial<Field>) => void
@@ -1033,15 +1102,24 @@ interface FieldInspectorProps {
 }
 
 const FieldInspector = ({
-    field, fieldIdx, totalFields, allFieldKeys, sectionTitle,
+    field, fieldIdx, totalFields, allFieldKeys, takenKeys, sectionTitle,
     disabled, onUpdate, onDelete, onMove, onUp,
 }: FieldInspectorProps) => {
     const [keyEdited, setKeyEdited] = useState(false)
-    const keyInvalid = field.key && !KEY_RE.test(field.key)
+    const keyInvalid = !!field.key && !KEY_RE.test(field.key)
+    const keyDuplicate = !!field.key && takenKeys.has(field.key)
+    const keyError = keyInvalid
+        ? "Must start with a-z, then a-z/0-9/_"
+        : keyDuplicate
+          ? "This key is already used elsewhere in the form. Keys must be unique."
+          : undefined
 
     const onLabelChange = (label: string) => {
         const patch: Partial<Field> = { label }
-        if (!keyEdited) patch.key = toCamelKey(label) || field.key
+        if (!keyEdited) {
+            const base = toCamelKey(label) || field.key
+            patch.key = takenKeys.has(base) ? uniqueKey(base, new Set(takenKeys)) : base
+        }
         onUpdate(patch)
     }
 
@@ -1083,10 +1161,12 @@ const FieldInspector = ({
                 patch.defaultCurrency = (patch.currencyOptions || field.currencyOptions || ["NGN"])[0]
             }
             if (field.allowCurrencyChange == null) patch.allowCurrencyChange = true
+            if (!field.currencyDisplay) patch.currencyDisplay = "dropdown"
         } else {
             patch.currencyOptions = undefined
             patch.defaultCurrency = undefined
             patch.allowCurrencyChange = undefined
+            patch.currencyDisplay = undefined
         }
 
         onUpdate(patch)
@@ -1202,9 +1282,9 @@ const FieldInspector = ({
             <FieldBox label="Label">
                 <input value={field.label} onChange={(e) => onLabelChange(e.target.value)} disabled={disabled} />
             </FieldBox>
-            <FieldBox label="Key" error={keyInvalid ? "Must start with a-z, then a-z/0-9/_" : undefined}>
+            <FieldBox label="Key" error={keyError}>
                 <input
-                    className={`${styles.codeInput} ${keyInvalid ? styles.invalid : ""}`}
+                    className={`${styles.codeInput} ${keyError ? styles.invalid : ""}`}
                     value={field.key}
                     onChange={(e) => { setKeyEdited(true); onUpdate({ key: e.target.value }) }}
                     disabled={disabled}
@@ -1298,9 +1378,9 @@ const FieldInspector = ({
                 </SubBlock>
             )}
 
-            {!FILE_TYPES.has(field.type) && field.type !== "textBlock" && (
+            {field.type !== "textBlock" && (
                 <SubBlock
-                    title="Repeat field"
+                    title="Multiples allowed"
                     action={
                         <label className={styles.toggleLabel}>
                             <input
@@ -1513,6 +1593,30 @@ const FieldInspector = ({
                             </label>
                         </div>
                     </div>
+                    <FieldBox label="Picker display">
+                        <div className={styles.segmented}>
+                            <button
+                                type="button"
+                                className={`${styles.segmentBtn} ${
+                                    (field.currencyDisplay || "dropdown") === "dropdown" ? styles.segmentActive : ""
+                                }`}
+                                onClick={() => onUpdate({ currencyDisplay: "dropdown" })}
+                                disabled={disabled}
+                            >
+                                Dropdown
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.segmentBtn} ${
+                                    field.currencyDisplay === "radio" ? styles.segmentActive : ""
+                                }`}
+                                onClick={() => onUpdate({ currencyDisplay: "radio" })}
+                                disabled={disabled}
+                            >
+                                Radio buttons
+                            </button>
+                        </div>
+                    </FieldBox>
                 </SubBlock>
             )}
 
