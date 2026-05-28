@@ -168,6 +168,11 @@ interface Props {
     }) => void
     onFlagEdit?: (edit: FieldEditRow) => void
     onAcceptEdit?: (edit: FieldEditRow) => void
+
+    // When provided, only this page is rendered — used by host pages that
+    // implement a tabbed-by-page layout (contractor application). Leave
+    // undefined to render every page sequentially (default).
+    activePageKey?: string
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -438,6 +443,7 @@ const FormRenderer = ({
     onEditField,
     onFlagEdit,
     onAcceptEdit,
+    activePageKey,
 }: Props) => {
     const readOnly = mode !== "fill"
 
@@ -932,7 +938,9 @@ const FormRenderer = ({
 
     return (
         <div className={styles.renderer}>
-            {schema.pages.map((page) => (
+            {schema.pages
+                .filter((page) => !activePageKey || page.key === activePageKey)
+                .map((page) => (
                 <section key={page.key} className={styles.page}>
                     <h3 className={styles.pageTitle}>{page.title}</h3>
                     {page.description && <p className={styles.pageDesc}>{page.description}</p>}

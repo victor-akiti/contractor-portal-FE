@@ -16,7 +16,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { patchProtected } from "@/requests/patch"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles.module.css"
 
@@ -45,6 +45,75 @@ interface Remark {
     cycleNumber?: number
 }
 
+// ── Page-progress helpers ───────────────────────────────────────────────────
+// Walk a single page's sections + fields and count required + filled. Used by
+// the tab strip badges so the contractor can see at a glance which pages still
+// need attention.
+
+const visibleHere = (field: any, scope: Record<string, any>): boolean => {
+    if (!field.visibleIf) return true
+    const dep = scope?.[field.visibleIf.field]
+    const depStr =
+        dep === undefined || dep === null
+            ? ""
+            : Array.isArray(dep)
+              ? dep.map(String).join(",")
+              : String(dep)
+    if (field.visibleIf.op === "eq") return depStr === String(field.visibleIf.value)
+    if (field.visibleIf.op === "neq") return depStr !== String(field.visibleIf.value)
+    return true
+}
+
+const isFilled = (v: any): boolean => {
+    if (v === undefined || v === null || v === "") return false
+    if (Array.isArray(v)) return v.length > 0
+    if (typeof v === "object") {
+        // Currency-style { amount, currency }
+        if ("amount" in v) return v.amount !== "" && v.amount != null
+        return Object.keys(v).length > 0
+    }
+    return true
+}
+
+const countRequired = (page: any, answers: Record<string, any>): number => {
+    let n = 0
+    for (const sec of page.sections || []) {
+        if (sec.allowMultiple) {
+            // Required count across configured instances — fall back to 1 row.
+            const instances: any[] = Array.isArray(answers?.[sec.key]) ? answers[sec.key] : [{}]
+            instances.forEach((inst) => {
+                for (const f of sec.fields || []) {
+                    if (f.required && f.enabled !== false && visibleHere(f, inst)) n++
+                }
+            })
+        } else {
+            for (const f of sec.fields || []) {
+                if (f.required && f.enabled !== false && visibleHere(f, answers)) n++
+            }
+        }
+    }
+    return n
+}
+
+const countFilledRequired = (page: any, answers: Record<string, any>): number => {
+    let n = 0
+    for (const sec of page.sections || []) {
+        if (sec.allowMultiple) {
+            const instances: any[] = Array.isArray(answers?.[sec.key]) ? answers[sec.key] : []
+            instances.forEach((inst) => {
+                for (const f of sec.fields || []) {
+                    if (f.required && f.enabled !== false && visibleHere(f, inst) && isFilled(inst?.[f.key])) n++
+                }
+            })
+        } else {
+            for (const f of sec.fields || []) {
+                if (f.required && f.enabled !== false && visibleHere(f, answers) && isFilled(answers?.[f.key])) n++
+            }
+        }
+    }
+    return n
+}
+
 const V2ApplicationPage = () => {
     const user = useSelector((state: any) => state.user.user)
     const role = user?.role
@@ -62,6 +131,14 @@ const V2ApplicationPage = () => {
     const [submitting, setSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState("")
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
+    // Active page tab — contractor steps through the form one page at a time.
+    const [activePageKey, setActivePageKey] = useState<string | null>(null)
+    // Autosave: track whether unsynced edits exist + last save timestamp.
+    const [dirty, setDirty] = useState(false)
+    const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
+    const [autoSaveError, setAutoSaveError] = useState("")
+    const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const fetchSubmission = async () => {
         try {
@@ -90,11 +167,55 @@ const V2ApplicationPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [role])
 
+    // Default the active page tab to the first page once the form loads.
+    useEffect(() => {
+        if (!activePageKey && formVersion?.schema?.pages?.[0]?.key) {
+            setActivePageKey(formVersion.schema.pages[0].key)
+        }
+    }, [formVersion, activePageKey])
+
     const handleChange = (changes: Record<string, any>) => {
         setAnswers((prev) => ({ ...prev, ...changes }))
         setSaveSuccess("")
         setSaveError("")
+        setDirty(true)
+        setAutoSaveStatus("idle")
     }
+
+    // Debounced autosave. Fires 1.5s after the contractor stops typing,
+    // skips when status is read-only (already with reviewers). Save Draft
+    // button still works as an explicit "save now" trigger.
+    useEffect(() => {
+        if (!submission || !dirty) return
+        if (!["draft", "returned"].includes(submission.status)) return
+        if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+        autoSaveTimerRef.current = setTimeout(async () => {
+            try {
+                setAutoSaveStatus("saving")
+                const result = await patchProtected(
+                    "api/v2/submissions/mine/answers",
+                    { answers },
+                    role,
+                )
+                if (result?.status === "OK") {
+                    setSubmission(result.data.submission)
+                    setDirty(false)
+                    setAutoSaveStatus("saved")
+                    setAutoSaveError("")
+                } else {
+                    setAutoSaveStatus("error")
+                    setAutoSaveError(result?.error?.message || "Autosave failed.")
+                }
+            } catch (e: any) {
+                setAutoSaveStatus("error")
+                setAutoSaveError(e?.message || "Autosave failed.")
+            }
+        }, 1500)
+        return () => {
+            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [answers, dirty, submission?.status])
 
     const saveDraft = async () => {
         if (!submission) return
@@ -262,15 +383,94 @@ const V2ApplicationPage = () => {
                     )}
                 </header>
 
+                {/* Page tab strip — mirrors the form-builder pagination so the
+                    contractor can jump between pages and pick up where they
+                    left off (autosave handles persistence). Only one page is
+                    rendered at a time via activePageKey on FormRenderer. */}
+                {formVersion.schema?.pages?.length > 1 && (
+                    <div className={styles.pageTabs}>
+                        {formVersion.schema.pages.map((p: any, i: number) => {
+                            const active = activePageKey === p.key
+                            const filled = countFilledRequired(p, answers)
+                            const required = countRequired(p, answers)
+                            return (
+                                <button
+                                    key={p.key}
+                                    type="button"
+                                    className={`${styles.pageTab} ${active ? styles.pageTabActive : ""}`}
+                                    onClick={() => setActivePageKey(p.key)}
+                                    title={p.title}
+                                >
+                                    <span className={styles.pageTabIdx}>{i + 1}</span>
+                                    <span className={styles.pageTabLabel}>{p.title}</span>
+                                    {required > 0 && (
+                                        <span className={`${styles.pageTabBadge} ${filled === required ? styles.pageTabBadgeDone : ""}`}>
+                                            {filled}/{required}
+                                        </span>
+                                    )}
+                                </button>
+                            )
+                        })}
+                    </div>
+                )}
+
                 <FormRenderer
                     schema={formVersion.schema}
                     answers={answers}
                     mode={readOnly && !isReturned ? "view" : "fill"}
+                    activePageKey={activePageKey || undefined}
                     onChange={handleChange}
                     activeRemarksBySection={remarksBySection}
                     previousFilesByField={previousFilesByField}
                     errors={validationErrors}
                 />
+
+                {/* Previous / Next page navigation within the form. */}
+                {formVersion.schema?.pages?.length > 1 && (
+                    <div className={styles.pageNav}>
+                        <button
+                            type="button"
+                            className={styles.btnSecondary}
+                            onClick={() => {
+                                const pages = formVersion.schema.pages
+                                const idx = pages.findIndex((p: any) => p.key === activePageKey)
+                                if (idx > 0) {
+                                    setActivePageKey(pages[idx - 1].key)
+                                    window.scrollTo({ top: 0, behavior: "smooth" })
+                                }
+                            }}
+                            disabled={
+                                !activePageKey ||
+                                formVersion.schema.pages.findIndex((p: any) => p.key === activePageKey) === 0
+                            }
+                        >
+                            ← Previous page
+                        </button>
+                        <span className={styles.pageNavInfo}>
+                            Page {formVersion.schema.pages.findIndex((p: any) => p.key === activePageKey) + 1}
+                            {" "}of {formVersion.schema.pages.length}
+                        </span>
+                        <button
+                            type="button"
+                            className={styles.btnSecondary}
+                            onClick={() => {
+                                const pages = formVersion.schema.pages
+                                const idx = pages.findIndex((p: any) => p.key === activePageKey)
+                                if (idx >= 0 && idx < pages.length - 1) {
+                                    setActivePageKey(pages[idx + 1].key)
+                                    window.scrollTo({ top: 0, behavior: "smooth" })
+                                }
+                            }}
+                            disabled={
+                                !activePageKey ||
+                                formVersion.schema.pages.findIndex((p: any) => p.key === activePageKey) ===
+                                    formVersion.schema.pages.length - 1
+                            }
+                        >
+                            Next page →
+                        </button>
+                    </div>
+                )}
 
                 {!readOnly || isReturned ? (
                     <div className={styles.actions}>
@@ -288,6 +488,14 @@ const V2ApplicationPage = () => {
                         >
                             {submitting ? "Submitting…" : isReturned ? "Resubmit" : "Submit application"}
                         </button>
+                        <span className={styles.autosaveStatus}>
+                            {autoSaveStatus === "saving" && "Autosaving…"}
+                            {autoSaveStatus === "saved" && "✓ All changes saved"}
+                            {autoSaveStatus === "error" && (
+                                <span className={styles.statusErr}>Autosave failed: {autoSaveError}</span>
+                            )}
+                            {autoSaveStatus === "idle" && dirty && "Unsaved changes…"}
+                        </span>
                         {saveSuccess && <span className={styles.statusOk}>{saveSuccess}</span>}
                         {saveError && <span className={styles.statusErr}>{saveError}</span>}
                         {submitError && <span className={styles.statusErr}>{submitError}</span>}
