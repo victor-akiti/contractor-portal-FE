@@ -365,3 +365,25 @@
     color: var(--color-text-secondary, #666);
     line-height: 1.45;
 }
+
+.nameLink {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+.nameLink:hover .nameText {
+    color: #e67509;
+    text-decoration: underline;
+}
+
+.editLink {
+    display: inline-block;
+    background: #e67509;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.editLink:hover { background: #cf6608; }

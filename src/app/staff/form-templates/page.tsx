@@ -274,7 +274,12 @@ const FormTemplatesPage = () => {
                                 <tr key={t._id}>
                                     <td>
                                         <div className={styles.nameCell}>
-                                            <span className={styles.nameText}>{t.name}</span>
+                                            <Link
+                                                href={`/staff/form-templates/${t._id}`}
+                                                className={styles.nameLink}
+                                            >
+                                                <span className={styles.nameText}>{t.name}</span>
+                                            </Link>
                                             {t.description && (
                                                 <span className={styles.descText}>{t.description}</span>
                                             )}
@@ -301,8 +306,11 @@ const FormTemplatesPage = () => {
                                         {t.updatedAt ? new Date(t.updatedAt).toLocaleDateString("en-NG") : "—"}
                                     </td>
                                     <td className={styles.actionsCell}>
-                                        <Link className={styles.btnLink} href={`/staff/form-templates/${t._id}`}>
-                                            Open
+                                        <Link
+                                            className={styles.editLink}
+                                            href={`/staff/form-templates/${t._id}`}
+                                        >
+                                            Edit template
                                         </Link>
                                     </td>
                                 </tr>
