@@ -381,3 +381,112 @@
 }
 
 .currencyRadioOption input { cursor: pointer; }
+
+/* ── EBA (Editable by Amni) decoration ───────────────────────────────── */
+.ebaWrap {
+    border-radius: 8px;
+    padding: 2px 0;
+    margin: 4px 0;
+}
+
+.ebaBannerActive {
+    border-left: 3px solid #e67509;
+    background: #fff8f0;
+    padding-left: 10px;
+}
+.ebaBannerFlagged {
+    border-left: 3px solid #c0392b;
+    background: #fff1f0;
+    padding-left: 10px;
+}
+.ebaBannerAccepted {
+    border-left: 3px solid #1f7a2a;
+    background: #f4fbf5;
+    padding-left: 10px;
+}
+
+.ebaCaption {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ebaCaptionTitle {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #1a1a1a;
+    font-size: 0.74rem;
+}
+
+.ebaCaptionMeta { color: #777; }
+
+.ebaPrior {
+    background: #f3f3f3;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    color: #444;
+}
+
+.ebaFlagReason {
+    background: white;
+    border: 1px solid #f3c4be;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 4px 0 0 0;
+    color: #6f1e16;
+    font-size: 0.85rem;
+}
+
+.ebaReviewerActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.ebaAcceptBtn {
+    background: #1f7a2a;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.ebaFlagBtn {
+    background: white;
+    color: #c0392b;
+    border: 1px solid #f3c4be;
+    padding: 5px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.ebaFieldHolder {
+    position: relative;
+}
+
+.ebaEditBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #2256a3;
+    color: white;
+    border: none;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.ebaEditBtn:hover { background: #1a4682; }

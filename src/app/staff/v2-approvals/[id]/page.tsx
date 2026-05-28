@@ -1,7 +1,8 @@
 'use client'
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
-import FormRenderer from "@/components/form/FormRenderer"
+import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
+import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { getProtected } from "@/requests/get"
@@ -136,9 +137,26 @@ const V2SubmissionDetailPage = () => {
     const id = params?.id
     const user = useSelector((state: any) => state.user.user)
 
-    const [tab, setTab] = useState<"form" | "certificates" | "comments" | "history">("form")
+    const [tab, setTab] = useState<"form" | "certificates" | "edits" | "comments" | "history">("form")
     const [certificates, setCertificates] = useState<Certificate[]>([])
     const [certActingId, setCertActingId] = useState<string | null>(null)
+
+    // EBA state
+    const [fieldEdits, setFieldEdits] = useState<FieldEditRow[]>([])
+    const [editingField, setEditingField] = useState<{
+        field: any
+        fieldPath: string
+        sectionKey: string
+        currentValue: any
+        newValue: any
+        saving: boolean
+        error: string
+    } | null>(null)
+    const [flaggingEdit, setFlaggingEdit] = useState<FieldEditRow | null>(null)
+    const [flagReason, setFlagReason] = useState("")
+    const [editActing, setEditActing] = useState(false)
+    const [editError, setEditError] = useState("")
+    const { confirm: confirmDialog, dialog: confirmDialogEl } = useConfirmDialog()
     const [certError, setCertError] = useState("")
     const [rejectingCertId, setRejectingCertId] = useState<string | null>(null)
     const [certRejectReason, setCertRejectReason] = useState("")
@@ -176,10 +194,11 @@ const V2SubmissionDetailPage = () => {
         try {
             setLoading(true)
             setError("")
-            const [s, c, cert] = await Promise.all([
+            const [s, c, cert, ed] = await Promise.all([
                 getProtected(`api/v2/submissions/${id}`, role),
                 getProtected(`api/v2/submissions/${id}/comments`, role),
                 getProtected(`api/v2/submissions/${id}/certificates`, role),
+                getProtected(`api/v2/submissions/${id}/edits`, role),
             ])
             if (s?.status === "OK") {
                 setSubmission(s.data?.submission || null)
@@ -190,6 +209,7 @@ const V2SubmissionDetailPage = () => {
             }
             if (c?.status === "OK") setComments(c.data?.comments || [])
             if (cert?.status === "OK") setCertificates(cert.data?.certificates || [])
+            if (ed?.status === "OK") setFieldEdits(ed.data?.edits || [])
         } catch (e: any) {
             setError(e?.message || "Failed to load")
         } finally {
@@ -305,6 +325,144 @@ const V2SubmissionDetailPage = () => {
             setCommentError(e?.message || "Unexpected error")
         } finally {
             setPostingComment(false)
+        }
+    }
+
+    // ── EBA edit handlers ───────────────────────────────────────────────
+    const ebaEditableNow = useMemo(() => {
+        if (!submission) return false
+        if (submission.status !== "pending") return false
+        const isEditor = ["Admin", "VRM"].includes(role)
+        const atEditableLevel = submission.level === 0 || submission.level === 3
+        return isEditor && atEditableLevel
+    }, [submission, role])
+
+    const editReviewerNow = useMemo(() => {
+        if (!submission) return false
+        if (submission.status !== "pending") return false
+        const isReviewer = ["Admin", "Supervisor", "HOD"].includes(role)
+        const atReviewerLevel = submission.level === 1 || submission.level === 4
+        return isReviewer && atReviewerLevel
+    }, [submission, role])
+
+    const fieldEditsByPath = useMemo<Record<string, FieldEditRow>>(() => {
+        const out: Record<string, FieldEditRow> = {}
+        // Show only the most-recent non-reverted edit per path. Older are in
+        // the Edit Audit tab.
+        const sorted = [...fieldEdits].sort((a, b) =>
+            (b.createdAt || "").localeCompare(a.createdAt || ""),
+        )
+        for (const e of sorted) {
+            if (e.status === "reverted") continue
+            if (!out[e.fieldPath]) out[e.fieldPath] = e
+        }
+        return out
+    }, [fieldEdits])
+
+    const openEditField: NonNullable<React.ComponentProps<typeof FormRenderer>["onEditField"]> = (args) => {
+        setEditingField({
+            field: args.field,
+            fieldPath: args.fieldPath,
+            sectionKey: args.sectionKey,
+            currentValue: args.currentValue,
+            newValue: args.currentValue,
+            saving: false,
+            error: "",
+        })
+    }
+
+    const saveFieldEdit = async () => {
+        if (!editingField || !id) return
+        if (JSON.stringify(editingField.newValue) === JSON.stringify(editingField.currentValue)) {
+            setEditingField({ ...editingField, error: "Change the value before saving." })
+            return
+        }
+        setEditingField({ ...editingField, saving: true, error: "" })
+        try {
+            const result = await postProtected(
+                `api/v2/submissions/${id}/edit-field`,
+                {
+                    fieldKey: editingField.field.key,
+                    fieldPath: editingField.fieldPath,
+                    newValue: editingField.newValue,
+                    sectionKey: editingField.sectionKey,
+                },
+                role,
+            )
+            if (result?.status === "OK") {
+                setEditingField(null)
+                await fetchAll()
+            } else {
+                setEditingField({
+                    ...editingField,
+                    saving: false,
+                    error: result?.error?.message || "Edit failed",
+                })
+            }
+        } catch (e: any) {
+            setEditingField({
+                ...editingField,
+                saving: false,
+                error: e?.message || "Unexpected error",
+            })
+        }
+    }
+
+    const openFlagEdit = (edit: FieldEditRow) => {
+        setFlaggingEdit(edit)
+        setFlagReason("")
+        setEditError("")
+    }
+
+    const submitFlagEdit = async () => {
+        if (!flaggingEdit || !id) return
+        if (!flagReason.trim()) {
+            setEditError("A reason is required.")
+            return
+        }
+        setEditActing(true)
+        setEditError("")
+        try {
+            const result = await postProtected(
+                `api/v2/submissions/${id}/edits/${flaggingEdit._id}/flag`,
+                { reason: flagReason.trim() },
+                role,
+            )
+            if (result?.status === "OK") {
+                setFlaggingEdit(null)
+                setFlagReason("")
+                await fetchAll()
+            } else {
+                setEditError(result?.error?.message || "Flag failed")
+            }
+        } catch (e: any) {
+            setEditError(e?.message || "Unexpected error")
+        } finally {
+            setEditActing(false)
+        }
+    }
+
+    const acceptEdit = async (edit: FieldEditRow) => {
+        if (!id) return
+        const ok = await confirmDialog({
+            headerText: "Accept this edit?",
+            bodyText: `Accept ${edit.editedBy?.name || "the VRM"}'s edit of "${edit.fieldKey}"? You can also let it be auto-accepted by advancing the submission.`,
+            confirmText: "Accept edit",
+        })
+        if (!ok) return
+        try {
+            const result = await postProtected(
+                `api/v2/submissions/${id}/edits/${edit._id}/accept`,
+                {},
+                role,
+            )
+            if (result?.status === "OK") {
+                await fetchAll()
+            } else {
+                setEditError(result?.error?.message || "Accept failed")
+            }
+        } catch (e: any) {
+            setEditError(e?.message || "Unexpected error")
         }
     }
 
@@ -568,6 +726,12 @@ const V2SubmissionDetailPage = () => {
                     Certificates ({certificates.filter((c) => c.trackingStatus !== "untracked - updated").length})
                 </button>
                 <button
+                    className={`${styles.tab} ${tab === "edits" ? styles.tabActive : ""}`}
+                    onClick={() => setTab("edits")}
+                >
+                    Edit Audit ({fieldEdits.length})
+                </button>
+                <button
                     className={`${styles.tab} ${tab === "comments" ? styles.tabActive : ""}`}
                     onClick={() => setTab("comments")}
                 >
@@ -591,8 +755,14 @@ const V2SubmissionDetailPage = () => {
                         <FormRenderer
                             schema={formVersion.schema}
                             answers={answers}
-                            mode="view"
+                            mode="approval"
                             activeRemarksBySection={activeRemarksBySection}
+                            ebaEditableNow={ebaEditableNow}
+                            editReviewerNow={editReviewerNow}
+                            fieldEditsByPath={fieldEditsByPath}
+                            onEditField={openEditField}
+                            onFlagEdit={openFlagEdit}
+                            onAcceptEdit={acceptEdit}
                         />
                     )}
 
@@ -768,6 +938,97 @@ const V2SubmissionDetailPage = () => {
                                 </div>
                             </div>
                         </Modal>
+                    )}
+                </div>
+            )}
+
+            {tab === "edits" && (
+                <div className={styles.tabBody}>
+                    {editError && <ErrorText text={editError} />}
+                    {fieldEdits.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <p>No staff edits on this submission yet.</p>
+                        </div>
+                    ) : (
+                        <ul className={styles.certList}>
+                            {fieldEdits.map((e) => (
+                                <li key={e._id} className={styles.certItem}>
+                                    <div className={styles.certHead}>
+                                        <strong>{e.fieldKey}</strong>
+                                        <span className={styles.dim}>{e.fieldPath}</span>
+                                        <span
+                                            className={`${styles.certBadge} ${
+                                                e.status === "active"
+                                                    ? styles.certStatus_pending
+                                                    : e.status === "accepted"
+                                                      ? styles.certStatus_approved
+                                                      : e.status === "flagged"
+                                                        ? styles.certStatus_rejected
+                                                        : styles.certBadgeNeutral
+                                            }`}
+                                        >
+                                            {e.status}
+                                        </span>
+                                        <span className={styles.certBadgeInfo}>
+                                            Stage {e.editedAtStage} · cycle #{e.cycleNumber}
+                                        </span>
+                                    </div>
+                                    <div className={styles.certBody}>
+                                        <span className={styles.dim}>
+                                            <strong>From:</strong>{" "}
+                                            <code>
+                                                {e.previousValue === undefined || e.previousValue === null
+                                                    ? "—"
+                                                    : typeof e.previousValue === "string"
+                                                      ? e.previousValue
+                                                      : JSON.stringify(e.previousValue)}
+                                            </code>
+                                        </span>
+                                        <span className={styles.dim}>
+                                            <strong>To:</strong>{" "}
+                                            <code>
+                                                {e.newValue === undefined || e.newValue === null
+                                                    ? "—"
+                                                    : typeof e.newValue === "string"
+                                                      ? e.newValue
+                                                      : JSON.stringify(e.newValue)}
+                                            </code>
+                                        </span>
+                                        <span className={styles.dim}>
+                                            by {e.editedBy?.name || e.editedBy?.role || "staff"}
+                                            {e.createdAt
+                                                ? ` · ${new Date(e.createdAt).toLocaleString("en-NG")}`
+                                                : ""}
+                                        </span>
+                                    </div>
+                                    {e.status === "flagged" && e.flaggedReason && (
+                                        <div className={styles.certRemarks}>
+                                            <strong>
+                                                Flagged by {e.flaggedBy?.name || "Reviewer"} at Stage{" "}
+                                                {e.flaggedAtStage}:
+                                            </strong>{" "}
+                                            {e.flaggedReason}
+                                        </div>
+                                    )}
+                                    {e.status === "active" && editReviewerNow && (
+                                        <div className={styles.certActions}>
+                                            <button
+                                                className={styles.btnApprove}
+                                                onClick={() => acceptEdit(e)}
+                                            >
+                                                Accept
+                                            </button>
+                                            <button
+                                                className={styles.btnDanger}
+                                                onClick={() => openFlagEdit(e)}
+                                            >
+                                                Flag
+                                            </button>
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
                     )}
                 </div>
             )}
@@ -995,6 +1256,115 @@ const V2SubmissionDetailPage = () => {
                     </div>
                 </Modal>
             )}
+
+            {/* EBA edit modal — renders a single-field FormRenderer instance
+                in fill mode so the VRM can update the value using the right
+                input type for the field. */}
+            {editingField && formVersion && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Edit field (EBA)</h3>
+                            <p className={styles.modalSub}>
+                                Editing <code>{editingField.field.key}</code>. The contractor's
+                                previous value is preserved in the audit trail and downstream
+                                reviewers can flag this edit.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <FormRenderer
+                                schema={{
+                                    version: 1,
+                                    pages: [
+                                        {
+                                            key: "ebaEditPage",
+                                            title: "",
+                                            sections: [
+                                                {
+                                                    key: "ebaEditSection",
+                                                    title: "",
+                                                    layout: "single",
+                                                    fields: [editingField.field],
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                }}
+                                answers={{ [editingField.field.key]: editingField.newValue }}
+                                mode="fill"
+                                onChange={(c) =>
+                                    setEditingField({
+                                        ...editingField,
+                                        newValue: c[editingField.field.key],
+                                        error: "",
+                                    })
+                                }
+                            />
+                            {editingField.error && <ErrorText text={editingField.error} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setEditingField(null)}
+                                disabled={editingField.saving}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={saveFieldEdit}
+                                disabled={editingField.saving}
+                            >
+                                Save edit
+                                {editingField.saving && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Flag-edit modal */}
+            {flaggingEdit && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Flag edit as wrong</h3>
+                            <p className={styles.modalSub}>
+                                Flagging an edit returns the field to the VRM for correction.
+                                State the reason clearly so they can fix it.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <textarea
+                                rows={4}
+                                value={flagReason}
+                                onChange={(e) => setFlagReason(e.target.value)}
+                                placeholder="e.g. RC number doesn't match CAC certificate."
+                            />
+                            {editError && <ErrorText text={editError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setFlaggingEdit(null)}
+                                disabled={editActing}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnDanger}
+                                onClick={submitFlagEdit}
+                                disabled={editActing || !flagReason.trim()}
+                            >
+                                Flag
+                                {editActing && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {confirmDialogEl}
         </div>
     )
 }

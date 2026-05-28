@@ -64,6 +64,7 @@ interface Field {
     type: string
     label: string
     approvalLabel?: string
+    eba?: boolean
     defaultValue?: string
     helpText?: string
     placeholder?: string
@@ -114,6 +115,25 @@ interface FormSchema {
 
 export type FormMode = "fill" | "view" | "approval"
 
+// Edit-row shape passed in by the host page (matches FieldEditV2 schema).
+export interface FieldEditRow {
+    _id: string
+    fieldKey: string
+    fieldPath: string
+    sectionKey?: string
+    previousValue: any
+    newValue: any
+    editedBy?: { name?: string; role?: string }
+    editedAtStage: string
+    editedAtLevel: number
+    cycleNumber: number
+    status: "active" | "accepted" | "flagged" | "reverted"
+    flaggedReason?: string
+    flaggedBy?: { name?: string; role?: string }
+    flaggedAtStage?: string
+    createdAt?: string
+}
+
 interface Props {
     schema: FormSchema
     answers: Record<string, any>
@@ -128,6 +148,26 @@ interface Props {
     uploadAuthHash?: string
     // Previously-uploaded files (per field key) for the "re-use" picker.
     previousFilesByField?: Record<string, FileFieldValue[]>
+
+    // ─── EBA (Editable by Amni) wiring ─────────────────────────────────
+    // When true, EBA-enabled fields show an "Edit" pencil button next to
+    // them. Host page should set this when current viewer can edit (e.g.
+    // VRM at Stage B / E).
+    ebaEditableNow?: boolean
+    // When true, edited fields show Flag / Accept controls. Set when
+    // current viewer is the downstream reviewer (Supervisor at C, HOD at F).
+    editReviewerNow?: boolean
+    // Active + flagged edits by fieldPath ("rcNumber" or "directors[2].directorShares").
+    fieldEditsByPath?: Record<string, FieldEditRow>
+    // Edit triggers — host owns the modals.
+    onEditField?: (args: {
+        field: Field
+        fieldPath: string
+        sectionKey: string
+        currentValue: any
+    }) => void
+    onFlagEdit?: (edit: FieldEditRow) => void
+    onAcceptEdit?: (edit: FieldEditRow) => void
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -392,6 +432,12 @@ const FormRenderer = ({
     activeRemarksBySection,
     uploadAuthHash,
     previousFilesByField,
+    ebaEditableNow,
+    editReviewerNow,
+    fieldEditsByPath,
+    onEditField,
+    onFlagEdit,
+    onAcceptEdit,
 }: Props) => {
     const readOnly = mode !== "fill"
 
@@ -778,12 +824,32 @@ const FormRenderer = ({
                         />
                     )
                 }
-                return renderField(
+                // fieldPath matches the backend resolveFieldPath syntax:
+                // "rcNumber" or "directors[2].directorShares".
+                const fieldPath = `${errKeyPrefix}${field.key}`
+                const fieldNode = renderField(
                     field,
                     instanceData?.[key],
                     (v) => onInstanceChange({ [key]: v }),
-                    `${errKeyPrefix}${field.key}`,
+                    fieldPath,
                     instanceData,
+                )
+                return (
+                    <EbaWrap
+                        key={key}
+                        field={field}
+                        fieldPath={fieldPath}
+                        sectionKey={section.key}
+                        currentValue={instanceData?.[key]}
+                        edit={fieldEditsByPath?.[fieldPath]}
+                        ebaEditableNow={!!ebaEditableNow}
+                        editReviewerNow={!!editReviewerNow}
+                        onEditField={onEditField}
+                        onFlagEdit={onFlagEdit}
+                        onAcceptEdit={onAcceptEdit}
+                    >
+                        {fieldNode}
+                    </EbaWrap>
                 )
             })}
         </div>
@@ -970,6 +1036,117 @@ const MultiInstanceField = ({
                     {field.addFieldText || `+ Add another`}
                 </button>
             )}
+        </div>
+    )
+}
+
+// EbaWrap — decorates a rendered field with EBA edit affordances:
+//   • If field.eba && ebaEditableNow → shows "Edit" pencil button. Calls
+//     onEditField with the metadata the host needs to open its edit modal.
+//   • If there's an active edit on this fieldPath → highlights the field
+//     with an amber band, shows "Edited by X at Stage Y" caption, and
+//     (when editReviewerNow) Flag / Accept actions.
+//   • If the edit is flagged → red band + caption showing the reason.
+//
+// No-op when the field isn't EBA-enabled OR none of the above apply, so
+// the wrap is cheap on non-EBA forms.
+const EbaWrap = ({
+    field, fieldPath, sectionKey, currentValue, edit,
+    ebaEditableNow, editReviewerNow,
+    onEditField, onFlagEdit, onAcceptEdit, children,
+}: {
+    field: Field
+    fieldPath: string
+    sectionKey: string
+    currentValue: any
+    edit?: FieldEditRow
+    ebaEditableNow: boolean
+    editReviewerNow: boolean
+    onEditField?: Props["onEditField"]
+    onFlagEdit?: Props["onFlagEdit"]
+    onAcceptEdit?: Props["onAcceptEdit"]
+    children: React.ReactNode
+}) => {
+    const showEdit = !!field.eba && ebaEditableNow && !!onEditField
+    const showEditMeta = !!edit
+    if (!showEdit && !showEditMeta) return <>{children}</>
+
+    const isActive = edit?.status === "active"
+    const isFlagged = edit?.status === "flagged"
+    const isAccepted = edit?.status === "accepted"
+    const bannerClass = isFlagged
+        ? styles.ebaBannerFlagged
+        : isActive
+          ? styles.ebaBannerActive
+          : isAccepted
+            ? styles.ebaBannerAccepted
+            : ""
+
+    return (
+        <div className={`${styles.ebaWrap} ${edit ? bannerClass : ""}`}>
+            {edit && (
+                <div className={styles.ebaCaption}>
+                    <span className={styles.ebaCaptionTitle}>
+                        {isFlagged
+                            ? `FLAGGED at Stage ${edit.flaggedAtStage}`
+                            : isAccepted
+                              ? `Accepted edit from Stage ${edit.editedAtStage}`
+                              : `Edited at Stage ${edit.editedAtStage}`}
+                    </span>
+                    <span className={styles.ebaCaptionMeta}>
+                        by {edit.editedBy?.name || edit.editedBy?.role || "Amni staff"}
+                        {edit.previousValue !== undefined && edit.previousValue !== null && edit.previousValue !== "" && (
+                            <>
+                                {" "}· was{" "}
+                                <code className={styles.ebaPrior}>
+                                    {typeof edit.previousValue === "string"
+                                        ? edit.previousValue
+                                        : JSON.stringify(edit.previousValue)}
+                                </code>
+                            </>
+                        )}
+                    </span>
+                    {isFlagged && edit.flaggedReason && (
+                        <p className={styles.ebaFlagReason}>
+                            <strong>{edit.flaggedBy?.name || "Reviewer"}:</strong>{" "}
+                            {edit.flaggedReason}
+                        </p>
+                    )}
+                    {isActive && editReviewerNow && (
+                        <div className={styles.ebaReviewerActions}>
+                            <button
+                                type="button"
+                                className={styles.ebaAcceptBtn}
+                                onClick={() => onAcceptEdit?.(edit)}
+                            >
+                                Accept
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.ebaFlagBtn}
+                                onClick={() => onFlagEdit?.(edit)}
+                            >
+                                Flag
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+            <div className={styles.ebaFieldHolder}>
+                {children}
+                {showEdit && (
+                    <button
+                        type="button"
+                        className={styles.ebaEditBtn}
+                        onClick={() =>
+                            onEditField!({ field, fieldPath, sectionKey, currentValue })
+                        }
+                        title="Edit (EBA)"
+                    >
+                        ✎ Edit
+                    </button>
+                )}
+            </div>
         </div>
     )
 }
