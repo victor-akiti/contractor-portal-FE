@@ -5,6 +5,7 @@ import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
+import { patchProtected } from "@/requests/patch"
 import { useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
@@ -17,7 +18,15 @@ import styles from "./styles/styles.module.css"
 //   3. On approve, the invite email is sent and the row shows the hash link
 //      (useful for testing when email delivery is not set up yet).
 
-type ApprovalStatus = "pending_hod" | "approved" | "rejected" | "used" | "expired"
+type ApprovalStatus =
+    | "pending_supervisor"
+    | "returned_to_originator"
+    | "pending_hod"
+    | "approved"
+    | "rejected"
+    | "used"
+    | "expired"
+    | "voided"
 
 interface Group {
     _id: string
@@ -45,13 +54,22 @@ interface InviteV2 {
     invitedBy?: { name?: string; email?: string }
     approvedBy?: { name?: string; email?: string }
     rejectedBy?: { name?: string; email?: string }
+    supervisorReviewedBy?: { name?: string; email?: string }
+    supervisorReviewedAt?: string
+    supervisorReturnReason?: string
+    voidedBy?: { name?: string; email?: string }
+    voidedAt?: string
+    voidReason?: string
 }
 
 const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
+    { key: "pending_supervisor", label: "Pending Supervisor" },
+    { key: "returned_to_originator", label: "Returned to originator" },
     { key: "pending_hod", label: "Pending HOD" },
     { key: "approved", label: "Approved" },
     { key: "used", label: "Used" },
     { key: "rejected", label: "Rejected" },
+    { key: "voided", label: "Voided" },
     { key: "expired", label: "Expired" },
     { key: "all", label: "All" },
 ]
@@ -85,8 +103,11 @@ const V2InvitesPage = () => {
     const [copied, setCopied] = useState<string | null>(null)
 
     const canCreate = ["Admin", "HOD", "IT Admin", "VRM", "CO", "Supervisor"].includes(user?.role)
-    const canHodAct = ["Admin", "HOD"].includes(user?.role)
-    const canResend = ["Admin", "HOD", "IT Admin", "VRM"].includes(user?.role)
+    // Supervisor + HOD share invite-review responsibilities per the C&P ticket.
+    const canReview = ["Admin", "HOD", "Supervisor"].includes(user?.role)
+    const canResend = ["Admin", "HOD", "IT Admin", "VRM", "Supervisor"].includes(user?.role)
+    const canVoid = ["Admin", "HOD", "Supervisor"].includes(user?.role)
+    const canResubmit = ["Admin", "HOD", "IT Admin", "VRM", "CO", "Supervisor"].includes(user?.role)
 
     const fetchInvites = async (tab: ApprovalStatus | "all") => {
         try {
@@ -183,10 +204,147 @@ const V2InvitesPage = () => {
         }
     }
 
+    const supervisorApprove = async (id: string) => {
+        try {
+            setActingId(id)
+            setRowError(null)
+            const result = await postProtected(
+                `api/v2/invites/${id}/supervisor-approve`,
+                {},
+                user?.role,
+            )
+            if (result?.status === "OK") {
+                await fetchInvites(activeTab)
+            } else {
+                setRowError({ id, message: result?.error?.message || "Supervisor approve failed" })
+            }
+        } catch (e: any) {
+            setRowError({ id, message: e?.message || "Unexpected error" })
+        } finally {
+            setActingId(null)
+        }
+    }
+
     const openReject = (id: string) => {
         setRejectingId(id)
         setRejectReason("")
         setRowError(null)
+    }
+
+    // Supervisor return-to-originator modal state
+    const [returningId, setReturningId] = useState<string | null>(null)
+    const [returnReason, setReturnReason] = useState("")
+    const openSupervisorReturn = (id: string) => {
+        setReturningId(id)
+        setReturnReason("")
+        setRowError(null)
+    }
+    const submitSupervisorReturn = async () => {
+        if (!returningId) return
+        if (!returnReason.trim()) {
+            setRowError({ id: returningId, message: "A reason is required." })
+            return
+        }
+        try {
+            setActingId(returningId)
+            const result = await postProtected(
+                `api/v2/invites/${returningId}/supervisor-return`,
+                { reason: returnReason.trim() },
+                user?.role,
+            )
+            if (result?.status === "OK") {
+                setReturningId(null)
+                setReturnReason("")
+                await fetchInvites(activeTab)
+            } else {
+                setRowError({
+                    id: returningId,
+                    message: result?.error?.message || "Return failed",
+                })
+            }
+        } catch (e: any) {
+            setRowError({ id: returningId, message: e?.message || "Unexpected error" })
+        } finally {
+            setActingId(null)
+        }
+    }
+
+    // Void / restart-registration modal state
+    const [voidingId, setVoidingId] = useState<string | null>(null)
+    const [voidReason, setVoidReason] = useState("")
+    const openVoid = (id: string) => {
+        setVoidingId(id)
+        setVoidReason("")
+        setRowError(null)
+    }
+    const submitVoid = async () => {
+        if (!voidingId) return
+        if (!voidReason.trim()) {
+            setRowError({ id: voidingId, message: "A reason is required." })
+            return
+        }
+        try {
+            setActingId(voidingId)
+            const result = await postProtected(
+                `api/v2/invites/${voidingId}/void`,
+                { reason: voidReason.trim() },
+                user?.role,
+            )
+            if (result?.status === "OK") {
+                setVoidingId(null)
+                setVoidReason("")
+                await fetchInvites(activeTab)
+            } else {
+                setRowError({ id: voidingId, message: result?.error?.message || "Void failed" })
+            }
+        } catch (e: any) {
+            setRowError({ id: voidingId, message: e?.message || "Unexpected error" })
+        } finally {
+            setActingId(null)
+        }
+    }
+
+    // Originator resubmit modal state — for the simplest case we let them
+    // change the category (groupId) inline. Other fields can be edited via a
+    // dedicated edit page later.
+    const [resubmittingId, setResubmittingId] = useState<string | null>(null)
+    const [resubmitGroupId, setResubmitGroupId] = useState("")
+    const openResubmit = (inv: InviteV2) => {
+        setResubmittingId(inv._id)
+        setResubmitGroupId(
+            typeof inv.groupId === "string"
+                ? inv.groupId
+                : (inv.groupId as Group)?._id || "",
+        )
+        setRowError(null)
+    }
+    const submitResubmit = async () => {
+        if (!resubmittingId) return
+        if (!resubmitGroupId) {
+            setRowError({ id: resubmittingId, message: "Pick a category." })
+            return
+        }
+        try {
+            setActingId(resubmittingId)
+            const result = await patchProtected(
+                `api/v2/invites/${resubmittingId}/resubmit`,
+                { groupId: resubmitGroupId },
+                user?.role,
+            )
+            if (result?.status === "OK") {
+                setResubmittingId(null)
+                await fetchInvites(activeTab)
+            } else {
+                setRowError({
+                    id: resubmittingId,
+                    message: result?.error?.message || "Resubmit failed",
+                })
+            }
+        } catch (e: any) {
+            setRowError({ id: resubmittingId, message: e?.message || "Unexpected error" })
+        } finally {
+            setActingId(null)
+        }
     }
 
     const submitReject = async () => {
@@ -346,7 +504,53 @@ const V2InvitesPage = () => {
                                     </td>
                                     <td className={styles.actionCol}>
                                         <div className={styles.actionsRow}>
-                                            {inv.approvalStatus === "pending_hod" && canHodAct && (
+                                            {inv.approvalStatus === "pending_supervisor" && canReview && (
+                                                <>
+                                                    <button
+                                                        className={styles.btnApprove}
+                                                        disabled={actingId === inv._id}
+                                                        onClick={() => supervisorApprove(inv._id)}
+                                                    >
+                                                        Approve category
+                                                        {actingId === inv._id && <ButtonLoadingIcon />}
+                                                    </button>
+                                                    <button
+                                                        className={styles.btnReject}
+                                                        disabled={actingId === inv._id}
+                                                        onClick={() => openSupervisorReturn(inv._id)}
+                                                    >
+                                                        Return for correction
+                                                    </button>
+                                                    <button
+                                                        className={styles.btnSecondary}
+                                                        disabled={actingId === inv._id}
+                                                        onClick={() => openReject(inv._id)}
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {inv.approvalStatus === "returned_to_originator" && (
+                                                <>
+                                                    {inv.supervisorReturnReason && (
+                                                        <span className={styles.rejectReason} title={inv.supervisorReturnReason}>
+                                                            {inv.supervisorReturnReason}
+                                                        </span>
+                                                    )}
+                                                    {canResubmit && (
+                                                        <button
+                                                            className={styles.btnApprove}
+                                                            disabled={actingId === inv._id}
+                                                            onClick={() => openResubmit(inv)}
+                                                        >
+                                                            Fix & resubmit
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {inv.approvalStatus === "pending_hod" && canReview && (
                                                 <>
                                                     <button
                                                         className={styles.btnApprove}
@@ -383,11 +587,26 @@ const V2InvitesPage = () => {
                                                             {actingId === inv._id && <ButtonLoadingIcon />}
                                                         </button>
                                                     )}
+                                                    {canVoid && (
+                                                        <button
+                                                            className={styles.btnReject}
+                                                            disabled={actingId === inv._id}
+                                                            onClick={() => openVoid(inv._id)}
+                                                            title="Change category — voids this invite. Create a new one with the correct category."
+                                                        >
+                                                            Change category
+                                                        </button>
+                                                    )}
                                                 </>
                                             )}
                                             {inv.approvalStatus === "rejected" && inv.rejectedReason && (
                                                 <span className={styles.rejectReason} title={inv.rejectedReason}>
                                                     {inv.rejectedReason}
+                                                </span>
+                                            )}
+                                            {inv.approvalStatus === "voided" && inv.voidReason && (
+                                                <span className={styles.rejectReason} title={inv.voidReason}>
+                                                    Voided: {inv.voidReason}
                                                 </span>
                                             )}
                                         </div>
@@ -511,6 +730,163 @@ const V2InvitesPage = () => {
                             >
                                 Reject
                                 {actingId === rejectingId && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {returningId && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Return invite to originator</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <p className={styles.helpText}>
+                                Tell the person who created this invite what's wrong with the
+                                category choice. They'll be able to fix and resubmit.
+                            </p>
+                            <div className={styles.formRow}>
+                                <label>Reason <span className={styles.required}>*</span></label>
+                                <textarea
+                                    rows={4}
+                                    value={returnReason}
+                                    onChange={(e) => setReturnReason(e.target.value)}
+                                    placeholder="e.g. Wrong category — this vendor offers offshore services, not legal."
+                                    disabled={actingId === returningId}
+                                />
+                            </div>
+                            {rowError?.id === returningId && (
+                                <div className={styles.modalError}>
+                                    <ErrorText text={rowError.message} />
+                                </div>
+                            )}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setReturningId(null)}
+                                disabled={actingId === returningId}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnReject}
+                                onClick={submitSupervisorReturn}
+                                disabled={actingId === returningId || !returnReason.trim()}
+                            >
+                                Return for correction
+                                {actingId === returningId && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {voidingId && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Change category — void this invite</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <p className={styles.helpText}>
+                                Per policy, changing a vendor's category requires restarting
+                                the registration process. Voiding this invite cancels the
+                                current registration so you can issue a fresh invite with
+                                the correct category. The vendor's prior submission (if any)
+                                will be marked inactive and disappear from approval queues —
+                                the audit trail is preserved.
+                            </p>
+                            <div className={styles.formRow}>
+                                <label>Reason <span className={styles.required}>*</span></label>
+                                <textarea
+                                    rows={4}
+                                    value={voidReason}
+                                    onChange={(e) => setVoidReason(e.target.value)}
+                                    placeholder="e.g. Vendor was placed in Simple but should be in Non-Offshore."
+                                    disabled={actingId === voidingId}
+                                />
+                            </div>
+                            {rowError?.id === voidingId && (
+                                <div className={styles.modalError}>
+                                    <ErrorText text={rowError.message} />
+                                </div>
+                            )}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setVoidingId(null)}
+                                disabled={actingId === voidingId}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnReject}
+                                onClick={submitVoid}
+                                disabled={actingId === voidingId || !voidReason.trim()}
+                            >
+                                Void invite
+                                {actingId === voidingId && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {resubmittingId && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Fix & resubmit</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <p className={styles.helpText}>
+                                Pick the corrected category and resubmit for Supervisor
+                                review.
+                            </p>
+                            <div className={styles.formRow}>
+                                <label>Category <span className={styles.required}>*</span></label>
+                                {groups.length === 0 ? (
+                                    <div className={styles.inlineWarning}>
+                                        No categories available. Create one first.
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={resubmitGroupId}
+                                        onChange={(e) => setResubmitGroupId(e.target.value)}
+                                        disabled={actingId === resubmittingId}
+                                    >
+                                        <option value="">Select a category…</option>
+                                        {groups.map((g) => (
+                                            <option key={g._id} value={g._id}>{g.name}</option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+                            {rowError?.id === resubmittingId && (
+                                <div className={styles.modalError}>
+                                    <ErrorText text={rowError.message} />
+                                </div>
+                            )}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setResubmittingId(null)}
+                                disabled={actingId === resubmittingId}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitResubmit}
+                                disabled={actingId === resubmittingId || !resubmitGroupId}
+                            >
+                                Resubmit
+                                {actingId === resubmittingId && <ButtonLoadingIcon />}
                             </button>
                         </div>
                     </div>
