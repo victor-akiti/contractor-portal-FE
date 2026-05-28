@@ -286,3 +286,8 @@
 
 .modalError,
 .modalSuccess { margin-top: 4px; }
+
+.status_pending_supervisor    { background: #fff4e0; color: #6b4500; }
+.status_returned_to_originator { background: #ffe0e0; color: #a32525; }
+.status_voided                 { background: #f0f0f0; color: #555; }
+.helpText { color: #666; font-size: 0.88rem; margin: 0 0 12px 0; line-height: 1.5; }
