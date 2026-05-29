@@ -490,3 +490,57 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 .ebaEditBtn:hover { background: #1a4682; }
+
+/* Free-text multi-select — chip-style entries + inline input. */
+.freeMultiBox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 8px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: white;
+    min-height: 40px;
+}
+
+.freeMultiBox:focus-within {
+    border-color: #e67509;
+    box-shadow: 0 0 0 3px rgba(230, 117, 9, 0.12);
+}
+
+.freeMultiChip {
+    background: #fff5ed;
+    border: 1px solid #ffd5b3;
+    color: #6b3d04;
+    border-radius: 14px;
+    padding: 3px 8px 3px 12px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+}
+
+.freeMultiRemove {
+    background: none;
+    border: none;
+    color: #b85a06;
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 50%;
+}
+.freeMultiRemove:hover { color: white; background: #b85a06; }
+
+.freeMultiInput {
+    flex: 1;
+    min-width: 140px;
+    border: none;
+    outline: none;
+    padding: 6px 8px;
+    font-size: 0.92rem;
+    background: transparent;
+    font-family: inherit;
+}
