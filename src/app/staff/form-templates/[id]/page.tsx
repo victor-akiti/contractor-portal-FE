@@ -77,21 +77,23 @@ const TemplateDetailPage = () => {
     // Draft schema editor state — now uses the visual FormBuilder.
     const [draftSchema, setDraftSchema] = useState<FormSchema | null>(null)
     const [draftSchemaDirty, setDraftSchemaDirty] = useState(false)
+    const [seededFromVersion, setSeededFromVersion] = useState<number | null>(null)
     const [draftSaving, setDraftSaving] = useState(false)
     const [draftSaveError, setDraftSaveError] = useState("")
     const [draftSaveSuccess, setDraftSaveSuccess] = useState("")
 
     const canEdit = ["Admin", "HOD"].includes(user?.role)
 
-    const fetchAll = async () => {
+    const fetchAll = async (opts?: { fromVersionId?: string }) => {
         try {
             setLoading(true)
             setFetchError("")
+            const draftQs = opts?.fromVersionId ? `?fromVersion=${opts.fromVersionId}` : ""
             const [t, v, g, d] = await Promise.all([
                 getProtected(`api/v2/form-templates/${params.id}`, user?.role),
                 getProtected(`api/v2/form-templates/${params.id}/versions`, user?.role),
                 getProtected(`api/v2/form-templates/${params.id}/groups`, user?.role),
-                getProtected(`api/v2/form-templates/${params.id}/draft`, user?.role),
+                getProtected(`api/v2/form-templates/${params.id}/draft${draftQs}`, user?.role),
             ])
             if (t?.status === "OK") setTemplate(t.data.template)
             else setFetchError(t?.error?.message || "Failed to load template")
@@ -101,6 +103,7 @@ const TemplateDetailPage = () => {
                 const loaded = d.data?.draft?.schema
                 setDraftSchema(loaded || { version: 1, pages: [] })
                 setDraftSchemaDirty(false)
+                setSeededFromVersion(d.data?.seededFrom?.versionNumber ?? null)
             }
         } catch (error: any) {
             console.error({ error })
@@ -349,6 +352,13 @@ const TemplateDetailPage = () => {
                     </div>
                 ) : (
                     <div className={detailStyles.builderWrap}>
+                        {seededFromVersion != null && !draftSchemaDirty && (
+                            <div className={detailStyles.seedBanner}>
+                                Loaded from <strong>v{seededFromVersion}</strong>. Edits go to a new
+                                working draft — the published version stays live until you publish
+                                the draft.
+                            </div>
+                        )}
                         <FormBuilder
                             value={draftSchema}
                             onChange={(next) => {
@@ -397,17 +407,21 @@ const TemplateDetailPage = () => {
                                     <th>Status</th>
                                     <th>Published</th>
                                     <th>Created</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {versions.map((v) => (
+                                {versions.map((v) => {
+                                    const isCurrent = v._id === template.currentVersionId
+                                    const isDraft = v._id === template.workingDraftId
+                                    return (
                                     <tr key={v._id}>
                                         <td>
                                             v{v.versionNumber}
-                                            {v._id === template.currentVersionId && (
+                                            {isCurrent && (
                                                 <span className={detailStyles.currentTag}>current</span>
                                             )}
-                                            {v._id === template.workingDraftId && (
+                                            {isDraft && (
                                                 <span className={detailStyles.draftTag}>draft</span>
                                             )}
                                         </td>
@@ -426,8 +440,30 @@ const TemplateDetailPage = () => {
                                                 ? new Date(v.createdAt).toLocaleDateString("en-NG")
                                                 : "—"}
                                         </td>
+                                        <td>
+                                            {canEdit && !isDraft && !template.workingDraftId && (
+                                                <button
+                                                    className={styles.btnLink}
+                                                    onClick={async () => {
+                                                        const ok = await confirm({
+                                                            headerText: `Edit from v${v.versionNumber}?`,
+                                                            bodyText:
+                                                                isCurrent
+                                                                    ? `Open the current published version (v${v.versionNumber}) in the builder. Edits go to a working draft until you publish.`
+                                                                    : `Open v${v.versionNumber} in the builder. Edits go to a new working draft; publishing will create a new version on top of the current.`,
+                                                            confirmText: "Open in builder",
+                                                        })
+                                                        if (!ok) return
+                                                        await fetchAll({ fromVersionId: v._id })
+                                                    }}
+                                                >
+                                                    Edit from this
+                                                </button>
+                                            )}
+                                        </td>
                                     </tr>
-                                ))}
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>

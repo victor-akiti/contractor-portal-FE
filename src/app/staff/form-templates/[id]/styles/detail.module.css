@@ -195,3 +195,13 @@
     font-size: 0.85rem;
     font-weight: 600;
 }
+
+.seedBanner {
+    background: #fff5ed;
+    border: 1px solid #ffd5b3;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #6b3d04;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
