@@ -32,7 +32,7 @@
 //   - Field renders as disabled with a small "disabled" hint; value is
 //     preserved but cannot be edited.
 
-import { useCallback } from "react"
+import React, { useCallback } from "react"
 import FileFieldUploader, { FileFieldValue } from "./FileFieldUploader"
 import styles from "./FormRenderer.module.css"
 
@@ -743,6 +743,27 @@ const FormRenderer = ({
                 )
             }
 
+            case "multiSelectFreeText": {
+                // Free-text multi: contractor types, presses Enter (or blurs
+                // with content) to push the token into the array. Each token
+                // renders as a removable chip. Mirrors the legacy
+                // multiSelectText widget.
+                const arr: string[] = Array.isArray(effectiveValue) ? (effectiveValue as string[]) : []
+                return (
+                    <FreeTextMultiSelect
+                        key={errKey}
+                        id={`field-${errKey}`}
+                        label={labelEl}
+                        helpEl={helpEl}
+                        errEl={errEl}
+                        values={arr}
+                        placeholder={field.placeholder || "Type a value and press Enter"}
+                        disabled={disabled}
+                        onChange={onValueChange}
+                    />
+                )
+            }
+
             case "file":
             case "certificate": {
                 const files: FileFieldValue[] = Array.isArray(effectiveValue)
@@ -1155,6 +1176,83 @@ const EbaWrap = ({
                     </button>
                 )}
             </div>
+        </div>
+    )
+}
+
+// FreeTextMultiSelect — contractor types a value, presses Enter (or blurs
+// with content) to push it into the array. Each entry renders as a chip
+// with an inline ✕ to remove. Mirrors the legacy multiSelectText widget.
+const FreeTextMultiSelect = ({
+    id, label, helpEl, errEl, values, placeholder, disabled, onChange,
+}: {
+    id: string
+    label: React.ReactNode
+    helpEl: React.ReactNode
+    errEl: React.ReactNode
+    values: string[]
+    placeholder: string
+    disabled: boolean
+    onChange: (next: string[]) => void
+}) => {
+    const [draft, setDraft] = React.useState("")
+
+    const commit = () => {
+        const t = draft.trim()
+        if (!t) return
+        // Dedupe (case-insensitive) so the same value can't be pushed twice.
+        if (values.some((v) => v.toLowerCase() === t.toLowerCase())) {
+            setDraft("")
+            return
+        }
+        onChange([...values, t])
+        setDraft("")
+    }
+
+    return (
+        <div className={styles.fieldRow}>
+            {label}
+            <div className={styles.freeMultiBox}>
+                {values.map((v, i) => (
+                    <span key={`${v}-${i}`} className={styles.freeMultiChip}>
+                        {v}
+                        {!disabled && (
+                            <button
+                                type="button"
+                                className={styles.freeMultiRemove}
+                                onClick={() => onChange(values.filter((_, j) => j !== i))}
+                                aria-label={`Remove ${v}`}
+                            >
+                                ×
+                            </button>
+                        )}
+                    </span>
+                ))}
+                {!disabled && (
+                    <input
+                        id={id}
+                        type="text"
+                        className={styles.freeMultiInput}
+                        value={draft}
+                        placeholder={values.length === 0 ? placeholder : "Add another…"}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault()
+                                commit()
+                            } else if (e.key === "Backspace" && !draft && values.length > 0) {
+                                // Convenience: backspace on empty input removes the last chip.
+                                onChange(values.slice(0, -1))
+                            }
+                        }}
+                        // Save typed-but-not-Enter'd content on blur so partial
+                        // input isn't lost when the contractor tabs away.
+                        onBlur={commit}
+                    />
+                )}
+            </div>
+            {helpEl}
+            {errEl}
         </div>
     )
 }
