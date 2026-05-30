@@ -2,6 +2,7 @@
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
+import ApprovalReviewView from "./ApprovalReviewView"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
@@ -129,7 +130,7 @@ interface FormVersion {
 }
 
 const stageFromLevel = (level: number): string => {
-    if (level == null || level < 0 || level > 5) return "—"
+    if (level == null || level < 0 || level > 5) return "-"
     return String.fromCharCode(66 + level)
 }
 
@@ -144,9 +145,31 @@ const stageForSubmission = (submission: { status: string; level: number; approve
 }
 
 const stageLongLabel = (submission: { status: string; level: number; approved: boolean }): string => {
-    if (submission.approved) return "L3 — Approved Contractor"
-    if (submission.status === "draft") return "Stage A — Not Yet Submitted"
+    if (submission.approved) return "L3 - Approved Contractor"
+    if (submission.status === "draft") return "Stage A - Not Yet Submitted"
     return `Stage ${stageFromLevel(submission.level)}`
+}
+
+// Resolve a fieldKey to its human label by walking the form schema. Falls
+// back to the key when nothing matches (e.g. orphan certs from older
+// schema versions).
+const fieldLabelFromSchema = (
+    schema: any,
+    fieldKey: string,
+    preferApprovalLabel = true,
+): string => {
+    if (!schema?.pages || !fieldKey) return fieldKey
+    for (const page of schema.pages) {
+        for (const section of page.sections || []) {
+            for (const f of section.fields || []) {
+                if (f.key === fieldKey) {
+                    if (preferApprovalLabel && f.approvalLabel) return f.approvalLabel
+                    return f.label || fieldKey
+                }
+            }
+        }
+    }
+    return fieldKey
 }
 
 const StagePill = ({ submission }: { submission: Submission }) => {
@@ -170,6 +193,112 @@ const V2SubmissionDetailPage = () => {
     const [migrationStatus, setMigrationStatus] = useState<any>(null)
     const [migrating, setMigrating] = useState(false)
     const [migrationError, setMigrationError] = useState("")
+    // Per-field inline remark / comment modal state. Pre-fills the
+    // sectionKey + fieldKey so reviewers don't have to type it.
+    const [inlineRemark, setInlineRemark] = useState<{
+        sectionKey: string
+        fieldKey?: string
+        text: string
+        saving: boolean
+        error: string
+    } | null>(null)
+    const [inlineComment, setInlineComment] = useState<{
+        sectionKey: string
+        fieldKey?: string
+        text: string
+        saving: boolean
+        error: string
+    } | null>(null)
+
+    const openInlineRemark = (args: { sectionKey: string; fieldKey?: string }) => {
+        if (submission?.status === "draft") {
+            setActionError(
+                "Cannot leave remarks while the application is still a draft.",
+            )
+            return
+        }
+        setInlineRemark({ ...args, text: "", saving: false, error: "" })
+    }
+    const openInlineComment = (args: { sectionKey: string; fieldKey?: string }) => {
+        setInlineComment({ ...args, text: "", saving: false, error: "" })
+    }
+
+    const submitInlineRemark = async () => {
+        if (!inlineRemark || !id) return
+        if (!inlineRemark.text.trim()) {
+            setInlineRemark({ ...inlineRemark, error: "Remark text is required." })
+            return
+        }
+        setInlineRemark({ ...inlineRemark, saving: true, error: "" })
+        try {
+            const r = await postProtected(
+                `api/v2/submissions/${id}/remarks`,
+                {
+                    sectionKey: inlineRemark.sectionKey,
+                    fieldKey: inlineRemark.fieldKey,
+                    text: inlineRemark.text.trim(),
+                },
+                role,
+            )
+            if (r?.status === "OK") {
+                setInlineRemark(null)
+                await fetchAll()
+            } else {
+                setInlineRemark({
+                    ...inlineRemark,
+                    saving: false,
+                    error: r?.error?.message || "Could not save remark.",
+                })
+            }
+        } catch (e: any) {
+            setInlineRemark({
+                ...inlineRemark,
+                saving: false,
+                error: e?.message || "Unexpected error.",
+            })
+        }
+    }
+
+    const submitInlineComment = async () => {
+        if (!inlineComment || !id) return
+        if (!inlineComment.text.trim()) {
+            setInlineComment({ ...inlineComment, error: "Comment text is required." })
+            return
+        }
+        setInlineComment({ ...inlineComment, saving: true, error: "" })
+        try {
+            const r = await postProtected(
+                `api/v2/submissions/${id}/comments`,
+                {
+                    text: inlineComment.text.trim(),
+                    anchor: {
+                        type: inlineComment.fieldKey ? "field" : "section",
+                        sectionKey: inlineComment.sectionKey,
+                        fieldKey: inlineComment.fieldKey,
+                    },
+                },
+                role,
+            )
+            if (r?.status === "OK") {
+                setInlineComment(null)
+                const c = await getProtected(`api/v2/submissions/${id}/comments`, role)
+                if (c?.status === "OK") setComments(c.data?.comments || [])
+            } else {
+                setInlineComment({
+                    ...inlineComment,
+                    saving: false,
+                    error: r?.error?.message || "Could not save comment.",
+                })
+            }
+        } catch (e: any) {
+            setInlineComment({
+                ...inlineComment,
+                saving: false,
+                error: e?.message || "Unexpected error.",
+            })
+        }
+    }
+
     const [editingField, setEditingField] = useState<{
         field: any
         fieldPath: string
@@ -616,6 +745,18 @@ const V2SubmissionDetailPage = () => {
     }, [submission])
 
     // Action availability heuristics. The server enforces the real rules.
+    // Active remarks on the current cycle block the process button. Per the
+    // C&P ticket: once a reviewer has left ANY remark for the contractor in
+    // the current cycle, the application can only be returned (sending those
+    // remarks to the contractor) or recommended for hold (park request).
+    // Advance / final-approve are gated off.
+    const hasActiveRemarksThisCycle = useMemo(() => {
+        const c = submission?.cycleNumber || 1
+        return (remarks || []).some(
+            (r: any) => r.status === "active" && (!r.cycleNumber || r.cycleNumber === c),
+        )
+    }, [remarks, submission?.cycleNumber])
+
     const can = useMemo(() => {
         if (!submission) return {}
         const isHod = ["Admin", "HOD"].includes(role)
@@ -625,8 +766,9 @@ const V2SubmissionDetailPage = () => {
         const parkRequested = submission.status === "park requested"
         const parked = submission.status === "parked"
         return {
-            advance: pending && submission.level < 5,
-            finalApprove: pending && submission.level === 5 && isExec,
+            advance: pending && submission.level < 5 && !hasActiveRemarksThisCycle,
+            finalApprove:
+                pending && submission.level === 5 && isExec && !hasActiveRemarksThisCycle,
             returnToVendor: pending,
             requestPark: pending,
             approvePark: parkRequested && isHod,
@@ -688,6 +830,12 @@ const V2SubmissionDetailPage = () => {
                 <div className={styles.headerActions}>
                     {actionSuccess && <SuccessMessage message={actionSuccess} />}
                     {actionError && <ErrorText text={actionError} />}
+                    {hasActiveRemarksThisCycle && submission.status === "pending" && (
+                        <div className={styles.remarkGate}>
+                            Active remarks block the process button. Return to
+                            contractor or request hold to continue.
+                        </div>
+                    )}
 
                     {can.advance && (
                         <button
@@ -854,17 +1002,17 @@ const V2SubmissionDetailPage = () => {
                             <p>No form schema attached.</p>
                         </div>
                     ) : (
-                        <FormRenderer
+                        <ApprovalReviewView
                             schema={formVersion.schema}
                             answers={answers}
-                            mode="approval"
-                            activeRemarksBySection={activeRemarksBySection}
-                            ebaEditableNow={ebaEditableNow}
-                            editReviewerNow={editReviewerNow}
+                            remarks={remarks as any}
+                            comments={comments as any}
                             fieldEditsByPath={fieldEditsByPath}
+                            cycleNumber={submission.cycleNumber || 1}
+                            ebaEditableNow={ebaEditableNow}
                             onEditField={openEditField}
-                            onFlagEdit={openFlagEdit}
-                            onAcceptEdit={acceptEdit}
+                            onAddRemark={(args) => openInlineRemark(args)}
+                            onAddComment={(args) => openInlineComment(args)}
                         />
                     )}
 
@@ -926,7 +1074,10 @@ const V2SubmissionDetailPage = () => {
                                         }`}
                                     >
                                         <div className={styles.certHead}>
-                                            <strong>{c.label || c.fieldKey}</strong>
+                                            <strong>
+                                                {c.label ||
+                                                    fieldLabelFromSchema(formVersion?.schema, c.fieldKey)}
+                                            </strong>
                                             <span className={styles.dim}>
                                                 {c.name} · slot {c.updateCode.slice(-6)}
                                             </span>
@@ -1462,6 +1613,114 @@ const V2SubmissionDetailPage = () => {
                             >
                                 Flag
                                 {editActing && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Inline remark modal - opened from the per-field Notes panel
+                on the review view. */}
+            {inlineRemark && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Leave a remark for the contractor</h3>
+                            <p className={styles.modalSub}>
+                                Anchored to{" "}
+                                <code>
+                                    {inlineRemark.sectionKey}
+                                    {inlineRemark.fieldKey ? `.${inlineRemark.fieldKey}` : ""}
+                                </code>
+                                . The contractor sees this inline when they
+                                next open the form. Active remarks block the
+                                process button until you return the application.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <textarea
+                                rows={4}
+                                value={inlineRemark.text}
+                                onChange={(e) =>
+                                    setInlineRemark({
+                                        ...inlineRemark,
+                                        text: e.target.value,
+                                        error: "",
+                                    })
+                                }
+                                placeholder="What does the contractor need to fix?"
+                                disabled={inlineRemark.saving}
+                            />
+                            {inlineRemark.error && <ErrorText text={inlineRemark.error} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setInlineRemark(null)}
+                                disabled={inlineRemark.saving}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitInlineRemark}
+                                disabled={inlineRemark.saving || !inlineRemark.text.trim()}
+                            >
+                                Save remark
+                                {inlineRemark.saving && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Inline comment modal - staff-only internal comment anchored to
+                the same section or field as the trigger. */}
+            {inlineComment && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Add an internal comment</h3>
+                            <p className={styles.modalSub}>
+                                Anchored to{" "}
+                                <code>
+                                    {inlineComment.sectionKey}
+                                    {inlineComment.fieldKey ? `.${inlineComment.fieldKey}` : ""}
+                                </code>
+                                . Visible only to staff.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <textarea
+                                rows={4}
+                                value={inlineComment.text}
+                                onChange={(e) =>
+                                    setInlineComment({
+                                        ...inlineComment,
+                                        text: e.target.value,
+                                        error: "",
+                                    })
+                                }
+                                placeholder="Add context for other reviewers."
+                                disabled={inlineComment.saving}
+                            />
+                            {inlineComment.error && <ErrorText text={inlineComment.error} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setInlineComment(null)}
+                                disabled={inlineComment.saving}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitInlineComment}
+                                disabled={inlineComment.saving || !inlineComment.text.trim()}
+                            >
+                                Save comment
+                                {inlineComment.saving && <ButtonLoadingIcon />}
                             </button>
                         </div>
                     </div>
