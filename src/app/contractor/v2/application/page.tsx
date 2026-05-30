@@ -122,6 +122,7 @@ const V2ApplicationPage = () => {
     const [submission, setSubmission] = useState<Submission | null>(null)
     const [formVersion, setFormVersion] = useState<FormVersion | null>(null)
     const [remarks, setRemarks] = useState<Remark[]>([])
+    const [migrationAvailable, setMigrationAvailable] = useState<any>(null)
     const [answers, setAnswers] = useState<Record<string, any>>({})
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState("")
@@ -150,6 +151,7 @@ const V2ApplicationPage = () => {
                 setSubmission(sub)
                 setFormVersion(result.data.formVersion as FormVersion)
                 setRemarks((result.data.remarks || []) as Remark[])
+                setMigrationAvailable(result.data.migrationAvailable || null)
                 const a = sub.answers
                 setAnswers(a && typeof a === "object" ? (a as Record<string, any>) : {})
             } else {
@@ -379,6 +381,28 @@ const V2ApplicationPage = () => {
                         <div className={styles.bannerInfo}>
                             This application is currently with reviewers and cannot be edited. You'll
                             be notified by email if changes are needed.
+                        </div>
+                    )}
+                    {migrationAvailable && (
+                        <div className={styles.bannerMigration}>
+                            <strong>This form was updated since you started.</strong>
+                            <p>
+                                {migrationAvailable.diff?.addedFieldKeys?.length || 0} new field(s)
+                                were added
+                                {migrationAvailable.diff?.requiredAddedFieldKeys?.length
+                                    ? ` (${migrationAvailable.diff.requiredAddedFieldKeys.length} required)`
+                                    : ""}
+                                {migrationAvailable.diff?.removedFieldKeys?.length
+                                    ? `, ${migrationAvailable.diff.removedFieldKeys.length} removed`
+                                    : ""}
+                                {migrationAvailable.diff?.changedTypeFieldKeys?.length
+                                    ? `, ${migrationAvailable.diff.changedTypeFieldKeys.length} changed type`
+                                    : ""}
+                                .{" "}
+                                {migrationAvailable.diff?.isSafe
+                                    ? "Please check your answers before submitting."
+                                    : "Some answers may need re-entry. The updated form will load when you refresh; contact your invitation team if you have questions."}
+                            </p>
                         </div>
                     )}
                 </header>

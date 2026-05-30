@@ -452,3 +452,28 @@
 .expiry_expired  { background: #fde6e6; color: #a32525; }
 .expiry_expiring { background: #fff4e0; color: #6b4500; }
 .expiry_healthy  { background: #e6f6e8; color: #1f7a2a; }
+
+/* Migration banner — shown at top of staff submission detail when the
+   template has been republished since this submission was created. */
+.migrationBanner {
+    background: #fff8f0;
+    border: 1px solid #ffd5b3;
+    border-left: 4px solid #e67509;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.migrationBannerMain { flex: 1 1 auto; min-width: 0; }
+.migrationBannerMain strong { color: #6b3d04; }
+.migrationDiff {
+    margin: 4px 0 0 0;
+    color: #777;
+    font-size: 0.85rem;
+}
+.migrationErr { color: #c0392b; font-size: 0.85rem; margin: 4px 0 0 0; }

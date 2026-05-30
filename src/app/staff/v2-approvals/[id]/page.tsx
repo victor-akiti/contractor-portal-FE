@@ -143,6 +143,11 @@ const V2SubmissionDetailPage = () => {
 
     // EBA state
     const [fieldEdits, setFieldEdits] = useState<FieldEditRow[]>([])
+
+    // Migration status
+    const [migrationStatus, setMigrationStatus] = useState<any>(null)
+    const [migrating, setMigrating] = useState(false)
+    const [migrationError, setMigrationError] = useState("")
     const [editingField, setEditingField] = useState<{
         field: any
         fieldPath: string
@@ -194,11 +199,12 @@ const V2SubmissionDetailPage = () => {
         try {
             setLoading(true)
             setError("")
-            const [s, c, cert, ed] = await Promise.all([
+            const [s, c, cert, ed, mig] = await Promise.all([
                 getProtected(`api/v2/submissions/${id}`, role),
                 getProtected(`api/v2/submissions/${id}/comments`, role),
                 getProtected(`api/v2/submissions/${id}/certificates`, role),
                 getProtected(`api/v2/submissions/${id}/edits`, role),
+                getProtected(`api/v2/submissions/${id}/migration-status`, role),
             ])
             if (s?.status === "OK") {
                 setSubmission(s.data?.submission || null)
@@ -210,6 +216,7 @@ const V2SubmissionDetailPage = () => {
             if (c?.status === "OK") setComments(c.data?.comments || [])
             if (cert?.status === "OK") setCertificates(cert.data?.certificates || [])
             if (ed?.status === "OK") setFieldEdits(ed.data?.edits || [])
+            if (mig?.status === "OK") setMigrationStatus(mig.data || null)
         } catch (e: any) {
             setError(e?.message || "Failed to load")
         } finally {
@@ -439,6 +446,45 @@ const V2SubmissionDetailPage = () => {
             setEditError(e?.message || "Unexpected error")
         } finally {
             setEditActing(false)
+        }
+    }
+
+    const runMigrate = async (confirmUnsafe = false) => {
+        if (!id) return
+        const diff = migrationStatus?.diff
+        const unsafe = diff && !diff.isSafe
+        const ok = await confirmDialog({
+            headerText: `Migrate to v${migrationStatus?.toVersion?.versionNumber}?`,
+            bodyText:
+                unsafe
+                    ? `This migration removes ${diff.removedFieldKeys.length} field(s) and changes the type of ${diff.changedTypeFieldKeys.length} field(s). The removed answers will be stashed under __migration_dropped_v${migrationStatus?.fromVersion?.versionNumber} on the submission so they're recoverable, but they won't appear on the form. Continue?`
+                    : `Migrating from v${migrationStatus?.fromVersion?.versionNumber} to v${migrationStatus?.toVersion?.versionNumber}. No data loss — ${diff?.addedFieldKeys?.length || 0} new field(s) will appear, ${diff?.requiredAddedFieldKeys?.length || 0} of them required.`,
+            confirmText: "Migrate",
+            destructive: !!unsafe,
+        })
+        if (!ok) return
+        setMigrating(true)
+        setMigrationError("")
+        try {
+            const result = await postProtected(
+                `api/v2/submissions/${id}/migrate`,
+                unsafe ? { confirmUnsafe: true } : {},
+                role,
+            )
+            if (result?.status === "OK") {
+                if (result.data?.requiresConfirmation && !confirmUnsafe) {
+                    // Server signalled unsafe; loop back with confirm.
+                    setMigrating(false)
+                    return runMigrate(true)
+                }
+                await fetchAll()
+            } else {
+                setMigrationError(result?.error?.message || "Migration failed")
+            }
+        } catch (e: any) {
+            setMigrationError(e?.message || "Unexpected error")
+        } finally {
+            setMigrating(false)
         }
     }
 
@@ -711,6 +757,40 @@ const V2SubmissionDetailPage = () => {
                     )}
                 </div>
             </div>
+
+            {migrationStatus?.available && (
+                <div className={styles.migrationBanner}>
+                    <div className={styles.migrationBannerMain}>
+                        <strong>
+                            Form template has a newer version (v{migrationStatus.fromVersion?.versionNumber}{" "}
+                            → v{migrationStatus.toVersion?.versionNumber}).
+                        </strong>
+                        <p className={styles.migrationDiff}>
+                            {migrationStatus.diff?.addedFieldKeys?.length || 0} added
+                            {migrationStatus.diff?.requiredAddedFieldKeys?.length
+                                ? ` (${migrationStatus.diff.requiredAddedFieldKeys.length} required)`
+                                : ""}
+                            {" · "}
+                            {migrationStatus.diff?.removedFieldKeys?.length || 0} removed
+                            {" · "}
+                            {migrationStatus.diff?.changedTypeFieldKeys?.length || 0} type-changed
+                            {migrationStatus.diff?.isSafe
+                                ? " · safe migration"
+                                : " · unsafe — review impact before migrating"}
+                        </p>
+                        {migrationError && <p className={styles.migrationErr}>{migrationError}</p>}
+                    </div>
+                    {["Admin", "HOD"].includes(role) && (
+                        <button
+                            className={styles.btnPrimary}
+                            onClick={() => runMigrate()}
+                            disabled={migrating}
+                        >
+                            {migrating ? "Migrating…" : "Migrate to latest"}
+                        </button>
+                    )}
+                </div>
+            )}
 
             <div className={styles.tabs}>
                 <button
