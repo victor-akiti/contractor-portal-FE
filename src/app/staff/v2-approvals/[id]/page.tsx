@@ -82,9 +82,15 @@ interface Comment {
 }
 
 interface ApprovalHistoryEntry {
+    // State-machine history uses { action, date, actorName, actorEmail,
+    // actorRole }. Older snapshots may still use type/description.
+    action?: string
     type?: string
     description?: string
     date?: string | number
+    actorName?: string
+    actorEmail?: string
+    actorRole?: string
     approver?: { name?: string; role?: string; email?: string }
 }
 
@@ -127,9 +133,25 @@ const stageFromLevel = (level: number): string => {
     return String.fromCharCode(66 + level)
 }
 
+// Drafts haven't been submitted yet, so by the canonical taxonomy they sit
+// at Stage A ("Not Yet Submitted") regardless of internal level. Stage B
+// only applies after the contractor has submitted (status flips from draft
+// to pending).
+const stageForSubmission = (submission: { status: string; level: number; approved: boolean }): string => {
+    if (submission.approved) return "L3"
+    if (submission.status === "draft") return "A"
+    return stageFromLevel(submission.level)
+}
+
+const stageLongLabel = (submission: { status: string; level: number; approved: boolean }): string => {
+    if (submission.approved) return "L3 — Approved Contractor"
+    if (submission.status === "draft") return "Stage A — Not Yet Submitted"
+    return `Stage ${stageFromLevel(submission.level)}`
+}
+
 const StagePill = ({ submission }: { submission: Submission }) => {
     if (submission.approved) return <span className={styles.stagePillL3}>L3</span>
-    return <span className={styles.stagePill}>Stage {stageFromLevel(submission.level)}</span>
+    return <span className={styles.stagePill}>{stageLongLabel(submission)}</span>
 }
 
 const V2SubmissionDetailPage = () => {
@@ -953,7 +975,7 @@ const V2SubmissionDetailPage = () => {
                                                 {c.reviewRemarks}
                                             </div>
                                         )}
-                                        {isCurrent && c.certStatus === "pending" && (
+                                        {isCurrent && c.certStatus === "pending" && submission.status !== "draft" && (
                                             <div className={styles.certActions}>
                                                 <button
                                                     className={styles.btnApprove}
@@ -1209,26 +1231,28 @@ const V2SubmissionDetailPage = () => {
                         </div>
                     ) : (
                         <ul className={styles.historyList}>
-                            {historyEntries.map((h, idx) => (
+                            {historyEntries.map((h, idx) => {
+                                const headline = h.action || h.type || h.description || "Event"
+                                const actorName = h.actorName || h.approver?.name
+                                const actorRole = h.actorRole || h.approver?.role
+                                return (
                                 <li key={idx} className={styles.historyItem}>
                                     <div className={styles.historyHead}>
-                                        <strong>{h.type || h.description}</strong>
+                                        <strong>{headline}</strong>
                                         {h.date && (
                                             <span className={styles.dim}>
                                                 {new Date(h.date).toLocaleString("en-NG")}
                                             </span>
                                         )}
                                     </div>
-                                    {h.description && h.type && h.description !== h.type && (
-                                        <p className={styles.historyText}>{h.description}</p>
-                                    )}
-                                    {h.approver?.name && (
-                                        <p className={styles.dim}>
-                                            {h.approver.name} {h.approver.role && `(${h.approver.role})`}
+                                    {(actorName || actorRole) && (
+                                        <p className={styles.historyText}>
+                                            By {actorName || "—"}{actorRole ? ` (${actorRole})` : ""}
                                         </p>
                                     )}
                                 </li>
-                            ))}
+                                )
+                            })}
                         </ul>
                     )}
                 </div>
