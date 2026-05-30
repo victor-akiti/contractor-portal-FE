@@ -47,6 +47,12 @@ const stageFromLevel = (level: number): string => {
     return String.fromCharCode(66 + level)
 }
 
+const stageForRow = (s: { status: string; level: number; approved: boolean }): string => {
+    if (s.approved) return "L3"
+    if (s.status === "draft") return "A"
+    return stageFromLevel(s.level)
+}
+
 const groupLabel = (g: GroupRef | string | null | undefined) => {
     if (!g) return "—"
     if (typeof g === "string") return g
@@ -196,7 +202,7 @@ const V2ApprovalsPage = () => {
                                     <td>{groupLabel(s.groupId)}</td>
                                     <td>
                                         <span className={styles.stagePill}>
-                                            {s.approved ? "L3" : stageFromLevel(s.level)}
+                                            {stageForRow(s)}
                                         </span>
                                     </td>
                                     <td>

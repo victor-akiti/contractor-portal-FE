@@ -256,9 +256,35 @@ const V2ApplicationPage = () => {
                 } before submitting.`,
             )
             const firstKey = Object.keys(errs)[0]
-            document
-                .querySelector(`[id^="field-${firstKey}"]`)
-                ?.scrollIntoView({ behavior: "smooth", block: "center" })
+
+            // Find which page contains the field with the first error. The
+            // renderer only mounts fields for the active page, so a direct
+            // querySelector misses errors on other pages. Switch pages first,
+            // then scroll on the next tick after the field is mounted.
+            const pages = formVersion?.schema?.pages || []
+            const fieldHostPage = pages.find((p: any) =>
+                (p.sections || []).some((s: any) =>
+                    (s.fields || []).some((f: any) => {
+                        // Match flat fieldKey OR repeated section path
+                        // 'sectionKey[idx].fieldKey'.
+                        if (firstKey === f.key) return true
+                        if (firstKey.startsWith(`${s.key}[`) && firstKey.endsWith(`.${f.key}`)) return true
+                        return false
+                    }),
+                ),
+            )
+            const scrollOnce = () => {
+                document
+                    .querySelector(`[id^="field-${CSS.escape(firstKey)}"]`)
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" })
+            }
+            if (fieldHostPage && fieldHostPage.key !== activePageKey) {
+                setActivePageKey(fieldHostPage.key)
+                // Wait for the render → then scroll.
+                setTimeout(scrollOnce, 80)
+            } else {
+                scrollOnce()
+            }
             return
         }
 
