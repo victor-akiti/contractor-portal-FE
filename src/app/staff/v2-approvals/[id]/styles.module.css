@@ -477,3 +477,16 @@
     font-size: 0.85rem;
 }
 .migrationErr { color: #c0392b; font-size: 0.85rem; margin: 4px 0 0 0; }
+
+.remarkGate {
+    background: #fff4e0;
+    border: 1px solid #f5d99c;
+    border-left: 3px solid #e67509;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #6b4500;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    max-width: 280px;
+    text-align: left;
+}
