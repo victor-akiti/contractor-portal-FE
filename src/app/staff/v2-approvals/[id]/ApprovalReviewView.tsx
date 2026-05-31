@@ -292,9 +292,22 @@ const ApprovalReviewView = ({
     ) => {
         const label = field.approvalLabel || field.label
         const anchor = `${sectionKey}::${field.key}`
-        const rs = (fieldRemarks[anchor] || []).filter(
+        const allFieldRemarks = fieldRemarks[anchor] || []
+        const rs = allFieldRemarks.filter(
             (r) => r.status === "active" && (!r.cycleNumber || r.cycleNumber === cycleNumber),
         )
+        // Previous-cycle remarks that the contractor has since addressed by
+        // resubmitting. Surfaced under the active block so the reviewer (the
+        // VRM at Stage B) can verify each was actually fixed before
+        // processing forward.
+        const addressedRs = allFieldRemarks
+            .filter(
+                (r) =>
+                    r.status === "addressed" &&
+                    r.cycleNumber != null &&
+                    r.cycleNumber < cycleNumber,
+            )
+            .sort((a, b) => (b.cycleNumber || 0) - (a.cycleNumber || 0))
         const cs = fieldComments[anchor] || []
         const edit = fieldEditsByPath?.[fieldPath]
         const isOpen = !!expanded[anchor]
@@ -383,6 +396,27 @@ const ApprovalReviewView = ({
                                         </li>
                                     ))}
                                 </ul>
+                            )}
+
+                            {addressedRs.length > 0 && (
+                                <div className={styles.addressedBlock}>
+                                    <div className={styles.addressedHead}>
+                                        Resolved on resubmit
+                                    </div>
+                                    <ul className={styles.notesList}>
+                                        {addressedRs.map((r) => (
+                                            <li key={r._id} className={styles.addressedItem}>
+                                                <p>
+                                                    <span className={styles.addressedCheck}>✓</span>{" "}
+                                                    {r.text}
+                                                </p>
+                                                <span className={styles.dim}>
+                                                    Cycle #{r.cycleNumber} - {r.authorName || "Reviewer"}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             )}
                         </div>
                         <div className={styles.notesCol}>

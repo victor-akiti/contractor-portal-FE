@@ -247,3 +247,25 @@
     letter-spacing: 0.04em;
     margin-bottom: 4px;
 }
+
+.addressedBlock {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed #ececec;
+}
+.addressedHead {
+    color: #1f7a2a;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+.addressedItem {
+    background: #f4fbf5 !important;
+    border-color: #b8e0bf !important;
+}
+.addressedCheck {
+    color: #1f7a2a;
+    font-weight: 700;
+}
