@@ -525,3 +525,15 @@
     color: #6b4500;
     font-size: 0.85rem;
 }
+
+.commentAnchorPill {
+    display: inline-block;
+    background: #fff5ed;
+    color: #6b3d04;
+    border: 1px solid #ffd5b3;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}

@@ -172,6 +172,31 @@ const fieldLabelFromSchema = (
     return fieldKey
 }
 
+// Resolve a sectionKey to its human title by walking the form schema.
+const sectionLabelFromSchema = (schema: any, sectionKey: string): string => {
+    if (!schema?.pages || !sectionKey) return sectionKey
+    for (const page of schema.pages) {
+        for (const section of page.sections || []) {
+            if (section.key === sectionKey) return section.title || sectionKey
+        }
+    }
+    return sectionKey
+}
+
+// Build a 'Section name > Field name' breadcrumb for an anchor pair. Used
+// by the Comments + Edit Audit tabs so reviewers see human text instead of
+// camelCase keys.
+const anchorLabel = (
+    schema: any,
+    sectionKey?: string | null,
+    fieldKey?: string | null,
+): string => {
+    const parts: string[] = []
+    if (sectionKey) parts.push(sectionLabelFromSchema(schema, sectionKey))
+    if (fieldKey) parts.push(fieldLabelFromSchema(schema, fieldKey))
+    return parts.length ? parts.join(" > ") : "General"
+}
+
 const StagePill = ({ submission }: { submission: Submission }) => {
     if (submission.approved) return <span className={styles.stagePillL3}>L3</span>
     return <span className={styles.stagePill}>{stageLongLabel(submission)}</span>
@@ -1288,8 +1313,14 @@ const V2SubmissionDetailPage = () => {
                             {fieldEdits.map((e) => (
                                 <li key={e._id} className={styles.certItem}>
                                     <div className={styles.certHead}>
-                                        <strong>{e.fieldKey}</strong>
-                                        <span className={styles.dim}>{e.fieldPath}</span>
+                                        <strong>
+                                            {fieldLabelFromSchema(formVersion?.schema, e.fieldKey)}
+                                        </strong>
+                                        <span className={styles.dim} title={e.fieldPath}>
+                                            {e.sectionKey
+                                                ? sectionLabelFromSchema(formVersion?.schema, e.sectionKey)
+                                                : "General"}
+                                        </span>
                                         <span
                                             className={`${styles.certBadge} ${
                                                 e.status === "active"
@@ -1405,6 +1436,13 @@ const V2SubmissionDetailPage = () => {
                                 })()
                                 return (
                                     <li key={c._id} className={styles.commentItem}>
+                                        <div className={styles.commentAnchorPill}>
+                                            On: {anchorLabel(
+                                                formVersion?.schema,
+                                                c.anchor?.sectionKey,
+                                                c.anchor?.fieldKey,
+                                            )}
+                                        </div>
                                         <div className={styles.commentHead}>
                                             <strong>{c.authorName || c.authorEmail}</strong>
                                             <span className={styles.dim}>{c.authorRole}</span>
@@ -1524,8 +1562,11 @@ const V2SubmissionDetailPage = () => {
                                         {active.map((r: any) => (
                                             <li key={r._id}>
                                                 <strong>
-                                                    {r.sectionKey}
-                                                    {r.fieldKey ? ` - ${r.fieldKey}` : ""}
+                                                    {anchorLabel(
+                                                        formVersion?.schema,
+                                                        r.sectionKey,
+                                                        r.fieldKey,
+                                                    )}
                                                 </strong>
                                                 <p>{r.text}</p>
                                             </li>
@@ -1702,13 +1743,12 @@ const V2SubmissionDetailPage = () => {
                         <div className={styles.modalHeader}>
                             <h3>Leave a remark for the contractor</h3>
                             <p className={styles.modalSub}>
-                                Anchored to{" "}
-                                <code>
-                                    {inlineRemark.sectionKey}
-                                    {inlineRemark.fieldKey ? `.${inlineRemark.fieldKey}` : ""}
-                                </code>
-                                . The contractor sees this inline when they
-                                next open the form. Active remarks block the
+                                On <strong>{anchorLabel(
+                                    formVersion?.schema,
+                                    inlineRemark.sectionKey,
+                                    inlineRemark.fieldKey,
+                                )}</strong>. The contractor sees this inline when
+                                they next open the form. Active remarks block the
                                 process button until you return the application.
                             </p>
                         </div>
@@ -1757,12 +1797,11 @@ const V2SubmissionDetailPage = () => {
                         <div className={styles.modalHeader}>
                             <h3>Add an internal comment</h3>
                             <p className={styles.modalSub}>
-                                Anchored to{" "}
-                                <code>
-                                    {inlineComment.sectionKey}
-                                    {inlineComment.fieldKey ? `.${inlineComment.fieldKey}` : ""}
-                                </code>
-                                . Visible only to staff.
+                                On <strong>{anchorLabel(
+                                    formVersion?.schema,
+                                    inlineComment.sectionKey,
+                                    inlineComment.fieldKey,
+                                )}</strong>. Visible only to staff.
                             </p>
                         </div>
                         <div className={styles.modalBody}>
