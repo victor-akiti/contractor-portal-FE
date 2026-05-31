@@ -7,7 +7,6 @@ import { fetchPipeline } from '../api';
 import type { DateRange, Period, PipelineData, PriorityVendors } from '../types';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
-import PeriodSelector from './PeriodSelector';
 import SortableTable from './SortableTable';
 import StatCard from './StatCard';
 
@@ -32,14 +31,7 @@ function CardDivider() {
   );
 }
 
-interface PipelineTabProps {
-  period: Period;
-  dateRange?: DateRange;
-  rawDateRange: DateRange;
-  onPeriodChange: (p: Period, dr: DateRange) => void;
-}
-
-export default function PipelineTab({ period, dateRange, rawDateRange, onPeriodChange }: PipelineTabProps) {
+export default function PipelineTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
   const [data, setData] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +88,14 @@ export default function PipelineTab({ period, dateRange, rawDateRange, onPeriodC
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
+      {/* Refresh */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
+        <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+          Refresh
+        </button>
+      </div>
+
       {/* Live stage counts */}
       {loading ? <CardsSkeleton count={10} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -133,23 +133,9 @@ export default function PipelineTab({ period, dateRange, rawDateRange, onPeriodC
         )}
       </Section>
 
-      {/* Period selector — live snapshot above, period-filtered data below */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-        <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Period-filtered data below
-        </p>
-        <PeriodSelector
-          period={period}
-          rawDateRange={rawDateRange}
-          onChange={onPeriodChange}
-          onRefresh={load}
-          loading={loading}
-        />
-      </div>
-
       {/* Period throughput */}
       {!loading && !error && data && (
-        <Section title={`What moved this period (${data.throughput.period})`} subtitle="Progressions and final approvals that happened within the selected period. These are actions taken, not the current state.">
+        <Section title={`What moved this period (${data.throughput.period})`}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
             <StatCard label="Stage progressions" value={data.throughput.periodProgressions} color="blue" />
             <StatCard label="Approved (L3)" value={data.throughput.periodL3Approvals} color="brand" />
@@ -159,7 +145,7 @@ export default function PipelineTab({ period, dateRange, rawDateRange, onPeriodC
 
       {/* Dwell charts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-        <Section title="Current avg wait per stage" subtitle="How long contractors are currently waiting at each stage right now. This is a live reading — the higher the bar, the more work has built up there.">
+        <Section title="Current avg wait per stage" subtitle="How long contractors are currently sitting at each stage. Same metric used for the bottleneck.">
           {loading ? <ChartSkeleton height={220} /> : error ? null : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={dwellData} layout="vertical" margin={{ top: 4, right: 50, bottom: 4, left: 70 }}>
@@ -177,7 +163,7 @@ export default function PipelineTab({ period, dateRange, rawDateRange, onPeriodC
           )}
         </Section>
 
-        <Section title="Historical avg time per stage" subtitle="Based on contractors who've already moved through each stage. Compare this with the current waits on the left — if they're much higher, that stage has gotten slower recently.">
+        <Section title="Historical avg time per stage" subtitle="Based on contractors who already completed each stage. A stage can be the current bottleneck without a high historical average if the slowdown is recent.">
           {loading ? <ChartSkeleton height={220} /> : error ? null : completionDwellData.length === 0 ? (
             <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>No historical data yet</p>
           ) : (
