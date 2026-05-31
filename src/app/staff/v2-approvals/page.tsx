@@ -1,14 +1,16 @@
 'use client'
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
+import Tabs from "@/components/tabs"
 import { getProtected } from "@/requests/get"
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
-// V2 Approvals queue — SubmissionV2 listing with status/stage filtering.
-// Stage label is derived from level + B (canonical taxonomy, see SPEC.md §3).
+// V2 Approvals queue. Layout matches the legacy /staff/approvals page:
+// tabs across the top with live counts, a search bar that filters across
+// companyName / contractorEmail, and the orange Amni accent throughout.
 
 interface GroupRef { _id: string; name: string }
 interface VersionRef { _id: string; versionNumber?: number }
@@ -31,19 +33,31 @@ interface SubmissionV2Row {
     updatedAt?: string
 }
 
-const STATUS_OPTIONS = [
-    { key: "", label: "Any status" },
-    { key: "draft", label: "Draft (with contractor)" },
-    { key: "pending", label: "Pending (in pipeline)" },
-    { key: "returned", label: "Returned" },
-    { key: "park requested", label: "Park requested" },
-    { key: "parked", label: "Parked" },
-    { key: "approved", label: "Approved (L3)" },
+interface Counts {
+    draft: number
+    pending: number
+    returned: number
+    park_requested: number
+    parked: number
+    approved: number
+    total: number
+}
+
+// Tab definition: name maps to the BE filter ("status" / "approved").
+// label is what the contractor staff see. Order matches the legacy
+// queue so reviewers don't need to relearn their inbox.
+const TAB_DEFS: { name: string; label: string; filter: Record<string, string> }[] = [
+    { name: "pending", label: "Pending Review", filter: { status: "pending" } },
+    { name: "draft", label: "Not Yet Submitted", filter: { status: "draft" } },
+    { name: "returned", label: "Returned To Contractor", filter: { status: "returned" } },
+    { name: "park_requested", label: "Park Requests", filter: { status: "park requested" } },
+    { name: "parked", label: "Parked", filter: { status: "parked" } },
+    { name: "approved", label: "L3 Approved", filter: { approved: "true" } },
+    { name: "all", label: "All", filter: {} },
 ]
 
 const stageFromLevel = (level: number): string => {
-    // 0 → B (Vendor submitted), 1 → C, ..., 5 → G (Final approval)
-    if (level == null || level < 0 || level > 5) return "—"
+    if (level == null || level < 0 || level > 5) return "-"
     return String.fromCharCode(66 + level)
 }
 
@@ -54,40 +68,74 @@ const stageForRow = (s: { status: string; level: number; approved: boolean }): s
 }
 
 const groupLabel = (g: GroupRef | string | null | undefined) => {
-    if (!g) return "—"
+    if (!g) return "-"
     if (typeof g === "string") return g
-    return g.name || "—"
+    return g.name || "-"
 }
 
 const versionLabel = (v: VersionRef | string | null | undefined) => {
-    if (!v) return "—"
+    if (!v) return "-"
     if (typeof v === "string") return v.slice(-6)
-    return v.versionNumber != null ? `v${v.versionNumber}` : "—"
+    return v.versionNumber != null ? `v${v.versionNumber}` : "-"
 }
 
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
 
-    const [status, setStatus] = useState("")
-    const [level, setLevel] = useState<string>("")
+    const [activeTab, setActiveTab] = useState("pending")
+    const [search, setSearch] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState("")
     const [submissions, setSubmissions] = useState<SubmissionV2Row[]>([])
+    const [counts, setCounts] = useState<Counts | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
 
-    const fetchSubmissions = async () => {
+    // Debounce search input so we don't hammer the BE on each keystroke.
+    useEffect(() => {
+        const id = setTimeout(() => setDebouncedSearch(search.trim()), 250)
+        return () => clearTimeout(id)
+    }, [search])
+
+    const tabsForTabsComponent = useMemo(() => {
+        if (!counts) {
+            return TAB_DEFS.map((t) => ({ name: t.name, label: t.label }))
+        }
+        const countFor = (name: string): number => {
+            switch (name) {
+                case "draft": return counts.draft
+                case "pending": return counts.pending
+                case "returned": return counts.returned
+                case "park_requested": return counts.park_requested
+                case "parked": return counts.parked
+                case "approved": return counts.approved
+                case "all": return counts.total
+                default: return 0
+            }
+        }
+        return TAB_DEFS.map((t) => {
+            const c = countFor(t.name)
+            return { name: t.name, label: c > 0 ? `${t.label} (${c})` : t.label }
+        })
+    }, [counts])
+
+    const fetchAll = async () => {
+        if (!user?.role) return
         try {
             setLoading(true)
             setError("")
+            const tab = TAB_DEFS.find((t) => t.name === activeTab) || TAB_DEFS[0]
             const params = new URLSearchParams()
-            if (status) params.set("status", status)
-            if (level !== "") params.set("level", level)
+            Object.entries(tab.filter).forEach(([k, v]) => params.set(k, v))
+            if (debouncedSearch) params.set("search", debouncedSearch)
             const qs = params.toString() ? `?${params.toString()}` : ""
-            const result = await getProtected(`api/v2/submissions${qs}`, user?.role)
-            if (result?.status === "OK") {
-                setSubmissions(result.data?.submissions || [])
-            } else {
-                setError(result?.error?.message || "Failed to load submissions")
-            }
+
+            const [list, c] = await Promise.all([
+                getProtected(`api/v2/submissions${qs}`, user.role),
+                getProtected("api/v2/submissions/counts", user.role),
+            ])
+            if (list?.status === "OK") setSubmissions(list.data?.submissions || [])
+            else setError(list?.error?.message || "Failed to load submissions")
+            if (c?.status === "OK") setCounts(c.data?.counts || null)
         } catch (e: any) {
             setError(e?.message || "Failed to load")
         } finally {
@@ -96,81 +144,59 @@ const V2ApprovalsPage = () => {
     }
 
     useEffect(() => {
-        if (user?.role) fetchSubmissions()
+        fetchAll()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, status, level])
-
-    const totals = useMemo(() => {
-        const out: Record<string, number> = {}
-        submissions.forEach((s) => {
-            out[s.status] = (out[s.status] || 0) + 1
-        })
-        return out
-    }, [submissions])
+    }, [user?.role, activeTab, debouncedSearch])
 
     return (
         <div className={styles.page}>
             <div className={styles.pageHeader}>
                 <div>
-                    <h2 className={styles.pageTitle}>V2 Approvals</h2>
+                    <h2 className={styles.pageTitle}>Approvals</h2>
                     <p className={styles.pageSubtitle}>
-                        Parallel approval queue (SubmissionV2). Each row is a contractor
-                        submission moving through stages B → G. Click a row to review,
-                        comment, advance, return, park, or final-approve.
+                        V2 submissions. Switch tabs to filter by status; use search to find a
+                        specific company or contractor email.
                     </p>
                 </div>
-                <div className={styles.headerMeta}>
-                    <span>
-                        Showing <strong>{submissions.length}</strong>
-                    </span>
-                    {Object.entries(totals).map(([k, v]) => (
-                        <span key={k} className={styles.miniChip}>{k}: {v}</span>
-                    ))}
+                <div className={styles.searchWrap}>
+                    <input
+                        type="search"
+                        className={styles.searchInput}
+                        placeholder="Search company or contractor email..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
             </div>
 
-            <div className={styles.filtersBar}>
-                <label>
-                    Status
-                    <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                        {STATUS_OPTIONS.map((o) => (
-                            <option key={o.key} value={o.key}>{o.label}</option>
-                        ))}
-                    </select>
-                </label>
-                <label>
-                    Stage / level
-                    <select value={level} onChange={(e) => setLevel(e.target.value)}>
-                        <option value="">Any stage</option>
-                        <option value="0">Stage B (Vendor submitted)</option>
-                        <option value="1">Stage C (VRM)</option>
-                        <option value="2">Stage D (HOD)</option>
-                        <option value="3">Stage E (Due diligence)</option>
-                        <option value="4">Stage F (Final due diligence)</option>
-                        <option value="5">Stage G (Final approval)</option>
-                    </select>
-                </label>
-                <button className={styles.btnLink} onClick={fetchSubmissions}>Refresh</button>
-            </div>
+            <Tabs
+                tabs={tabsForTabsComponent}
+                activeTab={activeTab}
+                updateActiveTab={(name) => setActiveTab(name)}
+            />
 
             {loading && (
                 <div className={styles.emptyState}>
                     <ButtonLoadingIcon />
-                    <p>Loading…</p>
+                    <p>Loading...</p>
                 </div>
             )}
 
             {!loading && error && (
                 <div className={styles.errorBanner}>
                     <ErrorText text={error} />
-                    <button className={styles.btnLink} onClick={fetchSubmissions}>Retry</button>
+                    <button className={styles.btnLink} onClick={fetchAll}>Retry</button>
                 </div>
             )}
 
             {!loading && !error && submissions.length === 0 && (
                 <div className={styles.emptyState}>
-                    <h4>No submissions match these filters</h4>
-                    <p>Adjust the status/stage filters or invite a contractor to start one.</p>
+                    <h4>Nothing here</h4>
+                    <p>
+                        {debouncedSearch
+                            ? `No submissions match "${debouncedSearch}" in this tab.`
+                            : "No submissions in this tab yet."}
+                    </p>
                 </div>
             )}
 
@@ -201,19 +227,21 @@ const V2ApprovalsPage = () => {
                                     </td>
                                     <td>{groupLabel(s.groupId)}</td>
                                     <td>
-                                        <span className={styles.stagePill}>
-                                            {stageForRow(s)}
-                                        </span>
+                                        <span className={styles.stagePill}>{stageForRow(s)}</span>
                                     </td>
                                     <td>
-                                        <span className={`${styles.statusBadge} ${styles[`status_${s.status.replace(" ", "_")}`] || ""}`}>
+                                        <span
+                                            className={`${styles.statusBadge} ${
+                                                styles[`status_${s.status.replace(" ", "_")}`] || ""
+                                            }`}
+                                        >
                                             {s.status}
                                         </span>
                                     </td>
                                     <td className={styles.dim}>#{s.cycleNumber || 1}</td>
                                     <td className={styles.dim}>{versionLabel(s.formVersionId)}</td>
                                     <td className={styles.dim}>
-                                        {s.updatedAt ? new Date(s.updatedAt).toLocaleString("en-NG") : "—"}
+                                        {s.updatedAt ? new Date(s.updatedAt).toLocaleString("en-NG") : "-"}
                                     </td>
                                 </tr>
                             ))}
