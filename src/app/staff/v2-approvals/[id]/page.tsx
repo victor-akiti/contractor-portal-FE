@@ -3,6 +3,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
 import ApprovalReviewView from "./ApprovalReviewView"
+import DueDiligencePanel from "./DueDiligencePanel"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
@@ -54,6 +55,8 @@ type ActionKey =
     | "release-park"
     | "retrieve"
     | "revert-from-l3"
+    | "return-to-previous-stage"
+    | "park-at-l2"
 
 interface Remark {
     _id: string
@@ -115,9 +118,12 @@ interface Submission {
     updateTime?: number
     lastApproved?: number
     park?: any
-    selectedEndUsers?: string[]
-    jobCategories?: string[]
+    selectedEndUsers?: any[]
+    selectedServices?: string[]
+    jobCategories?: any[]
     siteVisitRequired?: boolean
+    dueDiligence?: any
+    hodRemarkForEA?: string
     isActive?: boolean
     createdAt?: string
     updatedAt?: string
@@ -207,7 +213,12 @@ const V2SubmissionDetailPage = () => {
     const id = params?.id
     const user = useSelector((state: any) => state.user.user)
 
-    const [tab, setTab] = useState<"form" | "certificates" | "edits" | "comments" | "history">("form")
+    const [tab, setTab] = useState<"form" | "certificates" | "due-diligence" | "edits" | "comments" | "history">("form")
+    // Stage G (Executive Approver) modal state for the three decisions.
+    const [returnPrevOpen, setReturnPrevOpen] = useState(false)
+    const [returnPrevReason, setReturnPrevReason] = useState("")
+    const [parkL2Open, setParkL2Open] = useState(false)
+    const [parkL2Reason, setParkL2Reason] = useState("")
     const [certificates, setCertificates] = useState<Certificate[]>([])
     const [certActingId, setCertActingId] = useState<string | null>(null)
 
@@ -216,6 +227,21 @@ const V2SubmissionDetailPage = () => {
 
     // Migration status
     const [migrationStatus, setMigrationStatus] = useState<any>(null)
+
+    // Stage C: end-user assignment.
+    const [endUserPickerOpen, setEndUserPickerOpen] = useState(false)
+    const [endUserCandidates, setEndUserCandidates] = useState<Array<{ _id: string; name: string; email: string; role: string }>>([])
+    const [pickedEndUserIds, setPickedEndUserIds] = useState<string[]>([])
+    const [savingEndUsers, setSavingEndUsers] = useState(false)
+    const [endUserError, setEndUserError] = useState("")
+
+    // Stage D: services + site visit recording.
+    const [servicesOpen, setServicesOpen] = useState(false)
+    const [pickedServices, setPickedServices] = useState<string[]>([])
+    const [siteVisit, setSiteVisit] = useState(false)
+    const [serviceDraft, setServiceDraft] = useState("")
+    const [savingServices, setSavingServices] = useState(false)
+    const [servicesError, setServicesError] = useState("")
     const [migrating, setMigrating] = useState(false)
     const [migrationError, setMigrationError] = useState("")
     // Per-field inline remark / comment modal state. Pre-fills the
@@ -461,6 +487,146 @@ const V2SubmissionDetailPage = () => {
         if (ok) {
             setParkRequestOpen(false)
             setParkReason("")
+        }
+    }
+
+    // Stage C: open the end-user picker. Loads candidate list lazily then
+    // seeds the picker with whatever the supervisor already chose so they
+    // can amend instead of starting over.
+    const openEndUserPicker = async () => {
+        if (!id) return
+        setEndUserError("")
+        setEndUserPickerOpen(true)
+        setPickedEndUserIds(
+            Array.isArray(submission?.selectedEndUsers)
+                ? submission!.selectedEndUsers!.map((u: any) =>
+                      typeof u === "string" ? u : String(u?._id || u),
+                  )
+                : [],
+        )
+        if (endUserCandidates.length === 0) {
+            try {
+                const r = await getProtected("api/v2/staff/end-user-candidates", role)
+                if (r?.status === "OK") {
+                    setEndUserCandidates(r.data?.users || [])
+                } else {
+                    setEndUserError(r?.error?.message || "Could not load end users")
+                }
+            } catch (e: any) {
+                setEndUserError(e?.message || "Could not load end users")
+            }
+        }
+    }
+
+    const saveEndUsers = async () => {
+        if (!id) return
+        if (pickedEndUserIds.length === 0) {
+            setEndUserError("Pick at least one end user before saving.")
+            return
+        }
+        setSavingEndUsers(true)
+        setEndUserError("")
+        try {
+            const r = await putProtected(
+                `api/v2/submissions/${id}/end-users`,
+                { userIds: pickedEndUserIds },
+                role,
+            )
+            if (r?.status === "OK") {
+                setEndUserPickerOpen(false)
+                await fetchAll()
+            } else {
+                setEndUserError(r?.error?.message || "Could not save end users")
+            }
+        } catch (e: any) {
+            setEndUserError(e?.message || "Unexpected error")
+        } finally {
+            setSavingEndUsers(false)
+        }
+    }
+
+    // Stage D: open the services + site-visit recorder for assigned end
+    // users. Seeds with prior selection so re-opening shows current state.
+    const openServicesModal = () => {
+        setServicesError("")
+        setPickedServices(
+            Array.isArray((submission as any)?.selectedServices)
+                ? [...(submission as any).selectedServices]
+                : Array.isArray(submission?.jobCategories)
+                  ? [...(submission as any).jobCategories]
+                  : [],
+        )
+        setSiteVisit(!!submission?.siteVisitRequired)
+        setServiceDraft("")
+        setServicesOpen(true)
+    }
+
+    const addServiceChip = () => {
+        const v = serviceDraft.trim()
+        if (!v) return
+        if (pickedServices.includes(v)) {
+            setServiceDraft("")
+            return
+        }
+        setPickedServices([...pickedServices, v])
+        setServiceDraft("")
+    }
+
+    const removeServiceChip = (s: string) => {
+        setPickedServices(pickedServices.filter((x) => x !== s))
+    }
+
+    // Stage F/G internal-return: HOD sends back to E or Executive Approver
+    // sends back to F. Re-uses the state-machine return-to-previous-stage
+    // action which decides the destination level from the current level.
+    const submitReturnPrev = async () => {
+        if (!returnPrevReason.trim()) {
+            setActionError("A reason is required to return for research.")
+            return
+        }
+        const ok = await runAction("return-to-previous-stage", { reason: returnPrevReason.trim() })
+        if (ok) {
+            setReturnPrevOpen(false)
+            setReturnPrevReason("")
+        }
+    }
+
+    const submitParkL2 = async () => {
+        if (!parkL2Reason.trim()) {
+            setActionError("A reason is required to mark Do Not Add.")
+            return
+        }
+        const ok = await runAction("park-at-l2", { reason: parkL2Reason.trim() })
+        if (ok) {
+            setParkL2Open(false)
+            setParkL2Reason("")
+        }
+    }
+
+    const saveServices = async () => {
+        if (!id) return
+        if (pickedServices.length === 0) {
+            setServicesError("Add at least one service before saving.")
+            return
+        }
+        setSavingServices(true)
+        setServicesError("")
+        try {
+            const r = await postProtected(
+                `api/v2/submissions/${id}/services`,
+                { selectedServices: pickedServices, siteVisitRequired: siteVisit },
+                role,
+            )
+            if (r?.status === "OK") {
+                setServicesOpen(false)
+                await fetchAll()
+            } else {
+                setServicesError(r?.error?.message || "Could not save services")
+            }
+        } catch (e: any) {
+            setServicesError(e?.message || "Unexpected error")
+        } finally {
+            setSavingServices(false)
         }
     }
 
@@ -851,27 +1017,51 @@ const V2SubmissionDetailPage = () => {
         const isHod = ["Admin", "HOD"].includes(role)
         const isExec = ["Admin", "Executive Approver"].includes(role)
         const isAdmin = role === "Admin"
+        const isSupervisor = ["Admin", "HOD", "Supervisor"].includes(role)
         const pending = submission.status === "pending"
         const parkRequested = submission.status === "park requested"
         const parked = submission.status === "parked"
+        // At Stage D, only the assigned end users (plus Admin/HOD) can act.
+        const assignedIds = (submission.selectedEndUsers || []).map((u: any) =>
+            typeof u === "string" ? u : String(u?._id || u),
+        )
+        const isAssignedEndUser =
+            !!user?._id && assignedIds.includes(String(user._id))
+        const canActAtStageD = isHod || isAssignedEndUser
         return {
             advance:
-                pending && submission.level < 5 && !hasActiveRemarksThisCycle && allSectionsReviewed,
+                pending &&
+                submission.level < 5 &&
+                !hasActiveRemarksThisCycle &&
+                allSectionsReviewed &&
+                (submission.level !== 2 || canActAtStageD),
             finalApprove:
                 pending &&
                 submission.level === 5 &&
                 isExec &&
                 !hasActiveRemarksThisCycle &&
                 allSectionsReviewed,
-            returnToVendor: pending,
-            requestPark: pending,
+            returnToVendor: pending && (submission.level !== 2 || canActAtStageD),
+            requestPark: pending && (submission.level !== 2 || canActAtStageD),
             approvePark: parkRequested && isHod,
             declinePark: parkRequested && isHod,
             releasePark: parked && isHod,
             retrieve: submission.status === "returned",
             revertFromL3: submission.approved && isAdmin,
+            // Stage C assignment - supervisor (or HOD/Admin) picks end users
+            // before advancing to Stage D.
+            assignEndUsers: pending && submission.level === 1 && isSupervisor,
+            // Stage D recording - assigned end user (or HOD/Admin) records
+            // the applicable services + site-visit flag before advancing.
+            recordServices: pending && submission.level === 2 && canActAtStageD,
+            // Stage F: HOD can return to E for more DD research.
+            returnToE: pending && submission.level === 4 && isHod,
+            // Stage G: Executive Approver decisions - return to F for research,
+            // or "do not add" (park at L2).
+            returnToF: pending && submission.level === 5 && isExec,
+            doNotAdd: pending && submission.level === 5 && isExec,
         }
-    }, [submission, role])
+    }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed])
 
     if (loading) {
         return (
@@ -939,6 +1129,39 @@ const V2SubmissionDetailPage = () => {
                             </div>
                         )}
 
+                    {can.assignEndUsers && (
+                        <button
+                            className={styles.btnSecondary}
+                            disabled={!!actionRunning}
+                            onClick={openEndUserPicker}
+                        >
+                            {Array.isArray(submission.selectedEndUsers) && submission.selectedEndUsers.length > 0
+                                ? `End Users (${submission.selectedEndUsers.length})`
+                                : "Assign End Users"}
+                        </button>
+                    )}
+                    {can.recordServices && (
+                        <button
+                            className={styles.btnSecondary}
+                            disabled={!!actionRunning}
+                            onClick={openServicesModal}
+                        >
+                            {Array.isArray((submission as any).selectedServices) && (submission as any).selectedServices.length > 0
+                                ? `Services (${(submission as any).selectedServices.length})`
+                                : "Record Services"}
+                        </button>
+                    )}
+                    {submission.status === "pending" && submission.level === 2 &&
+                        !["Admin", "HOD"].includes(role) &&
+                        !(user?._id && (submission.selectedEndUsers || []).some(
+                            (u: any) => String(typeof u === "string" ? u : u?._id || u) === String(user._id),
+                        )) && (
+                            <div className={styles.remarkGate}>
+                                At Stage D only the End Users assigned by the
+                                Supervisor can advance, return or hold this
+                                application.
+                            </div>
+                        )}
                     {can.advance && (
                         <button
                             className={styles.btnPrimary}
@@ -1027,6 +1250,30 @@ const V2SubmissionDetailPage = () => {
                             {actionRunning === "revert-from-l3" && <ButtonLoadingIcon />}
                         </button>
                     )}
+                    {(can.returnToE || can.returnToF) && (
+                        <button
+                            className={styles.btnSecondary}
+                            disabled={!!actionRunning}
+                            onClick={() => {
+                                setReturnPrevReason("")
+                                setReturnPrevOpen(true)
+                            }}
+                        >
+                            Return for Research
+                        </button>
+                    )}
+                    {can.doNotAdd && (
+                        <button
+                            className={styles.btnDanger}
+                            disabled={!!actionRunning}
+                            onClick={() => {
+                                setParkL2Reason("")
+                                setParkL2Open(true)
+                            }}
+                        >
+                            Do Not Add (Park at L2)
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -1077,6 +1324,14 @@ const V2SubmissionDetailPage = () => {
                 >
                     Certificates ({certificates.filter((c) => c.trackingStatus !== "untracked - updated").length})
                 </button>
+                {(submission.level >= 3 || submission.dueDiligence) && (
+                    <button
+                        className={`${styles.tab} ${tab === "due-diligence" ? styles.tabActive : ""}`}
+                        onClick={() => setTab("due-diligence")}
+                    >
+                        Due Diligence
+                    </button>
+                )}
                 <button
                     className={`${styles.tab} ${tab === "edits" ? styles.tabActive : ""}`}
                     onClick={() => setTab("edits")}
@@ -1299,6 +1554,18 @@ const V2SubmissionDetailPage = () => {
                         </Modal>
                     )}
                 </div>
+            )}
+
+            {tab === "due-diligence" && (
+                <DueDiligencePanel
+                    submissionId={String(id)}
+                    role={role}
+                    level={submission.level}
+                    status={submission.status}
+                    dueDiligence={(submission as any).dueDiligence || null}
+                    hodRemarkForEA={(submission as any).hodRemarkForEA || ""}
+                    onReload={fetchAll}
+                />
             )}
 
             {tab === "edits" && (
@@ -1835,6 +2102,256 @@ const V2SubmissionDetailPage = () => {
                             >
                                 Save comment
                                 {inlineComment.saving && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Stage C - end-user picker. Supervisor (or HOD/Admin) selects
+                one or more end users who will see the submission at Stage D.
+                Mirrors the legacy stageB selectedEndUsers flow. */}
+            {endUserPickerOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Assign End Users</h3>
+                            <p className={styles.modalSub}>
+                                Pick the specialist staff who should see this
+                                application at Stage D. They are the only
+                                non-HOD staff who will be able to advance,
+                                return or hold it once it moves forward.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            {endUserCandidates.length === 0 && !endUserError && (
+                                <p className={styles.modalSub}>Loading...</p>
+                            )}
+                            {endUserCandidates.length > 0 && (
+                                <div className={styles.endUserList}>
+                                    {endUserCandidates.map((u) => {
+                                        const checked = pickedEndUserIds.includes(u._id)
+                                        return (
+                                            <label key={u._id} className={styles.endUserRow}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    disabled={savingEndUsers}
+                                                    onChange={() =>
+                                                        setPickedEndUserIds(
+                                                            checked
+                                                                ? pickedEndUserIds.filter((x) => x !== u._id)
+                                                                : [...pickedEndUserIds, u._id],
+                                                        )
+                                                    }
+                                                />
+                                                <span className={styles.endUserName}>{u.name}</span>
+                                                <span className={styles.endUserRole}>{u.role}</span>
+                                                <span className={styles.endUserEmail}>{u.email}</span>
+                                            </label>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                            {endUserError && <ErrorText text={endUserError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setEndUserPickerOpen(false)}
+                                disabled={savingEndUsers}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={saveEndUsers}
+                                disabled={savingEndUsers || pickedEndUserIds.length === 0}
+                            >
+                                Save selection
+                                {savingEndUsers && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Stage D - assigned end user records the services that apply
+                to this contractor + whether a site visit is needed before
+                the application can advance to Stage E. */}
+            {servicesOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Record Services & Site Visit</h3>
+                            <p className={styles.modalSub}>
+                                Record the services this contractor is being
+                                evaluated for. Stage D cannot advance to Stage
+                                E until at least one service is recorded.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <label className={styles.modalLabel}>Services</label>
+                            <div className={styles.chipRow}>
+                                {pickedServices.map((s) => (
+                                    <span key={s} className={styles.serviceChip}>
+                                        {s}
+                                        <button
+                                            type="button"
+                                            className={styles.chipX}
+                                            onClick={() => removeServiceChip(s)}
+                                            disabled={savingServices}
+                                            aria-label={`Remove ${s}`}
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                            <div className={styles.chipInputRow}>
+                                <input
+                                    type="text"
+                                    value={serviceDraft}
+                                    onChange={(e) => setServiceDraft(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            e.preventDefault()
+                                            addServiceChip()
+                                        }
+                                    }}
+                                    placeholder="Type a service and press Enter"
+                                    disabled={savingServices}
+                                />
+                                <button
+                                    type="button"
+                                    className={styles.btnSecondary}
+                                    onClick={addServiceChip}
+                                    disabled={savingServices || !serviceDraft.trim()}
+                                >
+                                    Add
+                                </button>
+                            </div>
+
+                            <label className={styles.modalLabel} style={{ marginTop: 16 }}>
+                                <input
+                                    type="checkbox"
+                                    checked={siteVisit}
+                                    disabled={savingServices}
+                                    onChange={(e) => setSiteVisit(e.target.checked)}
+                                />
+                                <span style={{ marginLeft: 8 }}>
+                                    Site visit required before approval
+                                </span>
+                            </label>
+
+                            {servicesError && <ErrorText text={servicesError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setServicesOpen(false)}
+                                disabled={savingServices}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={saveServices}
+                                disabled={savingServices || pickedServices.length === 0}
+                            >
+                                Save
+                                {savingServices && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Stage F/G "Return for Research" - bounces one stage back
+                (E from F, F from G) without leaving the staff side. */}
+            {returnPrevOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Return for Research</h3>
+                            <p className={styles.modalSub}>
+                                {submission.level === 5
+                                    ? "Sends the application back to the HOD at Stage F with a research request. The contractor is not notified."
+                                    : "Sends the application back to the Due Diligence officer at Stage E. The contractor is not notified."}
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <textarea
+                                rows={4}
+                                placeholder="State what additional research is needed."
+                                value={returnPrevReason}
+                                onChange={(e) => setReturnPrevReason(e.target.value)}
+                            />
+                            {actionError && <ErrorText text={actionError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setReturnPrevOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitReturnPrev}
+                                disabled={
+                                    actionRunning === "return-to-previous-stage" ||
+                                    !returnPrevReason.trim()
+                                }
+                            >
+                                Submit
+                                {actionRunning === "return-to-previous-stage" && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Stage G "Do Not Add" - parks the submission at L2 without
+                approving. Final Executive Approver decision. */}
+            {parkL2Open && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Do Not Add (Park at L2)</h3>
+                            <p className={styles.modalSub}>
+                                The contractor will be parked at L2 and will
+                                not be added to the approved list. Provide a
+                                clear reason - this is the final Executive
+                                Approver decision and shows in the audit
+                                trail.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <textarea
+                                rows={4}
+                                placeholder="Reason for not adding the contractor."
+                                value={parkL2Reason}
+                                onChange={(e) => setParkL2Reason(e.target.value)}
+                            />
+                            {actionError && <ErrorText text={actionError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setParkL2Open(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnDanger}
+                                onClick={submitParkL2}
+                                disabled={
+                                    actionRunning === "park-at-l2" || !parkL2Reason.trim()
+                                }
+                            >
+                                Confirm Do Not Add
+                                {actionRunning === "park-at-l2" && <ButtonLoadingIcon />}
                             </button>
                         </div>
                     </div>
