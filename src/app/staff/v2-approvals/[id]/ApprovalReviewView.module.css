@@ -18,7 +18,50 @@
     gap: 4px;
 }
 
+.sectionHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.sectionHeadMain { flex: 1 1 240px; min-width: 0; }
 .sectionHead h4 { margin: 0; color: #1a1a1a; font-size: 0.95rem; }
+
+.sectionCheck {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.82rem;
+    color: #444;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+}
+.sectionCheck:hover:not(.sectionCheckDisabled) {
+    border-color: #1f7a2a;
+    color: #1a1a1a;
+}
+.sectionCheckOn {
+    background: #e6f6e8;
+    border-color: #1f7a2a;
+    color: #1f7a2a;
+}
+.sectionCheckDisabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+.sectionCheck input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: inherit;
+    accent-color: #1f7a2a;
+}
 .sectionDesc { margin: 4px 0 8px 0; color: #777; font-size: 0.85rem; }
 
 .sectionInstance {

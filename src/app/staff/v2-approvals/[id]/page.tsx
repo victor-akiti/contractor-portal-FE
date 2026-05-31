@@ -750,6 +750,63 @@ const V2SubmissionDetailPage = () => {
     // the current cycle, the application can only be returned (sending those
     // remarks to the contractor) or recommended for hold (park request).
     // Advance / final-approve are gated off.
+    // Which roles can tick section-review checkboxes at the current stage.
+    // Mirrors STAGE_ADVANCERS on the BE so the FE and the route gate agree.
+    const canActAtCurrentStage = useMemo(() => {
+        if (!submission) return false
+        if (submission.status !== "pending") return false
+        return [
+            "Admin",
+            "HOD",
+            "VRM",
+            "CO",
+            "Supervisor",
+            "End User",
+            "Amni Staff",
+            "Executive Approver",
+        ].includes(role)
+    }, [submission, role])
+
+    // All visible (non-hideOnApproval) sections must be ticked for the
+    // current (level, cycle) before the process button is allowed. Pairs
+    // with the BE guard in applyTransition.
+    const allSectionsReviewed = useMemo(() => {
+        if (!submission || !formVersion?.schema?.pages) return false
+        const approvals: Record<string, any> =
+            (submission as any).sectionApprovals || {}
+        const level = submission.level
+        const cycle = submission.cycleNumber || 1
+        const required: string[] = []
+        for (const p of formVersion.schema.pages) {
+            for (const s of p.sections || []) {
+                if (!s?.hideOnApproval && s?.key) required.push(s.key)
+            }
+        }
+        if (required.length === 0) return true
+        return required.every((sk) => !!approvals[`${level}:${cycle}:${sk}`])
+    }, [submission, formVersion])
+
+    const toggleSectionApproval = async (sectionKey: string, next: boolean) => {
+        if (!id) return
+        try {
+            const r = await postProtected(
+                `api/v2/submissions/${id}/section-approvals`,
+                { sectionKey, approved: next },
+                role,
+            )
+            if (r?.status === "OK") {
+                // Local update to keep the UI snappy without a full refetch.
+                setSubmission((prev: any) =>
+                    prev ? { ...prev, sectionApprovals: r.data.submission.sectionApprovals } : prev,
+                )
+            } else {
+                setActionError(r?.error?.message || "Could not save section approval.")
+            }
+        } catch (e: any) {
+            setActionError(e?.message || "Unexpected error.")
+        }
+    }
+
     const hasActiveRemarksThisCycle = useMemo(() => {
         const c = submission?.cycleNumber || 1
         return (remarks || []).some(
@@ -766,9 +823,14 @@ const V2SubmissionDetailPage = () => {
         const parkRequested = submission.status === "park requested"
         const parked = submission.status === "parked"
         return {
-            advance: pending && submission.level < 5 && !hasActiveRemarksThisCycle,
+            advance:
+                pending && submission.level < 5 && !hasActiveRemarksThisCycle && allSectionsReviewed,
             finalApprove:
-                pending && submission.level === 5 && isExec && !hasActiveRemarksThisCycle,
+                pending &&
+                submission.level === 5 &&
+                isExec &&
+                !hasActiveRemarksThisCycle &&
+                allSectionsReviewed,
             returnToVendor: pending,
             requestPark: pending,
             approvePark: parkRequested && isHod,
@@ -830,12 +892,20 @@ const V2SubmissionDetailPage = () => {
                 <div className={styles.headerActions}>
                     {actionSuccess && <SuccessMessage message={actionSuccess} />}
                     {actionError && <ErrorText text={actionError} />}
-                    {hasActiveRemarksThisCycle && submission.status === "pending" && (
+                    {submission.status === "pending" && hasActiveRemarksThisCycle && (
                         <div className={styles.remarkGate}>
                             Active remarks block the process button. Return to
                             contractor or request hold to continue.
                         </div>
                     )}
+                    {submission.status === "pending" &&
+                        !hasActiveRemarksThisCycle &&
+                        !allSectionsReviewed && (
+                            <div className={styles.remarkGate}>
+                                Tick the Reviewed checkbox on each section
+                                before processing forward.
+                            </div>
+                        )}
 
                     {can.advance && (
                         <button
@@ -1009,6 +1079,10 @@ const V2SubmissionDetailPage = () => {
                             comments={comments as any}
                             fieldEditsByPath={fieldEditsByPath}
                             cycleNumber={submission.cycleNumber || 1}
+                            level={submission.level}
+                            sectionApprovals={(submission as any).sectionApprovals || {}}
+                            canApproveSections={canActAtCurrentStage}
+                            onToggleSectionApproved={toggleSectionApproval}
                             ebaEditableNow={ebaEditableNow}
                             onEditField={openEditField}
                             onAddRemark={(args) => openInlineRemark(args)}
