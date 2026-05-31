@@ -747,3 +747,51 @@
     justify-content: center;
     z-index: 1000;
 }
+
+/* Stage role briefing - the "you are X at stage Y, do Z" card. */
+.stageBriefing {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: linear-gradient(135deg, #fff5ed 0%, #fffaf3 100%);
+    border: 1px solid #ffd5b3;
+    border-left: 4px solid #d56500;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 14px 0;
+}
+.stageBriefing h4 {
+    margin: 0 0 4px 0;
+    color: #6b3d04;
+    font-size: 0.95rem;
+}
+.stageBriefing p {
+    margin: 0;
+    color: #523200;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+/* HOD-return inbox surface - active reverts.history entries that point
+   at the current stage. Receiving owner sees the HOD's note here. */
+.hodReturnInbox {
+    background: #fdecec;
+    border: 1px solid #f5b3b3;
+    border-left: 4px solid #c33232;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 14px 0;
+}
+.hodReturnInbox h4 {
+    margin: 0 0 8px 0;
+    color: #8a1f1f;
+    font-size: 0.95rem;
+}
+.hodReturnEntry {
+    padding: 6px 0;
+    border-top: 1px solid #f5b3b380;
+}
+.hodReturnEntry:first-of-type { border-top: none; }
+.hodReturnReason { margin: 0; color: #4f0e0e; font-size: 0.9rem; line-height: 1.45; }
+.hodReturnMeta { display: block; margin-top: 4px; color: #8a1f1f; font-size: 0.78rem; }

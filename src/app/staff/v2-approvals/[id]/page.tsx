@@ -56,6 +56,7 @@ type ActionKey =
     | "retrieve"
     | "revert-from-l3"
     | "return-to-previous-stage"
+    | "return-to-earlier-stage"
     | "park-at-l2"
 
 interface Remark {
@@ -219,6 +220,12 @@ const V2SubmissionDetailPage = () => {
     const [returnPrevReason, setReturnPrevReason] = useState("")
     const [parkL2Open, setParkL2Open] = useState(false)
     const [parkL2Reason, setParkL2Reason] = useState("")
+    // HOD "return to earlier stage" modal - lets HOD pick any prior level
+    // and attach a remark for that stage's owner. Action button visible at
+    // levels 2-5 to HOD/Admin only.
+    const [returnEarlierOpen, setReturnEarlierOpen] = useState(false)
+    const [returnEarlierLevel, setReturnEarlierLevel] = useState(0)
+    const [returnEarlierReason, setReturnEarlierReason] = useState("")
     const [certificates, setCertificates] = useState<Certificate[]>([])
     const [certActingId, setCertActingId] = useState<string | null>(null)
 
@@ -588,6 +595,21 @@ const V2SubmissionDetailPage = () => {
         if (ok) {
             setReturnPrevOpen(false)
             setReturnPrevReason("")
+        }
+    }
+
+    const submitReturnEarlier = async () => {
+        if (!returnEarlierReason.trim()) {
+            setActionError("A reason is required to send back to an earlier stage.")
+            return
+        }
+        const ok = await runAction("return-to-earlier-stage", {
+            toLevel: returnEarlierLevel,
+            reason: returnEarlierReason.trim(),
+        })
+        if (ok) {
+            setReturnEarlierOpen(false)
+            setReturnEarlierReason("")
         }
     }
 
@@ -1060,6 +1082,10 @@ const V2SubmissionDetailPage = () => {
             // or "do not add" (park at L2).
             returnToF: pending && submission.level === 5 && isExec,
             doNotAdd: pending && submission.level === 5 && isExec,
+            // HOD-only "return to earlier stage" - useful when HOD spots a
+            // VRM-level mistake at Stage F. Visible at levels 2-5 (need at
+            // least one earlier stage to bounce back to).
+            returnEarlier: pending && submission.level >= 2 && isHod,
         }
     }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed])
 
@@ -1085,8 +1111,61 @@ const V2SubmissionDetailPage = () => {
         )
     }
 
-    const groupName = submission.groupId?.name || "—"
+    const groupName = submission.groupId?.name || "-"
     const historyEntries = [...(submission.approvalHistory || [])].reverse()
+
+    // Role-aware briefing for the current stage. Mirrors the legacy "you
+    // are <X> at <stage>, do <Y>" briefing so every staff role lands on a
+    // page that explains - in their own terms - what they need to do.
+    const stageRoleBriefing = (() => {
+        if (submission.status !== "pending") return null
+        const lvl = submission.level
+        const isAssignedEndUser =
+            !!user?._id &&
+            (submission.selectedEndUsers || []).some(
+                (u: any) => String(typeof u === "string" ? u : u?._id || u) === String(user._id),
+            )
+        const lines: { title: string; body: string; cta?: { label: string; onClick: () => void } } = {
+            title: "",
+            body: "",
+        } as any
+        if (lvl === 0 && ["Admin", "HOD", "VRM"].includes(role)) {
+            lines.title = "Stage B - Vendor Relationship Manager"
+            lines.body = "Review every section, leave remarks on anything wrong, then advance to the Supervisor at Stage C."
+        } else if (lvl === 1 && ["Admin", "HOD", "Supervisor"].includes(role)) {
+            const n = (submission.selectedEndUsers || []).length
+            lines.title = "Stage C - Supervisor"
+            lines.body = n > 0
+                ? `You have assigned ${n} End User${n === 1 ? "" : "s"}. You can change the selection before advancing to Stage D.`
+                : "Pick the End User(s) who should see this application at Stage D, then advance."
+            lines.cta = { label: n > 0 ? "Edit End Users" : "Assign End Users", onClick: openEndUserPicker }
+        } else if (lvl === 2) {
+            if (isAssignedEndUser || ["Admin", "HOD"].includes(role)) {
+                const n = ((submission as any).selectedServices || []).length
+                lines.title = "Stage D - End User"
+                lines.body = n > 0
+                    ? `${n} service${n === 1 ? "" : "s"} recorded${submission.siteVisitRequired ? ". Site visit flagged as required" : ""}. You can edit before advancing to Due Diligence at Stage E.`
+                    : "Record the services that apply to this contractor and flag whether a site visit is needed, then advance to Stage E."
+                lines.cta = { label: n > 0 ? "Edit Services" : "Record Services", onClick: openServicesModal }
+            } else {
+                lines.title = "Stage D - End User"
+                lines.body = "Only the End Users assigned by the Supervisor (or HOD/Admin) can act at this stage. You can view but not advance."
+            }
+        } else if (lvl === 3 && ["Admin", "HOD", "CO", "Supervisor", "Amni Staff", "End User"].includes(role)) {
+            lines.title = "Stage E - Due Diligence"
+            lines.body = "Complete the four Due Diligence checks (Registration, Internet, Reference, Exposed Persons). Each check needs a finding plus supporting upload before you can advance to the HOD review at Stage F."
+            lines.cta = { label: "Open Due Diligence", onClick: () => setTab("due-diligence") }
+        } else if (lvl === 4 && ["Admin", "HOD"].includes(role)) {
+            lines.title = "Stage F - HOD Due Diligence Review"
+            lines.body = "Read the Due Diligence record, tick the four approval boxes once you are satisfied, optionally add a note for the Executive Approver, then advance to Stage G."
+            lines.cta = { label: "Open Due Diligence", onClick: () => setTab("due-diligence") }
+        } else if (lvl === 5 && ["Admin", "Executive Approver"].includes(role)) {
+            lines.title = "Stage G - Executive Approver"
+            lines.body = "Three options: Final approve to L3, Return for Research back to HOD, or Do Not Add (parks the contractor at L2). Read the HOD's note before deciding."
+        }
+        if (!lines.title) return null
+        return lines
+    })()
 
     return (
         <div className={styles.page}>
@@ -1250,6 +1329,19 @@ const V2SubmissionDetailPage = () => {
                             {actionRunning === "revert-from-l3" && <ButtonLoadingIcon />}
                         </button>
                     )}
+                    {can.returnEarlier && (
+                        <button
+                            className={styles.btnSecondary}
+                            disabled={!!actionRunning}
+                            onClick={() => {
+                                setReturnEarlierLevel(0)
+                                setReturnEarlierReason("")
+                                setReturnEarlierOpen(true)
+                            }}
+                        >
+                            Return to Earlier Stage
+                        </button>
+                    )}
                     {(can.returnToE || can.returnToF) && (
                         <button
                             className={styles.btnSecondary}
@@ -1276,6 +1368,53 @@ const V2SubmissionDetailPage = () => {
                     )}
                 </div>
             </div>
+
+            {stageRoleBriefing && (
+                <div className={styles.stageBriefing}>
+                    <div>
+                        <h4>{stageRoleBriefing.title}</h4>
+                        <p>{stageRoleBriefing.body}</p>
+                    </div>
+                    {stageRoleBriefing.cta && (
+                        <button
+                            className={styles.btnPrimary}
+                            onClick={stageRoleBriefing.cta.onClick}
+                        >
+                            {stageRoleBriefing.cta.label}
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* HOD-return inbox alert: if the current stage is the target of
+                a recent HOD return-to-earlier-stage, surface the remark
+                here so the receiving owner sees it immediately. */}
+            {(() => {
+                const arr = (submission as any).reverts?.history || []
+                const matched = arr
+                    .filter(
+                        (h: any) =>
+                            h?.type === "HOD_RETURN" &&
+                            Number(h.toLevel) === submission.level &&
+                            h.status !== "resolved",
+                    )
+                    .slice(-3)
+                if (matched.length === 0) return null
+                return (
+                    <div className={styles.hodReturnInbox}>
+                        <h4>HOD sent this back to your stage</h4>
+                        {matched.map((h: any, i: number) => (
+                            <div key={i} className={styles.hodReturnEntry}>
+                                <p className={styles.hodReturnReason}>{h.reason}</p>
+                                <span className={styles.hodReturnMeta}>
+                                    From Stage {String.fromCharCode(66 + Number(h.fromLevel))} - {h.returnedBy?.name || h.returnedBy?.email || "HOD"}
+                                    {h.returnedAt && ` - ${new Date(h.returnedAt).toLocaleString("en-NG")}`}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )
+            })()}
 
             {migrationStatus?.available && (
                 <div className={styles.migrationBanner}>
@@ -2306,6 +2445,77 @@ const V2SubmissionDetailPage = () => {
                             >
                                 Submit
                                 {actionRunning === "return-to-previous-stage" && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* HOD "Return to Earlier Stage" - picks any prior stage and
+                attaches a remark. The receiving stage owner sees it via the
+                reverts.history surface on their inbox / detail page. */}
+            {returnEarlierOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Return to Earlier Stage</h3>
+                            <p className={styles.modalSub}>
+                                Sends the application back to any earlier
+                                stage with your remark. Use this when the
+                                issue is something an earlier reviewer
+                                (e.g. the VRM at Stage B) should have caught.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <label className={styles.modalLabel}>Send back to</label>
+                            <select
+                                value={returnEarlierLevel}
+                                onChange={(e) => setReturnEarlierLevel(Number(e.target.value))}
+                            >
+                                {Array.from({ length: submission.level }, (_, i) => i).map((lvl) => (
+                                    <option key={lvl} value={lvl}>
+                                        Stage {String.fromCharCode(66 + lvl)} (
+                                        {lvl === 0
+                                            ? "VRM"
+                                            : lvl === 1
+                                              ? "Supervisor"
+                                              : lvl === 2
+                                                ? "End User"
+                                                : lvl === 3
+                                                  ? "Due Diligence"
+                                                  : "HOD Review"}
+                                        )
+                                    </option>
+                                ))}
+                            </select>
+                            <label className={styles.modalLabel} style={{ marginTop: 12 }}>
+                                Remark for the receiving stage
+                            </label>
+                            <textarea
+                                rows={4}
+                                placeholder="Explain what needs to be fixed at that stage."
+                                value={returnEarlierReason}
+                                onChange={(e) => setReturnEarlierReason(e.target.value)}
+                            />
+                            {actionError && <ErrorText text={actionError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setReturnEarlierOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitReturnEarlier}
+                                disabled={
+                                    actionRunning === "return-to-earlier-stage" ||
+                                    !returnEarlierReason.trim()
+                                }
+                            >
+                                Return to Stage {String.fromCharCode(66 + returnEarlierLevel)}
+                                {actionRunning === "return-to-earlier-stage" && <ButtonLoadingIcon />}
                             </button>
                         </div>
                     </div>
