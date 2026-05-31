@@ -10,16 +10,20 @@ import { auth } from "@/lib/firebase"
 import { getIdToken } from "firebase/auth"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
-// V2 Approvals queue. This page is intentionally a close mirror of the
-// legacy /staff/approvals queue so reviewers don't need to relearn the
-// inbox. Differences are only where V2 adds new capability (Cycle column,
-// Form Version column). Tab names, filter chips, Stage Legend, Priority +
-// Deprioritise, Process Stage button and the Export buttons all match
-// legacy layout.
+// V2 Approvals queue. Layout mirrors legacy /staff/approvals so reviewers
+// see what they're used to.
+//
+// Behaviour notes:
+//  - Tab + chip switches show cached rows immediately (no blank flash) and
+//    refetch only if the cache for that key is older than CACHE_TTL_MS.
+//  - Search is client-side over the loaded list, debounced via local
+//    state. No BE round-trip on each keystroke (matches legacy
+//    filterCompaniesByName / filterInvitedCompaniesByNameOrEmail).
+//  - Counts fetched once and cached; refreshed only after a mutation.
 
 interface GroupRef { _id: string; name: string }
 interface VersionRef { _id: string; versionNumber?: number }
@@ -53,7 +57,6 @@ interface Counts {
     total: number
 }
 
-// Tab definition: name maps to the BE filter. Labels mirror legacy queue.
 const TAB_DEFS: { name: string; label: string; filter: Record<string, string>; stageFiltersEnabled?: boolean }[] = [
     { name: "in-progress", label: "Not Yet Submitted", filter: { status: "draft" } },
     {
@@ -93,6 +96,15 @@ const versionLabel = (v: VersionRef | string | null | undefined) => {
 }
 
 const STAGE_FILTERS = ["A", "B", "C", "D", "E", "F"]
+const CACHE_TTL_MS = 60_000 // 60s stale-while-revalidate window
+
+// Module-level cache so navigating away + back doesn't refetch. Keyed by
+// "<role>|<status>|<approved>|<completedStage>".
+const listCache = new Map<string, { rows: SubmissionV2Row[]; fetchedAt: number }>()
+let countsCache: { counts: Counts; fetchedAt: number } | null = null
+
+const cacheKey = (role: string, tabName: string, completedStage: string): string =>
+    `${role}|${tabName}|${completedStage}`
 
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
@@ -103,16 +115,19 @@ const V2ApprovalsPage = () => {
     const [search, setSearch] = useState("")
     const [debouncedSearch, setDebouncedSearch] = useState("")
     const [submissions, setSubmissions] = useState<SubmissionV2Row[]>([])
-    const [counts, setCounts] = useState<Counts | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [counts, setCounts] = useState<Counts | null>(countsCache?.counts || null)
+    const [refreshing, setRefreshing] = useState(false)
+    const [initialLoadDone, setInitialLoadDone] = useState(false)
     const [error, setError] = useState("")
     const [togglingPriorityId, setTogglingPriorityId] = useState<string | null>(null)
     const [exporting, setExporting] = useState<"current" | "all" | null>(null)
 
     const canPriority = ["Admin", "HOD", "Supervisor"].includes(user?.role)
 
+    // Search is debounced *locally* - no BE call. The filter runs against
+    // whatever rows are currently in state.
     useEffect(() => {
-        const id = setTimeout(() => setDebouncedSearch(search.trim()), 250)
+        const id = setTimeout(() => setDebouncedSearch(search.trim().toLowerCase()), 200)
         return () => clearTimeout(id)
     }, [search])
 
@@ -143,37 +158,75 @@ const V2ApprovalsPage = () => {
 
     const tabDef = TAB_DEFS.find((t) => t.name === activeTab) || TAB_DEFS[1]
 
-    const fetchAll = async () => {
+    // fetchList: stale-while-revalidate. Shows cached rows immediately,
+    // then fetches in the background if cache is missing or older than the
+    // TTL. force=true bypasses the TTL (used after mutations).
+    const fetchList = async (force = false) => {
         if (!user?.role) return
+        const key = cacheKey(user.role, activeTab, stageFilter)
+        const cached = listCache.get(key)
+        const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
+        if (cached) {
+            setSubmissions(cached.rows)
+            setInitialLoadDone(true)
+        }
+        if (fresh && !force) return
         try {
-            setLoading(true)
+            setRefreshing(true)
             setError("")
             const params = new URLSearchParams()
             Object.entries(tabDef.filter).forEach(([k, v]) => params.set(k, v))
-            if (debouncedSearch) params.set("search", debouncedSearch)
             if (tabDef.stageFiltersEnabled && stageFilter !== "All") {
                 params.set("completedStage", stageFilter)
             }
             const qs = params.toString() ? `?${params.toString()}` : ""
-
-            const [list, c] = await Promise.all([
-                getProtected(`api/v2/submissions${qs}`, user.role),
-                getProtected("api/v2/submission-counts", user.role),
-            ])
-            if (list?.status === "OK") setSubmissions(list.data?.submissions || [])
-            else setError(list?.error?.message || "Failed to load submissions")
-            if (c?.status === "OK") setCounts(c.data?.counts || null)
+            const list = await getProtected(`api/v2/submissions${qs}`, user.role)
+            if (list?.status === "OK") {
+                const rows = list.data?.submissions || []
+                listCache.set(key, { rows, fetchedAt: Date.now() })
+                setSubmissions(rows)
+            } else {
+                setError(list?.error?.message || "Failed to load submissions")
+            }
         } catch (e: any) {
             setError(e?.message || "Failed to load")
         } finally {
-            setLoading(false)
+            setRefreshing(false)
+            setInitialLoadDone(true)
+        }
+    }
+
+    const fetchCounts = async (force = false) => {
+        if (!user?.role) return
+        if (countsCache && !force && Date.now() - countsCache.fetchedAt < CACHE_TTL_MS) {
+            setCounts(countsCache.counts)
+            return
+        }
+        try {
+            const c = await getProtected("api/v2/submission-counts", user.role)
+            if (c?.status === "OK" && c.data?.counts) {
+                countsCache = { counts: c.data.counts, fetchedAt: Date.now() }
+                setCounts(c.data.counts)
+            }
+        } catch {
+            // counts failure is non-fatal; the tabs just show without the chips
         }
     }
 
     useEffect(() => {
-        fetchAll()
+        fetchList()
+        fetchCounts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, activeTab, debouncedSearch, stageFilter])
+    }, [user?.role, activeTab, stageFilter])
+
+    // Client-side search filter over the loaded submissions list.
+    const filteredSubmissions = useMemo(() => {
+        if (!debouncedSearch) return submissions
+        return submissions.filter((s) => {
+            const hay = `${s.companyName || ""} ${s.contractorEmail || ""} ${groupLabel(s.groupId)}`.toLowerCase()
+            return hay.includes(debouncedSearch)
+        })
+    }, [submissions, debouncedSearch])
 
     const togglePriority = async (row: SubmissionV2Row) => {
         if (!canPriority) return
@@ -193,8 +246,17 @@ const V2ApprovalsPage = () => {
                 { isPriority: nextValue },
                 user.role,
             )
-            if (r?.status === "OK") await fetchAll()
-            else setError(r?.error?.message || "Could not update priority")
+            if (r?.status === "OK") {
+                // Optimistic local patch + invalidate cache so a real refetch
+                // picks up the new ordering.
+                listCache.clear()
+                setSubmissions((rows) =>
+                    rows.map((x) => (x._id === row._id ? { ...x, isPriority: nextValue } : x)),
+                )
+                fetchList(true)
+            } else {
+                setError(r?.error?.message || "Could not update priority")
+            }
         } catch (e: any) {
             setError(e?.message || "Unexpected error")
         } finally {
@@ -202,7 +264,6 @@ const V2ApprovalsPage = () => {
         }
     }
 
-    // Export current tab / all data via the BE CSV endpoint.
     const downloadCsv = async (scope: "current" | "all") => {
         try {
             setExporting(scope)
@@ -234,32 +295,31 @@ const V2ApprovalsPage = () => {
         }
     }
 
+    // First-load spinner only - subsequent fetches refresh quietly.
+    const showInitialLoading = !initialLoadDone && submissions.length === 0
+
     return (
         <div className={styles.page}>
-            <div className={styles.pageHeader}>
-                <div>
-                    <h2 className={styles.pageTitle}>Registration Approvals</h2>
-                    <p className={styles.pageSubtitle}>
-                        V2 submissions. Switch tabs to filter by status; use search to find a
-                        specific company or contractor email.
-                    </p>
+            <h2 className={styles.pageTitle}>Registration Approvals</h2>
+
+            <div className={styles.searchRow}>
+                <div className={styles.searchWrap}>
+                    <label className={styles.searchLabel}>Quick Search</label>
+                    <input
+                        type="search"
+                        className={styles.searchInput}
+                        placeholder="Type Company Name or Email"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
-                <div className={styles.headerActions}>
-                    <div className={styles.searchWrap}>
-                        <input
-                            type="search"
-                            className={styles.searchInput}
-                            placeholder="Type Company Name or Email"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
+                <div className={styles.exportButtons}>
                     <button
                         className={styles.exportSecondary}
                         onClick={() => downloadCsv("current")}
                         disabled={exporting !== null}
                     >
-                        Export Current Tab
+                        <span className={styles.dlIcon}>↓</span> Export Current Tab
                         {exporting === "current" && <ButtonLoadingIcon />}
                     </button>
                     <button
@@ -267,7 +327,7 @@ const V2ApprovalsPage = () => {
                         onClick={() => downloadCsv("all")}
                         disabled={exporting !== null}
                     >
-                        Export All Data
+                        <span className={styles.dlIcon}>↓</span> Export All Data
                         {exporting === "all" && <ButtonLoadingIcon />}
                     </button>
                 </div>
@@ -279,13 +339,8 @@ const V2ApprovalsPage = () => {
                 updateActiveTab={(name) => setActiveTab(name)}
             />
 
-            {/* Stage Legend - mirrors legacy collapsible card; only relevant
-                inside the Within Amni Review tab where stages A-G are the
-                axis users sort by. */}
             {tabDef.stageFiltersEnabled && <StageLegend />}
 
-            {/* Filter chips: All / Completed Stage A-F. Hidden outside the
-                pending tab to match legacy behaviour. */}
             {tabDef.stageFiltersEnabled && (
                 <div className={styles.filterChips}>
                     <span className={styles.filterLabel}>Filter:</span>
@@ -304,24 +359,37 @@ const V2ApprovalsPage = () => {
                             Completed Stage {s}
                         </button>
                     ))}
+                    <input
+                        type="search"
+                        className={styles.inlineFilterInput}
+                        placeholder="Filter by company name"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
             )}
 
-            {loading && (
+            {refreshing && (
+                <div className={styles.refreshingHint}>
+                    <ButtonLoadingIcon /> Refreshing...
+                </div>
+            )}
+
+            {showInitialLoading && (
                 <div className={styles.emptyState}>
                     <ButtonLoadingIcon />
                     <p>Loading...</p>
                 </div>
             )}
 
-            {!loading && error && (
+            {error && !showInitialLoading && (
                 <div className={styles.errorBanner}>
                     <ErrorText text={error} />
-                    <button className={styles.btnLink} onClick={fetchAll}>Retry</button>
+                    <button className={styles.btnLink} onClick={() => fetchList(true)}>Retry</button>
                 </div>
             )}
 
-            {!loading && !error && submissions.length === 0 && (
+            {!showInitialLoading && !error && filteredSubmissions.length === 0 && (
                 <div className={styles.emptyState}>
                     <h4>Nothing here</h4>
                     <p>
@@ -332,54 +400,38 @@ const V2ApprovalsPage = () => {
                 </div>
             )}
 
-            {!loading && !error && submissions.length > 0 && (
+            {!showInitialLoading && !error && filteredSubmissions.length > 0 && (
                 <div className={styles.tableWrap}>
-                    <table className={styles.table}>
+                    <table className={styles.legacyTable}>
                         <thead>
                             <tr>
-                                <th>Contractor Name</th>
+                                <th>▲ Contractor Name</th>
                                 <th>Approval Stage</th>
                                 <th>Action</th>
-                                <th>Cycle</th>
-                                <th>Version</th>
-                                <th>Last Contractor Update</th>
+                                <th>▲ Last Contractor Update</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {submissions.map((s) => (
+                            {filteredSubmissions.map((s) => (
                                 <tr key={s._id} className={s.isPriority ? styles.rowPriority : ""}>
                                     <td>
-                                        <Link href={`/staff/v2-approvals/${s._id}`} className={styles.rowLink}>
-                                            <div className={styles.nameCell}>
-                                                <span className={styles.nameText}>
-                                                    {(s.companyName || "(no name)").toUpperCase()}
-                                                </span>
-                                                {s.isPriority && (
-                                                    <span className={styles.priorityBadge}>★ Priority</span>
-                                                )}
-                                                <span className={styles.descText}>{s.contractorEmail}</span>
-                                                <span className={styles.descText}>{groupLabel(s.groupId)}</span>
-                                            </div>
+                                        <Link href={`/staff/v2-approvals/${s._id}`} className={styles.contractorLink}>
+                                            {(s.companyName || "(no name)").toUpperCase()}
                                         </Link>
+                                        {s.isPriority && (
+                                            <span className={styles.priorityBadge}>★ Priority</span>
+                                        )}
                                     </td>
                                     <td>
-                                        <span className={styles.stagePill}>Stage {stageForRow(s)}</span>
-                                        <span
-                                            className={`${styles.statusBadge} ${
-                                                styles[`status_${s.status.replace(" ", "_")}`] || ""
-                                            }`}
-                                        >
-                                            {s.status}
-                                        </span>
+                                        <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
                                     </td>
                                     <td>
                                         <div className={styles.actionCell}>
                                             {canPriority && (
                                                 <button
-                                                    className={styles.btnGhost}
+                                                    className={styles.btnDeprioritise}
                                                     onClick={() => togglePriority(s)}
                                                     disabled={togglingPriorityId === s._id}
-                                                    title={s.isPriority ? "Remove from priority" : "Pin to top"}
                                                 >
                                                     {s.isPriority ? "▼ Deprioritise" : "▲ Prioritise"}
                                                     {togglingPriorityId === s._id && <ButtonLoadingIcon />}
@@ -387,7 +439,7 @@ const V2ApprovalsPage = () => {
                                             )}
                                             {s.status === "pending" && (
                                                 <button
-                                                    className={styles.btnProcess}
+                                                    className={styles.btnProcessLegacy}
                                                     onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
                                                 >
                                                     PROCESS STAGE {stageForRow(s)}
@@ -395,10 +447,14 @@ const V2ApprovalsPage = () => {
                                             )}
                                         </div>
                                     </td>
-                                    <td className={styles.dim}>#{s.cycleNumber || 1}</td>
-                                    <td className={styles.dim}>{versionLabel(s.formVersionId)}</td>
-                                    <td className={styles.dim}>
-                                        {s.updatedAt ? new Date(s.updatedAt).toLocaleDateString("en-NG", { year: "numeric", month: "long", day: "numeric" }) : "-"}
+                                    <td className={styles.dateCell}>
+                                        {s.updatedAt
+                                            ? new Date(s.updatedAt).toLocaleDateString("en-US", {
+                                                  year: "numeric",
+                                                  month: "long",
+                                                  day: "numeric",
+                                              })
+                                            : "-"}
                                     </td>
                                 </tr>
                             ))}
