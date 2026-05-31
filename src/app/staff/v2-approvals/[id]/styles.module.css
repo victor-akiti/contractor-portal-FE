@@ -817,3 +817,73 @@
     color: #333;
 }
 .serviceRow:hover { background: #fff; }
+
+/* ── Bottom decision bar ──────────────────────────────────────────────
+   Sits at the bottom of the detail page, after Form / Certificates /
+   Due Diligence / Edits / Comments / History. Groups all available
+   transitions by intent so reviewers make their call after scanning the
+   page top-to-bottom. Wraps responsively. */
+.decisionBar {
+    margin-top: 32px;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 20px 24px 24px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.decisionBarHeader {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+}
+.decisionBarHeader h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+.decisionBarHeader p {
+    margin: 0;
+    font-size: 0.84rem;
+    color: #666;
+    line-height: 1.45;
+    max-width: 720px;
+}
+.decisionGroups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: stretch;
+}
+.decisionGroup {
+    flex: 1 1 240px;
+    min-width: 240px;
+    background: #fafafa;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 12px 14px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.decisionGroupPrimary {
+    background: linear-gradient(135deg, #fff5ed 0%, #fffaf3 100%);
+    border-color: #ffd5b3;
+    border-left: 3px solid #d56500;
+}
+.decisionGroupLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #666;
+}
+.decisionGroupPrimary .decisionGroupLabel {
+    color: #6b3d04;
+}
+.decisionButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
