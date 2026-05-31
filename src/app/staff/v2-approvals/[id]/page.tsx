@@ -242,13 +242,18 @@ const V2SubmissionDetailPage = () => {
     const [savingEndUsers, setSavingEndUsers] = useState(false)
     const [endUserError, setEndUserError] = useState("")
 
-    // Stage D: services + site visit recording.
+    // Stage D: services + site visit recording. Services are picked from
+    // the controlled JobCategory collection (GET /jobCategories) - same
+    // source the legacy stageB / stageC selectors use, so the V2 list
+    // stays consistent with the rest of the portal.
     const [servicesOpen, setServicesOpen] = useState(false)
     const [pickedServices, setPickedServices] = useState<string[]>([])
     const [siteVisit, setSiteVisit] = useState(false)
-    const [serviceDraft, setServiceDraft] = useState("")
     const [savingServices, setSavingServices] = useState(false)
     const [servicesError, setServicesError] = useState("")
+    const [jobCategories, setJobCategories] = useState<{ _id: string; category: string }[]>([])
+    const [jobCategoriesLoading, setJobCategoriesLoading] = useState(false)
+    const [serviceSearch, setServiceSearch] = useState("")
     const [migrating, setMigrating] = useState(false)
     const [migrationError, setMigrationError] = useState("")
     // Per-field inline remark / comment modal state. Pre-fills the
@@ -554,33 +559,42 @@ const V2SubmissionDetailPage = () => {
 
     // Stage D: open the services + site-visit recorder for assigned end
     // users. Seeds with prior selection so re-opening shows current state.
-    const openServicesModal = () => {
+    // Loads the controlled job-category list lazily and caches it on the
+    // component instance (no refetch when re-opening within the session).
+    const openServicesModal = async () => {
         setServicesError("")
-        setPickedServices(
-            Array.isArray((submission as any)?.selectedServices)
-                ? [...(submission as any).selectedServices]
-                : Array.isArray(submission?.jobCategories)
-                  ? [...(submission as any).jobCategories]
-                  : [],
-        )
+        const prior = Array.isArray((submission as any)?.selectedServices)
+            ? [...(submission as any).selectedServices]
+            : Array.isArray(submission?.jobCategories)
+              ? (submission as any).jobCategories.map((j: any) => (typeof j === "string" ? j : j?.category)).filter(Boolean)
+              : []
+        setPickedServices(prior)
         setSiteVisit(!!submission?.siteVisitRequired)
-        setServiceDraft("")
+        setServiceSearch("")
         setServicesOpen(true)
-    }
-
-    const addServiceChip = () => {
-        const v = serviceDraft.trim()
-        if (!v) return
-        if (pickedServices.includes(v)) {
-            setServiceDraft("")
-            return
+        if (jobCategories.length === 0) {
+            try {
+                setJobCategoriesLoading(true)
+                const r = await getProtected("jobCategories", role)
+                if (r?.status === "OK" && Array.isArray(r.data)) {
+                    setJobCategories(
+                        r.data.map((j: any) => ({ _id: String(j._id), category: String(j.category) })),
+                    )
+                } else {
+                    setServicesError(r?.error?.message || "Could not load job categories")
+                }
+            } catch (e: any) {
+                setServicesError(e?.message || "Could not load job categories")
+            } finally {
+                setJobCategoriesLoading(false)
+            }
         }
-        setPickedServices([...pickedServices, v])
-        setServiceDraft("")
     }
 
-    const removeServiceChip = (s: string) => {
-        setPickedServices(pickedServices.filter((x) => x !== s))
+    const toggleService = (category: string) => {
+        setPickedServices((prev) =>
+            prev.includes(category) ? prev.filter((s) => s !== category) : [...prev, category],
+        )
     }
 
     // Stage F/G internal-return: HOD sends back to E or Executive Approver
@@ -2330,45 +2344,45 @@ const V2SubmissionDetailPage = () => {
                             </p>
                         </div>
                         <div className={styles.modalBody}>
-                            <label className={styles.modalLabel}>Services</label>
-                            <div className={styles.chipRow}>
-                                {pickedServices.map((s) => (
-                                    <span key={s} className={styles.serviceChip}>
-                                        {s}
-                                        <button
-                                            type="button"
-                                            className={styles.chipX}
-                                            onClick={() => removeServiceChip(s)}
-                                            disabled={savingServices}
-                                            aria-label={`Remove ${s}`}
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                            <div className={styles.chipInputRow}>
-                                <input
-                                    type="text"
-                                    value={serviceDraft}
-                                    onChange={(e) => setServiceDraft(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            e.preventDefault()
-                                            addServiceChip()
-                                        }
-                                    }}
-                                    placeholder="Type a service and press Enter"
-                                    disabled={savingServices}
-                                />
-                                <button
-                                    type="button"
-                                    className={styles.btnSecondary}
-                                    onClick={addServiceChip}
-                                    disabled={savingServices || !serviceDraft.trim()}
-                                >
-                                    Add
-                                </button>
+                            <label className={styles.modalLabel}>
+                                Services ({pickedServices.length} selected)
+                            </label>
+                            <input
+                                type="search"
+                                className={styles.searchInput}
+                                placeholder="Search services..."
+                                value={serviceSearch}
+                                onChange={(e) => setServiceSearch(e.target.value)}
+                                disabled={savingServices}
+                            />
+                            <div className={styles.serviceListWrap}>
+                                {jobCategoriesLoading && (
+                                    <div className={styles.dim}>Loading services...</div>
+                                )}
+                                {!jobCategoriesLoading && jobCategories.length === 0 && (
+                                    <div className={styles.dim}>
+                                        No services configured. Add them under Job Categories.
+                                    </div>
+                                )}
+                                {!jobCategoriesLoading &&
+                                    jobCategories
+                                        .filter((c) =>
+                                            c.category.toLowerCase().includes(serviceSearch.trim().toLowerCase()),
+                                        )
+                                        .map((c) => {
+                                            const checked = pickedServices.includes(c.category)
+                                            return (
+                                                <label key={c._id} className={styles.serviceRow}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
+                                                        disabled={savingServices}
+                                                        onChange={() => toggleService(c.category)}
+                                                    />
+                                                    <span>{c.category}</span>
+                                                </label>
+                                            )
+                                        })}
                             </div>
 
                             <label className={styles.modalLabel} style={{ marginTop: 16 }}>
