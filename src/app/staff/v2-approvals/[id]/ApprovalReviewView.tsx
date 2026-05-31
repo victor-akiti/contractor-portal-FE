@@ -88,6 +88,10 @@ interface Props {
     sectionApprovals?: Record<string, any>
     // When the current viewer can tick / untick approval boxes.
     canApproveSections?: boolean
+    // When false, the section-review checkbox is hidden entirely (not just
+    // disabled). Used at stages that don't review section-by-section
+    // (Stage D end user just reads through; Stage E/F/G work in panels).
+    showSectionApproval?: boolean
     onToggleSectionApproved?: (sectionKey: string, next: boolean) => void
     // EBA edit affordance - same callback shape as FormRenderer so the host
     // can reuse its existing edit modal.
@@ -213,6 +217,7 @@ const ApprovalReviewView = ({
     level,
     sectionApprovals,
     canApproveSections,
+    showSectionApproval = true,
     onToggleSectionApproved,
     ebaEditableNow,
     onEditField,
@@ -250,6 +255,7 @@ const ApprovalReviewView = ({
     }
 
     const SectionApprovalCheck = ({ sectionKey }: { sectionKey: string }) => {
+        if (!showSectionApproval) return null
         const checked = isSectionApproved(sectionKey)
         const disabled = !canApproveSections || !onToggleSectionApproved
         return (

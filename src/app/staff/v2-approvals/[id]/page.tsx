@@ -865,9 +865,14 @@ const V2SubmissionDetailPage = () => {
     // Advance / final-approve are gated off.
     // Which roles can tick section-review checkboxes at the current stage.
     // Mirrors STAGE_ADVANCERS on the BE so the FE and the route gate agree.
+    // The Reviewed checkbox is only shown at Stages B (VRM) and C
+    // (Supervisor) - the two stages where reviewers work through the form
+    // section by section. Stage D (End User) reads through; Stages E/F/G
+    // act in their own panels (DD tab, approval checkboxes, decision).
     const canActAtCurrentStage = useMemo(() => {
         if (!submission) return false
         if (submission.status !== "pending") return false
+        if (![0, 1].includes(submission.level)) return false
         return [
             "Admin",
             "HOD",
@@ -883,8 +888,18 @@ const V2SubmissionDetailPage = () => {
     // All visible (non-hideOnApproval) sections must be ticked for the
     // current (level, cycle) before the process button is allowed. Pairs
     // with the BE guard in applyTransition.
+    //
+    // Stages exempt from section-by-section review (legacy parity):
+    //   - Stage D (level 2 - End User): just reads through the form
+    //   - Stage E (level 3 - Due Diligence): works in the DD tab
+    //   - Stage F (level 4 - HOD DD Review): ticks DD approval boxes
+    //   - Stage G (level 5 - Executive Approver): three-option decision
+    // Only Stage B (level 0 - VRM) and Stage C (level 1 - Supervisor)
+    // work through the form section by section.
+    const STAGES_REQUIRING_SECTION_REVIEW = [0, 1]
     const allSectionsReviewed = useMemo(() => {
         if (!submission || !formVersion?.schema?.pages) return false
+        if (!STAGES_REQUIRING_SECTION_REVIEW.includes(submission.level)) return true
         const approvals: Record<string, any> =
             (submission as any).sectionApprovals || {}
         const level = submission.level
@@ -1134,6 +1149,7 @@ const V2SubmissionDetailPage = () => {
                             level={submission.level}
                             sectionApprovals={(submission as any).sectionApprovals || {}}
                             canApproveSections={canActAtCurrentStage}
+                            showSectionApproval={[0, 1].includes(submission.level)}
                             onToggleSectionApproved={toggleSectionApproval}
                             ebaEditableNow={ebaEditableNow}
                             onEditField={openEditField}
