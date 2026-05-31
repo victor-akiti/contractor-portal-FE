@@ -330,6 +330,8 @@ const V2SubmissionDetailPage = () => {
 
     // Modal forms
     const [returnOpen, setReturnOpen] = useState(false)
+    // returnRemarks is unused now (remarks are authored inline) but kept
+    // declared to minimise churn; can be removed in a follow-up sweep.
     const [returnRemarks, setReturnRemarks] = useState<Array<{ sectionKey: string; text: string }>>([
         { sectionKey: "", text: "" },
     ])
@@ -405,19 +407,24 @@ const V2SubmissionDetailPage = () => {
         }
     }
 
+    // Return action - remarks are now authored inline on each section /
+    // field via the ApprovalReviewView Notes panel before clicking Return.
+    // The modal is a plain confirmation; we just ship whichever active
+    // remarks exist on the current cycle through the BE return path.
     const submitReturn = async () => {
-        const cleaned = returnRemarks
-            .map((r) => ({ sectionKey: r.sectionKey.trim(), text: r.text.trim() }))
-            .filter((r) => r.sectionKey && r.text)
-        if (cleaned.length === 0) {
-            setActionError("At least one remark with a section is required to return.")
+        const activeRemarksThisCycle = (remarks || []).filter(
+            (r: any) =>
+                r.status === "active" &&
+                (!r.cycleNumber || r.cycleNumber === (submission?.cycleNumber || 1)),
+        )
+        if (activeRemarksThisCycle.length === 0) {
+            setActionError(
+                "Add at least one section or field remark before returning. Use the Notes panel on the section or field that needs the contractor's attention.",
+            )
             return
         }
-        const ok = await runAction("return", { remarks: cleaned })
-        if (ok) {
-            setReturnOpen(false)
-            setReturnRemarks([{ sectionKey: "", text: "" }])
-        }
+        const ok = await runAction("return", {})
+        if (ok) setReturnOpen(false)
     }
 
     const submitParkRequest = async () => {
@@ -1489,49 +1496,43 @@ const V2SubmissionDetailPage = () => {
                         <div className={styles.modalHeader}>
                             <h3>Return to contractor</h3>
                             <p className={styles.modalSub}>
-                                Add one or more remarks. Each remark is anchored to a section key from the form
-                                (e.g. <code>companyInformation</code>). The contractor will see these inline.
+                                Confirm sending this application back to the
+                                contractor. Every active remark you've left on
+                                this cycle becomes visible to them inline.
                             </p>
                         </div>
                         <div className={styles.modalBody}>
-                            {returnRemarks.map((r, i) => (
-                                <div key={i} className={styles.remarkRow}>
-                                    <input
-                                        type="text"
-                                        placeholder="section key"
-                                        value={r.sectionKey}
-                                        onChange={(e) => {
-                                            const next = [...returnRemarks]
-                                            next[i] = { ...next[i], sectionKey: e.target.value }
-                                            setReturnRemarks(next)
-                                        }}
-                                    />
-                                    <textarea
-                                        rows={2}
-                                        placeholder="Remark text"
-                                        value={r.text}
-                                        onChange={(e) => {
-                                            const next = [...returnRemarks]
-                                            next[i] = { ...next[i], text: e.target.value }
-                                            setReturnRemarks(next)
-                                        }}
-                                    />
-                                    {returnRemarks.length > 1 && (
-                                        <button
-                                            className={styles.btnLink}
-                                            onClick={() => setReturnRemarks(returnRemarks.filter((_, j) => j !== i))}
-                                        >
-                                            Remove
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            <button
-                                className={styles.btnLink}
-                                onClick={() => setReturnRemarks([...returnRemarks, { sectionKey: "", text: "" }])}
-                            >
-                                + Add another remark
-                            </button>
+                            {(() => {
+                                const cycle = submission?.cycleNumber || 1
+                                const active = (remarks || []).filter(
+                                    (r: any) =>
+                                        r.status === "active" &&
+                                        (!r.cycleNumber || r.cycleNumber === cycle),
+                                )
+                                if (active.length === 0) {
+                                    return (
+                                        <div className={styles.inlineWarning}>
+                                            No active remarks on this cycle yet.
+                                            Add at least one section or field
+                                            remark using the Notes panel before
+                                            returning.
+                                        </div>
+                                    )
+                                }
+                                return (
+                                    <ul className={styles.remarkSummary}>
+                                        {active.map((r: any) => (
+                                            <li key={r._id}>
+                                                <strong>
+                                                    {r.sectionKey}
+                                                    {r.fieldKey ? ` - ${r.fieldKey}` : ""}
+                                                </strong>
+                                                <p>{r.text}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )
+                            })()}
                             {actionError && <ErrorText text={actionError} />}
                         </div>
                         <div className={styles.modalActions}>
