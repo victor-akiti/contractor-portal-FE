@@ -537,3 +537,213 @@
     font-weight: 600;
     margin-bottom: 6px;
 }
+
+/* Stage C end-user picker */
+.endUserList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 360px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 8px;
+    background: #fafafa;
+}
+.endUserRow {
+    display: grid;
+    grid-template-columns: 22px 1.4fr 0.9fr 1.4fr;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.endUserRow:hover { background: #fff; }
+.endUserName { font-weight: 600; color: #222; font-size: 0.9rem; }
+.endUserRole {
+    font-size: 0.74rem;
+    color: #5a3508;
+    background: #fff5ed;
+    border: 1px solid #ffd5b3;
+    border-radius: 12px;
+    padding: 2px 8px;
+    text-align: center;
+}
+.endUserEmail { color: #666; font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Stage D services chip input */
+.serviceChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eef6ee;
+    color: #2d5d2d;
+    border: 1px solid #b7d8b7;
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 0.82rem;
+}
+.chipX {
+    background: transparent;
+    border: none;
+    color: #2d5d2d;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+}
+.chipInputRow {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.chipInputRow input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+}
+.modalLabel {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    font-size: 0.82rem;
+    margin-bottom: 6px;
+}
+
+/* Due Diligence panel (Stage E/F/G) */
+.ddGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+}
+@media (max-width: 900px) {
+    .ddGrid { grid-template-columns: 1fr; }
+}
+.ddCard {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.ddCardHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.ddCardHead h4 { margin: 0; font-size: 0.96rem; color: #222; }
+.ddDone {
+    background: #e7f5e7;
+    color: #2d5d2d;
+    border: 1px solid #b7d8b7;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+.ddPending {
+    background: #fff7e0;
+    color: #6b4500;
+    border: 1px solid #f5d99c;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+.ddRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #333;
+}
+.ddTextarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.88rem;
+}
+.ddFiles {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.ddFileRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.84rem;
+    padding: 4px 6px;
+    background: #fafafa;
+    border-radius: 4px;
+}
+.ddReadRow { font-size: 0.86rem; color: #444; }
+.ddHodReview {
+    margin-top: 24px;
+    border: 1px solid #ffd5b3;
+    background: #fff8f1;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.ddHodReview h3 { margin: 0; color: #6b3d04; font-size: 1.05rem; }
+.exposedList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.exposedRow {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.exposedRow > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.exposedRole {
+    font-size: 0.78rem;
+    color: #444;
+    background: #efefef;
+    border-radius: 10px;
+    padding: 2px 8px;
+}
+.exposedFlag {
+    font-size: 0.74rem;
+    color: #8a1f1f;
+    background: #fde8e8;
+    border: 1px solid #f5b3b3;
+    border-radius: 10px;
+    padding: 2px 8px;
+}
+.exposedActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
