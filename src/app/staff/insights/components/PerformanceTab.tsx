@@ -5,7 +5,6 @@ import type { Column } from './SortableTable';
 import type { DateRange, PerformanceData, Period } from '../types';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, TableSkeleton } from './LoadingSkeleton';
-import PeriodSelector from './PeriodSelector';
 import SortableTable from './SortableTable';
 import StatCard from './StatCard';
 
@@ -33,14 +32,7 @@ function DwellBadge({ days, label }: { days: number | null | undefined; label: s
   );
 }
 
-interface PerformanceTabProps {
-  period: Period;
-  dateRange?: DateRange;
-  rawDateRange: DateRange;
-  onPeriodChange: (p: Period, dr: DateRange) => void;
-}
-
-export default function PerformanceTab({ period, dateRange, rawDateRange, onPeriodChange }: PerformanceTabProps) {
+export default function PerformanceTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
   const [data, setData]           = useState<PerformanceData | null>(null);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState<string | null>(null);
@@ -93,13 +85,13 @@ export default function PerformanceTab({ period, dateRange, rawDateRange, onPeri
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      <PeriodSelector
-        period={period}
-        rawDateRange={rawDateRange}
-        onChange={onPeriodChange}
-        onRefresh={load}
-        loading={loading}
-      />
+      {/* Refresh */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
+        <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+          Refresh
+        </button>
+      </div>
 
       {/* Summary */}
       {loading ? <CardsSkeleton count={4} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
@@ -129,7 +121,7 @@ export default function PerformanceTab({ period, dateRange, rawDateRange, onPeri
       )}
 
       {/* Approver table */}
-      <Section title={`Approver performance (${period})`} subtitle="Who reviewed what during this period. Actions include progressions, returns, and parks. Response time is how long they typically take from when a contractor arrives at their stage.">
+      <Section title={`Approver performance (${period})`}>
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={approverColumns}
@@ -141,7 +133,7 @@ export default function PerformanceTab({ period, dateRange, rawDateRange, onPeri
       </Section>
 
       {/* Stage load table */}
-      <Section title="Stage load" subtitle="How much work is sitting at each stage right now, and how long it's been there. 'Current dwell' is live; 'Historical avg' is based on past completions. A big gap between the two means something has changed recently.">
+      <Section title="Stage load">
         {loading ? <TableSkeleton rows={6} /> : error ? null : (
           <SortableTable
             columns={[
@@ -220,11 +212,10 @@ export default function PerformanceTab({ period, dateRange, rawDateRange, onPeri
   );
 }
 
-function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '1.25rem' }}>
-      <h3 style={{ margin: subtitle ? '0 0 0.25rem' : '0 0 1rem', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{title}</h3>
-      {subtitle && <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: '#6c757d', lineHeight: 1.5 }}>{subtitle}</p>}
+      <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 600, color: '#343a40' }}>{title}</h3>
       {children}
     </div>
   );
