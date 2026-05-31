@@ -79,6 +79,16 @@ interface Props {
     comments: ReviewComment[]
     fieldEditsByPath?: Record<string, FieldEditRow>
     cycleNumber: number
+    // The reviewer's current stage level (0=B, 1=C, etc). Used together
+    // with cycleNumber + sectionApprovals to compute per-section checked
+    // state.
+    level: number
+    // Section-approval checkboxes - composite map keyed
+    // "<level>:<cycle>:<sectionKey>".
+    sectionApprovals?: Record<string, any>
+    // When the current viewer can tick / untick approval boxes.
+    canApproveSections?: boolean
+    onToggleSectionApproved?: (sectionKey: string, next: boolean) => void
     // EBA edit affordance - same callback shape as FormRenderer so the host
     // can reuse its existing edit modal.
     ebaEditableNow?: boolean
@@ -200,6 +210,10 @@ const ApprovalReviewView = ({
     comments,
     fieldEditsByPath,
     cycleNumber,
+    level,
+    sectionApprovals,
+    canApproveSections,
+    onToggleSectionApproved,
     ebaEditableNow,
     onEditField,
     onAddRemark,
@@ -228,6 +242,39 @@ const ApprovalReviewView = ({
 
     // Per-field expand state for the inline remarks / comments panel.
     const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+
+    // Composite-key lookup that matches the BE storage shape.
+    const isSectionApproved = (sectionKey: string): boolean => {
+        if (!sectionApprovals) return false
+        return !!sectionApprovals[`${level}:${cycleNumber}:${sectionKey}`]
+    }
+
+    const SectionApprovalCheck = ({ sectionKey }: { sectionKey: string }) => {
+        const checked = isSectionApproved(sectionKey)
+        const disabled = !canApproveSections || !onToggleSectionApproved
+        return (
+            <label
+                className={`${styles.sectionCheck} ${checked ? styles.sectionCheckOn : ""} ${
+                    disabled ? styles.sectionCheckDisabled : ""
+                }`}
+                title={
+                    disabled
+                        ? "Read-only - you can't tick sections at this stage"
+                        : checked
+                          ? "Untick to mark this section as not yet reviewed"
+                          : "Tick once you've reviewed this section"
+                }
+            >
+                <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={(e) => onToggleSectionApproved?.(sectionKey, e.target.checked)}
+                />
+                <span>{checked ? "Reviewed" : "Mark as reviewed"}</span>
+            </label>
+        )
+    }
 
     if (!schema?.pages?.length) {
         return (
@@ -429,10 +476,13 @@ const ApprovalReviewView = ({
                                 return (
                                     <div key={section.key} className={styles.sectionBlock}>
                                         <div className={styles.sectionHead}>
-                                            <h4>{section.title}</h4>
-                                            {section.description && (
-                                                <p className={styles.sectionDesc}>{section.description}</p>
-                                            )}
+                                            <div className={styles.sectionHeadMain}>
+                                                <h4>{section.title}</h4>
+                                                {section.description && (
+                                                    <p className={styles.sectionDesc}>{section.description}</p>
+                                                )}
+                                            </div>
+                                            <SectionApprovalCheck sectionKey={section.key} />
                                         </div>
                                         {instances.length === 0 ? (
                                             <p className={styles.empty}>No entries.</p>
@@ -462,10 +512,13 @@ const ApprovalReviewView = ({
                             return (
                                 <div key={section.key} className={styles.sectionBlock}>
                                     <div className={styles.sectionHead}>
-                                        <h4>{section.title}</h4>
-                                        {section.description && (
-                                            <p className={styles.sectionDesc}>{section.description}</p>
-                                        )}
+                                        <div className={styles.sectionHeadMain}>
+                                            <h4>{section.title}</h4>
+                                            {section.description && (
+                                                <p className={styles.sectionDesc}>{section.description}</p>
+                                            )}
+                                        </div>
+                                        <SectionApprovalCheck sectionKey={section.key} />
                                     </div>
                                     {renderSectionBody(section, answers, "")}
                                 </div>
