@@ -58,6 +58,7 @@ type DD = {
     internetCheck?: DDCheck
     referenceCheck?: DDCheck
     exposedPersons?: ExposedPerson[]
+    exposedPersonsReviewed?: boolean
     hodApprovals?: {
         registrationCheck?: boolean
         internetCheck?: boolean
@@ -393,21 +394,55 @@ const DueDiligencePanel = ({
         )
     }
 
+    const markExposedReviewed = async (next: boolean) => {
+        setSavingKey("exposedPersonsReviewed")
+        setErr("")
+        try {
+            const r = await putProtected(
+                `api/v2/submissions/${submissionId}/due-diligence`,
+                { exposedPersonsReviewed: next },
+                role,
+            )
+            if (r?.status !== "OK") throw new Error(r?.error?.message || "Save failed")
+            await onReload()
+        } catch (e: any) {
+            setErr(e?.message || "Unexpected error")
+        } finally {
+            setSavingKey(null)
+        }
+    }
+
     const renderExposedPersons = () => {
         const arr = dd.exposedPersons || []
+        const reviewed = !!dd.exposedPersonsReviewed
         return (
             <div className={styles.ddCard}>
                 <div className={styles.ddCardHead}>
                     <h4>Exposed Persons / Shareholders</h4>
-                    {canEdit && (
+                    <span className={reviewed ? styles.ddDone : styles.ddPending}>
+                        {reviewed ? "Reviewed" : "Pending"}
+                    </span>
+                </div>
+                {canEdit && (
+                    <div className={styles.ddRow}>
                         <button
                             className={styles.btnSecondary}
                             onClick={() => setEditingPerson(blankPerson())}
+                            disabled={savingKey === "exposedPersonsReviewed"}
                         >
                             Add entry
                         </button>
-                    )}
-                </div>
+                        <label className={styles.ddRow} style={{ marginLeft: "auto" }}>
+                            <input
+                                type="checkbox"
+                                checked={reviewed}
+                                disabled={savingKey === "exposedPersonsReviewed"}
+                                onChange={(e) => markExposedReviewed(e.target.checked)}
+                            />
+                            <span>Mark section reviewed</span>
+                        </label>
+                    </div>
+                )}
                 {arr.length === 0 ? (
                     <p className={styles.dim}>No entries recorded.</p>
                 ) : (
