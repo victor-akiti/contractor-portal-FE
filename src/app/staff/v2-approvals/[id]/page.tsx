@@ -4,6 +4,14 @@ import ErrorText from "@/components/errorText"
 import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
 import ApprovalReviewView from "./ApprovalReviewView"
 import DueDiligencePanel from "./DueDiligencePanel"
+import DecisionBar from "./components/DecisionBar"
+import StageRoleBriefingCard from "./components/StageRoleBriefingCard"
+import HodReturnInbox from "./components/HodReturnInbox"
+import EndUserPickerModal from "./components/EndUserPickerModal"
+import ServicesModal from "./components/ServicesModal"
+import ReturnForResearchModal from "./components/ReturnForResearchModal"
+import ReturnToEarlierStageModal from "./components/ReturnToEarlierStageModal"
+import DoNotAddModal from "./components/DoNotAddModal"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
@@ -235,25 +243,11 @@ const V2SubmissionDetailPage = () => {
     // Migration status
     const [migrationStatus, setMigrationStatus] = useState<any>(null)
 
-    // Stage C: end-user assignment.
+    // Stage C / Stage D modal toggles. The modal components own their own
+    // form state, fetch their own dropdown data and call back to fetchAll
+    // on save.
     const [endUserPickerOpen, setEndUserPickerOpen] = useState(false)
-    const [endUserCandidates, setEndUserCandidates] = useState<Array<{ _id: string; name: string; email: string; role: string }>>([])
-    const [pickedEndUserIds, setPickedEndUserIds] = useState<string[]>([])
-    const [savingEndUsers, setSavingEndUsers] = useState(false)
-    const [endUserError, setEndUserError] = useState("")
-
-    // Stage D: services + site visit recording. Services are picked from
-    // the controlled JobCategory collection (GET /jobCategories) - same
-    // source the legacy stageB / stageC selectors use, so the V2 list
-    // stays consistent with the rest of the portal.
     const [servicesOpen, setServicesOpen] = useState(false)
-    const [pickedServices, setPickedServices] = useState<string[]>([])
-    const [siteVisit, setSiteVisit] = useState(false)
-    const [savingServices, setSavingServices] = useState(false)
-    const [servicesError, setServicesError] = useState("")
-    const [jobCategories, setJobCategories] = useState<{ _id: string; category: string }[]>([])
-    const [jobCategoriesLoading, setJobCategoriesLoading] = useState(false)
-    const [serviceSearch, setServiceSearch] = useState("")
     const [migrating, setMigrating] = useState(false)
     const [migrationError, setMigrationError] = useState("")
     // Per-field inline remark / comment modal state. Pre-fills the
@@ -502,100 +496,12 @@ const V2SubmissionDetailPage = () => {
         }
     }
 
-    // Stage C: open the end-user picker. Loads candidate list lazily then
-    // seeds the picker with whatever the supervisor already chose so they
-    // can amend instead of starting over.
-    const openEndUserPicker = async () => {
-        if (!id) return
-        setEndUserError("")
-        setEndUserPickerOpen(true)
-        setPickedEndUserIds(
-            Array.isArray(submission?.selectedEndUsers)
-                ? submission!.selectedEndUsers!.map((u: any) =>
-                      typeof u === "string" ? u : String(u?._id || u),
-                  )
-                : [],
-        )
-        if (endUserCandidates.length === 0) {
-            try {
-                const r = await getProtected("api/v2/staff/end-user-candidates", role)
-                if (r?.status === "OK") {
-                    setEndUserCandidates(r.data?.users || [])
-                } else {
-                    setEndUserError(r?.error?.message || "Could not load end users")
-                }
-            } catch (e: any) {
-                setEndUserError(e?.message || "Could not load end users")
-            }
-        }
-    }
-
-    const saveEndUsers = async () => {
-        if (!id) return
-        if (pickedEndUserIds.length === 0) {
-            setEndUserError("Pick at least one end user before saving.")
-            return
-        }
-        setSavingEndUsers(true)
-        setEndUserError("")
-        try {
-            const r = await putProtected(
-                `api/v2/submissions/${id}/end-users`,
-                { userIds: pickedEndUserIds },
-                role,
-            )
-            if (r?.status === "OK") {
-                setEndUserPickerOpen(false)
-                await fetchAll()
-            } else {
-                setEndUserError(r?.error?.message || "Could not save end users")
-            }
-        } catch (e: any) {
-            setEndUserError(e?.message || "Unexpected error")
-        } finally {
-            setSavingEndUsers(false)
-        }
-    }
-
-    // Stage D: open the services + site-visit recorder for assigned end
-    // users. Seeds with prior selection so re-opening shows current state.
-    // Loads the controlled job-category list lazily and caches it on the
-    // component instance (no refetch when re-opening within the session).
-    const openServicesModal = async () => {
-        setServicesError("")
-        const prior = Array.isArray((submission as any)?.selectedServices)
-            ? [...(submission as any).selectedServices]
-            : Array.isArray(submission?.jobCategories)
-              ? (submission as any).jobCategories.map((j: any) => (typeof j === "string" ? j : j?.category)).filter(Boolean)
-              : []
-        setPickedServices(prior)
-        setSiteVisit(!!submission?.siteVisitRequired)
-        setServiceSearch("")
-        setServicesOpen(true)
-        if (jobCategories.length === 0) {
-            try {
-                setJobCategoriesLoading(true)
-                const r = await getProtected("jobCategories", role)
-                if (r?.status === "OK" && Array.isArray(r.data)) {
-                    setJobCategories(
-                        r.data.map((j: any) => ({ _id: String(j._id), category: String(j.category) })),
-                    )
-                } else {
-                    setServicesError(r?.error?.message || "Could not load job categories")
-                }
-            } catch (e: any) {
-                setServicesError(e?.message || "Could not load job categories")
-            } finally {
-                setJobCategoriesLoading(false)
-            }
-        }
-    }
-
-    const toggleService = (category: string) => {
-        setPickedServices((prev) =>
-            prev.includes(category) ? prev.filter((s) => s !== category) : [...prev, category],
-        )
-    }
+    // The Stage C / Stage D modal components own their own data + form
+    // state; here the parent only flips them open. The CTA buttons in the
+    // briefing card call these handlers, and the modals call fetchAll on
+    // save so the page refreshes the parent submission data.
+    const openEndUserPicker = () => setEndUserPickerOpen(true)
+    const openServicesModal = () => setServicesOpen(true)
 
     // Stage F/G internal-return: HOD sends back to E or Executive Approver
     // sends back to F. Re-uses the state-machine return-to-previous-stage
@@ -636,33 +542,6 @@ const V2SubmissionDetailPage = () => {
         if (ok) {
             setParkL2Open(false)
             setParkL2Reason("")
-        }
-    }
-
-    const saveServices = async () => {
-        if (!id) return
-        if (pickedServices.length === 0) {
-            setServicesError("Add at least one service before saving.")
-            return
-        }
-        setSavingServices(true)
-        setServicesError("")
-        try {
-            const r = await postProtected(
-                `api/v2/submissions/${id}/services`,
-                { selectedServices: pickedServices, siteVisitRequired: siteVisit },
-                role,
-            )
-            if (r?.status === "OK") {
-                setServicesOpen(false)
-                await fetchAll()
-            } else {
-                setServicesError(r?.error?.message || "Could not save services")
-            }
-        } catch (e: any) {
-            setServicesError(e?.message || "Unexpected error")
-        } finally {
-            setSavingServices(false)
         }
     }
 
@@ -1128,59 +1007,6 @@ const V2SubmissionDetailPage = () => {
     const groupName = submission.groupId?.name || "-"
     const historyEntries = [...(submission.approvalHistory || [])].reverse()
 
-    // Role-aware briefing for the current stage. Mirrors the legacy "you
-    // are <X> at <stage>, do <Y>" briefing so every staff role lands on a
-    // page that explains - in their own terms - what they need to do.
-    const stageRoleBriefing = (() => {
-        if (submission.status !== "pending") return null
-        const lvl = submission.level
-        const isAssignedEndUser =
-            !!user?._id &&
-            (submission.selectedEndUsers || []).some(
-                (u: any) => String(typeof u === "string" ? u : u?._id || u) === String(user._id),
-            )
-        const lines: { title: string; body: string; cta?: { label: string; onClick: () => void } } = {
-            title: "",
-            body: "",
-        } as any
-        if (lvl === 0 && ["Admin", "HOD", "VRM"].includes(role)) {
-            lines.title = "Stage B - Vendor Relationship Manager"
-            lines.body = "Review every section, leave remarks on anything wrong, then advance to the Supervisor at Stage C."
-        } else if (lvl === 1 && ["Admin", "HOD", "Supervisor"].includes(role)) {
-            const n = (submission.selectedEndUsers || []).length
-            lines.title = "Stage C - Supervisor"
-            lines.body = n > 0
-                ? `You have assigned ${n} End User${n === 1 ? "" : "s"}. You can change the selection before advancing to Stage D.`
-                : "Pick the End User(s) who should see this application at Stage D, then advance."
-            lines.cta = { label: n > 0 ? "Edit End Users" : "Assign End Users", onClick: openEndUserPicker }
-        } else if (lvl === 2) {
-            if (isAssignedEndUser || ["Admin", "HOD"].includes(role)) {
-                const n = ((submission as any).selectedServices || []).length
-                lines.title = "Stage D - End User"
-                lines.body = n > 0
-                    ? `${n} service${n === 1 ? "" : "s"} recorded${submission.siteVisitRequired ? ". Site visit flagged as required" : ""}. You can edit before advancing to Due Diligence at Stage E.`
-                    : "Record the services that apply to this contractor and flag whether a site visit is needed, then advance to Stage E."
-                lines.cta = { label: n > 0 ? "Edit Services" : "Record Services", onClick: openServicesModal }
-            } else {
-                lines.title = "Stage D - End User"
-                lines.body = "Only the End Users assigned by the Supervisor (or HOD/Admin) can act at this stage. You can view but not advance."
-            }
-        } else if (lvl === 3 && ["Admin", "HOD", "CO", "Supervisor", "Amni Staff", "End User"].includes(role)) {
-            lines.title = "Stage E - Due Diligence"
-            lines.body = "Complete the four Due Diligence checks (Registration, Internet, Reference, Exposed Persons). Each check needs a finding plus supporting upload before you can advance to the HOD review at Stage F."
-            lines.cta = { label: "Open Due Diligence", onClick: () => setTab("due-diligence") }
-        } else if (lvl === 4 && ["Admin", "HOD"].includes(role)) {
-            lines.title = "Stage F - HOD Due Diligence Review"
-            lines.body = "Read the Due Diligence record, tick the four approval boxes once you are satisfied, optionally add a note for the Executive Approver, then advance to Stage G."
-            lines.cta = { label: "Open Due Diligence", onClick: () => setTab("due-diligence") }
-        } else if (lvl === 5 && ["Admin", "Executive Approver"].includes(role)) {
-            lines.title = "Stage G - Executive Approver"
-            lines.body = "Three options: Final approve to L3, Return for Research back to HOD, or Do Not Add (parks the contractor at L2). Read the HOD's note before deciding."
-        }
-        if (!lines.title) return null
-        return lines
-    })()
-
     return (
         <div className={styles.page}>
             <div className={styles.breadcrumbs}>
@@ -1206,52 +1032,15 @@ const V2SubmissionDetailPage = () => {
 
             </div>
 
-            {stageRoleBriefing && (
-                <div className={styles.stageBriefing}>
-                    <div>
-                        <h4>{stageRoleBriefing.title}</h4>
-                        <p>{stageRoleBriefing.body}</p>
-                    </div>
-                    {stageRoleBriefing.cta && (
-                        <button
-                            className={styles.btnPrimary}
-                            onClick={stageRoleBriefing.cta.onClick}
-                        >
-                            {stageRoleBriefing.cta.label}
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* HOD-return inbox alert: if the current stage is the target of
-                a recent HOD return-to-earlier-stage, surface the remark
-                here so the receiving owner sees it immediately. */}
-            {(() => {
-                const arr = (submission as any).reverts?.history || []
-                const matched = arr
-                    .filter(
-                        (h: any) =>
-                            h?.type === "HOD_RETURN" &&
-                            Number(h.toLevel) === submission.level &&
-                            h.status !== "resolved",
-                    )
-                    .slice(-3)
-                if (matched.length === 0) return null
-                return (
-                    <div className={styles.hodReturnInbox}>
-                        <h4>HOD sent this back to your stage</h4>
-                        {matched.map((h: any, i: number) => (
-                            <div key={i} className={styles.hodReturnEntry}>
-                                <p className={styles.hodReturnReason}>{h.reason}</p>
-                                <span className={styles.hodReturnMeta}>
-                                    From Stage {String.fromCharCode(66 + Number(h.fromLevel))} - {h.returnedBy?.name || h.returnedBy?.email || "HOD"}
-                                    {h.returnedAt && ` - ${new Date(h.returnedAt).toLocaleString("en-NG")}`}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                )
-            })()}
+            <StageRoleBriefingCard
+                submission={submission}
+                role={role}
+                user={user}
+                openEndUserPicker={openEndUserPicker}
+                openServicesModal={openServicesModal}
+                openDueDiligenceTab={() => setTab("due-diligence")}
+            />
+            <HodReturnInbox submission={submission} />
 
             {migrationStatus?.available && (
                 <div className={styles.migrationBanner}>
@@ -2084,608 +1873,81 @@ const V2SubmissionDetailPage = () => {
                 </Modal>
             )}
 
-            {/* ── Bottom decision bar ─────────────────────────────────────
-                Groups available actions by intent so reviewers can scan the
-                page top-to-bottom and make their call at the end. Hidden
-                when no actions apply (e.g. for read-only viewers). */}
-            {(() => {
-                const anyDecision =
-                    can.advance ||
-                    can.finalApprove ||
-                    can.assignEndUsers ||
-                    can.recordServices ||
-                    can.returnToVendor ||
-                    can.requestPark ||
-                    can.approvePark ||
-                    can.declinePark ||
-                    can.releasePark ||
-                    can.retrieve ||
-                    can.revertFromL3 ||
-                    can.returnEarlier ||
-                    can.returnToE ||
-                    can.returnToF ||
-                    can.doNotAdd
-                if (!anyDecision) return null
+            <DecisionBar
+                submission={submission}
+                role={role}
+                user={user}
+                can={can}
+                actionRunning={actionRunning}
+                actionSuccess={actionSuccess}
+                actionError={actionError}
+                hasActiveRemarksThisCycle={hasActiveRemarksThisCycle}
+                allSectionsReviewed={allSectionsReviewed}
+                runAction={runAction}
+                openEndUserPicker={openEndUserPicker}
+                openServicesModal={openServicesModal}
+                openReturnModal={() => setReturnOpen(true)}
+                openParkRequestModal={() => setParkRequestOpen(true)}
+                openReturnPrevModal={() => { setReturnPrevReason(""); setReturnPrevOpen(true) }}
+                openReturnEarlierModal={() => { setReturnEarlierLevel(0); setReturnEarlierReason(""); setReturnEarlierOpen(true) }}
+                openParkL2Modal={() => { setParkL2Reason(""); setParkL2Open(true) }}
+            />
 
-                const stageBlockedAtD =
-                    submission.status === "pending" &&
-                    submission.level === 2 &&
-                    !["Admin", "HOD"].includes(role) &&
-                    !(
-                        user?._id &&
-                        (submission.selectedEndUsers || []).some(
-                            (u: any) =>
-                                String(typeof u === "string" ? u : u?._id || u) === String(user._id),
-                        )
-                    )
-
-                return (
-                    <div className={styles.decisionBar}>
-                        {/* Result / error / gate messages live above the
-                            buttons so reviewers see why an action is or is
-                            not available before they reach for it. */}
-                        {actionSuccess && <SuccessMessage message={actionSuccess} />}
-                        {actionError && <ErrorText text={actionError} />}
-                        {submission.status === "pending" && hasActiveRemarksThisCycle && (
-                            <div className={styles.remarkGate}>
-                                Active remarks block the Process button. Return
-                                to contractor or request hold to continue.
-                            </div>
-                        )}
-                        {submission.status === "pending" &&
-                            !hasActiveRemarksThisCycle &&
-                            !allSectionsReviewed && (
-                                <div className={styles.remarkGate}>
-                                    Tick the Reviewed checkbox on each section
-                                    before processing forward.
-                                </div>
-                            )}
-                        {stageBlockedAtD && (
-                            <div className={styles.remarkGate}>
-                                At Stage D only the End Users assigned by the
-                                Supervisor can advance, return or hold this
-                                application.
-                            </div>
-                        )}
-
-                        <div className={styles.decisionBarHeader}>
-                            <h3>Decision</h3>
-                            <p>
-                                Pick the action that matches your verdict. Stage
-                                tasks are prerequisites; Process forward is the
-                                "go ahead" action; Send back covers returns; Hold
-                                covers park/decline.
-                            </p>
-                        </div>
-
-                        <div className={styles.decisionGroups}>
-                            {/* Stage tasks - prerequisites the current stage
-                                owner must complete before they can advance. */}
-                            {(can.assignEndUsers || can.recordServices) && (
-                                <div className={styles.decisionGroup}>
-                                    <span className={styles.decisionGroupLabel}>
-                                        Stage Tasks
-                                    </span>
-                                    <div className={styles.decisionButtons}>
-                                        {can.assignEndUsers && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={openEndUserPicker}
-                                            >
-                                                {Array.isArray(submission.selectedEndUsers) &&
-                                                submission.selectedEndUsers.length > 0
-                                                    ? `End Users (${submission.selectedEndUsers.length})`
-                                                    : "Assign End Users"}
-                                            </button>
-                                        )}
-                                        {can.recordServices && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={openServicesModal}
-                                            >
-                                                {Array.isArray((submission as any).selectedServices) &&
-                                                (submission as any).selectedServices.length > 0
-                                                    ? `Services (${(submission as any).selectedServices.length})`
-                                                    : "Record Services"}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Process forward - the primary "go ahead" call.
-                                Always shown with the strongest visual weight. */}
-                            {(can.advance || can.finalApprove) && (
-                                <div className={`${styles.decisionGroup} ${styles.decisionGroupPrimary}`}>
-                                    <span className={styles.decisionGroupLabel}>
-                                        Process Forward
-                                    </span>
-                                    <div className={styles.decisionButtons}>
-                                        {can.advance && (
-                                            <button
-                                                className={styles.btnPrimary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => runAction("advance")}
-                                            >
-                                                Advance to Stage {stageFromLevel(submission.level + 1)}
-                                                {actionRunning === "advance" && <ButtonLoadingIcon />}
-                                            </button>
-                                        )}
-                                        {can.finalApprove && (
-                                            <button
-                                                className={styles.btnSuccess}
-                                                disabled={!!actionRunning}
-                                                onClick={() => runAction("final-approve")}
-                                            >
-                                                Final Approve (L3)
-                                                {actionRunning === "final-approve" && <ButtonLoadingIcon />}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Send back - returns to an earlier participant
-                                with explicit feedback. */}
-                            {(can.returnToVendor ||
-                                can.returnEarlier ||
-                                can.returnToE ||
-                                can.returnToF ||
-                                can.retrieve ||
-                                can.revertFromL3) && (
-                                <div className={styles.decisionGroup}>
-                                    <span className={styles.decisionGroupLabel}>
-                                        Send Back
-                                    </span>
-                                    <div className={styles.decisionButtons}>
-                                        {can.returnToVendor && (
-                                            <button
-                                                className={styles.btnDanger}
-                                                disabled={!!actionRunning}
-                                                onClick={() => setReturnOpen(true)}
-                                            >
-                                                Return to Contractor
-                                            </button>
-                                        )}
-                                        {(can.returnToE || can.returnToF) && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => {
-                                                    setReturnPrevReason("")
-                                                    setReturnPrevOpen(true)
-                                                }}
-                                            >
-                                                Return for Research
-                                            </button>
-                                        )}
-                                        {can.returnEarlier && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => {
-                                                    setReturnEarlierLevel(0)
-                                                    setReturnEarlierReason("")
-                                                    setReturnEarlierOpen(true)
-                                                }}
-                                            >
-                                                Return to Earlier Stage
-                                            </button>
-                                        )}
-                                        {can.retrieve && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => runAction("retrieve")}
-                                            >
-                                                Retrieve from Contractor
-                                                {actionRunning === "retrieve" && <ButtonLoadingIcon />}
-                                            </button>
-                                        )}
-                                        {can.revertFromL3 && (
-                                            <button
-                                                className={styles.btnDanger}
-                                                disabled={!!actionRunning}
-                                                onClick={() => runAction("revert-from-l3")}
-                                            >
-                                                Revert from L3
-                                                {actionRunning === "revert-from-l3" && <ButtonLoadingIcon />}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Hold - request, approve, decline, release park,
-                                or Executive Approver's final "Do Not Add". */}
-                            {(can.requestPark ||
-                                can.approvePark ||
-                                can.declinePark ||
-                                can.releasePark ||
-                                can.doNotAdd) && (
-                                <div className={styles.decisionGroup}>
-                                    <span className={styles.decisionGroupLabel}>Hold</span>
-                                    <div className={styles.decisionButtons}>
-                                        {can.requestPark && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => setParkRequestOpen(true)}
-                                            >
-                                                Request Park
-                                            </button>
-                                        )}
-                                        {can.approvePark && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => runAction("approve-park")}
-                                            >
-                                                Approve Park
-                                                {actionRunning === "approve-park" && <ButtonLoadingIcon />}
-                                            </button>
-                                        )}
-                                        {can.declinePark && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => runAction("decline-park")}
-                                            >
-                                                Decline Park
-                                                {actionRunning === "decline-park" && <ButtonLoadingIcon />}
-                                            </button>
-                                        )}
-                                        {can.releasePark && (
-                                            <button
-                                                className={styles.btnSecondary}
-                                                disabled={!!actionRunning}
-                                                onClick={() => runAction("release-park")}
-                                            >
-                                                Release from Park
-                                                {actionRunning === "release-park" && <ButtonLoadingIcon />}
-                                            </button>
-                                        )}
-                                        {can.doNotAdd && (
-                                            <button
-                                                className={styles.btnDanger}
-                                                disabled={!!actionRunning}
-                                                onClick={() => {
-                                                    setParkL2Reason("")
-                                                    setParkL2Open(true)
-                                                }}
-                                            >
-                                                Do Not Add (Park at L2)
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )
-            })()}
-
-            {/* Stage C - end-user picker. Supervisor (or HOD/Admin) selects
-                one or more end users who will see the submission at Stage D.
-                Mirrors the legacy stageB selectedEndUsers flow. */}
             {endUserPickerOpen && (
-                <Modal>
-                    <div className={styles.modalCard}>
-                        <div className={styles.modalHeader}>
-                            <h3>Assign End Users</h3>
-                            <p className={styles.modalSub}>
-                                Pick the specialist staff who should see this
-                                application at Stage D. They are the only
-                                non-HOD staff who will be able to advance,
-                                return or hold it once it moves forward.
-                            </p>
-                        </div>
-                        <div className={styles.modalBody}>
-                            {endUserCandidates.length === 0 && !endUserError && (
-                                <p className={styles.modalSub}>Loading...</p>
-                            )}
-                            {endUserCandidates.length > 0 && (
-                                <div className={styles.endUserList}>
-                                    {endUserCandidates.map((u) => {
-                                        const checked = pickedEndUserIds.includes(u._id)
-                                        return (
-                                            <label key={u._id} className={styles.endUserRow}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={checked}
-                                                    disabled={savingEndUsers}
-                                                    onChange={() =>
-                                                        setPickedEndUserIds(
-                                                            checked
-                                                                ? pickedEndUserIds.filter((x) => x !== u._id)
-                                                                : [...pickedEndUserIds, u._id],
-                                                        )
-                                                    }
-                                                />
-                                                <span className={styles.endUserName}>{u.name}</span>
-                                                <span className={styles.endUserRole}>{u.role}</span>
-                                                <span className={styles.endUserEmail}>{u.email}</span>
-                                            </label>
-                                        )
-                                    })}
-                                </div>
-                            )}
-                            {endUserError && <ErrorText text={endUserError} />}
-                        </div>
-                        <div className={styles.modalActions}>
-                            <button
-                                className={styles.btnSecondary}
-                                onClick={() => setEndUserPickerOpen(false)}
-                                disabled={savingEndUsers}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className={styles.btnPrimary}
-                                onClick={saveEndUsers}
-                                disabled={savingEndUsers || pickedEndUserIds.length === 0}
-                            >
-                                Save selection
-                                {savingEndUsers && <ButtonLoadingIcon />}
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
+                <EndUserPickerModal
+                    submissionId={String(id)}
+                    role={role}
+                    submission={submission}
+                    onSaved={fetchAll}
+                    onClose={() => setEndUserPickerOpen(false)}
+                />
             )}
 
-            {/* Stage D - assigned end user records the services that apply
-                to this contractor + whether a site visit is needed before
-                the application can advance to Stage E. */}
             {servicesOpen && (
-                <Modal>
-                    <div className={styles.modalCard}>
-                        <div className={styles.modalHeader}>
-                            <h3>Record Services & Site Visit</h3>
-                            <p className={styles.modalSub}>
-                                Record the services this contractor is being
-                                evaluated for. Stage D cannot advance to Stage
-                                E until at least one service is recorded.
-                            </p>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <label className={styles.modalLabel}>
-                                Services ({pickedServices.length} selected)
-                            </label>
-                            <input
-                                type="search"
-                                className={styles.searchInput}
-                                placeholder="Search services..."
-                                value={serviceSearch}
-                                onChange={(e) => setServiceSearch(e.target.value)}
-                                disabled={savingServices}
-                            />
-                            <div className={styles.serviceListWrap}>
-                                {jobCategoriesLoading && (
-                                    <div className={styles.dim}>Loading services...</div>
-                                )}
-                                {!jobCategoriesLoading && jobCategories.length === 0 && (
-                                    <div className={styles.dim}>
-                                        No services configured. Add them under Job Categories.
-                                    </div>
-                                )}
-                                {!jobCategoriesLoading &&
-                                    jobCategories
-                                        .filter((c) =>
-                                            c.category.toLowerCase().includes(serviceSearch.trim().toLowerCase()),
-                                        )
-                                        .map((c) => {
-                                            const checked = pickedServices.includes(c.category)
-                                            return (
-                                                <label key={c._id} className={styles.serviceRow}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={checked}
-                                                        disabled={savingServices}
-                                                        onChange={() => toggleService(c.category)}
-                                                    />
-                                                    <span>{c.category}</span>
-                                                </label>
-                                            )
-                                        })}
-                            </div>
-
-                            <label className={styles.modalLabel} style={{ marginTop: 16 }}>
-                                <input
-                                    type="checkbox"
-                                    checked={siteVisit}
-                                    disabled={savingServices}
-                                    onChange={(e) => setSiteVisit(e.target.checked)}
-                                />
-                                <span style={{ marginLeft: 8 }}>
-                                    Site visit required before approval
-                                </span>
-                            </label>
-
-                            {servicesError && <ErrorText text={servicesError} />}
-                        </div>
-                        <div className={styles.modalActions}>
-                            <button
-                                className={styles.btnSecondary}
-                                onClick={() => setServicesOpen(false)}
-                                disabled={savingServices}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className={styles.btnPrimary}
-                                onClick={saveServices}
-                                disabled={savingServices || pickedServices.length === 0}
-                            >
-                                Save
-                                {savingServices && <ButtonLoadingIcon />}
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
+                <ServicesModal
+                    submissionId={String(id)}
+                    role={role}
+                    submission={submission}
+                    onSaved={fetchAll}
+                    onClose={() => setServicesOpen(false)}
+                />
             )}
 
-            {/* Stage F/G "Return for Research" - bounces one stage back
-                (E from F, F from G) without leaving the staff side. */}
             {returnPrevOpen && (
-                <Modal>
-                    <div className={styles.modalCard}>
-                        <div className={styles.modalHeader}>
-                            <h3>Return for Research</h3>
-                            <p className={styles.modalSub}>
-                                {submission.level === 5
-                                    ? "Sends the application back to the HOD at Stage F with a research request. The contractor is not notified."
-                                    : "Sends the application back to the Due Diligence officer at Stage E. The contractor is not notified."}
-                            </p>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <textarea
-                                rows={4}
-                                placeholder="State what additional research is needed."
-                                value={returnPrevReason}
-                                onChange={(e) => setReturnPrevReason(e.target.value)}
-                            />
-                            {actionError && <ErrorText text={actionError} />}
-                        </div>
-                        <div className={styles.modalActions}>
-                            <button
-                                className={styles.btnSecondary}
-                                onClick={() => setReturnPrevOpen(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className={styles.btnPrimary}
-                                onClick={submitReturnPrev}
-                                disabled={
-                                    actionRunning === "return-to-previous-stage" ||
-                                    !returnPrevReason.trim()
-                                }
-                            >
-                                Submit
-                                {actionRunning === "return-to-previous-stage" && <ButtonLoadingIcon />}
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
+                <ReturnForResearchModal
+                    level={submission.level}
+                    reason={returnPrevReason}
+                    setReason={setReturnPrevReason}
+                    actionRunning={actionRunning}
+                    actionError={actionError}
+                    onSubmit={submitReturnPrev}
+                    onClose={() => setReturnPrevOpen(false)}
+                />
             )}
 
-            {/* HOD "Return to Earlier Stage" - picks any prior stage and
-                attaches a remark. The receiving stage owner sees it via the
-                reverts.history surface on their inbox / detail page. */}
             {returnEarlierOpen && (
-                <Modal>
-                    <div className={styles.modalCard}>
-                        <div className={styles.modalHeader}>
-                            <h3>Return to Earlier Stage</h3>
-                            <p className={styles.modalSub}>
-                                Sends the application back to any earlier
-                                stage with your remark. Use this when the
-                                issue is something an earlier reviewer
-                                (e.g. the VRM at Stage B) should have caught.
-                            </p>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <label className={styles.modalLabel}>Send back to</label>
-                            <select
-                                value={returnEarlierLevel}
-                                onChange={(e) => setReturnEarlierLevel(Number(e.target.value))}
-                            >
-                                {Array.from({ length: submission.level }, (_, i) => i).map((lvl) => (
-                                    <option key={lvl} value={lvl}>
-                                        Stage {String.fromCharCode(66 + lvl)} (
-                                        {lvl === 0
-                                            ? "VRM"
-                                            : lvl === 1
-                                              ? "Supervisor"
-                                              : lvl === 2
-                                                ? "End User"
-                                                : lvl === 3
-                                                  ? "Due Diligence"
-                                                  : "HOD Review"}
-                                        )
-                                    </option>
-                                ))}
-                            </select>
-                            <label className={styles.modalLabel} style={{ marginTop: 12 }}>
-                                Remark for the receiving stage
-                            </label>
-                            <textarea
-                                rows={4}
-                                placeholder="Explain what needs to be fixed at that stage."
-                                value={returnEarlierReason}
-                                onChange={(e) => setReturnEarlierReason(e.target.value)}
-                            />
-                            {actionError && <ErrorText text={actionError} />}
-                        </div>
-                        <div className={styles.modalActions}>
-                            <button
-                                className={styles.btnSecondary}
-                                onClick={() => setReturnEarlierOpen(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className={styles.btnPrimary}
-                                onClick={submitReturnEarlier}
-                                disabled={
-                                    actionRunning === "return-to-earlier-stage" ||
-                                    !returnEarlierReason.trim()
-                                }
-                            >
-                                Return to Stage {String.fromCharCode(66 + returnEarlierLevel)}
-                                {actionRunning === "return-to-earlier-stage" && <ButtonLoadingIcon />}
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
+                <ReturnToEarlierStageModal
+                    currentLevel={submission.level}
+                    targetLevel={returnEarlierLevel}
+                    setTargetLevel={setReturnEarlierLevel}
+                    reason={returnEarlierReason}
+                    setReason={setReturnEarlierReason}
+                    actionRunning={actionRunning}
+                    actionError={actionError}
+                    onSubmit={submitReturnEarlier}
+                    onClose={() => setReturnEarlierOpen(false)}
+                />
             )}
 
-            {/* Stage G "Do Not Add" - parks the submission at L2 without
-                approving. Final Executive Approver decision. */}
             {parkL2Open && (
-                <Modal>
-                    <div className={styles.modalCard}>
-                        <div className={styles.modalHeader}>
-                            <h3>Do Not Add (Park at L2)</h3>
-                            <p className={styles.modalSub}>
-                                The contractor will be parked at L2 and will
-                                not be added to the approved list. Provide a
-                                clear reason - this is the final Executive
-                                Approver decision and shows in the audit
-                                trail.
-                            </p>
-                        </div>
-                        <div className={styles.modalBody}>
-                            <textarea
-                                rows={4}
-                                placeholder="Reason for not adding the contractor."
-                                value={parkL2Reason}
-                                onChange={(e) => setParkL2Reason(e.target.value)}
-                            />
-                            {actionError && <ErrorText text={actionError} />}
-                        </div>
-                        <div className={styles.modalActions}>
-                            <button
-                                className={styles.btnSecondary}
-                                onClick={() => setParkL2Open(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className={styles.btnDanger}
-                                onClick={submitParkL2}
-                                disabled={
-                                    actionRunning === "park-at-l2" || !parkL2Reason.trim()
-                                }
-                            >
-                                Confirm Do Not Add
-                                {actionRunning === "park-at-l2" && <ButtonLoadingIcon />}
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
+                <DoNotAddModal
+                    reason={parkL2Reason}
+                    setReason={setParkL2Reason}
+                    actionRunning={actionRunning}
+                    actionError={actionError}
+                    onSubmit={submitParkL2}
+                    onClose={() => setParkL2Open(false)}
+                />
             )}
 
             {confirmDialogEl}
