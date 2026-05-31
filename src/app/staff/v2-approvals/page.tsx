@@ -131,7 +131,7 @@ const V2ApprovalsPage = () => {
 
             const [list, c] = await Promise.all([
                 getProtected(`api/v2/submissions${qs}`, user.role),
-                getProtected("api/v2/submissions/counts", user.role),
+                getProtected("api/v2/submission-counts", user.role),
             ])
             if (list?.status === "OK") setSubmissions(list.data?.submissions || [])
             else setError(list?.error?.message || "Failed to load submissions")
