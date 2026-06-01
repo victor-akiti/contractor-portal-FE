@@ -23,6 +23,8 @@ import { useState } from "react"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import SuccessMessage from "@/components/successMessage"
+import { useConfirmDialog } from "@/hooks/useConfirmDialog"
+import Modal from "@/components/modal"
 import DueDiligenceCheckCard from "./DueDiligenceCheckCard"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
@@ -157,6 +159,7 @@ const DueDiligencePanel = ({
     // Exposed person editor state
     const [editingPerson, setEditingPerson] = useState<ExposedPerson | null>(null)
     const [savingPerson, setSavingPerson] = useState(false)
+    const { confirm: confirmDialog, dialog: confirmDialogEl } = useConfirmDialog()
 
     // ── Stage E helpers ─────────────────────────────────────────────────────
 
@@ -260,7 +263,13 @@ const DueDiligencePanel = ({
 
     const removePerson = async (pid: string) => {
         if (!pid) return
-        if (!window.confirm("Remove this exposed-persons entry?")) return
+        const ok = await confirmDialog({
+            headerText: "Remove entry?",
+            bodyText: "Remove this exposed-persons entry. This cannot be undone.",
+            confirmText: "Remove",
+            destructive: true,
+        })
+        if (!ok) return
         setErr("")
         try {
             const r = await deleteProtected(
@@ -533,7 +542,7 @@ const DueDiligencePanel = ({
             )}
 
             {editingPerson && (
-                <div className={styles.modalOverlay}>
+                <Modal>
                     <div className={styles.modalCard}>
                         <div className={styles.modalHeader}>
                             <h3>
@@ -541,155 +550,218 @@ const DueDiligencePanel = ({
                                     ? "Edit exposed-persons entry"
                                     : "Add exposed-persons entry"}
                             </h3>
+                            <p className={styles.modalSub}>
+                                Record one director, shareholder or politically
+                                exposed person at a time. Add an upload that
+                                proves the screening you performed.
+                            </p>
                         </div>
                         <div className={styles.modalBody}>
-                            <label className={styles.modalLabel}>Entity type</label>
-                            <select
-                                value={editingPerson.entityType || "individual"}
-                                onChange={(e) =>
-                                    setEditingPerson({
-                                        ...editingPerson,
-                                        entityType: e.target.value as any,
-                                    })
-                                }
-                            >
-                                <option value="individual">Individual</option>
-                                <option value="corporate">Corporate</option>
-                            </select>
-
-                            {editingPerson.entityType === "corporate" ? (
-                                <>
-                                    <label className={styles.modalLabel}>Company name</label>
-                                    <input
-                                        value={editingPerson.companyName || ""}
-                                        onChange={(e) =>
-                                            setEditingPerson({
-                                                ...editingPerson,
-                                                companyName: e.target.value,
-                                            })
-                                        }
-                                    />
-                                    <label className={styles.modalLabel}>Registration number</label>
-                                    <input
-                                        value={editingPerson.registrationNumber || ""}
-                                        onChange={(e) =>
-                                            setEditingPerson({
-                                                ...editingPerson,
-                                                registrationNumber: e.target.value,
-                                            })
-                                        }
-                                    />
-                                </>
-                            ) : (
-                                <>
-                                    <label className={styles.modalLabel}>Title</label>
-                                    <input
-                                        value={editingPerson.title || ""}
-                                        onChange={(e) =>
-                                            setEditingPerson({
-                                                ...editingPerson,
-                                                title: e.target.value,
-                                            })
-                                        }
-                                    />
-                                    <label className={styles.modalLabel}>First name</label>
-                                    <input
-                                        value={editingPerson.firstName || ""}
-                                        onChange={(e) =>
-                                            setEditingPerson({
-                                                ...editingPerson,
-                                                firstName: e.target.value,
-                                            })
-                                        }
-                                    />
-                                    <label className={styles.modalLabel}>Last name</label>
-                                    <input
-                                        value={editingPerson.lastName || ""}
-                                        onChange={(e) =>
-                                            setEditingPerson({
-                                                ...editingPerson,
-                                                lastName: e.target.value,
-                                            })
-                                        }
-                                    />
-                                    <label className={styles.modalLabel}>Other names</label>
-                                    <input
-                                        value={editingPerson.otherName || ""}
-                                        onChange={(e) =>
-                                            setEditingPerson({
-                                                ...editingPerson,
-                                                otherName: e.target.value,
-                                            })
-                                        }
-                                    />
-                                </>
-                            )}
-
-                            <label className={styles.modalLabel}>
-                                Role (e.g. Shareholder, Director, Both, Former)
-                            </label>
-                            <input
-                                value={editingPerson.role || ""}
-                                onChange={(e) =>
-                                    setEditingPerson({
-                                        ...editingPerson,
-                                        role: e.target.value,
-                                    })
-                                }
-                            />
-
-                            <label className={styles.ddRow}>
-                                <input
-                                    type="checkbox"
-                                    checked={!!editingPerson.flagged}
+                            <div className={styles.formField}>
+                                <label className={styles.formLabel}>Entity type</label>
+                                <select
+                                    className={styles.formSelect}
+                                    value={editingPerson.entityType || "individual"}
                                     onChange={(e) =>
                                         setEditingPerson({
                                             ...editingPerson,
-                                            flagged: e.target.checked,
+                                            entityType: e.target.value as any,
+                                        })
+                                    }
+                                >
+                                    <option value="individual">Individual</option>
+                                    <option value="corporate">Corporate</option>
+                                </select>
+                            </div>
+
+                            {editingPerson.entityType === "corporate" ? (
+                                <div className={styles.formGrid2}>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>
+                                            Company name
+                                            <span className={styles.formReq}>required</span>
+                                        </label>
+                                        <input
+                                            className={styles.formInput}
+                                            value={editingPerson.companyName || ""}
+                                            onChange={(e) =>
+                                                setEditingPerson({
+                                                    ...editingPerson,
+                                                    companyName: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Registration number</label>
+                                        <input
+                                            className={styles.formInput}
+                                            value={editingPerson.registrationNumber || ""}
+                                            onChange={(e) =>
+                                                setEditingPerson({
+                                                    ...editingPerson,
+                                                    registrationNumber: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={styles.formGrid3}>
+                                        <div className={styles.formField}>
+                                            <label className={styles.formLabel}>Title</label>
+                                            <input
+                                                className={styles.formInput}
+                                                placeholder="Mr / Mrs / Dr"
+                                                value={editingPerson.title || ""}
+                                                onChange={(e) =>
+                                                    setEditingPerson({
+                                                        ...editingPerson,
+                                                        title: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                        <div className={styles.formField}>
+                                            <label className={styles.formLabel}>
+                                                First name
+                                                <span className={styles.formReq}>required</span>
+                                            </label>
+                                            <input
+                                                className={styles.formInput}
+                                                value={editingPerson.firstName || ""}
+                                                onChange={(e) =>
+                                                    setEditingPerson({
+                                                        ...editingPerson,
+                                                        firstName: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                        <div className={styles.formField}>
+                                            <label className={styles.formLabel}>
+                                                Last name
+                                                <span className={styles.formReq}>required</span>
+                                            </label>
+                                            <input
+                                                className={styles.formInput}
+                                                value={editingPerson.lastName || ""}
+                                                onChange={(e) =>
+                                                    setEditingPerson({
+                                                        ...editingPerson,
+                                                        lastName: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Other names</label>
+                                        <input
+                                            className={styles.formInput}
+                                            value={editingPerson.otherName || ""}
+                                            onChange={(e) =>
+                                                setEditingPerson({
+                                                    ...editingPerson,
+                                                    otherName: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            <div className={styles.formField}>
+                                <label className={styles.formLabel}>
+                                    Role
+                                    <span className={styles.formHelp}>
+                                        e.g. Shareholder, Director, Both, Former
+                                    </span>
+                                </label>
+                                <input
+                                    className={styles.formInput}
+                                    value={editingPerson.role || ""}
+                                    onChange={(e) =>
+                                        setEditingPerson({
+                                            ...editingPerson,
+                                            role: e.target.value,
                                         })
                                     }
                                 />
-                                <span>Flag this person</span>
-                            </label>
-                            <textarea
-                                rows={3}
-                                placeholder="Finding / note"
-                                value={editingPerson.flagMessage || ""}
-                                onChange={(e) =>
-                                    setEditingPerson({
-                                        ...editingPerson,
-                                        flagMessage: e.target.value,
-                                    })
-                                }
-                            />
-
-                            <div className={styles.ddFiles}>
-                                {(editingPerson.files || []).map((f, i) => (
-                                    <div key={i} className={styles.ddFileRow}>
-                                        <a href={f.url} target="_blank" rel="noopener noreferrer">
-                                            {f.name}
-                                        </a>
-                                        <button
-                                            className={styles.btnLink}
-                                            onClick={() =>
-                                                setEditingPerson({
-                                                    ...editingPerson,
-                                                    files: (editingPerson.files || []).filter(
-                                                        (_, idx) => idx !== i,
-                                                    ),
-                                                })
-                                            }
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                ))}
                             </div>
-                            <input
-                                type="file"
-                                multiple
-                                onChange={(e) => onPersonFiles(e.target.files)}
-                            />
+
+                            <div className={styles.formField}>
+                                <label className={styles.ddInlineToggle}>
+                                    <input
+                                        type="checkbox"
+                                        checked={!!editingPerson.flagged}
+                                        onChange={(e) =>
+                                            setEditingPerson({
+                                                ...editingPerson,
+                                                flagged: e.target.checked,
+                                            })
+                                        }
+                                    />
+                                    <span>Raise a concern on this person</span>
+                                </label>
+                                <textarea
+                                    className={styles.formTextarea}
+                                    rows={3}
+                                    placeholder={
+                                        editingPerson.flagged
+                                            ? "Explain the concern - the HOD will see this on review"
+                                            : "Optional finding / note"
+                                    }
+                                    value={editingPerson.flagMessage || ""}
+                                    onChange={(e) =>
+                                        setEditingPerson({
+                                            ...editingPerson,
+                                            flagMessage: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div className={styles.formField}>
+                                <label className={styles.formLabel}>Supporting upload</label>
+                                <div className={styles.ddDropZone}>
+                                    <label className={styles.ddUploadBtn}>
+                                        <input
+                                            type="file"
+                                            multiple
+                                            onChange={(e) => onPersonFiles(e.target.files)}
+                                        />
+                                        <span>+ Upload file</span>
+                                    </label>
+                                    {(editingPerson.files || []).length === 0 && (
+                                        <span className={styles.ddDropHint}>
+                                            Screening result, search snapshot or supporting PDF
+                                        </span>
+                                    )}
+                                    {(editingPerson.files || []).map((f, i) => (
+                                        <div key={i} className={styles.ddFileRow}>
+                                            <a href={f.url} target="_blank" rel="noopener noreferrer">
+                                                {f.name}
+                                            </a>
+                                            <button
+                                                className={styles.btnLink}
+                                                onClick={() =>
+                                                    setEditingPerson({
+                                                        ...editingPerson,
+                                                        files: (editingPerson.files || []).filter(
+                                                            (_, idx) => idx !== i,
+                                                        ),
+                                                    })
+                                                }
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {err && <ErrorText text={err} />}
                         </div>
                         <div className={styles.modalActions}>
@@ -710,8 +782,9 @@ const DueDiligencePanel = ({
                             </button>
                         </div>
                     </div>
-                </div>
+                </Modal>
             )}
+            {confirmDialogEl}
         </div>
     )
 }

@@ -3,6 +3,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Tabs from "@/components/tabs"
 import StageLegend from "./StageLegend"
+import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
 import { putProtected } from "@/requests/put"
 import { BACKEND_BASE_URL } from "@/lib/config"
@@ -121,6 +122,7 @@ const V2ApprovalsPage = () => {
     const [error, setError] = useState("")
     const [togglingPriorityId, setTogglingPriorityId] = useState<string | null>(null)
     const [exporting, setExporting] = useState<"current" | "all" | null>(null)
+    const { confirm: confirmDialog, dialog: confirmDialogEl } = useConfirmDialog()
 
     const canPriority = ["Admin", "HOD", "Supervisor"].includes(user?.role)
 
@@ -231,14 +233,15 @@ const V2ApprovalsPage = () => {
     const togglePriority = async (row: SubmissionV2Row) => {
         if (!canPriority) return
         const nextValue = !row.isPriority
-        if (
-            !window.confirm(
-                nextValue
-                    ? `Pin "${row.companyName || row.contractorEmail}" to the top of the queue?`
-                    : `Remove "${row.companyName || row.contractorEmail}" from priority?`,
-            )
-        )
-            return
+        const name = row.companyName || row.contractorEmail
+        const ok = await confirmDialog({
+            headerText: nextValue ? "Pin to top?" : "Remove priority?",
+            bodyText: nextValue
+                ? `Pin "${name}" to the top of the queue.`
+                : `Remove "${name}" from priority.`,
+            confirmText: nextValue ? "Pin to top" : "Remove",
+        })
+        if (!ok) return
         try {
             setTogglingPriorityId(row._id)
             const r = await putProtected(
@@ -462,6 +465,7 @@ const V2ApprovalsPage = () => {
                     </table>
                 </div>
             )}
+            {confirmDialogEl}
         </div>
     )
 }

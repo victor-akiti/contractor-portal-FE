@@ -1248,3 +1248,78 @@
 .ddCompleteBtnOn:hover:not(:disabled) {
     background: #1f5d1f;
 }
+
+/* ── Modal form primitives ─────────────────────────────────────────────
+   Used by the Edit exposed-persons modal and any other dialogue with
+   typed input. Keeps every modal feeling like the same product. */
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.formLabel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.88rem;
+}
+.formReq {
+    font-size: 0.7rem;
+    color: #8a1f1f;
+    background: #fdecec;
+    border: 1px solid #f5b3b3;
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+.formHelp { font-size: 0.78rem; color: #888; font-weight: 400; }
+.formInput,
+.formSelect,
+.formTextarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #d4d4d4;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    background: white;
+    color: #1a1a1a;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.formSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus {
+    outline: none;
+    border-color: #d56500;
+    box-shadow: 0 0 0 3px #d5650020;
+}
+.formInput::placeholder,
+.formTextarea::placeholder { color: #9ca3af; }
+.formTextarea { resize: vertical; min-height: 88px; }
+
+.formGrid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.formGrid3 {
+    display: grid;
+    grid-template-columns: 0.6fr 1fr 1fr;
+    gap: 12px;
+}
+@media (max-width: 640px) {
+    .formGrid2, .formGrid3 { grid-template-columns: 1fr; }
+}

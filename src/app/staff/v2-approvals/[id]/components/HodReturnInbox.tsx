@@ -99,7 +99,16 @@ const HodReturnInbox = ({ submission }: Props) => {
                       })
               })()
 
-    const matched = (fromReverts.length > 0 ? fromReverts : matchedFromHistory).slice(-3)
+    // Drop entries whose reason was lost (old data created before the
+    // buildHistoryEntry / $push fixes). "(no reason recorded)" is not
+    // useful to surface - if the receiving owner can't act on it, hide
+    // it. New returns always carry a real reason.
+    const meaningful = (fromReverts.length > 0 ? fromReverts : matchedFromHistory)
+        .filter((h) => {
+            const r = (h.reason || "").trim()
+            return r && r.toLowerCase() !== "(no reason recorded)"
+        })
+    const matched = meaningful.slice(-3)
     if (matched.length === 0) return null
 
     return (
