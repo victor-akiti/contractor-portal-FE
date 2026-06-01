@@ -43,35 +43,61 @@ const HodReturnInbox = ({ submission }: Props) => {
             returnedAt: h.returnedAt,
         }))
 
+    // If reverts.history has any HOD_RETURN entries at all for this stage
+    // (resolved or active), trust it as the source of truth and skip the
+    // approvalHistory fallback. New returns populate reverts.history
+    // properly, and the resolve-on-advance logic flips status, so this
+    // matches the right state.
+    const revertsHasAny = ((submission as any).reverts?.history || []).some(
+        (h: any) => h?.type === "HOD_RETURN" && Number(h.toLevel) === currentLevel,
+    )
+
+    // Approval-history fallback for older submissions whose returns
+    // pre-date the reverts.history wire-up. Scan for "Returned from
+    // Stage X to Stage Y for additional research" entries; skip any
+    // that have a subsequent "Completed Stage Y" entry (the receiver
+    // already advanced - the research is done).
     const matchedFromHistory: HodReturnEntry[] =
-        fromReverts.length > 0
+        revertsHasAny
             ? []
-            : ((submission as any).approvalHistory || [])
-                  .slice()
-                  .reverse()
-                  .filter((h: any) => {
-                      const action = String(h?.action || "")
-                      if (!action.includes("for additional research")) return false
-                      // Action shape: "Returned from Stage F to Stage E for additional research"
-                      const m = action.match(/from Stage ([A-G]) to Stage ([A-G])/)
-                      if (!m) return false
-                      const to = m[2].charCodeAt(0) - 66
-                      return to === currentLevel
-                  })
-                  .map((h: any) => {
-                      const m = String(h.action).match(/from Stage ([A-G]) to Stage ([A-G])/)
-                      const from = m ? m[1].charCodeAt(0) - 66 : -1
-                      return {
-                          reason:
-                              (h.extraData && h.extraData.reason) ||
-                              h.description ||
-                              "(no reason recorded)",
-                          fromLevel: from,
-                          toLevel: currentLevel,
-                          returnedBy: { name: h.actorName, email: h.actorEmail },
-                          returnedAt: h.date,
-                      }
-                  })
+            : (() => {
+                  const history = ((submission as any).approvalHistory || []) as any[]
+                  const currentStageLetter = String.fromCharCode(66 + currentLevel)
+                  return history
+                      .filter((h: any) => {
+                          const action = String(h?.action || "")
+                          if (!action.includes("for additional research")) return false
+                          const m = action.match(/from Stage ([A-G]) to Stage ([A-G])/)
+                          if (!m) return false
+                          const to = m[2].charCodeAt(0) - 66
+                          if (to !== currentLevel) return false
+                          // Hide returns that have already been
+                          // resolved by a subsequent advance from this
+                          // stage.
+                          const returnedAt = h.date ? new Date(h.date).getTime() : 0
+                          const resolved = history.some((h2: any) => {
+                              const a2 = String(h2?.action || "")
+                              if (!a2.startsWith(`Completed Stage ${currentStageLetter}`)) return false
+                              const d2 = h2.date ? new Date(h2.date).getTime() : 0
+                              return d2 > returnedAt
+                          })
+                          return !resolved
+                      })
+                      .map((h: any) => {
+                          const m = String(h.action).match(/from Stage ([A-G]) to Stage ([A-G])/)
+                          const from = m ? m[1].charCodeAt(0) - 66 : -1
+                          return {
+                              reason:
+                                  (h.extraData && h.extraData.reason) ||
+                                  h.description ||
+                                  "(no reason recorded)",
+                              fromLevel: from,
+                              toLevel: currentLevel,
+                              returnedBy: { name: h.actorName, email: h.actorEmail },
+                              returnedAt: h.date,
+                          }
+                      })
+              })()
 
     const matched = (fromReverts.length > 0 ? fromReverts : matchedFromHistory).slice(-3)
     if (matched.length === 0) return null
