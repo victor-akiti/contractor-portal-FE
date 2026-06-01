@@ -2,20 +2,8 @@
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
-import ApprovalReviewView from "./ApprovalReviewView"
-import DueDiligencePanel from "./DueDiligencePanel"
-import DecisionBar from "./components/DecisionBar"
-import StageRoleBriefingCard from "./components/StageRoleBriefingCard"
-import HodReturnInbox from "./components/HodReturnInbox"
-import EndUserPickerModal from "./components/EndUserPickerModal"
-import ServicesModal from "./components/ServicesModal"
-import ReturnForResearchModal from "./components/ReturnForResearchModal"
-import ReturnToEarlierStageModal from "./components/ReturnToEarlierStageModal"
-import DoNotAddModal from "./components/DoNotAddModal"
-import RemarksArchive from "./components/RemarksArchive"
-import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import Modal from "@/components/modal"
-import SuccessMessage from "@/components/successMessage"
+import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
@@ -23,6 +11,17 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux"
+import ApprovalReviewView from "./ApprovalReviewView"
+import DueDiligencePanel from "./DueDiligencePanel"
+import DecisionBar from "./components/DecisionBar"
+import DoNotAddModal from "./components/DoNotAddModal"
+import EndUserPickerModal from "./components/EndUserPickerModal"
+import HodReturnInbox from "./components/HodReturnInbox"
+import RemarksArchive from "./components/RemarksArchive"
+import ReturnForResearchModal from "./components/ReturnForResearchModal"
+import ReturnToEarlierStageModal from "./components/ReturnToEarlierStageModal"
+import ServicesModal from "./components/ServicesModal"
+import StageRoleBriefingCard from "./components/StageRoleBriefingCard"
 import styles from "./styles.module.css"
 
 interface Certificate {
@@ -982,7 +981,7 @@ const V2SubmissionDetailPage = () => {
             // is Request Park with a mandatory reason.
             returnToVendor:
                 pending &&
-                (submission.level !== 2 || isHod),
+                (submission.level !== 2),
             requestPark: pending && (submission.level !== 2 || canActAtStageD),
             approvePark: parkRequested && isHod,
             declinePark: parkRequested && isHod,
@@ -1004,7 +1003,7 @@ const V2SubmissionDetailPage = () => {
             // HOD-only "return to earlier stage" - useful when HOD spots a
             // VRM-level mistake at Stage F. Visible at levels 2-5 (need at
             // least one earlier stage to bounce back to).
-            returnEarlier: pending && submission.level >= 2 && isHod,
+            returnEarlier: pending && [1, 4, 5].includes(submission.level) && (isHod || (isExec && submission.level === 5)),
         }
     }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed])
 
@@ -1241,10 +1240,10 @@ const V2SubmissionDetailPage = () => {
                                     exp == null
                                         ? null
                                         : exp.getTime() < now.getTime()
-                                          ? "expired"
-                                          : exp.getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000
-                                            ? "expiring"
-                                            : "healthy"
+                                            ? "expired"
+                                            : exp.getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000
+                                                ? "expiring"
+                                                : "healthy"
                                 // End User view at Stage D: hide
                                 // expiry / issue dates and the
                                 // superseded/expiry health badges. They
@@ -1261,9 +1260,8 @@ const V2SubmissionDetailPage = () => {
                                 return (
                                     <li
                                         key={c._id}
-                                        className={`${styles.certItem} ${
-                                            !isCurrent ? styles.certSuperseded : ""
-                                        }`}
+                                        className={`${styles.certItem} ${!isCurrent ? styles.certSuperseded : ""
+                                            }`}
                                     >
                                         <div className={styles.certHead}>
                                             <strong>
@@ -1277,9 +1275,8 @@ const V2SubmissionDetailPage = () => {
                                                 <span className={styles.certBadgeNeutral}>superseded</span>
                                             )}
                                             <span
-                                                className={`${styles.certBadge} ${
-                                                    styles[`certStatus_${c.certStatus}`] || ""
-                                                }`}
+                                                className={`${styles.certBadge} ${styles[`certStatus_${c.certStatus}`] || ""
+                                                    }`}
                                             >
                                                 {c.certStatus}
                                             </span>
@@ -1352,7 +1349,7 @@ const V2SubmissionDetailPage = () => {
                                 <div className={styles.modalHeader}>
                                     <h3>Reject certificate</h3>
                                     <p className={styles.modalSub}>
-                                        Tell the contractor why this certificate isn't acceptable. They'll see
+                                        Tell the contractor why this certificate isn&apos;t acceptable. They&apos;ll see
                                         the reason inline when they re-upload.
                                     </p>
                                 </div>
@@ -1420,15 +1417,14 @@ const V2SubmissionDetailPage = () => {
                                                 : "General"}
                                         </span>
                                         <span
-                                            className={`${styles.certBadge} ${
-                                                e.status === "active"
-                                                    ? styles.certStatus_pending
-                                                    : e.status === "accepted"
-                                                      ? styles.certStatus_approved
-                                                      : e.status === "flagged"
+                                            className={`${styles.certBadge} ${e.status === "active"
+                                                ? styles.certStatus_pending
+                                                : e.status === "accepted"
+                                                    ? styles.certStatus_approved
+                                                    : e.status === "flagged"
                                                         ? styles.certStatus_rejected
                                                         : styles.certBadgeNeutral
-                                            }`}
+                                                }`}
                                         >
                                             {e.status}
                                         </span>
@@ -1443,8 +1439,8 @@ const V2SubmissionDetailPage = () => {
                                                 {e.previousValue === undefined || e.previousValue === null
                                                     ? "—"
                                                     : typeof e.previousValue === "string"
-                                                      ? e.previousValue
-                                                      : JSON.stringify(e.previousValue)}
+                                                        ? e.previousValue
+                                                        : JSON.stringify(e.previousValue)}
                                             </code>
                                         </span>
                                         <span className={styles.dim}>
@@ -1453,8 +1449,8 @@ const V2SubmissionDetailPage = () => {
                                                 {e.newValue === undefined || e.newValue === null
                                                     ? "—"
                                                     : typeof e.newValue === "string"
-                                                      ? e.newValue
-                                                      : JSON.stringify(e.newValue)}
+                                                        ? e.newValue
+                                                        : JSON.stringify(e.newValue)}
                                             </code>
                                         </span>
                                         <span className={styles.dim}>
@@ -1610,21 +1606,21 @@ const V2SubmissionDetailPage = () => {
                                 const actorName = h.actorName || h.approver?.name
                                 const actorRole = h.actorRole || h.approver?.role
                                 return (
-                                <li key={idx} className={styles.historyItem}>
-                                    <div className={styles.historyHead}>
-                                        <strong>{headline}</strong>
-                                        {h.date && (
-                                            <span className={styles.dim}>
-                                                {new Date(h.date).toLocaleString("en-NG")}
-                                            </span>
+                                    <li key={idx} className={styles.historyItem}>
+                                        <div className={styles.historyHead}>
+                                            <strong>{headline}</strong>
+                                            {h.date && (
+                                                <span className={styles.dim}>
+                                                    {new Date(h.date).toLocaleString("en-NG")}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {(actorName || actorRole) && (
+                                            <p className={styles.historyText}>
+                                                By {actorName || "—"}{actorRole ? ` (${actorRole})` : ""}
+                                            </p>
                                         )}
-                                    </div>
-                                    {(actorName || actorRole) && (
-                                        <p className={styles.historyText}>
-                                            By {actorName || "—"}{actorRole ? ` (${actorRole})` : ""}
-                                        </p>
-                                    )}
-                                </li>
+                                    </li>
                                 )
                             })}
                         </ul>
@@ -1639,7 +1635,7 @@ const V2SubmissionDetailPage = () => {
                             <h3>Return to contractor</h3>
                             <p className={styles.modalSub}>
                                 Confirm sending this application back to the
-                                contractor. Every active remark you've left on
+                                contractor. Every active remark you&apos;ve left on
                                 this cycle becomes visible to them inline.
                             </p>
                         </div>
@@ -1748,7 +1744,7 @@ const V2SubmissionDetailPage = () => {
                         <div className={styles.modalHeader}>
                             <h3>Edit field (EBA)</h3>
                             <p className={styles.modalSub}>
-                                Editing <code>{editingField.field.key}</code>. The contractor's
+                                Editing <code>{editingField.field.key}</code>. The contractor&apos;s
                                 previous value is preserved in the audit trail and downstream
                                 reviewers can flag this edit.
                             </p>
