@@ -457,6 +457,9 @@ const V2SubmissionDetailPage = () => {
             const result = await postProtected(`api/v2/submissions/${id}/${action}`, payload, role)
             if (result?.status === "OK") {
                 setActionSuccess(`Action "${action}" completed.`)
+                // Auto-dismiss the success toast after 3s so it doesn't
+                // linger forever once the user has seen it.
+                setTimeout(() => setActionSuccess(""), 3000)
                 await fetchAll()
                 return true
             }

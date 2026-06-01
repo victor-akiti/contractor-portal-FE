@@ -23,6 +23,7 @@ import { useState } from "react"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import SuccessMessage from "@/components/successMessage"
+import DueDiligenceCheckCard from "./DueDiligenceCheckCard"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
 import { deleteProtected } from "@/requests/delete"
@@ -308,158 +309,7 @@ const DueDiligencePanel = ({
         }
     }
 
-    // ── Rendering ──────────────────────────────────────────────────────────
-
-    const renderCheck = (
-        key: "registrationCheck" | "internetCheck" | "referenceCheck",
-        stepNumber: number,
-    ) => {
-        const c: DDCheck = (dd[key] as DDCheck) || {}
-        const isSaving = savingKey === key
-        const complete = isCheckComplete(c)
-        const hasFile = (c.files || []).length > 0
-        // The Mark Complete tick is only meaningful once the officer
-        // has done something. Disable it until they've uploaded at
-        // least one file - keeps officers from forgetting the upload.
-        const canMarkComplete = hasFile && (!c.flagged || !!c.flagMessage?.trim())
-        return (
-            <div
-                key={key}
-                className={`${styles.ddCard} ${complete ? styles.ddCardDone : ""}`}
-            >
-                <div className={styles.ddCardHead}>
-                    <div className={styles.ddCardTitle}>
-                        <span className={styles.ddStepBadge}>{stepNumber}</span>
-                        <div>
-                            <h4>{CHECK_LABELS[key]}</h4>
-                            <p className={styles.ddHelp}>{CHECK_HELP[key]}</p>
-                        </div>
-                    </div>
-                    <span className={complete ? styles.ddDone : styles.ddPending}>
-                        {complete ? "Completed" : "Pending"}
-                    </span>
-                </div>
-                {canEdit ? (
-                    <>
-                        <div className={styles.ddFieldGroup}>
-                            <label className={styles.ddFieldLabel}>
-                                Finding / note
-                                {c.flagged && (
-                                    <span className={styles.ddRequiredHint}>
-                                        Required when flagged
-                                    </span>
-                                )}
-                            </label>
-                            <textarea
-                                className={styles.ddTextarea}
-                                rows={3}
-                                value={c.flagMessage || ""}
-                                placeholder={
-                                    c.flagged
-                                        ? "Explain the concern - this surfaces to the HOD review"
-                                        : "Optional notes for the HOD review"
-                                }
-                                onChange={(e) =>
-                                    saveCheck(key, { ...c, flagMessage: e.target.value })
-                                }
-                                disabled={isSaving}
-                            />
-                            <label className={styles.ddInlineToggle}>
-                                <input
-                                    type="checkbox"
-                                    checked={!!c.flagged}
-                                    onChange={(e) =>
-                                        saveCheck(key, { ...c, flagged: e.target.checked })
-                                    }
-                                    disabled={isSaving}
-                                />
-                                <span>Raise a concern on this check</span>
-                            </label>
-                        </div>
-
-                        <div className={styles.ddFieldGroup}>
-                            <label className={styles.ddFieldLabel}>
-                                Supporting upload
-                                <span className={styles.ddRequiredHint}>Required</span>
-                            </label>
-                            <div className={styles.ddDropZone}>
-                                <label className={styles.ddUploadBtn}>
-                                    <input
-                                        type="file"
-                                        multiple
-                                        onChange={(e) => onCheckFiles(key, e.target.files)}
-                                        disabled={isSaving}
-                                    />
-                                    <span>+ Upload file</span>
-                                </label>
-                                {(c.files || []).length === 0 && (
-                                    <span className={styles.ddDropHint}>
-                                        Screenshot, PDF or letter that proves this check
-                                    </span>
-                                )}
-                                {(c.files || []).map((f, i) => (
-                                    <div key={i} className={styles.ddFileRow}>
-                                        <a href={f.url} target="_blank" rel="noopener noreferrer">
-                                            {f.name}
-                                        </a>
-                                        <button
-                                            className={styles.btnLink}
-                                            onClick={() => onRemoveCheckFile(key, i)}
-                                            disabled={isSaving}
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <button
-                            type="button"
-                            className={`${styles.ddCompleteBtn} ${
-                                complete ? styles.ddCompleteBtnOn : ""
-                            }`}
-                            onClick={() => saveCheck(key, { ...c, completed: !c.completed })}
-                            disabled={isSaving || (!complete && !canMarkComplete)}
-                            title={
-                                !complete && !canMarkComplete
-                                    ? "Upload a file (and explain any concern) before marking complete"
-                                    : complete
-                                      ? "Un-mark - reopens this check"
-                                      : "Mark this check complete"
-                            }
-                        >
-                            {complete ? "✓ Marked Complete - click to undo" : "Mark Complete"}
-                            {isSaving && <ButtonLoadingIcon />}
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <div className={styles.ddReadRow}>
-                            <strong>Concern raised:</strong> {c.flagged ? "Yes" : "No"}
-                        </div>
-                        {c.flagMessage && (
-                            <div className={styles.ddReadRow}>
-                                <strong>Finding:</strong> {c.flagMessage}
-                            </div>
-                        )}
-                        <div className={styles.ddFiles}>
-                            {(c.files || []).map((f, i) => (
-                                <div key={i} className={styles.ddFileRow}>
-                                    <a href={f.url} target="_blank" rel="noopener noreferrer">
-                                        {f.name}
-                                    </a>
-                                </div>
-                            ))}
-                            {(c.files || []).length === 0 && (
-                                <span className={styles.dim}>No files uploaded.</span>
-                            )}
-                        </div>
-                    </>
-                )}
-            </div>
-        )
-    }
+    // ── Rendering ───────────────────────────────────────────────
 
     const markExposedReviewed = async (next: boolean) => {
         setSavingKey("exposedPersonsReviewed")
@@ -612,9 +462,20 @@ const DueDiligencePanel = ({
             </div>
 
             <div className={styles.ddStack}>
-                {renderCheck("registrationCheck", 1)}
-                {renderCheck("internetCheck", 2)}
-                {renderCheck("referenceCheck", 3)}
+                {CHECK_ORDER.map((key, i) => (
+                    <DueDiligenceCheckCard
+                        key={key}
+                        stepNumber={i + 1}
+                        title={CHECK_LABELS[key]}
+                        help={CHECK_HELP[key]}
+                        check={(dd[key] as any) || {}}
+                        canEdit={canEdit}
+                        isSaving={savingKey === key}
+                        onSave={(next) => saveCheck(key, next)}
+                        onUploadFiles={(files) => onCheckFiles(key, files)}
+                        onRemoveFile={(idx) => onRemoveCheckFile(key, idx)}
+                    />
+                ))}
                 {renderExposedPersons()}
             </div>
 
