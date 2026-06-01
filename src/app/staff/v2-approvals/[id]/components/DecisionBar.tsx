@@ -109,7 +109,7 @@ const DecisionBar = ({
                 <h3>Decision</h3>
                 <p>
                     Pick the action that matches your verdict. Stage tasks are
-                    prerequisites; Process forward is the "go ahead" action;
+                    prerequisites; Process forward is the &quot;go ahead&quot; action;
                     Send back covers returns; Hold covers park/decline.
                 </p>
             </div>
@@ -126,7 +126,7 @@ const DecisionBar = ({
                                     onClick={openEndUserPicker}
                                 >
                                     {Array.isArray(submission.selectedEndUsers) &&
-                                    submission.selectedEndUsers.length > 0
+                                        submission.selectedEndUsers.length > 0
                                         ? `End Users (${submission.selectedEndUsers.length})`
                                         : "Assign End Users"}
                                 </button>
@@ -138,7 +138,7 @@ const DecisionBar = ({
                                     onClick={openServicesModal}
                                 >
                                     {Array.isArray((submission as any).selectedServices) &&
-                                    (submission as any).selectedServices.length > 0
+                                        (submission as any).selectedServices.length > 0
                                         ? `Services (${(submission as any).selectedServices.length})`
                                         : "Record Services"}
                                 </button>
@@ -181,140 +181,140 @@ const DecisionBar = ({
                     can.returnToF ||
                     can.retrieve ||
                     can.revertFromL3) && (
-                    <div className={styles.decisionGroup}>
-                        <span className={styles.decisionGroupLabel}>Send Back</span>
-                        <p className={styles.decisionGroupHint}>
-                            Returns the application to an earlier participant
-                            with a reason. Return to Contractor reopens the
-                            form for them to fix. Return for Research and
-                            Return to Earlier Stage stay on the staff side.
-                        </p>
-                        <div className={styles.decisionButtons}>
-                            {can.returnToVendor && (
-                                <button
-                                    className={styles.btnDanger}
-                                    disabled={!!actionRunning}
-                                    onClick={openReturnModal}
-                                    title="Reopen the form for the contractor with the active remarks attached. Status flips to Returned until they resubmit."
-                                >
-                                    Return to Contractor
-                                </button>
-                            )}
-                            {(can.returnToE || can.returnToF) && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={openReturnPrevModal}
-                                    title="Hop one stage back on the staff side with a reason. The contractor is not notified."
-                                >
-                                    Return for Research
-                                </button>
-                            )}
-                            {can.returnEarlier && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={openReturnEarlierModal}
-                                    title="HOD only: send back to any earlier stage with a remark for that stage's owner. Contractor is not notified."
-                                >
-                                    Return to Earlier Stage
-                                </button>
-                            )}
-                            {can.retrieve && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={() => runAction("retrieve")}
-                                >
-                                    Retrieve from Contractor
-                                    {actionRunning === "retrieve" && <ButtonLoadingIcon />}
-                                </button>
-                            )}
-                            {can.revertFromL3 && (
-                                <button
-                                    className={styles.btnDanger}
-                                    disabled={!!actionRunning}
-                                    onClick={() => runAction("revert-from-l3")}
-                                >
-                                    Revert from L3
-                                    {actionRunning === "revert-from-l3" && <ButtonLoadingIcon />}
-                                </button>
-                            )}
+                        <div className={styles.decisionGroup}>
+                            <span className={styles.decisionGroupLabel}>Send Back</span>
+                            <p className={styles.decisionGroupHint}>
+                                Returns the application to an earlier participant
+                                with a reason. Return to Contractor reopens the
+                                form for them to fix. Return for Research and
+                                Return to Earlier Stage stay on the staff side.
+                            </p>
+                            <div className={styles.decisionButtons}>
+                                {can.returnToVendor && (
+                                    <button
+                                        className={styles.btnDanger}
+                                        disabled={!!actionRunning}
+                                        onClick={openReturnModal}
+                                        title="Reopen the form for the contractor with the active remarks attached. Status flips to Returned until they resubmit."
+                                    >
+                                        Return to Contractor
+                                    </button>
+                                )}
+                                {(can.returnToE || can.returnToF) && (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={openReturnPrevModal}
+                                        title="Hop one stage back on the staff side with a reason. The contractor is not notified."
+                                    >
+                                        Return for Research
+                                    </button>
+                                )}
+                                {can.returnEarlier && (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={openReturnEarlierModal}
+                                        title="HOD only: send back to any earlier stage with a remark for that stage's owner. Contractor is not notified."
+                                    >
+                                        Return to Earlier Stage
+                                    </button>
+                                )}
+                                {can.retrieve && (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={() => runAction("retrieve")}
+                                    >
+                                        Retrieve from Contractor
+                                        {actionRunning === "retrieve" && <ButtonLoadingIcon />}
+                                    </button>
+                                )}
+                                {can.revertFromL3 && (
+                                    <button
+                                        className={styles.btnDanger}
+                                        disabled={!!actionRunning}
+                                        onClick={() => runAction("revert-from-l3")}
+                                    >
+                                        Revert from L3
+                                        {actionRunning === "revert-from-l3" && <ButtonLoadingIcon />}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
                 {(can.requestPark ||
                     can.approvePark ||
                     can.declinePark ||
                     can.releasePark ||
                     can.doNotAdd) && (
-                    <div className={styles.decisionGroup}>
-                        <span className={styles.decisionGroupLabel}>Hold</span>
-                        <p className={styles.decisionGroupHint}>
-                            Parking pauses the application without rejecting
-                            it. The contractor cannot resubmit while parked,
-                            and no stage owner can advance it. The HOD
-                            ultimately decides whether a park stands or is
-                            released back to its previous stage.
-                        </p>
-                        <div className={styles.decisionButtons}>
-                            {can.requestPark && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={openParkRequestModal}
-                                    title="Ask the HOD to put this application on hold. A reason is required and the HOD will Approve or Decline."
-                                >
-                                    Request Park
-                                </button>
-                            )}
-                            {can.approvePark && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={() => runAction("approve-park")}
-                                    title="HOD only: confirms the park request. Application status flips to Parked and movement stops."
-                                >
-                                    Approve Park
-                                    {actionRunning === "approve-park" && <ButtonLoadingIcon />}
-                                </button>
-                            )}
-                            {can.declinePark && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={() => runAction("decline-park")}
-                                    title="HOD only: rejects the park request. Application stays at its current stage and continues normally."
-                                >
-                                    Decline Park
-                                    {actionRunning === "decline-park" && <ButtonLoadingIcon />}
-                                </button>
-                            )}
-                            {can.releasePark && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={() => runAction("release-park")}
-                                    title="HOD only: un-parks the application. It resumes from the stage it was parked at."
-                                >
-                                    Release from Park
-                                    {actionRunning === "release-park" && <ButtonLoadingIcon />}
-                                </button>
-                            )}
-                            {can.doNotAdd && (
-                                <button
-                                    className={styles.btnDanger}
-                                    disabled={!!actionRunning}
-                                    onClick={openParkL2Modal}
-                                    title="Executive Approver only: final decision NOT to add the contractor. Parks at L2 with reason; cannot be released by lower stages."
-                                >
-                                    Do Not Add (Park at L2)
-                                </button>
-                            )}
+                        <div className={styles.decisionGroup}>
+                            <span className={styles.decisionGroupLabel}>Hold</span>
+                            <p className={styles.decisionGroupHint}>
+                                Parking pauses the application without rejecting
+                                it. The contractor cannot resubmit while parked,
+                                and no stage owner can advance it. The HOD
+                                ultimately decides whether a park stands or is
+                                released back to its previous stage.
+                            </p>
+                            <div className={styles.decisionButtons}>
+                                {can.requestPark && (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={openParkRequestModal}
+                                        title="Ask the HOD to put this application on hold. A reason is required and the HOD will Approve or Decline."
+                                    >
+                                        Request Park
+                                    </button>
+                                )}
+                                {can.approvePark && (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={() => runAction("approve-park")}
+                                        title="HOD only: confirms the park request. Application status flips to Parked and movement stops."
+                                    >
+                                        Approve Park
+                                        {actionRunning === "approve-park" && <ButtonLoadingIcon />}
+                                    </button>
+                                )}
+                                {can.declinePark && (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={() => runAction("decline-park")}
+                                        title="HOD only: rejects the park request. Application stays at its current stage and continues normally."
+                                    >
+                                        Decline Park
+                                        {actionRunning === "decline-park" && <ButtonLoadingIcon />}
+                                    </button>
+                                )}
+                                {can.releasePark && (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={() => runAction("release-park")}
+                                        title="HOD only: un-parks the application. It resumes from the stage it was parked at."
+                                    >
+                                        Release from Park
+                                        {actionRunning === "release-park" && <ButtonLoadingIcon />}
+                                    </button>
+                                )}
+                                {can.doNotAdd && (
+                                    <button
+                                        className={styles.btnDanger}
+                                        disabled={!!actionRunning}
+                                        onClick={openParkL2Modal}
+                                        title="Executive Approver only: final decision NOT to add the contractor. Parks at L2 with reason; cannot be released by lower stages."
+                                    >
+                                        Do Not Add (Park at L2)
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
             </div>
         </div>
     )
