@@ -127,18 +127,23 @@ const ServicesModal = ({
                         one service is recorded.
                     </p>
                 </div>
-                <div className={styles.modalBody}>
-                    <label className={styles.modalLabel}>
-                        Services ({picked.length} selected)
-                    </label>
-                    <input
-                        type="search"
-                        className={styles.searchInput}
-                        placeholder="Search services..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        disabled={saving}
-                    />
+                <div className={`${styles.modalBody} ${styles.modalBodyServices}`}>
+                    <div className={styles.servicesSection}>
+                        <label className={styles.modalLabel}>
+                            Services ({picked.length} selected)
+                        </label>
+                        <div className={styles.servicesSearchWrap}>
+                            <span className={styles.servicesSearchIcon}>⌕</span>
+                            <input
+                                type="search"
+                                className={styles.servicesSearchInput}
+                                placeholder="Search services..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                disabled={saving}
+                            />
+                        </div>
+                    </div>
                     <div className={styles.serviceListWrap}>
                         {loading && <div className={styles.dim}>Loading services...</div>}
                         {!loading && categories.length === 0 && (
