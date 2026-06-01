@@ -957,3 +957,66 @@
     text-transform: uppercase;
     font-size: 0.7rem;
 }
+
+/* Forced site-visit decision at Stage D. Large, bordered, can't be
+   missed. Red ring when not yet answered so End Users see they have a
+   pending choice. */
+.siteVisitBlock {
+    margin-top: 20px;
+    border: 2px solid #d56500;
+    background: #fff8f1;
+    border-radius: 12px;
+    padding: 16px 18px;
+}
+.siteVisitBlockUnset {
+    border-color: #c33232;
+    background: #fef6f6;
+    animation: pulseUnset 1.4s ease-in-out infinite;
+}
+@keyframes pulseUnset {
+    0%   { box-shadow: 0 0 0 0   #c3323240; }
+    70%  { box-shadow: 0 0 0 10px #c3323200; }
+    100% { box-shadow: 0 0 0 0   #c3323200; }
+}
+.siteVisitQuestion {
+    margin: 0 0 6px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.4;
+}
+.siteVisitHelp {
+    margin: 0 0 14px 0;
+    font-size: 0.82rem;
+    color: #6b3d04;
+    line-height: 1.45;
+}
+.siteVisitChoices { display: flex; gap: 12px; flex-wrap: wrap; }
+.siteVisitChoice {
+    flex: 1 1 200px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    cursor: pointer;
+    background: white;
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+    user-select: none;
+}
+.siteVisitChoice:hover { border-color: #d56500; }
+.siteVisitChoice input[type="radio"] {
+    width: 22px;
+    height: 22px;
+    accent-color: #d56500;
+    cursor: pointer;
+}
+.siteVisitChoiceOn {
+    border-color: #d56500;
+    background: #fff5ed;
+    color: #6b3d04;
+    font-weight: 600;
+}

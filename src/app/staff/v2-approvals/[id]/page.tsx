@@ -1102,46 +1102,62 @@ const V2SubmissionDetailPage = () => {
                 </div>
             )}
 
-            <div className={styles.tabs}>
-                <button
-                    className={`${styles.tab} ${tab === "form" ? styles.tabActive : ""}`}
-                    onClick={() => setTab("form")}
-                >
-                    Form
-                </button>
-                <button
-                    className={`${styles.tab} ${tab === "certificates" ? styles.tabActive : ""}`}
-                    onClick={() => setTab("certificates")}
-                >
-                    Certificates ({certificates.filter((c) => c.trackingStatus !== "untracked - updated").length})
-                </button>
-                {(submission.level >= 3 || submission.dueDiligence) && (
-                    <button
-                        className={`${styles.tab} ${tab === "due-diligence" ? styles.tabActive : ""}`}
-                        onClick={() => setTab("due-diligence")}
-                    >
-                        Due Diligence
-                    </button>
-                )}
-                <button
-                    className={`${styles.tab} ${tab === "edits" ? styles.tabActive : ""}`}
-                    onClick={() => setTab("edits")}
-                >
-                    Edit Audit ({fieldEdits.length})
-                </button>
-                <button
-                    className={`${styles.tab} ${tab === "comments" ? styles.tabActive : ""}`}
-                    onClick={() => setTab("comments")}
-                >
-                    Comments ({comments.length})
-                </button>
-                <button
-                    className={`${styles.tab} ${tab === "history" ? styles.tabActive : ""}`}
-                    onClick={() => setTab("history")}
-                >
-                    History ({historyEntries.length})
-                </button>
-            </div>
+            {/* End Users (level 2) get a stripped-down tab set: just Form
+                and Certificates. They sit outside C&P, so internal-staff
+                tabs (Edit Audit / Comments / History / Due Diligence) are
+                hidden. Admin / HOD always see everything. */}
+            {(() => {
+                const isEndUserOnly =
+                    submission.level === 2 &&
+                    role === "End User" &&
+                    !["Admin", "HOD"].includes(role)
+                return (
+                    <div className={styles.tabs}>
+                        <button
+                            className={`${styles.tab} ${tab === "form" ? styles.tabActive : ""}`}
+                            onClick={() => setTab("form")}
+                        >
+                            Form
+                        </button>
+                        <button
+                            className={`${styles.tab} ${tab === "certificates" ? styles.tabActive : ""}`}
+                            onClick={() => setTab("certificates")}
+                        >
+                            Certificates ({certificates.filter((c) => c.trackingStatus !== "untracked - updated").length})
+                        </button>
+                        {!isEndUserOnly && (submission.level >= 3 || submission.dueDiligence) && (
+                            <button
+                                className={`${styles.tab} ${tab === "due-diligence" ? styles.tabActive : ""}`}
+                                onClick={() => setTab("due-diligence")}
+                            >
+                                Due Diligence
+                            </button>
+                        )}
+                        {!isEndUserOnly && (
+                            <>
+                                <button
+                                    className={`${styles.tab} ${tab === "edits" ? styles.tabActive : ""}`}
+                                    onClick={() => setTab("edits")}
+                                >
+                                    Edit Audit ({fieldEdits.length})
+                                </button>
+                                <button
+                                    className={`${styles.tab} ${tab === "comments" ? styles.tabActive : ""}`}
+                                    onClick={() => setTab("comments")}
+                                >
+                                    Comments ({comments.length})
+                                </button>
+                                <button
+                                    className={`${styles.tab} ${tab === "history" ? styles.tabActive : ""}`}
+                                    onClick={() => setTab("history")}
+                                >
+                                    History ({historyEntries.length})
+                                </button>
+                            </>
+                        )}
+                    </div>
+                )
+            })()}
 
             {tab === "form" && (
                 <div className={styles.tabBody}>
@@ -1229,6 +1245,19 @@ const V2SubmissionDetailPage = () => {
                                           : exp.getTime() - now.getTime() < 30 * 24 * 60 * 60 * 1000
                                             ? "expiring"
                                             : "healthy"
+                                // End User view at Stage D: hide
+                                // expiry / issue dates and the
+                                // superseded/expiry health badges. They
+                                // sit outside C&P and are only meant to
+                                // confirm the contractor uploaded the
+                                // right document, not to manage its
+                                // lifecycle.
+                                const isEndUserOnly =
+                                    submission.level === 2 &&
+                                    role === "End User" &&
+                                    !["Admin", "HOD"].includes(role)
+                                const showDates = !isEndUserOnly
+                                const showHealth = !isEndUserOnly
                                 return (
                                     <li
                                         key={c._id}
@@ -1244,7 +1273,7 @@ const V2SubmissionDetailPage = () => {
                                             <span className={styles.dim}>
                                                 {c.name} · slot {c.updateCode.slice(-6)}
                                             </span>
-                                            {!isCurrent && (
+                                            {!isCurrent && showHealth && (
                                                 <span className={styles.certBadgeNeutral}>superseded</span>
                                             )}
                                             <span
@@ -1254,10 +1283,10 @@ const V2SubmissionDetailPage = () => {
                                             >
                                                 {c.certStatus}
                                             </span>
-                                            {c.isReUpload && (
+                                            {c.isReUpload && showHealth && (
                                                 <span className={styles.certBadgeInfo}>re-upload</span>
                                             )}
-                                            {expStatus && (
+                                            {expStatus && showHealth && (
                                                 <span className={`${styles.certBadge} ${styles[`expiry_${expStatus}`]}`}>
                                                     {expStatus}
                                                 </span>
@@ -1272,12 +1301,12 @@ const V2SubmissionDetailPage = () => {
                                             >
                                                 Open file
                                             </a>
-                                            {c.issueDate && (
+                                            {showDates && c.issueDate && (
                                                 <span className={styles.dim}>
                                                     Issued {new Date(c.issueDate).toLocaleDateString("en-NG")}
                                                 </span>
                                             )}
-                                            {c.expiryDate && (
+                                            {showDates && c.expiryDate && (
                                                 <span className={styles.dim}>
                                                     Expires {new Date(c.expiryDate).toLocaleDateString("en-NG")}
                                                 </span>

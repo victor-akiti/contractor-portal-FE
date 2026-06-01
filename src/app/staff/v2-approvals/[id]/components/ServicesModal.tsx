@@ -38,7 +38,14 @@ const ServicesModal = ({
           : []
 
     const [picked, setPicked] = useState<string[]>(initial)
-    const [siteVisit, setSiteVisit] = useState(!!submission.siteVisitRequired)
+    // Forced decision: null means the End User has not yet chosen. Save
+    // is blocked until they explicitly pick Yes or No. Seeds from the
+    // submission only when a decision has been recorded before.
+    const [siteVisit, setSiteVisit] = useState<boolean | null>(
+        typeof submission.siteVisitRequired === "boolean"
+            ? submission.siteVisitRequired
+            : null,
+    )
     const [categories, setCategories] = useState<Category[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("")
@@ -82,6 +89,10 @@ const ServicesModal = ({
     const save = async () => {
         if (picked.length === 0) {
             setError("Pick at least one service before saving.")
+            return
+        }
+        if (siteVisit === null) {
+            setError("Choose Yes or No on the site visit question before saving.")
             return
         }
         setSaving(true)
@@ -156,17 +167,54 @@ const ServicesModal = ({
                                 })}
                     </div>
 
-                    <label className={styles.modalLabel} style={{ marginTop: 16 }}>
-                        <input
-                            type="checkbox"
-                            checked={siteVisit}
-                            disabled={saving}
-                            onChange={(e) => setSiteVisit(e.target.checked)}
-                        />
-                        <span style={{ marginLeft: 8 }}>
-                            Site visit required before approval
-                        </span>
-                    </label>
+                    {/* Forced decision - no default. End User must
+                        explicitly choose Yes or No before saving. The
+                        question is intentionally large and bordered so
+                        it can't be missed. */}
+                    <div
+                        className={`${styles.siteVisitBlock} ${
+                            siteVisit === null ? styles.siteVisitBlockUnset : ""
+                        }`}
+                    >
+                        <p className={styles.siteVisitQuestion}>
+                            Does this contractor need a physical site visit
+                            by an Amni team to verify their capacity?
+                        </p>
+                        <p className={styles.siteVisitHelp}>
+                            Required answer. The application cannot move to
+                            Due Diligence (Stage E) until you pick Yes or No.
+                        </p>
+                        <div className={styles.siteVisitChoices}>
+                            <label
+                                className={`${styles.siteVisitChoice} ${
+                                    siteVisit === true ? styles.siteVisitChoiceOn : ""
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="siteVisit"
+                                    checked={siteVisit === true}
+                                    disabled={saving}
+                                    onChange={() => setSiteVisit(true)}
+                                />
+                                <span>Yes - site visit required</span>
+                            </label>
+                            <label
+                                className={`${styles.siteVisitChoice} ${
+                                    siteVisit === false ? styles.siteVisitChoiceOn : ""
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="siteVisit"
+                                    checked={siteVisit === false}
+                                    disabled={saving}
+                                    onChange={() => setSiteVisit(false)}
+                                />
+                                <span>No - not required</span>
+                            </label>
+                        </div>
+                    </div>
 
                     {error && <ErrorText text={error} />}
                 </div>
@@ -181,7 +229,7 @@ const ServicesModal = ({
                     <button
                         className={styles.btnPrimary}
                         onClick={save}
-                        disabled={saving || picked.length === 0}
+                        disabled={saving || picked.length === 0 || siteVisit === null}
                     >
                         Save
                         {saving && <ButtonLoadingIcon />}
