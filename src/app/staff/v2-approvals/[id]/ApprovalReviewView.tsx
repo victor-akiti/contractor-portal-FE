@@ -311,6 +311,13 @@ const ApprovalReviewView = ({
         fieldPath: string,
         sectionKey: string,
     ) => {
+        // Stages where review affordances belong: VRM (B=0), Supervisor
+        // (C=1), Due Diligence (E=3) and HOD DD Review (F=4). At Stage D
+        // (End User) and Stage G (Executive Approver) the EBA-edit
+        // indicator, the Notes button and the inline remark / comment
+        // entry points are all hidden - those roles aren't there to
+        // review fields, they act on the summary.
+        const isFocusStage = [0, 1, 3, 4].includes(level)
         // Hide empty non-required fields when the toggle is on. Required
         // fields ALWAYS render (an empty required field is a fix-up the
         // reviewer needs to see). Fields with any annotation - remarks
@@ -363,7 +370,7 @@ const ApprovalReviewView = ({
                     </div>
                     <div className={styles.fieldValue}>{formatValue(field, value)}</div>
                     <div className={styles.fieldActions}>
-                        {edit && (
+                        {edit && isFocusStage && (
                             <span
                                 className={`${styles.editBadge} ${
                                     edit.status === "flagged"
@@ -390,21 +397,23 @@ const ApprovalReviewView = ({
                                 Edit
                             </button>
                         )}
-                        <button
-                            type="button"
-                            className={styles.actionBtn}
-                            onClick={() => setExpanded((s) => ({ ...s, [anchor]: !s[anchor] }))}
-                            aria-expanded={isOpen}
-                        >
-                            Notes
-                            {totalNotes > 0 && (
-                                <span className={styles.notesCount}>{totalNotes}</span>
-                            )}
-                        </button>
+                        {isFocusStage && (
+                            <button
+                                type="button"
+                                className={styles.actionBtn}
+                                onClick={() => setExpanded((s) => ({ ...s, [anchor]: !s[anchor] }))}
+                                aria-expanded={isOpen}
+                            >
+                                Notes
+                                {totalNotes > 0 && (
+                                    <span className={styles.notesCount}>{totalNotes}</span>
+                                )}
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                {isOpen && (
+                {isOpen && isFocusStage && (
                     <div className={styles.notesPanel}>
                         <div className={styles.notesCol}>
                             <div className={styles.notesColHead}>

@@ -317,13 +317,13 @@
 
 /* Modals */
 .modalCard {
-    width: min(640px, 95vw);
+    width: min(720px, 95vw);
     background: white;
     border-radius: 10px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
+    max-height: 92vh;
 }
 
 .modalHeader { padding: 18px 24px; border-bottom: 1px solid #ececec; }
@@ -1019,4 +1019,56 @@
     background: #fff5ed;
     color: #6b3d04;
     font-weight: 600;
+}
+
+/* Services modal layout - wider card, scoped overflow so the search
+   input stays in view as the user scrolls services and the forced
+   site-visit decision is always visible above the action row. */
+.modalBodyServices {
+    /* Cap the modal body so a long category list doesn't push the
+       site-visit decision off-screen. The list inside scrolls. */
+    max-height: calc(90vh - 180px);
+    padding-bottom: 12px;
+}
+.servicesSection {
+    background: #fafafa;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+.servicesSearchWrap {
+    position: relative;
+    margin-top: 8px;
+}
+.servicesSearchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 1rem;
+    pointer-events: none;
+}
+.servicesSearchInput {
+    width: 100%;
+    padding: 11px 14px 11px 36px;
+    border: 1.5px solid #d4d4d4;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    color: #1a1a1a;
+    box-sizing: border-box;
+}
+.servicesSearchInput:focus {
+    outline: none;
+    border-color: #d56500;
+    box-shadow: 0 0 0 3px #d5650020;
+}
+.servicesSearchInput::placeholder { color: #9ca3af; }
+
+/* When the modal body is the services variant, the list itself caps
+   shorter so the site-visit decision block stays visible at the
+   bottom of the modal without the user needing to scroll. */
+.modalBodyServices .serviceListWrap {
+    max-height: 220px;
 }
