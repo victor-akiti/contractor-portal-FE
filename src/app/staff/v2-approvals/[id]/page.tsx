@@ -980,8 +980,8 @@ const V2SubmissionDetailPage = () => {
             // only HOD/Admin can. Their only "send away" option at Stage D
             // is Request Park with a mandatory reason.
             returnToVendor:
-                pending &&
-                (submission.level !== 2),
+                pending, //&&
+            //(submission.level !== 2),
             requestPark: pending && (submission.level !== 2 || canActAtStageD),
             approvePark: parkRequested && isHod,
             declinePark: parkRequested && isHod,
@@ -1003,7 +1003,7 @@ const V2SubmissionDetailPage = () => {
             // HOD-only "return to earlier stage" - useful when HOD spots a
             // VRM-level mistake at Stage F. Visible at levels 2-5 (need at
             // least one earlier stage to bounce back to).
-            returnEarlier: pending && [1, 4, 5].includes(submission.level) && (isHod || (isExec && submission.level === 5)),
+            returnEarlier: pending && [1, 2, 4, 5].includes(submission.level) && (isHod || (isExec && submission.level === 5)),
         }
     }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed])
 
