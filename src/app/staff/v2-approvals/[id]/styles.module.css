@@ -887,3 +887,73 @@
     gap: 8px;
     align-items: center;
 }
+
+/* Short explainer text under a decision-group label. Keeps the reviewer
+   from having to remember what each Hold action actually does. */
+.decisionGroupHint {
+    margin: -2px 0 4px 0;
+    font-size: 0.78rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Remarks archive in the Comments tab. Senior reviewers only at non-B
+   stages. Shows section + field as labels (not fieldKeys) with cycle
+   grouping so prior concerns are easy to scan. */
+.remarksArchive {
+    background: #fff8f1;
+    border: 1px solid #ffd5b3;
+    border-left: 4px solid #d56500;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+}
+.remarksArchive h4 { margin: 0; color: #6b3d04; font-size: 0.96rem; }
+.archiveSub {
+    margin: 4px 0 12px 0;
+    color: #523200;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+.archiveCycle { margin-top: 8px; }
+.archiveCycleHead {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #6b3d04;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.archiveList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.archiveList li {
+    background: white;
+    border: 1px solid #f5d0b3;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+.archive_active { border-left: 3px solid #c33232; }
+.archive_addressed { border-left: 3px solid #2d7d2d; }
+.archive_withdrawn { border-left: 3px solid #999; opacity: 0.85; }
+.archiveAnchor {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #6b3d04;
+    margin-bottom: 4px;
+}
+.archiveText { margin: 0; color: #333; font-size: 0.9rem; line-height: 1.45; }
+.archiveMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-top: 6px;
+    color: #666;
+    font-size: 0.76rem;
+}
+.archiveStatus {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+}

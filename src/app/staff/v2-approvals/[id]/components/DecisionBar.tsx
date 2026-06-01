@@ -83,20 +83,21 @@ const DecisionBar = ({
         <div className={styles.decisionBar}>
             {actionSuccess && <SuccessMessage message={actionSuccess} />}
             {actionError && <ErrorText text={actionError} />}
-            {submission.status === "pending" && hasActiveRemarksThisCycle && (
-                <div className={styles.remarkGate}>
-                    Active remarks block the Process button. Return to contractor
-                    or request hold to continue.
-                </div>
-            )}
             {submission.status === "pending" &&
-                !hasActiveRemarksThisCycle &&
-                !allSectionsReviewed && (
+                submission.level === 0 &&
+                hasActiveRemarksThisCycle && (
                     <div className={styles.remarkGate}>
-                        Tick the Reviewed checkbox on each section before
-                        processing forward.
+                        Active remarks block the Process button at Stage B.
+                        Return to contractor (which delivers the remarks) or
+                        request hold to continue.
                     </div>
                 )}
+            {submission.status === "pending" && !allSectionsReviewed && (
+                <div className={styles.remarkGate}>
+                    Tick the Reviewed checkbox on each section before
+                    processing forward.
+                </div>
+            )}
             {stageBlockedAtD && (
                 <div className={styles.remarkGate}>
                     At Stage D only the End Users assigned by the Supervisor
@@ -182,12 +183,19 @@ const DecisionBar = ({
                     can.revertFromL3) && (
                     <div className={styles.decisionGroup}>
                         <span className={styles.decisionGroupLabel}>Send Back</span>
+                        <p className={styles.decisionGroupHint}>
+                            Returns the application to an earlier participant
+                            with a reason. Return to Contractor reopens the
+                            form for them to fix. Return for Research and
+                            Return to Earlier Stage stay on the staff side.
+                        </p>
                         <div className={styles.decisionButtons}>
                             {can.returnToVendor && (
                                 <button
                                     className={styles.btnDanger}
                                     disabled={!!actionRunning}
                                     onClick={openReturnModal}
+                                    title="Reopen the form for the contractor with the active remarks attached. Status flips to Returned until they resubmit."
                                 >
                                     Return to Contractor
                                 </button>
@@ -197,6 +205,7 @@ const DecisionBar = ({
                                     className={styles.btnSecondary}
                                     disabled={!!actionRunning}
                                     onClick={openReturnPrevModal}
+                                    title="Hop one stage back on the staff side with a reason. The contractor is not notified."
                                 >
                                     Return for Research
                                 </button>
@@ -206,6 +215,7 @@ const DecisionBar = ({
                                     className={styles.btnSecondary}
                                     disabled={!!actionRunning}
                                     onClick={openReturnEarlierModal}
+                                    title="HOD only: send back to any earlier stage with a remark for that stage's owner. Contractor is not notified."
                                 >
                                     Return to Earlier Stage
                                 </button>
@@ -241,12 +251,20 @@ const DecisionBar = ({
                     can.doNotAdd) && (
                     <div className={styles.decisionGroup}>
                         <span className={styles.decisionGroupLabel}>Hold</span>
+                        <p className={styles.decisionGroupHint}>
+                            Parking pauses the application without rejecting
+                            it. The contractor cannot resubmit while parked,
+                            and no stage owner can advance it. The HOD
+                            ultimately decides whether a park stands or is
+                            released back to its previous stage.
+                        </p>
                         <div className={styles.decisionButtons}>
                             {can.requestPark && (
                                 <button
                                     className={styles.btnSecondary}
                                     disabled={!!actionRunning}
                                     onClick={openParkRequestModal}
+                                    title="Ask the HOD to put this application on hold. A reason is required and the HOD will Approve or Decline."
                                 >
                                     Request Park
                                 </button>
@@ -256,6 +274,7 @@ const DecisionBar = ({
                                     className={styles.btnSecondary}
                                     disabled={!!actionRunning}
                                     onClick={() => runAction("approve-park")}
+                                    title="HOD only: confirms the park request. Application status flips to Parked and movement stops."
                                 >
                                     Approve Park
                                     {actionRunning === "approve-park" && <ButtonLoadingIcon />}
@@ -266,6 +285,7 @@ const DecisionBar = ({
                                     className={styles.btnSecondary}
                                     disabled={!!actionRunning}
                                     onClick={() => runAction("decline-park")}
+                                    title="HOD only: rejects the park request. Application stays at its current stage and continues normally."
                                 >
                                     Decline Park
                                     {actionRunning === "decline-park" && <ButtonLoadingIcon />}
@@ -276,6 +296,7 @@ const DecisionBar = ({
                                     className={styles.btnSecondary}
                                     disabled={!!actionRunning}
                                     onClick={() => runAction("release-park")}
+                                    title="HOD only: un-parks the application. It resumes from the stage it was parked at."
                                 >
                                     Release from Park
                                     {actionRunning === "release-park" && <ButtonLoadingIcon />}
@@ -286,6 +307,7 @@ const DecisionBar = ({
                                     className={styles.btnDanger}
                                     disabled={!!actionRunning}
                                     onClick={openParkL2Modal}
+                                    title="Executive Approver only: final decision NOT to add the contractor. Parks at L2 with reason; cannot be released by lower stages."
                                 >
                                     Do Not Add (Park at L2)
                                 </button>
