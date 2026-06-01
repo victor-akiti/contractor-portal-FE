@@ -269,3 +269,58 @@
     color: #1f7a2a;
     font-weight: 700;
 }
+
+/* Toggle row in the review toolbar - sits above the form to control
+   whether empty optional fields render. */
+.reviewToolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 12px 16px;
+    background: #fffaf3;
+    border: 1px solid #ffd5b3;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+.toggleRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #523200;
+    font-weight: 600;
+}
+.toggleRow input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: #d56500;
+    cursor: pointer;
+}
+
+/* ── Legibility pass ──────────────────────────────────────────────────
+   Older C&P staff reviewers asked for larger checkboxes and more
+   generous padding so the review surface is easier to scan. */
+.pageHead h3 { font-size: 1.2rem; }
+.pageHead p { font-size: 0.95rem; }
+
+.sectionBlock { padding: 20px 22px; gap: 6px; }
+.sectionHead h4 { font-size: 1.05rem; }
+.sectionDesc { font-size: 0.92rem; }
+
+.sectionCheck {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    border-width: 2px;
+}
+.sectionCheck input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+}
+
+.fieldRow { padding: 14px 0; }
+.fieldRow:first-of-type { padding-top: 8px; }
+.fieldHead { grid-template-columns: minmax(220px, 260px) 1fr auto; gap: 20px; }
+.fieldLabel { font-size: 0.95rem !important; }
+.fieldValue { font-size: 0.95rem !important; }

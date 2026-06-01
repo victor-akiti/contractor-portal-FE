@@ -30,6 +30,7 @@ interface SchemaField {
     allowMultiple?: boolean
     addedFieldLabel?: string
     hasExpiryDate?: boolean
+    required?: boolean
 }
 interface SchemaSection {
     key: string
@@ -248,6 +249,20 @@ const ApprovalReviewView = ({
     // Per-field expand state for the inline remarks / comments panel.
     const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
+    // Reviewers asked for a way to declutter the form: hide fields that
+    // are empty AND not required. Default ON because older users said
+    // they don't want to scroll through blank rows just to find the
+    // populated ones. They can toggle it off to see everything.
+    const [hideEmptyOptional, setHideEmptyOptional] = useState(true)
+
+    const isEmptyValue = (v: any): boolean => {
+        if (v === null || v === undefined) return true
+        if (typeof v === "string") return v.trim() === ""
+        if (Array.isArray(v)) return v.length === 0
+        if (typeof v === "object") return Object.keys(v).length === 0
+        return false
+    }
+
     // Composite-key lookup that matches the BE storage shape.
     const isSectionApproved = (sectionKey: string): boolean => {
         if (!sectionApprovals) return false
@@ -296,6 +311,24 @@ const ApprovalReviewView = ({
         fieldPath: string,
         sectionKey: string,
     ) => {
+        // Hide empty non-required fields when the toggle is on. Required
+        // fields ALWAYS render (an empty required field is a fix-up the
+        // reviewer needs to see). Fields with any annotation - remarks
+        // or comments anchored to them, or an EBA edit - always render
+        // so review history stays visible.
+        const anchor0 = `${sectionKey}::${field.key}`
+        const hasAnnotation =
+            (fieldRemarks[anchor0]?.length || 0) > 0 ||
+            (fieldComments[anchor0]?.length || 0) > 0 ||
+            !!fieldEditsByPath?.[fieldPath]
+        if (
+            hideEmptyOptional &&
+            !field.required &&
+            isEmptyValue(value) &&
+            !hasAnnotation
+        ) {
+            return null
+        }
         const label = field.approvalLabel || field.label
         const anchor = `${sectionKey}::${field.key}`
         const allFieldRemarks = fieldRemarks[anchor] || []
@@ -497,6 +530,19 @@ const ApprovalReviewView = ({
 
     return (
         <div className={styles.reviewView}>
+            <div className={styles.reviewToolbar}>
+                <label
+                    className={styles.toggleRow}
+                    title="When on, blank optional fields are hidden so you can scan populated data faster. Required fields and any field with remarks / comments / edits always show."
+                >
+                    <input
+                        type="checkbox"
+                        checked={hideEmptyOptional}
+                        onChange={(e) => setHideEmptyOptional(e.target.checked)}
+                    />
+                    <span>Hide empty optional fields</span>
+                </label>
+            </div>
             {schema.pages.map((page) => (
                 <section key={page.key} className={styles.pageBlock}>
                     <header className={styles.pageHead}>
