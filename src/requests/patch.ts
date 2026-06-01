@@ -93,17 +93,16 @@ export const patchProtected = async (route: string, body: any, role?: string) =>
         }
 
         // Non-OK with a response — parse error body so callers can read structured errors.
+        // Nested .error.message takes precedence (BE shape).
         try {
             const errorBody = await request.json();
+            const msg =
+                errorBody?.error?.message ||
+                errorBody?.message ||
+                `Request failed with status ${request.status}`;
             return {
                 status: "FAILED",
-                error: {
-                    message:
-                        errorBody.message ||
-                        errorBody.error?.message ||
-                        `Request failed with status ${request.status}`,
-                    ...errorBody,
-                },
+                error: { ...errorBody?.error, message: msg },
             };
         } catch {
             return {
