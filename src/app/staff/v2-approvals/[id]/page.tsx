@@ -404,10 +404,15 @@ const V2SubmissionDetailPage = () => {
 
     const role = user?.role
 
-    const fetchAll = async () => {
+    // fetchAll is reused by every mutation handler to refresh the page's
+    // data after a save. Pass background=true to keep the rendered tree
+    // visible while the network call runs - we only flip the full-page
+    // `loading` spinner during the initial mount. This is what fixes the
+    // "page goes blank after every POST" complaint.
+    const fetchAll = async (background = true) => {
         if (!id) return
         try {
-            setLoading(true)
+            if (!background) setLoading(true)
             setError("")
             const [s, c, cert, ed, mig] = await Promise.all([
                 getProtected(`api/v2/submissions/${id}`, role),
@@ -430,12 +435,13 @@ const V2SubmissionDetailPage = () => {
         } catch (e: any) {
             setError(e?.message || "Failed to load")
         } finally {
-            setLoading(false)
+            if (!background) setLoading(false)
         }
     }
 
     useEffect(() => {
-        if (id && role) fetchAll()
+        // Initial mount: full-page spinner.
+        if (id && role) fetchAll(false)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, role])
 

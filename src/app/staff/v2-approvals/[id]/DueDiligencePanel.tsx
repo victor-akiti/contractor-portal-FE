@@ -85,6 +85,24 @@ const CHECK_LABELS: Record<string, string> = {
     referenceCheck: "Reference Check",
 }
 
+// Short prompts per check so the DD officer always knows what they are
+// looking for. Mirrors what the legacy stage-D / stage-E components
+// describe in their inline help text.
+const CHECK_HELP: Record<string, string> = {
+    registrationCheck:
+        "Verify the contractor's CAC / corporate registration. Upload the registry screenshot or letter.",
+    internetCheck:
+        "Open-source search on the contractor, its directors and shareholders. Upload the report.",
+    referenceCheck:
+        "Contact at least one prior client / referee. Upload the email trail or reference letter.",
+}
+
+const CHECK_ORDER: Array<"registrationCheck" | "internetCheck" | "referenceCheck"> = [
+    "registrationCheck",
+    "internetCheck",
+    "referenceCheck",
+]
+
 const blankPerson = (): ExposedPerson => ({
     _id: undefined,
     entityType: "individual",
@@ -292,87 +310,137 @@ const DueDiligencePanel = ({
 
     // ── Rendering ──────────────────────────────────────────────────────────
 
-    const renderCheck = (key: "registrationCheck" | "internetCheck" | "referenceCheck") => {
+    const renderCheck = (
+        key: "registrationCheck" | "internetCheck" | "referenceCheck",
+        stepNumber: number,
+    ) => {
         const c: DDCheck = (dd[key] as DDCheck) || {}
         const isSaving = savingKey === key
         const complete = isCheckComplete(c)
+        const hasFile = (c.files || []).length > 0
+        // The Mark Complete tick is only meaningful once the officer
+        // has done something. Disable it until they've uploaded at
+        // least one file - keeps officers from forgetting the upload.
+        const canMarkComplete = hasFile && (!c.flagged || !!c.flagMessage?.trim())
         return (
-            <div key={key} className={styles.ddCard}>
+            <div
+                key={key}
+                className={`${styles.ddCard} ${complete ? styles.ddCardDone : ""}`}
+            >
                 <div className={styles.ddCardHead}>
-                    <h4>{CHECK_LABELS[key]}</h4>
+                    <div className={styles.ddCardTitle}>
+                        <span className={styles.ddStepBadge}>{stepNumber}</span>
+                        <div>
+                            <h4>{CHECK_LABELS[key]}</h4>
+                            <p className={styles.ddHelp}>{CHECK_HELP[key]}</p>
+                        </div>
+                    </div>
                     <span className={complete ? styles.ddDone : styles.ddPending}>
                         {complete ? "Completed" : "Pending"}
                     </span>
                 </div>
                 {canEdit ? (
                     <>
-                        <label className={styles.ddRow}>
-                            <input
-                                type="checkbox"
-                                checked={!!c.flagged}
+                        <div className={styles.ddFieldGroup}>
+                            <label className={styles.ddFieldLabel}>
+                                Finding / note
+                                {c.flagged && (
+                                    <span className={styles.ddRequiredHint}>
+                                        Required when flagged
+                                    </span>
+                                )}
+                            </label>
+                            <textarea
+                                className={styles.ddTextarea}
+                                rows={3}
+                                value={c.flagMessage || ""}
+                                placeholder={
+                                    c.flagged
+                                        ? "Explain the concern - this surfaces to the HOD review"
+                                        : "Optional notes for the HOD review"
+                                }
                                 onChange={(e) =>
-                                    saveCheck(key, { ...c, flagged: e.target.checked })
+                                    saveCheck(key, { ...c, flagMessage: e.target.value })
                                 }
                                 disabled={isSaving}
                             />
-                            <span>Flag this check</span>
-                        </label>
-                        <textarea
-                            className={styles.ddTextarea}
-                            rows={3}
-                            value={c.flagMessage || ""}
-                            placeholder={
-                                c.flagged
-                                    ? "Required - explain the concern"
-                                    : "Optional notes"
-                            }
-                            onChange={(e) =>
-                                saveCheck(key, { ...c, flagMessage: e.target.value })
-                            }
-                            disabled={isSaving}
-                        />
-                        <div className={styles.ddFiles}>
-                            {(c.files || []).map((f, i) => (
-                                <div key={i} className={styles.ddFileRow}>
-                                    <a href={f.url} target="_blank" rel="noopener noreferrer">
-                                        {f.name}
-                                    </a>
-                                    <button
-                                        className={styles.btnLink}
-                                        onClick={() => onRemoveCheckFile(key, i)}
-                                        disabled={isSaving}
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            ))}
+                            <label className={styles.ddInlineToggle}>
+                                <input
+                                    type="checkbox"
+                                    checked={!!c.flagged}
+                                    onChange={(e) =>
+                                        saveCheck(key, { ...c, flagged: e.target.checked })
+                                    }
+                                    disabled={isSaving}
+                                />
+                                <span>Raise a concern on this check</span>
+                            </label>
                         </div>
-                        <input
-                            type="file"
-                            multiple
-                            onChange={(e) => onCheckFiles(key, e.target.files)}
-                            disabled={isSaving}
-                        />
-                        <label className={styles.ddRow}>
-                            <input
-                                type="checkbox"
-                                checked={!!c.completed}
-                                onChange={(e) =>
-                                    saveCheck(key, { ...c, completed: e.target.checked })
-                                }
-                                disabled={isSaving}
-                            />
-                            <span>Mark this check as completed</span>
-                        </label>
+
+                        <div className={styles.ddFieldGroup}>
+                            <label className={styles.ddFieldLabel}>
+                                Supporting upload
+                                <span className={styles.ddRequiredHint}>Required</span>
+                            </label>
+                            <div className={styles.ddDropZone}>
+                                <label className={styles.ddUploadBtn}>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        onChange={(e) => onCheckFiles(key, e.target.files)}
+                                        disabled={isSaving}
+                                    />
+                                    <span>+ Upload file</span>
+                                </label>
+                                {(c.files || []).length === 0 && (
+                                    <span className={styles.ddDropHint}>
+                                        Screenshot, PDF or letter that proves this check
+                                    </span>
+                                )}
+                                {(c.files || []).map((f, i) => (
+                                    <div key={i} className={styles.ddFileRow}>
+                                        <a href={f.url} target="_blank" rel="noopener noreferrer">
+                                            {f.name}
+                                        </a>
+                                        <button
+                                            className={styles.btnLink}
+                                            onClick={() => onRemoveCheckFile(key, i)}
+                                            disabled={isSaving}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            className={`${styles.ddCompleteBtn} ${
+                                complete ? styles.ddCompleteBtnOn : ""
+                            }`}
+                            onClick={() => saveCheck(key, { ...c, completed: !c.completed })}
+                            disabled={isSaving || (!complete && !canMarkComplete)}
+                            title={
+                                !complete && !canMarkComplete
+                                    ? "Upload a file (and explain any concern) before marking complete"
+                                    : complete
+                                      ? "Un-mark - reopens this check"
+                                      : "Mark this check complete"
+                            }
+                        >
+                            {complete ? "✓ Marked Complete - click to undo" : "Mark Complete"}
+                            {isSaving && <ButtonLoadingIcon />}
+                        </button>
                     </>
                 ) : (
                     <>
                         <div className={styles.ddReadRow}>
-                            <strong>Flagged:</strong> {c.flagged ? "Yes" : "No"}
+                            <strong>Concern raised:</strong> {c.flagged ? "Yes" : "No"}
                         </div>
                         {c.flagMessage && (
                             <div className={styles.ddReadRow}>
-                                <strong>Note:</strong> {c.flagMessage}
+                                <strong>Finding:</strong> {c.flagMessage}
                             </div>
                         )}
                         <div className={styles.ddFiles}>
@@ -389,7 +457,6 @@ const DueDiligencePanel = ({
                         </div>
                     </>
                 )}
-                {isSaving && <ButtonLoadingIcon />}
             </div>
         )
     }
@@ -416,9 +483,20 @@ const DueDiligencePanel = ({
         const arr = dd.exposedPersons || []
         const reviewed = !!dd.exposedPersonsReviewed
         return (
-            <div className={styles.ddCard}>
+            <div className={`${styles.ddCard} ${reviewed ? styles.ddCardDone : ""}`}>
                 <div className={styles.ddCardHead}>
-                    <h4>Exposed Persons / Shareholders</h4>
+                    <div className={styles.ddCardTitle}>
+                        <span className={styles.ddStepBadge}>4</span>
+                        <div>
+                            <h4>Exposed Persons / Shareholders</h4>
+                            <p className={styles.ddHelp}>
+                                Screen the contractor's directors, shareholders
+                                and any politically exposed persons. Add an
+                                entry for each one (or none if there are none),
+                                then tick Mark Section Reviewed.
+                            </p>
+                        </div>
+                    </div>
                     <span className={reviewed ? styles.ddDone : styles.ddPending}>
                         {reviewed ? "Reviewed" : "Pending"}
                     </span>
@@ -498,15 +576,45 @@ const DueDiligencePanel = ({
         )
     }
 
+    // Progress headline so the officer sees at a glance how many of the
+    // four mandatory checks are left.
+    const completedChecks =
+        CHECK_ORDER.filter((k) => isCheckComplete(dd[k] as DDCheck)).length +
+        (dd.exposedPersonsReviewed ? 1 : 0)
+    const totalChecks = 4
+
     return (
         <div className={styles.tabBody}>
             {err && <ErrorText text={err} />}
             {success && <SuccessMessage message={success} />}
 
-            <div className={styles.ddGrid}>
-                {renderCheck("registrationCheck")}
-                {renderCheck("internetCheck")}
-                {renderCheck("referenceCheck")}
+            <div className={styles.ddIntro}>
+                <div>
+                    <h3>Due Diligence Checks</h3>
+                    <p>
+                        Work through the four checks below in order. Each
+                        check needs a finding (with file proof) and a Mark
+                        Complete tick before this stage can advance to the
+                        HOD Review at Stage F.
+                    </p>
+                </div>
+                <div className={styles.ddProgress}>
+                    <div className={styles.ddProgressLabel}>
+                        {completedChecks}/{totalChecks} complete
+                    </div>
+                    <div className={styles.ddProgressBar}>
+                        <div
+                            className={styles.ddProgressFill}
+                            style={{ width: `${(completedChecks / totalChecks) * 100}%` }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className={styles.ddStack}>
+                {renderCheck("registrationCheck", 1)}
+                {renderCheck("internetCheck", 2)}
+                {renderCheck("referenceCheck", 3)}
                 {renderExposedPersons()}
             </div>
 

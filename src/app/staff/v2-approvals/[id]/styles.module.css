@@ -1072,3 +1072,179 @@
 .modalBodyServices .serviceListWrap {
     max-height: 220px;
 }
+
+/* ── Due Diligence panel - simplified single-column layout ───────────── */
+
+.ddIntro {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    background: #fff8f1;
+    border: 1px solid #ffd5b3;
+    border-left: 4px solid #d56500;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 16px;
+}
+.ddIntro h3 { margin: 0 0 6px 0; color: #6b3d04; font-size: 1.08rem; }
+.ddIntro p { margin: 0; color: #523200; font-size: 0.88rem; line-height: 1.5; max-width: 560px; }
+.ddProgress { min-width: 180px; text-align: right; }
+.ddProgressLabel {
+    font-size: 0.84rem;
+    color: #6b3d04;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.ddProgressBar {
+    width: 180px;
+    height: 8px;
+    background: #f5d0b3;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.ddProgressFill {
+    height: 100%;
+    background: #d56500;
+    transition: width 0.3s ease;
+}
+
+.ddStack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+/* Cards become full-width now they sit in a stack rather than a grid. */
+.ddCard { padding: 18px 20px; }
+.ddCardDone {
+    border-color: #b7d8b7;
+    background: #f7fbf7;
+}
+
+.ddCardHead { align-items: flex-start; }
+.ddCardTitle {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 0;
+}
+.ddStepBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #d56500;
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+.ddCardDone .ddStepBadge { background: #2d7d2d; }
+.ddCardTitle h4 { margin: 0; font-size: 1rem; }
+.ddHelp {
+    margin: 4px 0 0 0;
+    font-size: 0.84rem;
+    color: #666;
+    line-height: 1.45;
+}
+
+.ddFieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #eee;
+}
+.ddFieldLabel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.88rem;
+}
+.ddRequiredHint {
+    font-size: 0.72rem;
+    color: #8a1f1f;
+    background: #fdecec;
+    border: 1px solid #f5b3b3;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-weight: 600;
+}
+.ddInlineToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-size: 0.86rem;
+    color: #444;
+    cursor: pointer;
+}
+.ddInlineToggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #d56500;
+}
+
+.ddDropZone {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    border: 2px dashed #ffd5b3;
+    border-radius: 8px;
+    background: #fffaf3;
+}
+.ddUploadBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d56500;
+    color: #d56500;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+.ddUploadBtn:hover { background: #fff5ed; }
+.ddUploadBtn input[type="file"] { display: none; }
+.ddDropHint { color: #999; font-size: 0.8rem; font-style: italic; }
+
+.ddCompleteBtn {
+    margin-top: 14px;
+    padding: 12px 20px;
+    background: white;
+    border: 2px solid #2d7d2d;
+    color: #2d7d2d;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: all 0.15s;
+    align-self: flex-start;
+}
+.ddCompleteBtn:hover:not(:disabled) {
+    background: #e7f5e7;
+}
+.ddCompleteBtn:disabled {
+    border-color: #ccc;
+    color: #999;
+    cursor: not-allowed;
+}
+.ddCompleteBtnOn {
+    background: #2d7d2d;
+    color: white;
+}
+.ddCompleteBtnOn:hover:not(:disabled) {
+    background: #1f5d1f;
+}
