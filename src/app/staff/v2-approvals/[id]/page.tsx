@@ -12,6 +12,7 @@ import ServicesModal from "./components/ServicesModal"
 import ReturnForResearchModal from "./components/ReturnForResearchModal"
 import ReturnToEarlierStageModal from "./components/ReturnToEarlierStageModal"
 import DoNotAddModal from "./components/DoNotAddModal"
+import RemarksArchive from "./components/RemarksArchive"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
@@ -958,20 +959,30 @@ const V2SubmissionDetailPage = () => {
         const isAssignedEndUser =
             !!user?._id && assignedIds.includes(String(user._id))
         const canActAtStageD = isHod || isAssignedEndUser
+        // Active-remark gate only applies at Stage B (level 0) - that's
+        // where remarks are the VRM <-> contractor dialog. At later stages
+        // remarks are historical context for senior reviewers and do not
+        // block forward movement (see BE remark gate in applyTransition).
+        const remarkBlocks = submission.level === 0 && hasActiveRemarksThisCycle
         return {
             advance:
                 pending &&
                 submission.level < 5 &&
-                !hasActiveRemarksThisCycle &&
+                !remarkBlocks &&
                 allSectionsReviewed &&
                 (submission.level !== 2 || canActAtStageD),
             finalApprove:
                 pending &&
                 submission.level === 5 &&
                 isExec &&
-                !hasActiveRemarksThisCycle &&
+                !remarkBlocks &&
                 allSectionsReviewed,
-            returnToVendor: pending && (submission.level !== 2 || canActAtStageD),
+            // Stage D End Users cannot return to contractor (legacy parity);
+            // only HOD/Admin can. Their only "send away" option at Stage D
+            // is Request Park with a mandatory reason.
+            returnToVendor:
+                pending &&
+                (submission.level !== 2 || isHod),
             requestPark: pending && (submission.level !== 2 || canActAtStageD),
             approvePark: parkRequested && isHod,
             declinePark: parkRequested && isHod,
@@ -1142,7 +1153,11 @@ const V2SubmissionDetailPage = () => {
                         <ApprovalReviewView
                             schema={formVersion.schema}
                             answers={answers}
-                            remarks={remarks as any}
+                            /* Inline remark annotations only at Stage B
+                               (level 0) - that's where remarks are the
+                               VRM<->contractor dialog. At later stages
+                               remarks live in the Comments tab archive. */
+                            remarks={submission.level === 0 ? (remarks as any) : []}
                             comments={comments as any}
                             fieldEditsByPath={fieldEditsByPath}
                             cycleNumber={submission.cycleNumber || 1}
@@ -1153,12 +1168,18 @@ const V2SubmissionDetailPage = () => {
                             onToggleSectionApproved={toggleSectionApproval}
                             ebaEditableNow={ebaEditableNow}
                             onEditField={openEditField}
-                            onAddRemark={(args) => openInlineRemark(args)}
+                            onAddRemark={
+                                submission.level === 0
+                                    ? (args) => openInlineRemark(args)
+                                    : undefined
+                            }
                             onAddComment={(args) => openInlineComment(args)}
                         />
                     )}
 
-                    {remarks.length > 0 && (
+                    {/* Remarks history on the Form tab only at Stage B
+                        where the VRM is actively working with them. */}
+                    {submission.level === 0 && remarks.length > 0 && (
                         <div className={styles.remarksPanel}>
                             <h4>Remarks history</h4>
                             <ul>
@@ -1448,6 +1469,12 @@ const V2SubmissionDetailPage = () => {
 
             {tab === "comments" && (
                 <div className={styles.tabBody}>
+                    <RemarksArchive
+                        remarks={remarks as any}
+                        role={role}
+                        schema={formVersion?.schema}
+                        currentLevel={submission.level}
+                    />
                     <div className={styles.commentComposer}>
                         <textarea
                             rows={3}
@@ -1645,15 +1672,22 @@ const V2SubmissionDetailPage = () => {
                 <Modal>
                     <div className={styles.modalCard}>
                         <div className={styles.modalHeader}>
-                            <h3>Request park</h3>
+                            <h3>Request Park</h3>
                             <p className={styles.modalSub}>
-                                Park requests are reviewed by the HOD. Provide a clear reason.
+                                Parking pauses this application without
+                                rejecting it. The HOD reviews your request
+                                and either Approves (status flips to Parked
+                                and no one can advance it) or Declines (it
+                                stays at this stage). A reason is required.
                             </p>
                         </div>
                         <div className={styles.modalBody}>
+                            <label className={styles.modalLabel}>
+                                Reason (required)
+                            </label>
                             <textarea
                                 rows={4}
-                                placeholder="Reason for park request"
+                                placeholder="Explain why this application should be paused."
                                 value={parkReason}
                                 onChange={(e) => setParkReason(e.target.value)}
                             />
