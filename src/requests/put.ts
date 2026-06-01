@@ -118,7 +118,26 @@ export const putProtected = async (route: string, body: any, role?: string) => {
             const result = await request.json();
             return result;
         } else {
-            throw new Error('Request failed');
+            // Non-OK with a response — parse error body so callers see the BE
+            // error message (e.g. "Cannot advance to Stage D: ..."). Returns
+            // a FAILED envelope matching what post/patch do, so callers can
+            // read result?.error?.message uniformly.
+            try {
+                const errorBody = await request.json();
+                const msg =
+                    errorBody?.error?.message ||
+                    errorBody?.message ||
+                    `Request failed with status ${request.status}`;
+                return {
+                    status: "FAILED",
+                    error: { ...errorBody?.error, message: msg },
+                };
+            } catch {
+                return {
+                    status: "FAILED",
+                    error: { message: `Request failed with status ${request.status}` },
+                };
+            }
         }
     } catch (error) {
         console.error({ error });
