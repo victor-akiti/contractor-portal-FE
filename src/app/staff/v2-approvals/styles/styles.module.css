@@ -747,3 +747,5 @@
 .inviteActive { background: #e7f5e7; color: #2d5d2d; border-color: #b7d8b7; }
 .inviteUsed { background: #eef3fa; color: #1a4d8f; border-color: #c9d8ec; }
 .inviteArchived { background: #f1f1f1; color: #666; border-color: #ddd; }
+
+.subRowLine { color: #888; font-size: 0.82rem; margin-top: 2px; }

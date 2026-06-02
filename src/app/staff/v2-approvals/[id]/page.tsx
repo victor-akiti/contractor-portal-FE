@@ -1777,8 +1777,8 @@ const V2SubmissionDetailPage = () => {
                                     (h as any).extraData?.reason ||
                                     (h as any).extraData?.message ||
                                     (h as any).extraData?.note
-                                const otherExtras: Array<[string, any]> = h.extraData
-                                    ? Object.entries(h.extraData).filter(
+                                const otherExtras: Array<[string, any]> = (h as any).extraData
+                                    ? Object.entries((h as any).extraData).filter(
                                           ([k, v]) =>
                                               !["reason", "message", "note"].includes(k) &&
                                               (typeof v === "string" || typeof v === "number") &&

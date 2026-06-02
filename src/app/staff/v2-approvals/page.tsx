@@ -2,6 +2,8 @@
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Tabs from "@/components/tabs"
+import DataTable, { DataTableColumn } from "@/components/dataTable/DataTable"
+import SearchBar, { SearchByOption } from "@/components/dataTable/SearchBar"
 import StageLegend from "./StageLegend"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
@@ -150,6 +152,7 @@ const V2ApprovalsPage = () => {
     const [stageFilter, setStageFilter] = useState<string>("All")
     const [l3Filter, setL3Filter] = useState<L3Filter>("All")
     const [search, setSearch] = useState("")
+    const [searchBy, setSearchBy] = useState<string>("all")
     const [debouncedSearch, setDebouncedSearch] = useState("")
     const [submissions, setSubmissions] = useState<SubmissionV2Row[]>([])
     const [invites, setInvites] = useState<InviteRow[]>([])
@@ -326,6 +329,268 @@ const V2ApprovalsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.role, activeTab, stageFilter])
 
+    // Columns for the submissions table, built per-tab so the right
+    // legacy V1 columns appear in the right tabs. The shared "search
+    // by" dropdown is fed from columns marked with a searchValue.
+    const submissionColumns: DataTableColumn<SubmissionV2Row>[] = useMemo(() => {
+        const cols: DataTableColumn<SubmissionV2Row>[] = []
+        cols.push({
+            key: "company",
+            label: "Contractor Name",
+            sortValue: (s) => s.companyName,
+            searchValue: (s) => `${s.companyName || ""} ${s.contractorEmail || ""}`,
+            render: (s) => {
+                const attention = needsAttention(s)
+                return (
+                    <>
+                        <Link
+                            href={`/staff/v2-approvals/${s._id}`}
+                            className={styles.contractorLink}
+                        >
+                            {(s.companyName || "(no name)").toUpperCase()}
+                        </Link>
+                        <div className={styles.subRowLine}>{s.contractorEmail}</div>
+                        {s.isPriority && (
+                            <span className={styles.priorityBadge}>★ Priority</span>
+                        )}
+                        {attention && (
+                            <span className={styles.attentionBadge}>Action needed</span>
+                        )}
+                    </>
+                )
+            },
+        })
+        cols.push({
+            key: "stage",
+            label: "Approval Stage",
+            sortValue: (s) => stageForRow(s),
+            render: (s) => (
+                <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
+            ),
+        })
+        cols.push({
+            key: "group",
+            label: "Group",
+            sortValue: (s) => groupLabel(s.groupId),
+            searchValue: (s) => groupLabel(s.groupId),
+            render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
+        })
+        // V1 parity: End Users count on the Pending L2 tab so the
+        // Supervisor sees who has been assigned without opening rows.
+        if (activeTab === "pending-l2") {
+            cols.push({
+                key: "endUsers",
+                label: "End Users",
+                sortValue: (s) => (s.selectedEndUsers || []).length,
+                render: (s) => (
+                    <span className={styles.dim}>
+                        {(s.selectedEndUsers || []).length || "-"}
+                    </span>
+                ),
+            })
+        }
+        if (activeTab === "park-requests" || activeTab === "completed-l2") {
+            cols.push({
+                key: "parkReason",
+                label: "Park Reason",
+                sortValue: (s) => s.hold?.reason,
+                searchValue: (s) => s.hold?.reason,
+                render: (s) => (
+                    <div className={styles.parkReasonCell}>{s.hold?.reason || "-"}</div>
+                ),
+            })
+            cols.push({
+                key: "requestedBy",
+                label: "Requested By",
+                sortValue: (s) => s.hold?.requestedBy?.name || s.hold?.requestedBy?.email,
+                searchValue: (s) =>
+                    `${s.hold?.requestedBy?.name || ""} ${s.hold?.requestedBy?.email || ""}`,
+                render: (s) => (
+                    <span className={styles.dim}>
+                        {s.hold?.requestedBy?.name ||
+                            s.hold?.requestedBy?.email ||
+                            "-"}
+                    </span>
+                ),
+            })
+        }
+        if (tabDef.l3FiltersEnabled) {
+            cols.push({
+                key: "health",
+                label: "Cert Health",
+                sortValue: (s) => l3Health[s._id] || "z",
+                render: (s) => {
+                    const h = l3Health[s._id]
+                    if (!h) return <span className={styles.dim}>...</span>
+                    return (
+                        <span
+                            className={`${styles.healthBadge} ${
+                                h === "healthy"
+                                    ? styles.healthHealthy
+                                    : h === "expiring"
+                                      ? styles.healthExpiring
+                                      : styles.healthExpired
+                            }`}
+                        >
+                            {h}
+                        </span>
+                    )
+                },
+            })
+        }
+        cols.push({
+            key: "cycle",
+            label: "Cycle",
+            sortValue: (s) => s.cycleNumber || 0,
+            align: "center",
+            render: (s) => <span className={styles.dim}>#{s.cycleNumber || 1}</span>,
+        })
+        cols.push({
+            key: "action",
+            label: "Action",
+            inSearchByMenu: false,
+            render: (s) => (
+                <div className={styles.actionCell}>
+                    {canPriority && s.status === "pending" && !s.approved && (
+                        <button
+                            className={styles.btnDeprioritise}
+                            onClick={() => togglePriority(s)}
+                            disabled={togglingPriorityId === s._id}
+                        >
+                            {s.isPriority ? "▼ Deprioritise" : "▲ Prioritise"}
+                            {togglingPriorityId === s._id && <ButtonLoadingIcon />}
+                        </button>
+                    )}
+                    <button
+                        className={styles.btnProcessLegacy}
+                        onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
+                    >
+                        {s.status === "pending"
+                            ? `PROCESS STAGE ${stageForRow(s)}`
+                            : "VIEW"}
+                    </button>
+                </div>
+            ),
+        })
+        cols.push({
+            key: "updatedAt",
+            label: "Last Update",
+            sortValue: (s) => (s.updatedAt ? new Date(s.updatedAt) : 0),
+            render: (s) => (
+                <span className={styles.dateCell}>
+                    {s.updatedAt
+                        ? new Date(s.updatedAt).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                          })
+                        : "-"}
+                </span>
+            ),
+        })
+        return cols
+        // needsAttention is a stable closure over user / submission shape;
+        // we don't track it in deps to avoid re-creating columns on every
+        // render, but tabDef + activeTab + l3Health are real inputs.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, tabDef, l3Health, canPriority, togglingPriorityId])
+
+    const inviteColumns: DataTableColumn<InviteRow>[] = useMemo(
+        () => [
+            {
+                key: "company",
+                label: "Invited Name",
+                sortValue: (i) => i.companyName,
+                searchValue: (i) => i.companyName,
+                render: (i) => (
+                    <Link
+                        href={`/staff/v2-invites/${i._id}`}
+                        className={styles.contractorLink}
+                    >
+                        {(i.companyName || "(no name)").toUpperCase()}
+                    </Link>
+                ),
+            },
+            {
+                key: "email",
+                label: "Email",
+                sortValue: (i) => i.email,
+                searchValue: (i) => i.email,
+                render: (i) => <span className={styles.dateCell}>{i.email || "-"}</span>,
+            },
+            {
+                key: "status",
+                label: "Status",
+                sortValue: (i) => (i.used ? "used" : i.archived ? "archived" : "active"),
+                render: (i) => (
+                    <span
+                        className={`${styles.stagePillLegacy} ${
+                            i.used
+                                ? styles.inviteUsed
+                                : i.archived
+                                  ? styles.inviteArchived
+                                  : styles.inviteActive
+                        }`}
+                    >
+                        {i.used ? "Used" : i.archived ? "Archived" : "Active"}
+                    </span>
+                ),
+            },
+            {
+                key: "createdAt",
+                label: "Sent",
+                sortValue: (i) => (i.createdAt ? new Date(i.createdAt) : 0),
+                render: (i) => (
+                    <span className={styles.dateCell}>
+                        {i.createdAt
+                            ? new Date(i.createdAt).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                              })
+                            : "-"}
+                    </span>
+                ),
+            },
+        ],
+        [],
+    )
+
+    // Build a "Search by" options list from whichever set of columns is
+    // active on the current tab.
+    const searchByOptions: SearchByOption[] = useMemo(() => {
+        const cols = tabDef.isInvites ? inviteColumns : submissionColumns
+        return cols
+            .filter((c) => !!c.searchValue && c.inSearchByMenu !== false)
+            .map((c) => ({ key: c.key, label: c.label }))
+    }, [tabDef.isInvites, submissionColumns, inviteColumns])
+
+    // Reset searchBy when tab changes - the available scopes change too.
+    useEffect(() => {
+        setSearchBy("all")
+    }, [activeTab])
+
+    const matchesSearch = <T,>(
+        row: T,
+        cols: DataTableColumn<T>[],
+        query: string,
+        scope: string,
+    ): boolean => {
+        if (!query) return true
+        const q = query.toLowerCase()
+        if (scope === "all") {
+            for (const c of cols) {
+                if (!c.searchValue) continue
+                const v = String(c.searchValue(row) || "").toLowerCase()
+                if (v.includes(q)) return true
+            }
+            return false
+        }
+        const c = cols.find((c) => c.key === scope)
+        if (!c?.searchValue) return true
+        return String(c.searchValue(row) || "").toLowerCase().includes(q)
+    }
+
     // Client-side search + L3-health filter over the loaded submissions list.
     const filteredSubmissions = useMemo(() => {
         let rows = submissions
@@ -334,20 +599,14 @@ const V2ApprovalsPage = () => {
             rows = rows.filter((s) => l3Health[s._id] === want)
         }
         if (!debouncedSearch) return rows
-        return rows.filter((s) => {
-            const hay = `${s.companyName || ""} ${s.contractorEmail || ""} ${groupLabel(s.groupId)}`.toLowerCase()
-            return hay.includes(debouncedSearch)
-        })
-    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef])
+        return rows.filter((s) => matchesSearch(s, submissionColumns, debouncedSearch, searchBy))
+    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef, submissionColumns, searchBy])
 
     // Filtered invites (client-side search).
     const filteredInvites = useMemo(() => {
         if (!debouncedSearch) return invites
-        return invites.filter((i) => {
-            const hay = `${i.companyName || ""} ${i.email || ""}`.toLowerCase()
-            return hay.includes(debouncedSearch)
-        })
-    }, [invites, debouncedSearch])
+        return invites.filter((i) => matchesSearch(i, inviteColumns, debouncedSearch, searchBy))
+    }, [invites, debouncedSearch, inviteColumns, searchBy])
 
     // "Attention needed" predicate per row. Lights up rows where the
     // current viewer can actually take an action (their role appears in
@@ -443,16 +702,15 @@ const V2ApprovalsPage = () => {
             <h2 className={styles.pageTitle}>Registration Approvals</h2>
 
             <div className={styles.searchRow}>
-                <div className={styles.searchWrap}>
-                    <label className={styles.searchLabel}>Quick Search</label>
-                    <input
-                        type="search"
-                        className={styles.searchInput}
-                        placeholder="Type Company Name or Email"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                <SearchBar
+                    label="Quick Search"
+                    value={search}
+                    onChange={setSearch}
+                    searchBy={searchBy}
+                    onSearchByChange={setSearchBy}
+                    options={searchByOptions}
+                    placeholder="Type to filter the current tab"
+                />
                 <div className={styles.exportButtons}>
                     <button
                         className={styles.exportSecondary}
@@ -569,206 +827,50 @@ const V2ApprovalsPage = () => {
                 </div>
             )}
 
-            {/* Invites tab - simple listing, deeper detail lives on
+            {/* Invites tab - shared DataTable; detail page lives on
                 /staff/v2-invites. */}
             {tabDef.isInvites && !showInitialLoading && !error && (
-                filteredInvites.length === 0 ? (
-                    <div className={styles.emptyState}>
-                        <h4>No invites</h4>
-                        <p>
-                            {debouncedSearch
-                                ? `No invites match "${debouncedSearch}".`
-                                : "No invites have been sent yet."}
-                        </p>
-                    </div>
-                ) : (
-                    <div className={styles.tableWrap}>
-                        <table className={styles.legacyTable}>
-                            <thead>
-                                <tr>
-                                    <th>Invited Name</th>
-                                    <th>Email</th>
-                                    <th>Status</th>
-                                    <th>Sent</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredInvites.map((i, idx) => (
-                                    <tr
-                                        key={i._id}
-                                        className={`${idx % 2 === 1 ? styles.rowShade : ""}`}
-                                    >
-                                        <td>
-                                            <Link href={`/staff/v2-invites/${i._id}`} className={styles.contractorLink}>
-                                                {(i.companyName || "(no name)").toUpperCase()}
-                                            </Link>
-                                        </td>
-                                        <td className={styles.dateCell}>{i.email || "-"}</td>
-                                        <td>
-                                            <span
-                                                className={`${styles.stagePillLegacy} ${
-                                                    i.used
-                                                        ? styles.inviteUsed
-                                                        : i.archived
-                                                          ? styles.inviteArchived
-                                                          : styles.inviteActive
-                                                }`}
-                                            >
-                                                {i.used ? "Used" : i.archived ? "Archived" : "Active"}
-                                            </span>
-                                        </td>
-                                        <td className={styles.dateCell}>
-                                            {i.createdAt
-                                                ? new Date(i.createdAt).toLocaleDateString("en-US", {
-                                                      year: "numeric",
-                                                      month: "long",
-                                                      day: "numeric",
-                                                  })
-                                                : "-"}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )
+                <DataTable
+                    columns={inviteColumns}
+                    rows={filteredInvites}
+                    rowKey={(r) => r._id}
+                    initialSort={{ key: "createdAt", dir: "desc" }}
+                    emptyMessage={
+                        <div>
+                            <h4>No invites</h4>
+                            <p>
+                                {debouncedSearch
+                                    ? `No invites match "${debouncedSearch}".`
+                                    : "No invites have been sent yet."}
+                            </p>
+                        </div>
+                    }
+                />
             )}
 
-            {!tabDef.isInvites && !showInitialLoading && !error && filteredSubmissions.length === 0 && (
-                <div className={styles.emptyState}>
-                    <h4>Nothing here</h4>
-                    <p>
-                        {debouncedSearch
-                            ? `No submissions match "${debouncedSearch}" in this tab.`
-                            : "No submissions in this tab yet."}
-                    </p>
-                </div>
-            )}
-
-            {!tabDef.isInvites && !showInitialLoading && !error && filteredSubmissions.length > 0 && (
-                <div className={styles.tableWrap}>
-                    <table className={styles.legacyTable}>
-                        <thead>
-                            <tr>
-                                <th>▲ Contractor Name</th>
-                                {!tabDef.isInvites && <th>Approval Stage</th>}
-                                {(activeTab === "park-requests" || activeTab === "completed-l2") && (
-                                    <>
-                                        <th>Park Reason</th>
-                                        <th>Requested By</th>
-                                    </>
-                                )}
-                                {tabDef.l3FiltersEnabled && <th>Cert Health</th>}
-                                <th>Action</th>
-                                <th>▲ Last Update</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredSubmissions.map((s, idx) => {
-                                const attention = needsAttention(s)
-                                const shadeCls = idx % 2 === 1 ? styles.rowShade : ""
-                                const attentionCls = attention ? styles.rowAttention : ""
-                                const priorityCls = s.isPriority ? styles.rowPriority : ""
-                                const rowClass = [shadeCls, attentionCls, priorityCls]
-                                    .filter(Boolean)
-                                    .join(" ")
-                                const health = l3Health[s._id]
-                                return (
-                                    <tr key={s._id} className={rowClass}>
-                                        <td>
-                                            <Link href={`/staff/v2-approvals/${s._id}`} className={styles.contractorLink}>
-                                                {(s.companyName || "(no name)").toUpperCase()}
-                                            </Link>
-                                            {s.isPriority && (
-                                                <span className={styles.priorityBadge}>★ Priority</span>
-                                            )}
-                                            {attention && (
-                                                <span className={styles.attentionBadge}>Action needed</span>
-                                            )}
-                                        </td>
-                                        {!tabDef.isInvites && (
-                                            <td>
-                                                <span className={styles.stagePillLegacy}>
-                                                    Stage {stageForRow(s)}
-                                                </span>
-                                            </td>
-                                        )}
-                                        {(activeTab === "park-requests" || activeTab === "completed-l2") && (
-                                            <>
-                                                <td className={styles.parkReasonCell}>
-                                                    {s.hold?.reason || "-"}
-                                                </td>
-                                                <td className={styles.dateCell}>
-                                                    {s.hold?.requestedBy?.name ||
-                                                        s.hold?.requestedBy?.email ||
-                                                        "-"}
-                                                </td>
-                                            </>
-                                        )}
-                                        {tabDef.l3FiltersEnabled && (
-                                            <td>
-                                                {health ? (
-                                                    <span
-                                                        className={`${styles.healthBadge} ${
-                                                            health === "healthy"
-                                                                ? styles.healthHealthy
-                                                                : health === "expiring"
-                                                                  ? styles.healthExpiring
-                                                                  : styles.healthExpired
-                                                        }`}
-                                                    >
-                                                        {health}
-                                                    </span>
-                                                ) : (
-                                                    <span className={styles.dim}>...</span>
-                                                )}
-                                            </td>
-                                        )}
-                                        <td>
-                                            <div className={styles.actionCell}>
-                                                {canPriority && s.status === "pending" && !s.approved && (
-                                                    <button
-                                                        className={styles.btnDeprioritise}
-                                                        onClick={() => togglePriority(s)}
-                                                        disabled={togglingPriorityId === s._id}
-                                                    >
-                                                        {s.isPriority ? "▼ Deprioritise" : "▲ Prioritise"}
-                                                        {togglingPriorityId === s._id && <ButtonLoadingIcon />}
-                                                    </button>
-                                                )}
-                                                {s.status === "pending" && (
-                                                    <button
-                                                        className={styles.btnProcessLegacy}
-                                                        onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
-                                                    >
-                                                        PROCESS STAGE {stageForRow(s)}
-                                                    </button>
-                                                )}
-                                                {s.status !== "pending" && (
-                                                    <button
-                                                        className={styles.btnProcessLegacy}
-                                                        onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
-                                                    >
-                                                        VIEW
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className={styles.dateCell}>
-                                            {s.updatedAt
-                                                ? new Date(s.updatedAt).toLocaleDateString("en-US", {
-                                                      year: "numeric",
-                                                      month: "long",
-                                                      day: "numeric",
-                                                  })
-                                                : "-"}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+            {/* Submissions table - shared DataTable, per-tab columns. */}
+            {!tabDef.isInvites && !showInitialLoading && !error && (
+                <DataTable
+                    columns={submissionColumns}
+                    rows={filteredSubmissions}
+                    rowKey={(r) => r._id}
+                    initialSort={{ key: "updatedAt", dir: "desc" }}
+                    rowClassName={(s) => {
+                        const a = needsAttention(s) ? styles.rowAttention : ""
+                        const p = s.isPriority ? styles.rowPriority : ""
+                        return [a, p].filter(Boolean).join(" ")
+                    }}
+                    emptyMessage={
+                        <div>
+                            <h4>Nothing here</h4>
+                            <p>
+                                {debouncedSearch
+                                    ? `No submissions match "${debouncedSearch}" in this tab.`
+                                    : "No submissions in this tab yet."}
+                            </p>
+                        </div>
+                    }
+                />
             )}
             {confirmDialogEl}
         </div>
