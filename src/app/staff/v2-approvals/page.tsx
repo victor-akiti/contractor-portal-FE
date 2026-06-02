@@ -430,7 +430,12 @@ const V2ApprovalsPage = () => {
                                     </td>
                                     <td>
                                         <div className={styles.actionCell}>
-                                            {canPriority && (
+                                            {/* Prioritise is only meaningful for in-flight submissions.
+                                                L3 approved contractors are done - they are not pending
+                                                anyone's review, so there is nothing to push to the top
+                                                of the queue. Same for parked / returned where the
+                                                contractor needs to act first. */}
+                                            {canPriority && s.status === "pending" && !s.approved && (
                                                 <button
                                                     className={styles.btnDeprioritise}
                                                     onClick={() => togglePriority(s)}

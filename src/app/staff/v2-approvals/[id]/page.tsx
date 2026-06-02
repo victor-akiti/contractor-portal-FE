@@ -1115,10 +1115,12 @@ const V2SubmissionDetailPage = () => {
                 tabs (Edit Audit / Comments / History / Due Diligence) are
                 hidden. Admin / HOD always see everything. */}
             {(() => {
+                // End Users sit outside C&P and are not part of the
+                // review chain - they only ever see Form + Certificates,
+                // regardless of which stage the submission has moved
+                // to. Admin / HOD always see every tab.
                 const isEndUserOnly =
-                    submission.level === 2 &&
-                    role === "End User" &&
-                    !["Admin", "HOD"].includes(role)
+                    role === "End User" && !["Admin", "HOD"].includes(role)
                 return (
                     <div className={styles.tabs}>
                         <button
@@ -1261,9 +1263,7 @@ const V2SubmissionDetailPage = () => {
                                 // right document, not to manage its
                                 // lifecycle.
                                 const isEndUserOnly =
-                                    submission.level === 2 &&
-                                    role === "End User" &&
-                                    !["Admin", "HOD"].includes(role)
+                                    role === "End User" && !["Admin", "HOD"].includes(role)
                                 const showDates = !isEndUserOnly
                                 const showHealth = !isEndUserOnly
                                 return (
