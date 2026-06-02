@@ -70,6 +70,9 @@ export interface ApprovalHistoryEntry {
     actorEmail?: string
     actorRole?: string
     approver?: { name?: string; role?: string; email?: string }
+    // Free-form payload set by transitions that carry extra context
+    // (e.g. return-for-research reason, park reason, do-not-add reason).
+    extraData?: Record<string, any>
 }
 
 export interface Submission {

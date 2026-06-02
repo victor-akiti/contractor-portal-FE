@@ -1614,6 +1614,24 @@ const V2SubmissionDetailPage = () => {
                                 const headline = h.action || h.type || h.description || "Event"
                                 const actorName = h.actorName || h.approver?.name
                                 const actorRole = h.actorRole || h.approver?.role
+                                // Surface the structured reason / context
+                                // carried by return-for-research, return-to-
+                                // earlier-stage, request-park, park-at-L2,
+                                // etc. Falls back to scanning any string-
+                                // valued extraData field so future actions
+                                // that carry context automatically show.
+                                const reason =
+                                    (h as any).extraData?.reason ||
+                                    (h as any).extraData?.message ||
+                                    (h as any).extraData?.note
+                                const otherExtras: Array<[string, any]> = h.extraData
+                                    ? Object.entries(h.extraData).filter(
+                                          ([k, v]) =>
+                                              !["reason", "message", "note"].includes(k) &&
+                                              (typeof v === "string" || typeof v === "number") &&
+                                              String(v).length > 0,
+                                      )
+                                    : []
                                 return (
                                     <li key={idx} className={styles.historyItem}>
                                         <div className={styles.historyHead}>
@@ -1626,8 +1644,22 @@ const V2SubmissionDetailPage = () => {
                                         </div>
                                         {(actorName || actorRole) && (
                                             <p className={styles.historyText}>
-                                                By {actorName || "—"}{actorRole ? ` (${actorRole})` : ""}
+                                                By {actorName || "-"}{actorRole ? ` (${actorRole})` : ""}
                                             </p>
+                                        )}
+                                        {reason && (
+                                            <blockquote className={styles.historyReason}>
+                                                "{reason}"
+                                            </blockquote>
+                                        )}
+                                        {otherExtras.length > 0 && (
+                                            <ul className={styles.historyExtras}>
+                                                {otherExtras.map(([k, v]) => (
+                                                    <li key={k}>
+                                                        <span>{k}:</span> {String(v)}
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         )}
                                     </li>
                                 )
