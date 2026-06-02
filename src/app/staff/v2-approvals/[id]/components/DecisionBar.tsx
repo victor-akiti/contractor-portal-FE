@@ -24,6 +24,7 @@ interface Props {
     openReturnPrevModal: () => void
     openReturnEarlierModal: () => void
     openParkL2Modal: () => void
+    openRevertL3Modal: () => void
 }
 
 // Bottom-of-page decision panel. Groups available state-machine
@@ -48,6 +49,7 @@ const DecisionBar = ({
     openReturnPrevModal,
     openReturnEarlierModal,
     openParkL2Modal,
+    openRevertL3Modal,
 }: Props) => {
     const anyDecision =
         can.advance ||
@@ -234,7 +236,7 @@ const DecisionBar = ({
                                     <button
                                         className={styles.btnDanger}
                                         disabled={!!actionRunning}
-                                        onClick={() => runAction("revert-from-l3")}
+                                        onClick={openRevertL3Modal}
                                     >
                                         Revert from L3
                                         {actionRunning === "revert-from-l3" && <ButtonLoadingIcon />}

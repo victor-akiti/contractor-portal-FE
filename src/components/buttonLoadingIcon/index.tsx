@@ -1,20 +1,10 @@
 import styles from "./styles/styles.module.css"
 
+// Simple modern button spinner: 14px circle with a 2px ring and one
+// transparent arc that rotates. Inherits currentColor so it blends with
+// whatever button colour it sits inside.
 const ButtonLoadingIcon = () => {
-  return (
-    <div className={styles.loadingioSpinnerGear2by998twmg8}>
-      <div className={styles.ldioYzaezf3dcmj     }>
-        <div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
-      </div>
-    </div>
-  );
-};
+    return <span className={styles.spinner} role="status" aria-label="Loading" />
+}
 
 export default ButtonLoadingIcon

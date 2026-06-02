@@ -1548,3 +1548,30 @@
     color: #523200;
     line-height: 1.5;
 }
+
+/* Modify Contractor panel for L3 approved (Admin / HOD only). */
+.modifyPanel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: #eef9ef;
+    border: 1px solid #b7d8b7;
+    border-left: 4px solid #2d7d2d;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.modifyPanel h4 {
+    margin: 0 0 4px 0;
+    color: #1f5d1f;
+    font-size: 0.98rem;
+}
+.modifyPanel p {
+    margin: 0;
+    color: #2d5d2d;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    max-width: 640px;
+}
