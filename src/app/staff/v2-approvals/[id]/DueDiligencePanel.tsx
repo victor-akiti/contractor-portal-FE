@@ -80,6 +80,9 @@ interface Props {
     dueDiligence: DD | null
     hodRemarkForEA?: string
     onReload: () => Promise<void> | void
+    // View-only mode hides all save / Mark Complete / approval-tick /
+    // add-entry affordances. The DD record still renders read-only.
+    readOnly?: boolean
 }
 
 const CHECK_LABELS: Record<string, string> = {
@@ -136,9 +139,11 @@ const DueDiligencePanel = ({
     dueDiligence,
     hodRemarkForEA,
     onReload,
+    readOnly,
 }: Props) => {
-    const canEdit = level === 3 && status === "pending"
-    const canHodReview = level === 4 && status === "pending" && ["Admin", "HOD"].includes(role)
+    const canEdit = !readOnly && level === 3 && status === "pending"
+    const canHodReview =
+        !readOnly && level === 4 && status === "pending" && ["Admin", "HOD"].includes(role)
     const dd: DD = dueDiligence || {}
 
     const [savingKey, setSavingKey] = useState<string | null>(null)

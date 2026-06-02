@@ -382,6 +382,15 @@ const V2SubmissionDetailPage = () => {
     const [certRejectReason, setCertRejectReason] = useState("")
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
+    // View / Approval mode. Default is read-only "view": every tab is
+    // visible, but no action buttons (Decision bar, section ticks, add
+    // remark, add comment, EBA edit, cert approve/reject, DD inputs,
+    // Modify Contractor button) are rendered. Clicking "Open in
+    // Approval Mode" flips this so the page becomes interactive.
+    // Mirrors the V1 affordance where reviewers had to explicitly enter
+    // approval mode before any side-effecty button appeared.
+    const [viewMode, setViewMode] = useState<"view" | "approve">("view")
+    const inApprovalMode = viewMode === "approve"
     const [submission, setSubmission] = useState<Submission | null>(null)
     const [formVersion, setFormVersion] = useState<FormVersion | null>(null)
     const [remarks, setRemarks] = useState<Remark[]>([])
@@ -1097,6 +1106,57 @@ const V2SubmissionDetailPage = () => {
         <div className={styles.page}>
             <div className={styles.breadcrumbs}>
                 <Link href="/staff/v2-approvals" className={styles.crumbLink}>← V2 Approvals</Link>
+                {/* View / Approval mode toggle. The toggle only shows when
+                    the viewer might actually have a reason to enter
+                    approval mode - i.e. there is something pending or an
+                    L3 contractor an Admin/HOD can modify. End users
+                    without action rights still see View Only and can't
+                    flip the switch. */}
+                {(() => {
+                    const STAGE_ACTORS_TOGGLE: Record<number, string[]> = {
+                        0: ["Admin", "HOD", "VRM"],
+                        1: ["Admin", "HOD", "Supervisor"],
+                        2: ["Admin", "HOD", "End User"],
+                        3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
+                        4: ["Admin", "HOD"],
+                        5: ["Admin", "Executive Approver"],
+                    }
+                    const allowed = STAGE_ACTORS_TOGGLE[submission?.level || 0] || []
+                    const canEnter =
+                        (submission?.status === "pending" && allowed.includes(role)) ||
+                        (submission?.approved && ["Admin", "HOD"].includes(role)) ||
+                        (submission?.status === "park requested" &&
+                            ["Admin", "HOD"].includes(role)) ||
+                        (submission?.status === "returned" &&
+                            ["Admin", "HOD", "IT Admin"].includes(role))
+                    if (!canEnter) {
+                        return (
+                            <span className={styles.viewOnlyBadge} title="View Only">
+                                View Only
+                            </span>
+                        )
+                    }
+                    return (
+                        <button
+                            type="button"
+                            className={
+                                inApprovalMode
+                                    ? styles.viewModeBtnActive
+                                    : styles.viewModeBtn
+                            }
+                            onClick={() => setViewMode(inApprovalMode ? "view" : "approve")}
+                            title={
+                                inApprovalMode
+                                    ? "Drop back to read-only view"
+                                    : "Reveal the approval / action controls"
+                            }
+                        >
+                            {inApprovalMode
+                                ? "Close Approval Mode"
+                                : "Open in Approval Mode"}
+                        </button>
+                    )
+                })()}
             </div>
 
             <div className={styles.headerCard}>
@@ -1170,7 +1230,7 @@ const V2SubmissionDetailPage = () => {
                 the Revert from L3 action in the Decision bar) pull the
                 contractor back into a pending stage if a deeper change
                 is needed. */}
-            {submission.approved && ["Admin", "HOD"].includes(role) && (
+            {submission.approved && ["Admin", "HOD"].includes(role) && inApprovalMode && (
                 <div className={styles.modifyPanel}>
                     <div>
                         <h4>Modify Contractor</h4>
@@ -1223,9 +1283,15 @@ const V2SubmissionDetailPage = () => {
                 submission={submission}
                 role={role}
                 user={user}
-                openEndUserPicker={openEndUserPicker}
-                openServicesModal={openServicesModal}
+                /* In view-only mode the briefing card still renders
+                   ("here's what your stage is"), but its CTA button is
+                   suppressed by passing no-op handlers - the CTA is the
+                   only interactive bit and it makes no sense without
+                   approval mode. */
+                openEndUserPicker={inApprovalMode ? openEndUserPicker : (() => {}) as any}
+                openServicesModal={inApprovalMode ? openServicesModal : (() => {}) as any}
                 openDueDiligenceTab={() => setTab("due-diligence")}
+                hideCta={!inApprovalMode}
             />
             <HodReturnInbox submission={submission} />
 
@@ -1342,17 +1408,19 @@ const V2SubmissionDetailPage = () => {
                             cycleNumber={submission.cycleNumber || 1}
                             level={submission.level}
                             sectionApprovals={(submission as any).sectionApprovals || {}}
-                            canApproveSections={canActAtCurrentStage}
-                            showSectionApproval={[0, 1].includes(submission.level)}
+                            canApproveSections={canActAtCurrentStage && inApprovalMode}
+                            showSectionApproval={inApprovalMode && [0, 1].includes(submission.level)}
                             onToggleSectionApproved={toggleSectionApproval}
-                            ebaEditableNow={ebaEditableNow}
-                            onEditField={openEditField}
+                            ebaEditableNow={ebaEditableNow && inApprovalMode}
+                            onEditField={inApprovalMode ? openEditField : undefined as any}
                             onAddRemark={
-                                submission.level === 0
+                                inApprovalMode && submission.level === 0
                                     ? (args) => openInlineRemark(args)
                                     : undefined
                             }
-                            onAddComment={(args) => openInlineComment(args)}
+                            onAddComment={
+                                inApprovalMode ? (args) => openInlineComment(args) : undefined
+                            }
                         />
                     )}
 
@@ -1477,7 +1545,7 @@ const V2SubmissionDetailPage = () => {
                                                 {c.reviewRemarks}
                                             </div>
                                         )}
-                                        {isCurrent && c.certStatus === "pending" && submission.status !== "draft" && (
+                                        {inApprovalMode && isCurrent && c.certStatus === "pending" && submission.status !== "draft" && (
                                             <div className={styles.certActions}>
                                                 <button
                                                     className={styles.btnApprove}
@@ -1555,6 +1623,7 @@ const V2SubmissionDetailPage = () => {
                     dueDiligence={(submission as any).dueDiligence || null}
                     hodRemarkForEA={(submission as any).hodRemarkForEA || ""}
                     onReload={fetchAll}
+                    readOnly={!inApprovalMode}
                 />
             )}
 
@@ -1662,7 +1731,7 @@ const V2SubmissionDetailPage = () => {
                         schema={formVersion?.schema}
                         currentLevel={submission.level}
                     />
-                    <div className={styles.commentComposer}>
+                    {inApprovalMode && <div className={styles.commentComposer}>
                         <textarea
                             rows={3}
                             placeholder="Add a staff-only internal comment…"
@@ -1681,7 +1750,7 @@ const V2SubmissionDetailPage = () => {
                                 {postingComment && <ButtonLoadingIcon />}
                             </button>
                         </div>
-                    </div>
+                    </div>}
 
                     {comments.length === 0 ? (
                         <div className={styles.emptyState}>
@@ -2142,7 +2211,7 @@ const V2SubmissionDetailPage = () => {
                 </Modal>
             )}
 
-            <DecisionBar
+            {inApprovalMode && <DecisionBar
                 submission={submission}
                 role={role}
                 user={user}
@@ -2161,7 +2230,7 @@ const V2SubmissionDetailPage = () => {
                 openReturnEarlierModal={() => { setReturnEarlierLevel(0); setReturnEarlierReason(""); setReturnEarlierOpen(true) }}
                 openParkL2Modal={() => { setParkL2Reason(""); setParkL2Open(true) }}
                 openRevertL3Modal={() => { setRevertL3Reason(""); setRevertL3Level(5); setRevertL3Open(true) }}
-            />
+            />}
 
             {endUserPickerOpen && (
                 <EndUserPickerModal

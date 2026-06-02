@@ -10,6 +10,9 @@ interface Props {
     openEndUserPicker: () => void
     openServicesModal: () => void
     openDueDiligenceTab: () => void
+    // When true, the CTA button is suppressed entirely so the card
+    // becomes a pure read-only briefing. Used by view-only mode.
+    hideCta?: boolean
 }
 
 // Role-aware briefing for the current stage. Mirrors the legacy "you are
@@ -22,6 +25,7 @@ const StageRoleBriefingCard = ({
     openEndUserPicker,
     openServicesModal,
     openDueDiligenceTab,
+    hideCta,
 }: Props) => {
     if (submission.status !== "pending") return null
 
@@ -87,7 +91,7 @@ const StageRoleBriefingCard = ({
                 <h4>{title}</h4>
                 <p>{body}</p>
             </div>
-            {cta && (
+            {cta && !hideCta && (
                 <button className={styles.btnPrimary} onClick={cta.onClick}>
                     {cta.label}
                 </button>
