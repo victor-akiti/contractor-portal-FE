@@ -218,6 +218,93 @@ const StagePill = ({ submission }: { submission: Submission }) => {
     return <span className={styles.stagePill}>{stageLongLabel(submission)}</span>
 }
 
+// Pretty-print an edit-audit value. For file arrays (certificate
+// fields, supporting uploads) we render a compact stack of links +
+// issue/expiry summary. For arrays of primitives, join with ", ". For
+// plain objects fall back to a key/value list. For everything else
+// just print the string. Anything beats the JSON dump the audit was
+// showing before.
+const renderEditValue = (v: any): React.ReactNode => {
+    if (v === undefined || v === null || v === "") {
+        return <span className={styles.dim}>—</span>
+    }
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        return <span>{String(v)}</span>
+    }
+    if (Array.isArray(v)) {
+        if (v.length === 0) return <span className={styles.dim}>(empty)</span>
+        // Array of file refs (cert uploads). Detect by url+name pair.
+        if (typeof v[0] === "object" && v[0] && ("url" in v[0] || "name" in v[0])) {
+            return (
+                <ul className={styles.editAuditFiles}>
+                    {v.map((f: any, i: number) => (
+                        <li key={i}>
+                            {f.url ? (
+                                <a
+                                    href={f.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={styles.editAuditFileLink}
+                                >
+                                    📎 {f.name || "file"}
+                                </a>
+                            ) : (
+                                <span>{f.name || "file"}</span>
+                            )}
+                            {(f.issueDate || f.expiryDate) && (
+                                <div className={styles.editAuditFileMeta}>
+                                    {f.issueDate && (
+                                        <span>
+                                            Issued{" "}
+                                            {new Date(f.issueDate).toLocaleDateString(
+                                                "en-NG",
+                                            )}
+                                        </span>
+                                    )}
+                                    {f.expiryDate && (
+                                        <span>
+                                            Expires{" "}
+                                            {new Date(f.expiryDate).toLocaleDateString(
+                                                "en-NG",
+                                            )}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )
+        }
+        // Plain primitive array.
+        if (v.every((x) => typeof x === "string" || typeof x === "number")) {
+            return <span>{v.join(", ")}</span>
+        }
+        return (
+            <ul className={styles.editAuditFiles}>
+                {v.map((x, i) => (
+                    <li key={i}>{renderEditValue(x)}</li>
+                ))}
+            </ul>
+        )
+    }
+    if (typeof v === "object") {
+        const entries = Object.entries(v).filter(([, val]) => val !== null && val !== "")
+        if (entries.length === 0) return <span className={styles.dim}>(empty)</span>
+        return (
+            <ul className={styles.editAuditObj}>
+                {entries.map(([k, val]) => (
+                    <li key={k}>
+                        <span className={styles.editAuditKey}>{k}:</span>{" "}
+                        <span>{typeof val === "object" ? JSON.stringify(val) : String(val)}</span>
+                    </li>
+                ))}
+            </ul>
+        )
+    }
+    return <span>{String(v)}</span>
+}
+
 const V2SubmissionDetailPage = () => {
     const params = useParams<{ id: string }>()
     const router = useRouter()
@@ -1698,26 +1785,16 @@ const V2SubmissionDetailPage = () => {
                                         </span>
                                     </div>
                                     <div className={styles.certBody}>
-                                        <span className={styles.dim}>
-                                            <strong>From:</strong>{" "}
-                                            <code>
-                                                {e.previousValue === undefined || e.previousValue === null
-                                                    ? "—"
-                                                    : typeof e.previousValue === "string"
-                                                        ? e.previousValue
-                                                        : JSON.stringify(e.previousValue)}
-                                            </code>
-                                        </span>
-                                        <span className={styles.dim}>
-                                            <strong>To:</strong>{" "}
-                                            <code>
-                                                {e.newValue === undefined || e.newValue === null
-                                                    ? "—"
-                                                    : typeof e.newValue === "string"
-                                                        ? e.newValue
-                                                        : JSON.stringify(e.newValue)}
-                                            </code>
-                                        </span>
+                                        <div className={styles.editAuditDiff}>
+                                            <div className={styles.editAuditDiffSide}>
+                                                <span className={styles.editAuditDiffLabel}>From</span>
+                                                <div>{renderEditValue(e.previousValue)}</div>
+                                            </div>
+                                            <div className={styles.editAuditDiffSide}>
+                                                <span className={styles.editAuditDiffLabel}>To</span>
+                                                <div>{renderEditValue(e.newValue)}</div>
+                                            </div>
+                                        </div>
                                         <span className={styles.dim}>
                                             by {e.editedBy?.name || e.editedBy?.role || "staff"}
                                             {e.createdAt

@@ -1652,3 +1652,56 @@
     color: #555;
     font-size: 0.95rem;
 }
+
+/* Edit Audit - readable diff blocks instead of raw JSON. */
+.editAuditDiff {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 10px;
+}
+@media (max-width: 720px) {
+    .editAuditDiff { grid-template-columns: 1fr; }
+}
+.editAuditDiffSide {
+    background: #fafafa;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-width: 0;
+}
+.editAuditDiffLabel {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+}
+.editAuditFiles {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.editAuditFileLink {
+    color: #1a4d8f;
+    text-decoration: none;
+    font-size: 0.88rem;
+}
+.editAuditFileLink:hover { text-decoration: underline; }
+.editAuditFileMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.74rem;
+    color: #888;
+    margin-top: 2px;
+    margin-left: 18px;
+}
+.editAuditObj { list-style: none; padding: 0; margin: 0; font-size: 0.86rem; }
+.editAuditObj li { margin: 2px 0; color: #333; }
+.editAuditKey { color: #888; font-weight: 600; }
