@@ -545,6 +545,22 @@ const V2ApprovalsPage = () => {
                         >
                             PROCESS STAGE {stageForRow(s)}
                         </button>
+                    ) : activeTab !== "park-requests" &&
+                      s.status === "parked" &&
+                      ["Admin", "HOD"].includes(user?.role) ? (
+                        // Parked rows: HOD / Admin go straight into
+                        // approval mode so the Unpark button is one
+                        // click away.
+                        <button
+                            className={styles.btnProcessLegacy}
+                            onClick={() =>
+                                router.push(
+                                    `/staff/v2-approvals/${s._id}?mode=approve`,
+                                )
+                            }
+                        >
+                            MANAGE
+                        </button>
                     ) : activeTab !== "park-requests" ? (
                         <button
                             className={styles.btnProcessLegacy}

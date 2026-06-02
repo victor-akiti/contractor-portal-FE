@@ -1,6 +1,7 @@
 'use client'
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
+import SuccessMessage from "@/components/successMessage"
 import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
 import Modal from "@/components/modal"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
@@ -495,6 +496,10 @@ const V2SubmissionDetailPage = () => {
     const [invite, setInvite] = useState<any>(null)
     const [portalAdmin, setPortalAdmin] = useState<any>(null)
     const [inviteDetailsOpen, setInviteDetailsOpen] = useState(false)
+    const [replaceAdminEmail, setReplaceAdminEmail] = useState("")
+    const [replacingAdmin, setReplacingAdmin] = useState(false)
+    const [replaceAdminError, setReplaceAdminError] = useState("")
+    const [replaceAdminSuccess, setReplaceAdminSuccess] = useState("")
 
     // Action state
     const [actionRunning, setActionRunning] = useState<ActionKey | null>(null)
@@ -696,6 +701,33 @@ const V2SubmissionDetailPage = () => {
         if (ok) {
             setRevertL3Open(false)
             setRevertL3Reason("")
+        }
+    }
+
+    const sendReplaceAdmin = async () => {
+        if (!id) return
+        setReplacingAdmin(true)
+        setReplaceAdminError("")
+        setReplaceAdminSuccess("")
+        try {
+            const r = await postProtected(
+                `api/v2/submissions/${id}/replace-portal-admin`,
+                { email: replaceAdminEmail.trim().toLowerCase() },
+                role,
+            )
+            if (r?.status === "OK") {
+                setReplaceAdminSuccess(
+                    `Invite sent to ${replaceAdminEmail.trim()}. The current admin keeps access until the new one registers.`,
+                )
+                setReplaceAdminEmail("")
+                await fetchAll()
+            } else {
+                setReplaceAdminError(r?.error?.message || "Could not send invite")
+            }
+        } catch (e: any) {
+            setReplaceAdminError(e?.message || "Unexpected error")
+        } finally {
+            setReplacingAdmin(false)
         }
     }
 
@@ -1272,6 +1304,12 @@ const V2SubmissionDetailPage = () => {
                         (submission?.status === "pending" && allowed.includes(role)) ||
                         (submission?.approved && ["Admin", "HOD"].includes(role)) ||
                         (submission?.status === "park requested" &&
+                            ["Admin", "HOD"].includes(role)) ||
+                        // Parked submissions need approval mode so HOD /
+                        // Admin can Unpark them. Without this entry the
+                        // toggle stayed View Only and the Unpark button
+                        // never rendered.
+                        (submission?.status === "parked" &&
                             ["Admin", "HOD"].includes(role)) ||
                         (submission?.status === "returned" &&
                             ["Admin", "HOD", "IT Admin"].includes(role))
@@ -2624,13 +2662,44 @@ const V2SubmissionDetailPage = () => {
                                         contractor.
                                     </p>
                                 )}
-                                {["Admin", "HOD"].includes(role) && invite && (
-                                    <p className={styles.dim}>
-                                        To change the Portal Admin, void this
-                                        invite and send a new one from the
-                                        Invites page; the new admin will be
-                                        recorded on first login.
-                                    </p>
+                                {["Admin", "HOD"].includes(role) && (
+                                    <div className={styles.replaceAdminBlock}>
+                                        <p className={styles.dim}>
+                                            Send an invite to a new Portal
+                                            Administrator. The current admin is
+                                            archived for audit; the new admin
+                                            takes over when they register.
+                                        </p>
+                                        <div className={styles.replaceAdminRow}>
+                                            <input
+                                                type="email"
+                                                className={styles.formInput}
+                                                placeholder="new.admin@example.com"
+                                                value={replaceAdminEmail}
+                                                onChange={(e) =>
+                                                    setReplaceAdminEmail(e.target.value)
+                                                }
+                                                disabled={replacingAdmin}
+                                            />
+                                            <button
+                                                className={styles.btnPrimary}
+                                                onClick={sendReplaceAdmin}
+                                                disabled={
+                                                    replacingAdmin ||
+                                                    !replaceAdminEmail.includes("@")
+                                                }
+                                            >
+                                                Send Invite
+                                                {replacingAdmin && <ButtonLoadingIcon />}
+                                            </button>
+                                        </div>
+                                        {replaceAdminError && (
+                                            <ErrorText text={replaceAdminError} />
+                                        )}
+                                        {replaceAdminSuccess && (
+                                            <SuccessMessage message={replaceAdminSuccess} />
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
