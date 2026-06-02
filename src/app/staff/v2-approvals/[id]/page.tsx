@@ -491,6 +491,9 @@ const V2SubmissionDetailPage = () => {
     const [formVersion, setFormVersion] = useState<FormVersion | null>(null)
     const [remarks, setRemarks] = useState<Remark[]>([])
     const [comments, setComments] = useState<Comment[]>([])
+    const [invite, setInvite] = useState<any>(null)
+    const [portalAdmin, setPortalAdmin] = useState<any>(null)
+    const [inviteDetailsOpen, setInviteDetailsOpen] = useState(false)
 
     // Action state
     const [actionRunning, setActionRunning] = useState<ActionKey | null>(null)
@@ -537,6 +540,8 @@ const V2SubmissionDetailPage = () => {
                 setSubmission(s.data?.submission || null)
                 setFormVersion(s.data?.formVersion || null)
                 setRemarks(s.data?.remarks || [])
+                setInvite(s.data?.invite || null)
+                setPortalAdmin(s.data?.portalAdmin || null)
             } else {
                 setError(s?.error?.message || "Failed to load submission")
             }
@@ -1315,23 +1320,25 @@ const V2SubmissionDetailPage = () => {
                             )}
                         </div>
                     )}
-                    {/* Invite + registration details - VRM-focused (Admin /
-                        HOD / VRM see this; the End User restricted view
-                        doesn't need it). Surfaces the submitted time and
-                        any submitTime stamp so the VRM knows when the
-                        contractor finished registration. */}
+                    {/* Lifecycle timestamps. Ordered the way the
+                        application actually unfolds: Started ->
+                        Submitted -> Last returned (if any), and a
+                        Cycle pill (no longer in the queue table). */}
                     {["Admin", "HOD", "VRM"].includes(role) && (
                         <div className={styles.inviteReadout}>
-                            {submission.submitTime && (
-                                <span>
-                                    <strong>Submitted:</strong>{" "}
-                                    {new Date(submission.submitTime).toLocaleString("en-NG")}
-                                </span>
-                            )}
+                            <span>
+                                <strong>Cycle:</strong> #{submission.cycleNumber || 1}
+                            </span>
                             {submission.createdAt && (
                                 <span>
                                     <strong>Started:</strong>{" "}
                                     {new Date(submission.createdAt).toLocaleString("en-NG")}
+                                </span>
+                            )}
+                            {submission.submitTime && (
+                                <span>
+                                    <strong>Submitted:</strong>{" "}
+                                    {new Date(submission.submitTime).toLocaleString("en-NG")}
                                 </span>
                             )}
                             {submission.returnTime && (
@@ -1339,6 +1346,15 @@ const V2SubmissionDetailPage = () => {
                                     <strong>Last returned:</strong>{" "}
                                     {new Date(submission.returnTime).toLocaleString("en-NG")}
                                 </span>
+                            )}
+                            {(invite || portalAdmin) && (
+                                <button
+                                    type="button"
+                                    className={styles.btnLink}
+                                    onClick={() => setInviteDetailsOpen(true)}
+                                >
+                                    View invite & portal admin
+                                </button>
                             )}
                         </div>
                     )}
@@ -2503,6 +2519,118 @@ const V2SubmissionDetailPage = () => {
                     onSubmit={submitRevertL3}
                     onClose={() => setRevertL3Open(false)}
                 />
+            )}
+
+            {inviteDetailsOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Contractor Invite & Portal Admin</h3>
+                            <p className={styles.modalSub}>
+                                Who invited the contractor, when, and which
+                                user is the registered Portal Administrator
+                                for this submission.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.inviteSummary}>
+                                <h4>Invite</h4>
+                                {invite ? (
+                                    <ul>
+                                        <li>
+                                            <span>Company:</span> {invite.companyName || "-"}
+                                        </li>
+                                        <li>
+                                            <span>Invited:</span>{" "}
+                                            {invite.name || `${invite.fname || ""} ${invite.lname || ""}`}
+                                        </li>
+                                        <li>
+                                            <span>Email:</span> {invite.email}
+                                        </li>
+                                        {invite.phone?.number && (
+                                            <li>
+                                                <span>Phone:</span>{" "}
+                                                {invite.phone?.countryCode || ""} {invite.phone.number}
+                                            </li>
+                                        )}
+                                        <li>
+                                            <span>Invited by:</span>{" "}
+                                            {invite.invitedBy?.name ||
+                                                invite.invitedBy?.email ||
+                                                "-"}
+                                        </li>
+                                        <li>
+                                            <span>Sent:</span>{" "}
+                                            {invite.createdAt
+                                                ? new Date(invite.createdAt).toLocaleString("en-NG")
+                                                : "-"}
+                                        </li>
+                                        <li>
+                                            <span>Status:</span> {invite.approvalStatus || "-"}
+                                        </li>
+                                    </ul>
+                                ) : (
+                                    <p className={styles.dim}>
+                                        No V2 invite linked. This submission was
+                                        probably backfilled from V1.
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className={styles.inviteSummary}>
+                                <h4>Portal Administrator</h4>
+                                {portalAdmin ? (
+                                    <ul>
+                                        <li>
+                                            <span>Name:</span> {portalAdmin.name || "-"}
+                                        </li>
+                                        <li>
+                                            <span>Email:</span> {portalAdmin.email || "-"}
+                                        </li>
+                                        <li>
+                                            <span>Role:</span> {portalAdmin.role || "-"}
+                                        </li>
+                                        <li>
+                                            <span>Registered:</span>{" "}
+                                            {portalAdmin.createdAt
+                                                ? new Date(portalAdmin.createdAt).toLocaleString("en-NG")
+                                                : "-"}
+                                        </li>
+                                    </ul>
+                                ) : (
+                                    <p className={styles.dim}>
+                                        No portal admin registered yet for this
+                                        contractor.
+                                    </p>
+                                )}
+                                {["Admin", "HOD"].includes(role) && invite && (
+                                    <p className={styles.dim}>
+                                        To change the Portal Admin, void this
+                                        invite and send a new one from the
+                                        Invites page; the new admin will be
+                                        recorded on first login.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setInviteDetailsOpen(false)}
+                            >
+                                Close
+                            </button>
+                            {invite && (
+                                <Link
+                                    href={`/staff/v2-invites/${invite._id}`}
+                                    className={styles.btnPrimary}
+                                >
+                                    Open invite page
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                </Modal>
             )}
 
             {confirmDialogEl}

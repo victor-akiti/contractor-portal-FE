@@ -41,8 +41,10 @@ interface Remark {
     _id: string
     text: string
     sectionKey: string
+    fieldKey?: string
     authorName?: string
     cycleNumber?: number
+    status?: "active" | "addressed" | "withdrawn"
 }
 
 // ── Page-progress helpers ───────────────────────────────────────────────────
@@ -378,13 +380,28 @@ const V2ApplicationPage = () => {
 
     const readOnly = ["pending", "park requested", "parked", "approved"].includes(submission.status)
     const isReturned = submission.status === "returned"
+    // Split active remarks for the current cycle into section-anchored
+    // and field-anchored buckets so the FormRenderer can show the right
+    // indicator. A remark with a fieldKey lights up that field; one
+    // without lights up the whole section header.
     const remarksBySection: Record<string, Remark[]> = {}
+    const remarksByField: Record<string, Remark[]> = {}
     remarks
-        .filter((r) => !r.cycleNumber || r.cycleNumber === submission.cycleNumber)
+        .filter(
+            (r) =>
+                (!r.cycleNumber || r.cycleNumber === submission.cycleNumber) &&
+                r.status === "active",
+        )
         .forEach((r) => {
-            const key = r.sectionKey || ""
-            if (!remarksBySection[key]) remarksBySection[key] = []
-            remarksBySection[key].push(r)
+            if ((r as any).fieldKey) {
+                const k = `${r.sectionKey || ""}::${(r as any).fieldKey}`
+                if (!remarksByField[k]) remarksByField[k] = []
+                remarksByField[k].push(r)
+            } else {
+                const k = r.sectionKey || ""
+                if (!remarksBySection[k]) remarksBySection[k] = []
+                remarksBySection[k].push(r)
+            }
         })
 
     return (
@@ -471,6 +488,7 @@ const V2ApplicationPage = () => {
                     activePageKey={activePageKey || undefined}
                     onChange={handleChange}
                     activeRemarksBySection={remarksBySection}
+                    activeRemarksByField={remarksByField}
                     previousFilesByField={previousFilesByField}
                     errors={validationErrors}
                 />

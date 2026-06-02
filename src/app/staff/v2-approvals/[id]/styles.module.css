@@ -1705,3 +1705,25 @@
 .editAuditObj { list-style: none; padding: 0; margin: 0; font-size: 0.86rem; }
 .editAuditObj li { margin: 2px 0; color: #333; }
 .editAuditKey { color: #888; font-weight: 600; }
+
+/* Invite & portal admin readout modal. */
+.inviteSummary { margin-bottom: 16px; }
+.inviteSummary h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+}
+.inviteSummary ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+}
+.inviteSummary li { font-size: 0.88rem; color: #333; }
+.inviteSummary li span {
+    color: #888;
+    margin-right: 6px;
+    font-weight: 600;
+}
