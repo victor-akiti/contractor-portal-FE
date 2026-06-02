@@ -1575,3 +1575,49 @@
     line-height: 1.45;
     max-width: 640px;
 }
+
+/* View / Approval mode toggle - sits next to the back link in the
+   breadcrumb row. */
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.viewModeBtn {
+    margin-left: auto;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #d56500;
+    color: white;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+}
+.viewModeBtn:hover { background: #b85700; }
+.viewModeBtnActive {
+    margin-left: auto;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: white;
+    color: #d56500;
+    border: 1.5px solid #d56500;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+}
+.viewModeBtnActive:hover { background: #fff5ed; }
+.viewOnlyBadge {
+    margin-left: auto;
+    padding: 6px 14px;
+    border-radius: 12px;
+    background: #f1f1f1;
+    color: #666;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
