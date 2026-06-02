@@ -324,9 +324,14 @@
     display: flex;
     flex-direction: column;
     max-height: 92vh;
+    min-height: 0;
 }
 
-.modalHeader { padding: 18px 24px; border-bottom: 1px solid #ececec; }
+.modalHeader {
+    padding: 18px 24px;
+    border-bottom: 1px solid #ececec;
+    flex: 0 0 auto;
+}
 .modalHeader h3 { margin: 0; font-size: 1.1rem; }
 .modalSub { margin: 6px 0 0 0; color: #777; font-size: 0.85rem; line-height: 1.45; }
 
@@ -336,6 +341,12 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    /* Critical: flex:1 lets the body take leftover space and min-height:0
+       lets it actually shrink inside the bounded card so overflow-y:auto
+       kicks in. Without these the body would grow past the card height
+       and the action bar disappears off-screen. */
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .modalActions {
@@ -345,6 +356,7 @@
     justify-content: flex-end;
     gap: 10px;
     background: #fafafa;
+    flex: 0 0 auto;
 }
 
 .remarkRow {
@@ -1322,4 +1334,146 @@
 }
 @media (max-width: 640px) {
     .formGrid2, .formGrid3 { grid-template-columns: 1fr; }
+}
+
+/* ── Exposed persons list redesign ────────────────────────────────────── */
+.exposedAddRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #eee;
+}
+
+.exposedList {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.exposedRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: border-color 0.15s;
+}
+.exposedRow:hover { border-color: #ddd; }
+.exposedRowMain { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.exposedRowHead {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.exposedRowName {
+    font-size: 1rem;
+    color: #1a1a1a;
+}
+.exposedRole {
+    font-size: 0.78rem;
+    color: #444;
+    background: #f1f1f1;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-weight: 500;
+}
+.exposedFlag {
+    font-size: 0.74rem;
+    color: #8a1f1f;
+    background: #fdecec;
+    border: 1px solid #f5b3b3;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.exposedRowFinding {
+    margin: 0;
+    color: #555;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    background: #fafafa;
+    border-left: 3px solid #ddd;
+    padding: 6px 10px;
+    border-radius: 0 6px 6px 0;
+}
+.exposedRowFiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+.exposedFileLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.84rem;
+    color: #1a4d8f;
+    background: #eef3fa;
+    border: 1px solid #c9d8ec;
+    border-radius: 8px;
+    padding: 4px 10px;
+    text-decoration: none;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.exposedFileLink:hover { background: #dde8f5; }
+
+.exposedRowActions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* Edit and Remove now have distinct affordances: Edit is a neutral
+   secondary action with the pencil glyph; Remove is a danger action
+   with the trash glyph + red treatment. Both are buttons with chrome,
+   not bare orange text links. */
+.btnEdit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    color: #444;
+    border: 1.5px solid #d4d4d4;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btnEdit:hover {
+    background: #fafafa;
+    border-color: #888;
+    color: #1a1a1a;
+}
+.btnRemove {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    color: #8a1f1f;
+    border: 1.5px solid #f5b3b3;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btnRemove:hover {
+    background: #fdecec;
+    border-color: #c33232;
 }
