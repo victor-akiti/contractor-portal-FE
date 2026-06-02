@@ -25,6 +25,8 @@ interface Props {
     openReturnEarlierModal: () => void
     openParkL2Modal: () => void
     openRevertL3Modal: () => void
+    openUnparkModal: () => void
+    openDeclineParkModal: () => void
 }
 
 // Bottom-of-page decision panel. Groups available state-machine
@@ -50,6 +52,8 @@ const DecisionBar = ({
     openReturnEarlierModal,
     openParkL2Modal,
     openRevertL3Modal,
+    openUnparkModal,
+    openDeclineParkModal,
 }: Props) => {
     const anyDecision =
         can.advance ||
@@ -286,8 +290,8 @@ const DecisionBar = ({
                                     <button
                                         className={styles.btnSecondary}
                                         disabled={!!actionRunning}
-                                        onClick={() => runAction("decline-park")}
-                                        title="HOD only: rejects the park request. Application stays at its current stage and continues normally."
+                                        onClick={openDeclineParkModal}
+                                        title="HOD only: rejects the park request. An optional reason can be recorded."
                                     >
                                         Decline Park
                                         {actionRunning === "decline-park" && <ButtonLoadingIcon />}
@@ -297,10 +301,10 @@ const DecisionBar = ({
                                     <button
                                         className={styles.btnSecondary}
                                         disabled={!!actionRunning}
-                                        onClick={() => runAction("release-park")}
-                                        title="HOD only: un-parks the application. It resumes from the stage it was parked at."
+                                        onClick={openUnparkModal}
+                                        title="HOD only: un-parks the application. A reason is required."
                                     >
-                                        Release from Park
+                                        Unpark
                                         {actionRunning === "release-park" && <ButtonLoadingIcon />}
                                     </button>
                                 )}

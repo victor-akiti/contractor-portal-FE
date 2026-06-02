@@ -544,3 +544,84 @@
     background: transparent;
     font-family: inherit;
 }
+
+/* ── Returned-application remark indicators ───────────────────────────── */
+
+/* Inline chip beside a field label or a section title. Two colour
+   variants: red for "active" (not yet edited) and green for
+   "addressed" (the contractor has edited it since the form loaded). */
+.fieldRemarkChipActive,
+.sectionRemarkChipActive {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #fdecec;
+    color: #8a1f1f;
+    border: 1px solid #f5b3b3;
+    vertical-align: middle;
+}
+.fieldRemarkChipAddressed,
+.sectionRemarkChipAddressed {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #e6f6e8;
+    color: #1f5d1f;
+    border: 1px solid #b7d8b7;
+    vertical-align: middle;
+}
+
+/* Boxed note that sits under the field label with the actual remark
+   text. Same red / green palette so it tracks the chip. */
+.fieldRemarkBoxActive,
+.fieldRemarkBoxAddressed {
+    margin-top: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.86rem;
+    line-height: 1.45;
+}
+.fieldRemarkBoxActive {
+    background: #fef6f6;
+    border: 1px solid #f5b3b3;
+    border-left: 3px solid #c33232;
+    color: #5a1010;
+}
+.fieldRemarkBoxAddressed {
+    background: #f1faf1;
+    border: 1px solid #b7d8b7;
+    border-left: 3px solid #1f5d1f;
+    color: #1f5d1f;
+    opacity: 0.95;
+}
+.fieldRemarkHead { display: flex; align-items: center; gap: 8px; }
+.fieldRemarkPill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.fieldRemarkList { margin: 6px 0 0 18px; padding: 0; }
+.fieldRemarkList li { margin: 0 0 4px 0; }
+
+/* Section-level "addressed" variant for the existing remarks panel. */
+.remarksPanelAddressed {
+    background: #f1faf1;
+    border: 1px solid #b7d8b7;
+    border-left: 4px solid #1f5d1f;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    color: #1f5d1f;
+}
+.remarksPanelAddressed ul { margin: 6px 0 0 18px; padding: 0; }

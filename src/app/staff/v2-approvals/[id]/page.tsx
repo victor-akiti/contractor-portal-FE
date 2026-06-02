@@ -8,7 +8,7 @@ import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
 import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux"
 import ApprovalReviewView from "./ApprovalReviewView"
@@ -241,6 +241,10 @@ const V2SubmissionDetailPage = () => {
     const [revertL3Open, setRevertL3Open] = useState(false)
     const [revertL3Reason, setRevertL3Reason] = useState("")
     const [revertL3Level, setRevertL3Level] = useState(5)
+    const [unparkOpen, setUnparkOpen] = useState(false)
+    const [unparkReason, setUnparkReason] = useState("")
+    const [declineParkOpen, setDeclineParkOpen] = useState(false)
+    const [declineParkReason, setDeclineParkReason] = useState("")
     const [certificates, setCertificates] = useState<Certificate[]>([])
     const [certActingId, setCertActingId] = useState<string | null>(null)
 
@@ -389,7 +393,12 @@ const V2SubmissionDetailPage = () => {
     // Approval Mode" flips this so the page becomes interactive.
     // Mirrors the V1 affordance where reviewers had to explicitly enter
     // approval mode before any side-effecty button appeared.
-    const [viewMode, setViewMode] = useState<"view" | "approve">("view")
+    // The initial mode is driven by the ?mode= URL param so the queue
+    // can deep-link straight into approval mode (the Process Stage X
+    // button) or view mode (clicking the contractor name).
+    const searchParams = useSearchParams()
+    const initialMode = searchParams.get("mode") === "approve" ? "approve" : "view"
+    const [viewMode, setViewMode] = useState<"view" | "approve">(initialMode)
     const inApprovalMode = viewMode === "approve"
     const [submission, setSubmission] = useState<Submission | null>(null)
     const [formVersion, setFormVersion] = useState<FormVersion | null>(null)
@@ -594,6 +603,30 @@ const V2SubmissionDetailPage = () => {
         if (ok) {
             setRevertL3Open(false)
             setRevertL3Reason("")
+        }
+    }
+
+    const submitUnpark = async () => {
+        if (!unparkReason.trim()) {
+            setActionError("A reason is required to unpark.")
+            return
+        }
+        const ok = await runAction("release-park", { reason: unparkReason.trim() })
+        if (ok) {
+            setUnparkOpen(false)
+            setUnparkReason("")
+        }
+    }
+
+    const submitDeclinePark = async () => {
+        // Reason is optional on park decline - the request itself
+        // already explains why park was being considered.
+        const ok = await runAction("decline-park", {
+            reason: declineParkReason.trim() || undefined,
+        })
+        if (ok) {
+            setDeclineParkOpen(false)
+            setDeclineParkReason("")
         }
     }
 
@@ -1079,10 +1112,10 @@ const V2SubmissionDetailPage = () => {
 
     if (loading) {
         return (
-            <div className={styles.page}>
-                <div className={styles.emptyState}>
-                    <ButtonLoadingIcon />
-                    <p>Loading submission…</p>
+            <div className={styles.pageLoaderWrap}>
+                <div className={styles.pageLoader}>
+                    <div className={styles.pageLoaderSpinner} />
+                    <p className={styles.pageLoaderText}>Loading submission...</p>
                 </div>
             </div>
         )
@@ -1178,7 +1211,8 @@ const V2SubmissionDetailPage = () => {
                         is recorded (request-park, parked, do-not-add at L2).
                         Saves reviewers having to dig through history just to
                         see why a submission was paused. */}
-                    {(submission as any).hold?.reason && (
+                    {(submission as any).hold?.reason &&
+                        ["park requested", "parked"].includes(submission.status) && (
                         <div className={styles.holdReadout}>
                             <strong>Park reason:</strong>{" "}
                             {(submission as any).hold.reason}
@@ -2230,6 +2264,8 @@ const V2SubmissionDetailPage = () => {
                 openReturnEarlierModal={() => { setReturnEarlierLevel(0); setReturnEarlierReason(""); setReturnEarlierOpen(true) }}
                 openParkL2Modal={() => { setParkL2Reason(""); setParkL2Open(true) }}
                 openRevertL3Modal={() => { setRevertL3Reason(""); setRevertL3Level(5); setRevertL3Open(true) }}
+                openUnparkModal={() => { setUnparkReason(""); setUnparkOpen(true) }}
+                openDeclineParkModal={() => { setDeclineParkReason(""); setDeclineParkOpen(true) }}
             />}
 
             {endUserPickerOpen && (
@@ -2287,6 +2323,96 @@ const V2SubmissionDetailPage = () => {
                     onSubmit={submitParkL2}
                     onClose={() => setParkL2Open(false)}
                 />
+            )}
+
+            {unparkOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Unpark Contractor</h3>
+                            <p className={styles.modalSub}>
+                                Resumes the application at the stage it was
+                                parked at. A reason is required and shows in
+                                the audit trail.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <label className={styles.formLabel}>
+                                Reason
+                                <span className={styles.formReq}>required</span>
+                            </label>
+                            <textarea
+                                className={styles.formTextarea}
+                                rows={4}
+                                placeholder="Why is this contractor being unparked?"
+                                value={unparkReason}
+                                onChange={(e) => setUnparkReason(e.target.value)}
+                            />
+                            {actionError && <ErrorText text={actionError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setUnparkOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitUnpark}
+                                disabled={
+                                    actionRunning === "release-park" ||
+                                    !unparkReason.trim()
+                                }
+                            >
+                                Confirm unpark
+                                {actionRunning === "release-park" && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {declineParkOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Decline Park Request</h3>
+                            <p className={styles.modalSub}>
+                                The submission goes back to pending at its
+                                current stage. A reason is optional; if
+                                provided it will appear in the audit trail.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <label className={styles.formLabel}>Reason (optional)</label>
+                            <textarea
+                                className={styles.formTextarea}
+                                rows={4}
+                                placeholder="Why is the park request being declined?"
+                                value={declineParkReason}
+                                onChange={(e) => setDeclineParkReason(e.target.value)}
+                            />
+                            {actionError && <ErrorText text={actionError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setDeclineParkOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitDeclinePark}
+                                disabled={actionRunning === "decline-park"}
+                            >
+                                Decline
+                                {actionRunning === "decline-park" && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             )}
 
             {revertL3Open && (
