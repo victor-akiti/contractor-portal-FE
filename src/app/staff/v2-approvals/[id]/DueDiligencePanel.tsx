@@ -361,75 +361,122 @@ const DueDiligencePanel = ({
                     </span>
                 </div>
                 {canEdit && (
-                    <div className={styles.ddRow}>
+                    <div className={styles.exposedAddRow}>
                         <button
+                            type="button"
                             className={styles.btnSecondary}
                             onClick={() => setEditingPerson(blankPerson())}
                             disabled={savingKey === "exposedPersonsReviewed"}
                         >
-                            Add entry
+                            + Add entry
                         </button>
-                        <label className={styles.ddRow} style={{ marginLeft: "auto" }}>
-                            <input
-                                type="checkbox"
-                                checked={reviewed}
-                                disabled={savingKey === "exposedPersonsReviewed"}
-                                onChange={(e) => markExposedReviewed(e.target.checked)}
-                            />
-                            <span>Mark section reviewed</span>
-                        </label>
+                        <span className={styles.dim}>
+                            {arr.length} entr{arr.length === 1 ? "y" : "ies"} recorded
+                        </span>
                     </div>
                 )}
                 {arr.length === 0 ? (
-                    <p className={styles.dim}>No entries recorded.</p>
+                    <p className={styles.dim}>
+                        No entries recorded. Tick Mark Complete below if there
+                        are genuinely none to declare.
+                    </p>
                 ) : (
                     <ul className={styles.exposedList}>
                         {arr.map((p) => (
                             <li key={p._id} className={styles.exposedRow}>
-                                <div>
-                                    <strong>
-                                        {p.entityType === "corporate"
-                                            ? p.companyName
-                                            : [p.title, p.firstName, p.lastName, p.otherName]
-                                                  .filter(Boolean)
-                                                  .join(" ")}
-                                    </strong>
-                                    <span className={styles.exposedRole}>{p.role || "-"}</span>
-                                    {p.flagged && (
-                                        <span className={styles.exposedFlag}>Flagged</span>
+                                <div className={styles.exposedRowMain}>
+                                    <div className={styles.exposedRowHead}>
+                                        <strong className={styles.exposedRowName}>
+                                            {p.entityType === "corporate"
+                                                ? p.companyName
+                                                : [p.title, p.firstName, p.lastName, p.otherName]
+                                                      .filter(Boolean)
+                                                      .join(" ")}
+                                        </strong>
+                                        {p.role && (
+                                            <span className={styles.exposedRole}>{p.role}</span>
+                                        )}
+                                        {p.flagged && (
+                                            <span className={styles.exposedFlag}>Concern</span>
+                                        )}
+                                    </div>
+                                    {p.flagMessage && (
+                                        <p className={styles.exposedRowFinding}>{p.flagMessage}</p>
+                                    )}
+                                    {(p.files || []).length > 0 && (
+                                        <div className={styles.exposedRowFiles}>
+                                            {(p.files || []).map((f, i) => (
+                                                <a
+                                                    key={i}
+                                                    className={styles.exposedFileLink}
+                                                    href={f.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    title={`Open ${f.name}`}
+                                                >
+                                                    <span aria-hidden>📎</span> {f.name}
+                                                </a>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
-                                {p.flagMessage && <p className={styles.dim}>{p.flagMessage}</p>}
-                                {(p.files || []).map((f, i) => (
-                                    <a
-                                        key={i}
-                                        className={styles.btnLink}
-                                        href={f.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {f.name}
-                                    </a>
-                                ))}
                                 {canEdit && (
-                                    <div className={styles.exposedActions}>
+                                    <div className={styles.exposedRowActions}>
                                         <button
-                                            className={styles.btnLink}
+                                            type="button"
+                                            className={styles.btnEdit}
                                             onClick={() => setEditingPerson({ ...p })}
+                                            title="Edit this entry"
+                                            aria-label={`Edit entry for ${
+                                                p.entityType === "corporate"
+                                                    ? p.companyName
+                                                    : [p.firstName, p.lastName]
+                                                          .filter(Boolean)
+                                                          .join(" ")
+                                            }`}
                                         >
-                                            Edit
+                                            <span aria-hidden>✎</span> Edit
                                         </button>
                                         <button
-                                            className={styles.btnLink}
+                                            type="button"
+                                            className={styles.btnRemove}
                                             onClick={() => removePerson(String(p._id))}
+                                            title="Remove this entry"
+                                            aria-label={`Remove entry for ${
+                                                p.entityType === "corporate"
+                                                    ? p.companyName
+                                                    : [p.firstName, p.lastName]
+                                                          .filter(Boolean)
+                                                          .join(" ")
+                                            }`}
                                         >
-                                            Remove
+                                            <span aria-hidden>🗑</span> Remove
                                         </button>
                                     </div>
                                 )}
                             </li>
                         ))}
                     </ul>
+                )}
+                {canEdit && (
+                    <button
+                        type="button"
+                        className={`${styles.ddCompleteBtn} ${
+                            reviewed ? styles.ddCompleteBtnOn : ""
+                        }`}
+                        onClick={() => markExposedReviewed(!reviewed)}
+                        disabled={savingKey === "exposedPersonsReviewed"}
+                        title={
+                            reviewed
+                                ? "Un-mark - reopens this section"
+                                : "Mark this section reviewed"
+                        }
+                    >
+                        {reviewed
+                            ? "✓ Marked Complete - click to undo"
+                            : "Mark Complete"}
+                        {savingKey === "exposedPersonsReviewed" && <ButtonLoadingIcon />}
+                    </button>
                 )}
             </div>
         )
