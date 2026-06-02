@@ -7,6 +7,7 @@ import SearchBar, { SearchByOption } from "@/components/dataTable/SearchBar"
 import StageLegend from "./StageLegend"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
 import { BACKEND_BASE_URL } from "@/lib/config"
 import { auth } from "@/lib/firebase"
@@ -164,6 +165,7 @@ const V2ApprovalsPage = () => {
     const [initialLoadDone, setInitialLoadDone] = useState(false)
     const [error, setError] = useState("")
     const [togglingPriorityId, setTogglingPriorityId] = useState<string | null>(null)
+    const [inlineActingId, setInlineActingId] = useState<string | null>(null)
     const [exporting, setExporting] = useState<"current" | "all" | null>(null)
     const { confirm: confirmDialog, dialog: confirmDialogEl } = useConfirmDialog()
 
@@ -485,12 +487,54 @@ const V2ApprovalsPage = () => {
                             {togglingPriorityId === s._id && <ButtonLoadingIcon />}
                         </button>
                     )}
+                    {/* Park requests get inline Approve / Decline /
+                        Withdraw decisions so HOD/Supervisor/Admin can
+                        clear the queue without opening every row. The
+                        requester (any End User who raised the park)
+                        gets a Withdraw button if their own request is
+                        still pending; everyone else sees the role-
+                        appropriate decision. */}
+                    {activeTab === "park-requests" && (
+                        <>
+                            {["Admin", "HOD", "Supervisor"].includes(user?.role) && (
+                                <>
+                                    <button
+                                        className={styles.btnInlineApprove}
+                                        disabled={inlineActingId === s._id}
+                                        onClick={() => inlineRunAction(s, "approve-park")}
+                                    >
+                                        Approve
+                                        {inlineActingId === s._id && <ButtonLoadingIcon />}
+                                    </button>
+                                    <button
+                                        className={styles.btnInlineDecline}
+                                        disabled={inlineActingId === s._id}
+                                        onClick={() =>
+                                            inlineRunAction(s, "decline-park", { promptReason: false })
+                                        }
+                                    >
+                                        Decline
+                                    </button>
+                                </>
+                            )}
+                            {s.hold?.requestedBy?.email === user?.email && (
+                                <button
+                                    className={styles.btnInlineWithdraw}
+                                    disabled={inlineActingId === s._id}
+                                    onClick={() => inlineRunAction(s, "decline-park")}
+                                    title="Withdraw your own park request - the application goes back to the stage it was on."
+                                >
+                                    Withdraw
+                                </button>
+                            )}
+                        </>
+                    )}
                     {/* Show PROCESS STAGE X only when the viewer's role
                         can actually act at that stage; everyone else
                         gets the VIEW button which opens read-only.
                         Process button deep-links into approval mode so
                         the reviewer doesn't have to flip the toggle. */}
-                    {s.status === "pending" && canActOnRow(s) ? (
+                    {activeTab !== "park-requests" && s.status === "pending" && canActOnRow(s) ? (
                         <button
                             className={styles.btnProcessLegacy}
                             onClick={() =>
@@ -501,14 +545,14 @@ const V2ApprovalsPage = () => {
                         >
                             PROCESS STAGE {stageForRow(s)}
                         </button>
-                    ) : (
+                    ) : activeTab !== "park-requests" ? (
                         <button
                             className={styles.btnProcessLegacy}
                             onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
                         >
                             VIEW
                         </button>
-                    )}
+                    ) : null}
                 </div>
             ),
         })
@@ -674,6 +718,49 @@ const V2ApprovalsPage = () => {
     const needsAttention = (s: SubmissionV2Row): boolean => {
         if (s.level !== 2) return false
         return canActOnRow(s)
+    }
+
+    // Inline action runner for queue rows (currently the Park Request
+    // tab: Approve / Decline / Withdraw). Confirms via the shared
+    // dialog, posts to the transition endpoint, then re-fetches the
+    // list + counts so the row drops out cleanly.
+    const inlineRunAction = async (
+        row: SubmissionV2Row,
+        action: "approve-park" | "decline-park",
+        opts: { promptReason?: boolean } = {},
+    ) => {
+        const isApprove = action === "approve-park"
+        const verb = isApprove ? "Approve" : "Decline"
+        const ok = await confirmDialog({
+            headerText: `${verb} park request?`,
+            bodyText: `${
+                isApprove
+                    ? "Confirms the request - status flips to Parked and movement stops."
+                    : "Rejects the request - the application goes back to its current stage."
+            }`,
+            confirmText: verb,
+            destructive: false,
+        })
+        if (!ok) return
+        setInlineActingId(row._id)
+        try {
+            const r = await postProtected(
+                `api/v2/submissions/${row._id}/${action}`,
+                {},
+                user.role,
+            )
+            if (r?.status === "OK") {
+                listCache.clear()
+                countsCache = null
+                await Promise.all([fetchList(true), fetchCounts(true)])
+            } else {
+                setError(r?.error?.message || "Action failed")
+            }
+        } catch (e: any) {
+            setError(e?.message || "Unexpected error")
+        } finally {
+            setInlineActingId(null)
+        }
     }
 
     const togglePriority = async (row: SubmissionV2Row) => {

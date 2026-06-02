@@ -1727,3 +1727,37 @@
     margin-right: 6px;
     font-weight: 600;
 }
+
+/* Approval screen spacing pass - tighten the stack of header
+   notices so the workflow doesn't choke on its own warnings. The
+   trick is consistent vertical rhythm (12px) and a single flex
+   gap on the outer container, not per-element margins. */
+.stageBriefing {
+    padding: 14px 18px;
+    gap: 14px;
+    margin: 12px 0;
+}
+.stageBriefing h4 { margin: 0 0 4px 0; }
+.stageBriefing p { margin: 0; line-height: 1.5; }
+
+.hodReturnInbox { padding: 12px 18px; margin: 12px 0; }
+.hodReturnInbox h4 { margin: 0 0 6px 0; }
+.hodReturnEntry { padding: 5px 0; }
+
+.modifyPanel { padding: 12px 18px; margin: 0 0 12px 0; gap: 18px; }
+.modifyPanel h4 { margin: 0 0 3px 0; }
+.modifyPanel p { line-height: 1.5; }
+
+.permissionGate { padding: 10px 16px; margin: 0 0 12px 0; line-height: 1.45; }
+.holdReadout { padding: 8px 14px; margin-top: 10px; line-height: 1.45; }
+.inviteReadout { margin-top: 8px; gap: 14px; }
+.remarkGate {
+    margin: 0 0 8px 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #fff4e0;
+    border: 1px solid #f5d99c;
+    color: #6b4500;
+    font-size: 0.86rem;
+    line-height: 1.45;
+}

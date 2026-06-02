@@ -106,6 +106,7 @@ interface ApprovalHistoryEntry {
     actorEmail?: string
     actorRole?: string
     approver?: { name?: string; role?: string; email?: string }
+    extraData?: Record<string, any>
 }
 
 interface Submission {
@@ -1225,7 +1226,27 @@ const V2SubmissionDetailPage = () => {
     }
 
     const groupName = submission.groupId?.name || "-"
-    const historyEntries = [...(submission.approvalHistory || [])].reverse()
+    // History timeline. Newest first, with a synthesised "Invite sent"
+    // entry pinned at the bottom (oldest event) so the chain starts
+    // where the contractor's journey actually began. Skipped when no
+    // invite is linked (V1 backfilled submissions).
+    const historyEntries = (() => {
+        const raw = [...(submission.approvalHistory || [])].reverse()
+        if (!invite) return raw
+        const inviteEntry: ApprovalHistoryEntry = {
+            action: "Invite sent",
+            type: "INVITE_SENT",
+            date: invite.createdAt,
+            actorName: invite.invitedBy?.name,
+            actorEmail: invite.invitedBy?.email,
+            actorRole: "Inviter",
+            extraData: {
+                companyName: invite.companyName,
+                inviteeEmail: invite.email,
+            },
+        }
+        return [...raw, inviteEntry]
+    })()
 
     return (
         <div className={styles.page}>
