@@ -1062,9 +1062,82 @@ const V2SubmissionDetailPage = () => {
                             <span className={styles.metaPill}>Form v{formVersion.versionNumber}</span>
                         )}
                     </div>
+                    {/* Park reason readout - visible whenever a hold reason
+                        is recorded (request-park, parked, do-not-add at L2).
+                        Saves reviewers having to dig through history just to
+                        see why a submission was paused. */}
+                    {(submission as any).hold?.reason && (
+                        <div className={styles.holdReadout}>
+                            <strong>Park reason:</strong>{" "}
+                            {(submission as any).hold.reason}
+                            {(submission as any).hold.requestedBy?.name && (
+                                <span className={styles.dim}>
+                                    {" - "}
+                                    {(submission as any).hold.requestedBy.name}
+                                    {(submission as any).hold.requestedBy.date &&
+                                        ` on ${new Date(
+                                            (submission as any).hold.requestedBy.date,
+                                        ).toLocaleDateString("en-NG")}`}
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    {/* Invite + registration details - VRM-focused (Admin /
+                        HOD / VRM see this; the End User restricted view
+                        doesn't need it). Surfaces the submitted time and
+                        any submitTime stamp so the VRM knows when the
+                        contractor finished registration. */}
+                    {["Admin", "HOD", "VRM"].includes(role) && (
+                        <div className={styles.inviteReadout}>
+                            {submission.submitTime && (
+                                <span>
+                                    <strong>Submitted:</strong>{" "}
+                                    {new Date(submission.submitTime).toLocaleString("en-NG")}
+                                </span>
+                            )}
+                            {submission.createdAt && (
+                                <span>
+                                    <strong>Started:</strong>{" "}
+                                    {new Date(submission.createdAt).toLocaleString("en-NG")}
+                                </span>
+                            )}
+                            {submission.returnTime && (
+                                <span>
+                                    <strong>Last returned:</strong>{" "}
+                                    {new Date(submission.returnTime).toLocaleString("en-NG")}
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
 
             </div>
+
+            {/* Stage role-permission notice. Same idea as the V1 "you do
+                not have permission to act at this stage" line - shows
+                only when the submission is pending and the current
+                user's role is NOT in the actor set for the current
+                stage. Stops reviewers wondering why no buttons appear. */}
+            {submission.status === "pending" && (() => {
+                const STAGE_ACTORS_DETAIL: Record<number, string[]> = {
+                    0: ["Admin", "HOD", "VRM"],
+                    1: ["Admin", "HOD", "Supervisor"],
+                    2: ["Admin", "HOD", "End User"],
+                    3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
+                    4: ["Admin", "HOD"],
+                    5: ["Admin", "Executive Approver"],
+                }
+                const allowed = STAGE_ACTORS_DETAIL[submission.level] || []
+                if (allowed.includes(role)) return null
+                const owner = allowed.filter((r) => r !== "Admin" && r !== "HOD").join(" / ") || "C&P team"
+                return (
+                    <div className={styles.permissionGate}>
+                        This submission is pending action by the <strong>{owner}</strong>{" "}
+                        at Stage {stageFromLevel(submission.level)}. You can view
+                        the details but cannot take action from your role.
+                    </div>
+                )
+            })()}
 
             <StageRoleBriefingCard
                 submission={submission}

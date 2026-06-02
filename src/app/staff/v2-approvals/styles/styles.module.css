@@ -692,3 +692,58 @@
 .rowPriority td:first-child {
   box-shadow: inset 3px 0 0 #f59e0b;
 }
+
+/* ── V1 parity row treatments ─────────────────────────────────────────── */
+
+/* Alternating row shade like the legacy queue. The shade is subtle so
+   priority and attention highlights still read. */
+.rowShade td { background: #fafafa; }
+
+/* Row that needs the current viewer's attention - lights up with a
+   left-edge orange bar and a soft tint. Used when the row is pending,
+   the viewer's role can act at that stage AND (at Stage D) they are
+   in the selectedEndUsers list. */
+.rowAttention td:first-child { box-shadow: inset 3px 0 0 #d56500; }
+.rowAttention td { background: #fff7ed; }
+.rowAttention.rowShade td { background: #fff2e0; }
+.attentionBadge {
+    display: inline-block;
+    margin-left: 8px;
+    background: #fff5ed;
+    color: #6b3d04;
+    border: 1px solid #ffd5b3;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* L3 cert health pill */
+.healthBadge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.healthHealthy { background: #e7f5e7; color: #2d5d2d; border: 1px solid #b7d8b7; }
+.healthExpiring { background: #fff4e0; color: #6b4500; border: 1px solid #f5d99c; }
+.healthExpired { background: #fde6e6; color: #a32525; border: 1px solid #f5b3b3; }
+
+/* Park Reason cell - long text, max-width and wrap. */
+.parkReasonCell {
+    max-width: 280px;
+    color: #444;
+    font-size: 0.86rem;
+    line-height: 1.4;
+    white-space: normal;
+}
+
+/* Invite status pill variants */
+.inviteActive { background: #e7f5e7; color: #2d5d2d; border-color: #b7d8b7; }
+.inviteUsed { background: #eef3fa; color: #1a4d8f; border-color: #c9d8ec; }
+.inviteArchived { background: #f1f1f1; color: #666; border-color: #ddd; }
