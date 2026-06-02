@@ -32,7 +32,7 @@
 //   - Field renders as disabled with a small "disabled" hint; value is
 //     preserved but cannot be edited.
 
-import React, { useCallback } from "react"
+import React, { useCallback, useState } from "react"
 import FileFieldUploader, { FileFieldValue } from "./FileFieldUploader"
 import styles from "./FormRenderer.module.css"
 
@@ -141,6 +141,14 @@ interface Props {
     mode?: FormMode
     errors?: Record<string, string>
     activeRemarksBySection?: Record<
+        string,
+        Array<{ _id: string; text: string; authorName?: string }>
+    >
+    // Field-level remarks, keyed by `${sectionKey}::${fieldKey}`. Shown
+    // as a per-field indicator beside the label when the contractor
+    // opens a returned application. Switches to an "Addressed" state
+    // once the contractor edits that specific field.
+    activeRemarksByField?: Record<
         string,
         Array<{ _id: string; text: string; authorName?: string }>
     >
@@ -435,6 +443,7 @@ const FormRenderer = ({
     mode = "fill",
     errors,
     activeRemarksBySection,
+    activeRemarksByField,
     uploadAuthHash,
     previousFilesByField,
     ebaEditableNow,
@@ -446,6 +455,27 @@ const FormRenderer = ({
     activePageKey,
 }: Props) => {
     const readOnly = mode !== "fill"
+
+    // Local set of field paths the contractor has touched since the
+    // form loaded. Powers the "Addressed" state on the returned-remark
+    // indicator (per-field) and the section-wide indicator. We don't
+    // persist this to the BE - the actual remark status flip from
+    // "active" to "addressed" happens on resubmit. This is purely a UI
+    // cue so the contractor sees their progress as they work through
+    // the reviewer's notes.
+    const [editedPaths, setEditedPaths] = useState<Set<string>>(new Set())
+    const [editedSections, setEditedSections] = useState<Set<string>>(new Set())
+    const markEdited = useCallback(
+        (sectionKey: string, fieldPath: string) => {
+            setEditedPaths((prev) =>
+                prev.has(fieldPath) ? prev : new Set(prev).add(fieldPath),
+            )
+            setEditedSections((prev) =>
+                prev.has(sectionKey) ? prev : new Set(prev).add(sectionKey),
+            )
+        },
+        [],
+    )
 
     const setAnswer = useCallback(
         (key: string, value: any) => { if (onChange) onChange({ [key]: value }) },
@@ -464,9 +494,10 @@ const FormRenderer = ({
     const renderField = (
         field: Field,
         value: any,
-        onValueChange: (v: any) => void,
+        rawOnValueChange: (v: any) => void,
         errKey: string,
         scope: Record<string, any>,
+        sectionKey?: string,
     ) => {
         if (field.enabled === false && mode === "fill") {
             // Disabled in fill mode: still show as disabled so the user knows
@@ -478,12 +509,79 @@ const FormRenderer = ({
         const disabled = readOnly || field.enabled === false
         const fieldErr = errors?.[errKey]
 
+        // Wrap the upstream change handler so we can mark this path
+        // edited for the remark-indicator (and trip the section-wide
+        // "addressed" state). Aliased to onValueChange so the rest of
+        // the renderField body keeps reading naturally; every input's
+        // onChange flows through tracking automatically.
+        const onValueChange = (v: any) => {
+            if (sectionKey) markEdited(sectionKey, errKey)
+            rawOnValueChange(v)
+        }
+
+        // Field-level remark indicator. Lights up red until the
+        // contractor edits this field, then flips to a green
+        // "Addressed" chip so they know the reviewer's note is being
+        // dealt with. The actual BE state change happens on resubmit.
+        const fieldRemarks =
+            sectionKey && activeRemarksByField
+                ? activeRemarksByField[`${sectionKey}::${field.key}`]
+                : undefined
+        const remarkAddressed = editedPaths.has(errKey)
+        const remarkIndicator =
+            fieldRemarks && fieldRemarks.length > 0 ? (
+                <div
+                    className={
+                        remarkAddressed
+                            ? styles.fieldRemarkBoxAddressed
+                            : styles.fieldRemarkBoxActive
+                    }
+                >
+                    <div className={styles.fieldRemarkHead}>
+                        <span className={styles.fieldRemarkPill}>
+                            {remarkAddressed
+                                ? "✓ Addressed - will be saved on resubmit"
+                                : "Reviewer note - please address"}
+                        </span>
+                    </div>
+                    <ul className={styles.fieldRemarkList}>
+                        {fieldRemarks.map((r) => (
+                            <li key={r._id}>
+                                {r.text}
+                                {r.authorName && (
+                                    <em className={styles.remarkAuthor}> - {r.authorName}</em>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : null
+
         const labelEl = (
-            <label htmlFor={`field-${errKey}`} className={styles.fieldLabel}>
-                {label}
-                {field.required && <span className={styles.required}>*</span>}
-                {field.enabled === false && <span className={styles.disabledTag}>disabled</span>}
-            </label>
+            <>
+                <label htmlFor={`field-${errKey}`} className={styles.fieldLabel}>
+                    {label}
+                    {field.required && <span className={styles.required}>*</span>}
+                    {fieldRemarks && fieldRemarks.length > 0 && (
+                        <span
+                            className={
+                                remarkAddressed
+                                    ? styles.fieldRemarkChipAddressed
+                                    : styles.fieldRemarkChipActive
+                            }
+                            title={
+                                remarkAddressed
+                                    ? "Edit detected. The reviewer's note will be marked addressed when you resubmit."
+                                    : "The reviewer left a note on this field. Edit the value to clear the indicator."
+                            }
+                        >
+                            {remarkAddressed ? "✓ Addressed" : "Reviewer note"}
+                        </span>
+                    )}
+                    {field.enabled === false && <span className={styles.disabledTag}>disabled</span>}
+                </label>
+                {remarkIndicator}
+            </>
         )
         const helpEl = field.helpText ? <p className={styles.fieldHelp}>{field.helpText}</p> : null
         const errEl = fieldErr ? <p className={styles.fieldError}>{fieldErr}</p> : null
@@ -846,7 +944,7 @@ const FormRenderer = ({
                             errKeyPrefix={`${errKeyPrefix}${field.key}`}
                             onChange={(next) => onInstanceChange({ [key]: next })}
                             renderOne={(val, i, onOne, oneErrKey) =>
-                                renderField(field, val, onOne, oneErrKey, instanceData)
+                                renderField(field, val, onOne, oneErrKey, instanceData, section.key)
                             }
                         />
                     )
@@ -860,6 +958,7 @@ const FormRenderer = ({
                     (v) => onInstanceChange({ [key]: v }),
                     fieldPath,
                     instanceData,
+                    section.key,
                 )
                 return (
                     <EbaWrap
@@ -900,7 +999,11 @@ const FormRenderer = ({
 
             return (
                 <div key={section.key} className={styles.section}>
-                    <SectionHeader section={section} remarks={remarks} />
+                    <SectionHeader
+                    section={section}
+                    remarks={remarks}
+                    addressed={editedSections.has(section.key)}
+                />
 
                     {effective.map((inst, idx) => (
                         <div key={idx} className={styles.sectionInstance}>
@@ -951,7 +1054,11 @@ const FormRenderer = ({
 
         return (
             <div key={section.key} className={styles.section}>
-                <SectionHeader section={section} remarks={remarks} />
+                <SectionHeader
+                    section={section}
+                    remarks={remarks}
+                    addressed={editedSections.has(section.key)}
+                />
                 {renderSectionFields(section, answers, (patch) => onChange?.(patch), "")}
             </div>
         )
@@ -974,27 +1081,52 @@ const FormRenderer = ({
 
 // ── Small subcomponents ─────────────────────────────────────────────────────
 const SectionHeader = ({
-    section, remarks,
+    section, remarks, addressed,
 }: {
     section: Section
     remarks?: Array<{ _id: string; text: string; authorName?: string }>
+    addressed?: boolean
 }) => (
     <>
         <div className={styles.sectionHeader}>
-            <h4 className={styles.sectionTitle}>{section.title}</h4>
+            <h4 className={styles.sectionTitle}>
+                {section.title}
+                {remarks && remarks.length > 0 && (
+                    <span
+                        className={
+                            addressed
+                                ? styles.sectionRemarkChipAddressed
+                                : styles.sectionRemarkChipActive
+                        }
+                        title={
+                            addressed
+                                ? "You've edited at least one field in this section. The reviewer's note will be marked addressed on resubmit."
+                                : "The reviewer left a note on this section. Edit any field to clear the indicator."
+                        }
+                    >
+                        {addressed ? "✓ Addressed" : "Reviewer note"}
+                    </span>
+                )}
+            </h4>
             {section.description && <p className={styles.sectionDesc}>{section.description}</p>}
         </div>
         {remarks && remarks.length > 0 && (
-            <div className={styles.remarksPanel}>
+            <div
+                className={
+                    addressed ? styles.remarksPanelAddressed : styles.remarksPanel
+                }
+            >
                 <div className={styles.remarksHeader}>
-                    Reviewer notes — please address before resubmitting
+                    {addressed
+                        ? "Reviewer notes - addressed (will be saved on resubmit)"
+                        : "Reviewer notes - please address before resubmitting"}
                 </div>
                 <ul>
                     {remarks.map((r) => (
                         <li key={r._id}>
                             <span>{r.text}</span>
                             {r.authorName && (
-                                <em className={styles.remarkAuthor}>— {r.authorName}</em>
+                                <em className={styles.remarkAuthor}> - {r.authorName}</em>
                             )}
                         </li>
                     ))}

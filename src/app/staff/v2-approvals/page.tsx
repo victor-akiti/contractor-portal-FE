@@ -101,7 +101,7 @@ const TAB_DEFS: { name: string; label: string; filter: Record<string, string>; s
         stageFiltersEnabled: true,
     },
     { name: "l3", label: "L3", filter: { approved: "true" }, l3FiltersEnabled: true },
-    { name: "completed-l2", label: "Completed L2", filter: { status: "parked" } },
+    { name: "parked", label: "Parked Contractors", filter: { status: "parked" } },
     { name: "returned", label: "Returned To Contractor", filter: { status: "returned" } },
     { name: "park-requests", label: "Park Requests", filter: { status: "park requested" } },
     { name: "all", label: "All", filter: {} },
@@ -190,7 +190,7 @@ const V2ApprovalsPage = () => {
                 case "in-progress": return counts.draft
                 case "pending-l2": return counts.pending
                 case "l3": return counts.approved
-                case "completed-l2": return counts.parked
+                case "parked": return counts.parked
                 case "returned": return counts.returned
                 case "park-requests": return counts.park_requested
                 case "all": return counts.total
@@ -349,7 +349,8 @@ const V2ApprovalsPage = () => {
                         >
                             {(s.companyName || "(no name)").toUpperCase()}
                         </Link>
-                        <div className={styles.subRowLine}>{s.contractorEmail}</div>
+{/* Email moved off the row per V1 parity. It still shows on the
+                                detail page header. */}
                         {s.isPriority && (
                             <span className={styles.priorityBadge}>★ Priority</span>
                         )}
@@ -375,21 +376,46 @@ const V2ApprovalsPage = () => {
             searchValue: (s) => groupLabel(s.groupId),
             render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
         })
-        // V1 parity: End Users count on the Pending L2 tab so the
-        // Supervisor sees who has been assigned without opening rows.
+        // V1 parity: End Users by NAME on the Pending L2 tab so the
+        // Supervisor sees who's assigned without opening rows.
         if (activeTab === "pending-l2") {
             cols.push({
                 key: "endUsers",
                 label: "End Users",
-                sortValue: (s) => (s.selectedEndUsers || []).length,
-                render: (s) => (
-                    <span className={styles.dim}>
-                        {(s.selectedEndUsers || []).length || "-"}
-                    </span>
-                ),
+                sortValue: (s) =>
+                    (s.selectedEndUsers || [])
+                        .map((u: any) =>
+                            typeof u === "string" ? "" : u?.name || u?.email || "",
+                        )
+                        .join(", "),
+                searchValue: (s) =>
+                    (s.selectedEndUsers || [])
+                        .map((u: any) =>
+                            typeof u === "string" ? "" : u?.name || u?.email || "",
+                        )
+                        .join(" "),
+                render: (s) => {
+                    const arr = (s.selectedEndUsers || []) as any[]
+                    if (arr.length === 0) return <span className={styles.dim}>-</span>
+                    return (
+                        <div className={styles.endUserNames}>
+                            {arr.map((u, i) => {
+                                const name =
+                                    typeof u === "string"
+                                        ? u.slice(-6)
+                                        : u?.name || u?.email || "—"
+                                return (
+                                    <span key={i} className={styles.endUserNamePill}>
+                                        {name}
+                                    </span>
+                                )
+                            })}
+                        </div>
+                    )
+                },
             })
         }
-        if (activeTab === "park-requests" || activeTab === "completed-l2") {
+        if (activeTab === "park-requests" || activeTab === "parked") {
             cols.push({
                 key: "parkReason",
                 label: "Park Reason",
@@ -438,13 +464,8 @@ const V2ApprovalsPage = () => {
                 },
             })
         }
-        cols.push({
-            key: "cycle",
-            label: "Cycle",
-            sortValue: (s) => s.cycleNumber || 0,
-            align: "center",
-            render: (s) => <span className={styles.dim}>#{s.cycleNumber || 1}</span>,
-        })
+        // Cycle moved to the contractor profile on the detail page;
+        // it doesn't deserve a column in the queue (per ask #7).
         cols.push({
             key: "action",
             label: "Action",
@@ -461,14 +482,30 @@ const V2ApprovalsPage = () => {
                             {togglingPriorityId === s._id && <ButtonLoadingIcon />}
                         </button>
                     )}
-                    <button
-                        className={styles.btnProcessLegacy}
-                        onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
-                    >
-                        {s.status === "pending"
-                            ? `PROCESS STAGE ${stageForRow(s)}`
-                            : "VIEW"}
-                    </button>
+                    {/* Show PROCESS STAGE X only when the viewer's role
+                        can actually act at that stage; everyone else
+                        gets the VIEW button which opens read-only.
+                        Process button deep-links into approval mode so
+                        the reviewer doesn't have to flip the toggle. */}
+                    {s.status === "pending" && canActOnRow(s) ? (
+                        <button
+                            className={styles.btnProcessLegacy}
+                            onClick={() =>
+                                router.push(
+                                    `/staff/v2-approvals/${s._id}?mode=approve`,
+                                )
+                            }
+                        >
+                            PROCESS STAGE {stageForRow(s)}
+                        </button>
+                    ) : (
+                        <button
+                            className={styles.btnProcessLegacy}
+                            onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
+                        >
+                            VIEW
+                        </button>
+                    )}
                 </div>
             ),
         })
@@ -612,11 +649,12 @@ const V2ApprovalsPage = () => {
     // current viewer can actually take an action (their role appears in
     // STAGE_ACTORS for that stage AND it's pending). This is what the
     // V1 queue used to draw attention to entries you owned.
-    const needsAttention = (s: SubmissionV2Row): boolean => {
+    const canActOnRow = (s: SubmissionV2Row): boolean => {
         if (s.status !== "pending") return false
         const allowed = STAGE_ACTORS[s.level] || []
         if (!allowed.includes(user?.role)) return false
-        // Stage D: only assigned end users actually "own" it.
+        // Stage D is owned by the End Users the Supervisor assigned;
+        // non-assigned End Users can view but not act.
         if (s.level === 2 && user?.role === "End User") {
             const ids = (s.selectedEndUsers || []).map((u: any) =>
                 typeof u === "string" ? u : String(u?._id || u),
@@ -624,6 +662,15 @@ const V2ApprovalsPage = () => {
             if (!user?._id || !ids.includes(String(user._id))) return false
         }
         return true
+    }
+
+    // "Action Needed" highlight is only shown at Stage D (per the
+    // ask), and only on rows where the current viewer can act. Other
+    // stages already light up via the Process Stage X button and the
+    // VRM's normal queue routine.
+    const needsAttention = (s: SubmissionV2Row): boolean => {
+        if (s.level !== 2) return false
+        return canActOnRow(s)
     }
 
     const togglePriority = async (row: SubmissionV2Row) => {

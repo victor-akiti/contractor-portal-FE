@@ -1621,3 +1621,34 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
+
+/* Full-page loader - centred horizontally and vertically with the
+   loading text directly beneath the spinner. */
+.pageLoaderWrap {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pageLoader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+.pageLoaderSpinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid #d56500;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: pageSpin 0.8s linear infinite;
+}
+@keyframes pageSpin {
+    to { transform: rotate(360deg); }
+}
+.pageLoaderText {
+    margin: 0;
+    color: #555;
+    font-size: 0.95rem;
+}
