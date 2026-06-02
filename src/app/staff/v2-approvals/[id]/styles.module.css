@@ -1477,3 +1477,38 @@
     background: #fdecec;
     border-color: #c33232;
 }
+
+/* History tab - structured reason from return-for-research, park,
+   do-not-add and similar transitions that carry a verdict. */
+.historyReason {
+    margin: 8px 0 0 0;
+    padding: 8px 12px;
+    background: #fff8f1;
+    border-left: 3px solid #d56500;
+    border-radius: 0 6px 6px 0;
+    color: #523200;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    font-style: italic;
+}
+.historyExtras {
+    list-style: none;
+    margin: 6px 0 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.historyExtras li {
+    font-size: 0.78rem;
+    color: #555;
+    background: #f1f1f1;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 2px 10px;
+}
+.historyExtras span {
+    color: #888;
+    margin-right: 4px;
+    text-transform: capitalize;
+}
