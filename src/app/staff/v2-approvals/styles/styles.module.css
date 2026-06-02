@@ -769,3 +769,40 @@
    against the hover background. */
 .chip:hover { background: #fff5ed; color: #1a1a1a; }
 .chipActive:hover { background: #b85700; color: white; }
+
+/* Inline park-request action buttons - sized to fit alongside the
+   existing Action column buttons. */
+.btnInlineApprove,
+.btnInlineDecline,
+.btnInlineWithdraw {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    letter-spacing: 0.02em;
+}
+.btnInlineApprove {
+    background: white;
+    color: #1f5d1f;
+    border: 1.5px solid #b7d8b7;
+}
+.btnInlineApprove:hover { background: #e7f5e7; border-color: #2d7d2d; }
+.btnInlineDecline {
+    background: white;
+    color: #8a1f1f;
+    border: 1.5px solid #f5b3b3;
+}
+.btnInlineDecline:hover { background: #fdecec; border-color: #c33232; }
+.btnInlineWithdraw {
+    background: white;
+    color: #5b2a99;
+    border: 1.5px solid #d2bff0;
+}
+.btnInlineWithdraw:hover { background: #f1eaff; border-color: #5b2a99; }
+.btnInlineApprove:disabled,
+.btnInlineDecline:disabled,
+.btnInlineWithdraw:disabled { opacity: 0.6; cursor: not-allowed; }
