@@ -376,9 +376,12 @@ const V2ApprovalsPage = () => {
             searchValue: (s) => groupLabel(s.groupId),
             render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
         })
-        // V1 parity: End Users by NAME on the Pending L2 tab so the
-        // Supervisor sees who's assigned without opening rows.
-        if (activeTab === "pending-l2") {
+        // V1 parity: End Users by NAME, only when the Supervisor has
+        // narrowed the Within Amni Review tab to Stage D rows via the
+        // Completed Stage chip. On other stages the assignment hasn't
+        // happened yet (or has already been acted on) so the column
+        // would always be empty / irrelevant.
+        if (activeTab === "pending-l2" && stageFilter === "D") {
             cols.push({
                 key: "endUsers",
                 label: "End Users",
@@ -530,7 +533,7 @@ const V2ApprovalsPage = () => {
         // we don't track it in deps to avoid re-creating columns on every
         // render, but tabDef + activeTab + l3Health are real inputs.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab, tabDef, l3Health, canPriority, togglingPriorityId])
+    }, [activeTab, tabDef, l3Health, canPriority, togglingPriorityId, stageFilter])
 
     const inviteColumns: DataTableColumn<InviteRow>[] = useMemo(
         () => [
