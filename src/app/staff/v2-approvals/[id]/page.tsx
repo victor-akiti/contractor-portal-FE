@@ -8,13 +8,14 @@ import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux"
 import ApprovalReviewView from "./ApprovalReviewView"
 import DueDiligencePanel from "./DueDiligencePanel"
 import DecisionBar from "./components/DecisionBar"
 import DoNotAddModal from "./components/DoNotAddModal"
+import RevertFromL3Modal from "./components/RevertFromL3Modal"
 import EndUserPickerModal from "./components/EndUserPickerModal"
 import HodReturnInbox from "./components/HodReturnInbox"
 import RemarksArchive from "./components/RemarksArchive"
@@ -219,6 +220,7 @@ const StagePill = ({ submission }: { submission: Submission }) => {
 
 const V2SubmissionDetailPage = () => {
     const params = useParams<{ id: string }>()
+    const router = useRouter()
     const id = params?.id
     const user = useSelector((state: any) => state.user.user)
 
@@ -234,6 +236,11 @@ const V2SubmissionDetailPage = () => {
     const [returnEarlierOpen, setReturnEarlierOpen] = useState(false)
     const [returnEarlierLevel, setReturnEarlierLevel] = useState(0)
     const [returnEarlierReason, setReturnEarlierReason] = useState("")
+    // Admin-only: pull a contractor back out of L3 with a reason and an
+    // optional target stage (defaults to G / Executive Approver).
+    const [revertL3Open, setRevertL3Open] = useState(false)
+    const [revertL3Reason, setRevertL3Reason] = useState("")
+    const [revertL3Level, setRevertL3Level] = useState(5)
     const [certificates, setCertificates] = useState<Certificate[]>([])
     const [certActingId, setCertActingId] = useState<string | null>(null)
 
@@ -445,6 +452,26 @@ const V2SubmissionDetailPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, role])
 
+    // Transitions that change ownership of the submission (advance,
+    // approve, revert from L3, send to an earlier stage, do-not-add)
+    // route the user back to the queue afterwards. Mirrors the V1
+    // behaviour where clicking Process kicked you back to the inbox so
+    // you could move on. Same-stage transitions (request park, return
+    // for contractor remarks) stay in place because the submission is
+    // still yours.
+    const ACTIONS_THAT_LEAVE_THE_PAGE: ActionKey[] = [
+        "advance",
+        "final-approve",
+        "revert-from-l3",
+        "return-to-previous-stage",
+        "return-to-earlier-stage",
+        "park-at-l2",
+        "approve-park",
+        "decline-park",
+        "release-park",
+        "retrieve",
+    ]
+
     const runAction = async (
         action: ActionKey,
         payload: Record<string, any> = {},
@@ -457,9 +484,13 @@ const V2SubmissionDetailPage = () => {
             const result = await postProtected(`api/v2/submissions/${id}/${action}`, payload, role)
             if (result?.status === "OK") {
                 setActionSuccess(`Action "${action}" completed.`)
-                // Auto-dismiss the success toast after 3s so it doesn't
-                // linger forever once the user has seen it.
                 setTimeout(() => setActionSuccess(""), 3000)
+                if (ACTIONS_THAT_LEAVE_THE_PAGE.includes(action)) {
+                    // Invalidate the queue cache so the new state shows
+                    // up immediately, then go back to the list.
+                    router.push("/staff/v2-approvals")
+                    return true
+                }
                 await fetchAll()
                 return true
             }
@@ -539,6 +570,21 @@ const V2SubmissionDetailPage = () => {
         if (ok) {
             setReturnEarlierOpen(false)
             setReturnEarlierReason("")
+        }
+    }
+
+    const submitRevertL3 = async () => {
+        if (!revertL3Reason.trim()) {
+            setActionError("A reason is required to revert from L3.")
+            return
+        }
+        const ok = await runAction("revert-from-l3", {
+            reason: revertL3Reason.trim(),
+            targetLevel: revertL3Level,
+        })
+        if (ok) {
+            setRevertL3Open(false)
+            setRevertL3Reason("")
         }
     }
 
@@ -1012,7 +1058,13 @@ const V2SubmissionDetailPage = () => {
             // HOD-only "return to earlier stage" - useful when HOD spots a
             // VRM-level mistake at Stage F. Visible at levels 2-5 (need at
             // least one earlier stage to bounce back to).
-            returnEarlier: pending && [1, 2, 4, 5].includes(submission.level) && (isHod || (isExec && submission.level === 5)),
+            // Return to Earlier Stage is Admin-only - it bypasses the
+            // natural review chain by skipping stages. Other reviewers
+            // use Return for Research (one stage back) for DD-style
+            // questions, or the standard Return to Contractor for
+            // Stage B / C review returns where research isn't needed.
+            returnEarlier:
+                pending && submission.level >= 1 && isAdmin,
         }
     }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed])
 
@@ -1112,6 +1164,34 @@ const V2SubmissionDetailPage = () => {
                 </div>
 
             </div>
+
+            {/* Modify Contractor panel - legacy parity for L3 approved
+                contractors. Admin / HOD can rotate End Users and (via
+                the Revert from L3 action in the Decision bar) pull the
+                contractor back into a pending stage if a deeper change
+                is needed. */}
+            {submission.approved && ["Admin", "HOD"].includes(role) && (
+                <div className={styles.modifyPanel}>
+                    <div>
+                        <h4>Modify Contractor</h4>
+                        <p>
+                            This contractor is L3 approved. You can rotate
+                            the assigned End Users without a revert. Bigger
+                            changes - reopening the form, re-running Due
+                            Diligence - need a Revert from L3 below.
+                        </p>
+                    </div>
+                    <button
+                        className={styles.btnSecondary}
+                        onClick={openEndUserPicker}
+                    >
+                        Change End Users
+                        {Array.isArray(submission.selectedEndUsers) &&
+                            submission.selectedEndUsers.length > 0 &&
+                            ` (${submission.selectedEndUsers.length})`}
+                    </button>
+                </div>
+            )}
 
             {/* Stage role-permission notice. Same idea as the V1 "you do
                 not have permission to act at this stage" line - shows
@@ -2080,6 +2160,7 @@ const V2SubmissionDetailPage = () => {
                 openReturnPrevModal={() => { setReturnPrevReason(""); setReturnPrevOpen(true) }}
                 openReturnEarlierModal={() => { setReturnEarlierLevel(0); setReturnEarlierReason(""); setReturnEarlierOpen(true) }}
                 openParkL2Modal={() => { setParkL2Reason(""); setParkL2Open(true) }}
+                openRevertL3Modal={() => { setRevertL3Reason(""); setRevertL3Level(5); setRevertL3Open(true) }}
             />
 
             {endUserPickerOpen && (
@@ -2136,6 +2217,19 @@ const V2SubmissionDetailPage = () => {
                     actionError={actionError}
                     onSubmit={submitParkL2}
                     onClose={() => setParkL2Open(false)}
+                />
+            )}
+
+            {revertL3Open && (
+                <RevertFromL3Modal
+                    reason={revertL3Reason}
+                    setReason={setRevertL3Reason}
+                    targetLevel={revertL3Level}
+                    setTargetLevel={setRevertL3Level}
+                    actionRunning={actionRunning}
+                    actionError={actionError}
+                    onSubmit={submitRevertL3}
+                    onClose={() => setRevertL3Open(false)}
                 />
             )}
 
