@@ -1512,3 +1512,39 @@
     margin-right: 4px;
     text-transform: capitalize;
 }
+
+/* Header-card readouts for park reason + invite/registration details. */
+.holdReadout {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #f1eaff;
+    border: 1px solid #d2bff0;
+    border-left: 4px solid #5b2a99;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: #2c1452;
+    line-height: 1.45;
+}
+.inviteReadout {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 0.82rem;
+    color: #555;
+}
+.inviteReadout strong { color: #1a1a1a; font-weight: 600; }
+
+/* Role-permission gate panel on the detail page - shows when the current
+   viewer cannot act at the current stage. */
+.permissionGate {
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    background: #fff8f1;
+    border: 1px solid #ffd5b3;
+    border-left: 4px solid #d56500;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #523200;
+    line-height: 1.5;
+}

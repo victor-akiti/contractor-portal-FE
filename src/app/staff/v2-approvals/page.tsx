@@ -46,6 +46,37 @@ interface SubmissionV2Row {
     returnTime?: number
     createdAt?: string
     updatedAt?: string
+    hold?: {
+        reason?: string
+        requestedBy?: { name?: string; email?: string; date?: string }
+    }
+    selectedEndUsers?: any[]
+    reverts?: any
+}
+
+interface InviteRow {
+    _id: string
+    companyName?: string
+    email?: string
+    used?: boolean
+    archived?: boolean
+    createdAt?: string
+    updatedAt?: string
+    expiresAt?: string
+}
+
+// Stage -> set of role names that can ACT (advance / return / hold) on
+// that stage. Used to (a) decide which queue tabs are meaningful to the
+// current viewer and (b) decide whether to show a "you have no actions
+// at this stage" notice on detail pages. Mirrors the legacy approvals
+// stage-to-role lookup.
+const STAGE_ACTORS: Record<number, string[]> = {
+    0: ["Admin", "HOD", "VRM"],
+    1: ["Admin", "HOD", "Supervisor"],
+    2: ["Admin", "HOD", "End User"],
+    3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
+    4: ["Admin", "HOD"],
+    5: ["Admin", "Executive Approver"],
 }
 
 interface Counts {
@@ -58,7 +89,8 @@ interface Counts {
     total: number
 }
 
-const TAB_DEFS: { name: string; label: string; filter: Record<string, string>; stageFiltersEnabled?: boolean }[] = [
+const TAB_DEFS: { name: string; label: string; filter: Record<string, string>; stageFiltersEnabled?: boolean; isInvites?: boolean; l3FiltersEnabled?: boolean }[] = [
+    { name: "invited", label: "Invited", filter: {}, isInvites: true },
     { name: "in-progress", label: "Not Yet Submitted", filter: { status: "draft" } },
     {
         name: "pending-l2",
@@ -66,12 +98,15 @@ const TAB_DEFS: { name: string; label: string; filter: Record<string, string>; s
         filter: { status: "pending" },
         stageFiltersEnabled: true,
     },
-    { name: "l3", label: "L3", filter: { approved: "true" } },
+    { name: "l3", label: "L3", filter: { approved: "true" }, l3FiltersEnabled: true },
     { name: "completed-l2", label: "Completed L2", filter: { status: "parked" } },
     { name: "returned", label: "Returned To Contractor", filter: { status: "returned" } },
     { name: "park-requests", label: "Park Requests", filter: { status: "park requested" } },
     { name: "all", label: "All", filter: {} },
 ]
+
+const L3_FILTERS = ["All", "Healthy", "Expiring", "Expired"] as const
+type L3Filter = (typeof L3_FILTERS)[number]
 
 const stageFromLevel = (level: number): string => {
     if (level == null || level < 0 || level > 5) return "-"
@@ -113,9 +148,14 @@ const V2ApprovalsPage = () => {
 
     const [activeTab, setActiveTab] = useState("pending-l2")
     const [stageFilter, setStageFilter] = useState<string>("All")
+    const [l3Filter, setL3Filter] = useState<L3Filter>("All")
     const [search, setSearch] = useState("")
     const [debouncedSearch, setDebouncedSearch] = useState("")
     const [submissions, setSubmissions] = useState<SubmissionV2Row[]>([])
+    const [invites, setInvites] = useState<InviteRow[]>([])
+    // Per-row L3 certificate health (only populated when the L3 tab is
+    // active). Map<submissionId, "healthy" | "expiring" | "expired">.
+    const [l3Health, setL3Health] = useState<Record<string, "healthy" | "expiring" | "expired">>({})
     const [counts, setCounts] = useState<Counts | null>(countsCache?.counts || null)
     const [refreshing, setRefreshing] = useState(false)
     const [initialLoadDone, setInitialLoadDone] = useState(false)
@@ -125,6 +165,8 @@ const V2ApprovalsPage = () => {
     const { confirm: confirmDialog, dialog: confirmDialogEl } = useConfirmDialog()
 
     const canPriority = ["Admin", "HOD", "Supervisor"].includes(user?.role)
+    const isEndUser = user?.role === "End User"
+    const isVrm = ["Admin", "HOD", "VRM"].includes(user?.role)
 
     // Search is debounced *locally* - no BE call. The filter runs against
     // whatever rows are currently in state.
@@ -165,6 +207,22 @@ const V2ApprovalsPage = () => {
     // TTL. force=true bypasses the TTL (used after mutations).
     const fetchList = async (force = false) => {
         if (!user?.role) return
+        // Invites tab uses /api/v2/invites and a different row shape.
+        if (tabDef.isInvites) {
+            try {
+                setRefreshing(true)
+                setError("")
+                const r = await getProtected("api/v2/invites", user.role)
+                if (r?.status === "OK") setInvites(r.data?.invites || [])
+                else setError(r?.error?.message || "Failed to load invites")
+            } catch (e: any) {
+                setError(e?.message || "Failed to load")
+            } finally {
+                setRefreshing(false)
+                setInitialLoadDone(true)
+            }
+            return
+        }
         const key = cacheKey(user.role, activeTab, stageFilter)
         const cached = listCache.get(key)
         const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
@@ -187,6 +245,11 @@ const V2ApprovalsPage = () => {
                 const rows = list.data?.submissions || []
                 listCache.set(key, { rows, fetchedAt: Date.now() })
                 setSubmissions(rows)
+                // For L3 rows, fan out certificate fetches in the background
+                // so we can colour each row by cert health (healthy /
+                // expiring / expired). Best-effort; the page renders
+                // immediately without waiting.
+                if (tabDef.l3FiltersEnabled) loadL3Health(rows)
             } else {
                 setError(list?.error?.message || "Failed to load submissions")
             }
@@ -195,6 +258,48 @@ const V2ApprovalsPage = () => {
         } finally {
             setRefreshing(false)
             setInitialLoadDone(true)
+        }
+    }
+
+    // Per-row L3 cert health. Healthy = every cert has expiry > 30 days
+    // away (or no expiry tracked). Expiring = any cert expires within 30
+    // days. Expired = any cert past its expiry date. Cached at the row
+    // level so flipping the chip doesn't refetch.
+    const loadL3Health = async (rows: SubmissionV2Row[]) => {
+        const now = Date.now()
+        const horizon = 30 * 24 * 60 * 60 * 1000
+        const updates: Record<string, "healthy" | "expiring" | "expired"> = {}
+        await Promise.all(
+            rows.map(async (r) => {
+                if (l3Health[r._id]) return
+                try {
+                    const cr = await getProtected(
+                        `api/v2/submissions/${r._id}/certificates`,
+                        user.role,
+                    )
+                    if (cr?.status === "OK") {
+                        const certs = (cr.data?.certificates || []).filter(
+                            (c: any) => c.trackingStatus !== "untracked - updated",
+                        )
+                        let worst: "healthy" | "expiring" | "expired" = "healthy"
+                        for (const c of certs) {
+                            if (!c.expiryDate) continue
+                            const exp = new Date(c.expiryDate).getTime()
+                            if (exp < now) {
+                                worst = "expired"
+                                break
+                            }
+                            if (exp - now < horizon) worst = "expiring"
+                        }
+                        updates[r._id] = worst
+                    }
+                } catch {
+                    // best effort
+                }
+            }),
+        )
+        if (Object.keys(updates).length > 0) {
+            setL3Health((prev) => ({ ...prev, ...updates }))
         }
     }
 
@@ -221,14 +326,46 @@ const V2ApprovalsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.role, activeTab, stageFilter])
 
-    // Client-side search filter over the loaded submissions list.
+    // Client-side search + L3-health filter over the loaded submissions list.
     const filteredSubmissions = useMemo(() => {
-        if (!debouncedSearch) return submissions
-        return submissions.filter((s) => {
+        let rows = submissions
+        if (tabDef.l3FiltersEnabled && l3Filter !== "All") {
+            const want = l3Filter.toLowerCase() as "healthy" | "expiring" | "expired"
+            rows = rows.filter((s) => l3Health[s._id] === want)
+        }
+        if (!debouncedSearch) return rows
+        return rows.filter((s) => {
             const hay = `${s.companyName || ""} ${s.contractorEmail || ""} ${groupLabel(s.groupId)}`.toLowerCase()
             return hay.includes(debouncedSearch)
         })
-    }, [submissions, debouncedSearch])
+    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef])
+
+    // Filtered invites (client-side search).
+    const filteredInvites = useMemo(() => {
+        if (!debouncedSearch) return invites
+        return invites.filter((i) => {
+            const hay = `${i.companyName || ""} ${i.email || ""}`.toLowerCase()
+            return hay.includes(debouncedSearch)
+        })
+    }, [invites, debouncedSearch])
+
+    // "Attention needed" predicate per row. Lights up rows where the
+    // current viewer can actually take an action (their role appears in
+    // STAGE_ACTORS for that stage AND it's pending). This is what the
+    // V1 queue used to draw attention to entries you owned.
+    const needsAttention = (s: SubmissionV2Row): boolean => {
+        if (s.status !== "pending") return false
+        const allowed = STAGE_ACTORS[s.level] || []
+        if (!allowed.includes(user?.role)) return false
+        // Stage D: only assigned end users actually "own" it.
+        if (s.level === 2 && user?.role === "End User") {
+            const ids = (s.selectedEndUsers || []).map((u: any) =>
+                typeof u === "string" ? u : String(u?._id || u),
+            )
+            if (!user?._id || !ids.includes(String(user._id))) return false
+        }
+        return true
+    }
 
     const togglePriority = async (row: SubmissionV2Row) => {
         if (!canPriority) return
@@ -392,7 +529,112 @@ const V2ApprovalsPage = () => {
                 </div>
             )}
 
-            {!showInitialLoading && !error && filteredSubmissions.length === 0 && (
+            {/* L3 health chips - only on the L3 tab. "Healthy" means all
+                certificates still have time on the clock; "Expiring"
+                catches certs within 30 days of expiry; "Expired" is past
+                due. Healthy ratio counts only the rows we've already
+                resolved cert health for. */}
+            {tabDef.l3FiltersEnabled && submissions.length > 0 && (
+                <div className={styles.filterChips}>
+                    <span className={styles.filterLabel}>L3 Filter:</span>
+                    {L3_FILTERS.map((f) => (
+                        <button
+                            key={f}
+                            className={`${styles.chip} ${l3Filter === f ? styles.chipActive : ""}`}
+                            onClick={() => setL3Filter(f)}
+                        >
+                            {f}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {refreshing && (
+                <div className={styles.refreshingHint}>
+                    <ButtonLoadingIcon /> Refreshing...
+                </div>
+            )}
+
+            {/* Role-gate notice. Matches the V1 behaviour where roles
+                without permission to act at any of the relevant stages
+                see an explanatory line instead of an empty page. */}
+            {!showInitialLoading && user?.role && !["Admin", "HOD", "VRM", "Supervisor", "End User", "CO", "Executive Approver", "Amni Staff", "IT Admin"].includes(user.role) && (
+                <div className={styles.emptyState}>
+                    <h4>No access</h4>
+                    <p>
+                        Your role ({user.role}) doesn't include any review
+                        responsibilities on V2 approvals. Contact an
+                        administrator if you believe you should have access.
+                    </p>
+                </div>
+            )}
+
+            {/* Invites tab - simple listing, deeper detail lives on
+                /staff/v2-invites. */}
+            {tabDef.isInvites && !showInitialLoading && !error && (
+                filteredInvites.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        <h4>No invites</h4>
+                        <p>
+                            {debouncedSearch
+                                ? `No invites match "${debouncedSearch}".`
+                                : "No invites have been sent yet."}
+                        </p>
+                    </div>
+                ) : (
+                    <div className={styles.tableWrap}>
+                        <table className={styles.legacyTable}>
+                            <thead>
+                                <tr>
+                                    <th>Invited Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Sent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredInvites.map((i, idx) => (
+                                    <tr
+                                        key={i._id}
+                                        className={`${idx % 2 === 1 ? styles.rowShade : ""}`}
+                                    >
+                                        <td>
+                                            <Link href={`/staff/v2-invites/${i._id}`} className={styles.contractorLink}>
+                                                {(i.companyName || "(no name)").toUpperCase()}
+                                            </Link>
+                                        </td>
+                                        <td className={styles.dateCell}>{i.email || "-"}</td>
+                                        <td>
+                                            <span
+                                                className={`${styles.stagePillLegacy} ${
+                                                    i.used
+                                                        ? styles.inviteUsed
+                                                        : i.archived
+                                                          ? styles.inviteArchived
+                                                          : styles.inviteActive
+                                                }`}
+                                            >
+                                                {i.used ? "Used" : i.archived ? "Archived" : "Active"}
+                                            </span>
+                                        </td>
+                                        <td className={styles.dateCell}>
+                                            {i.createdAt
+                                                ? new Date(i.createdAt).toLocaleDateString("en-US", {
+                                                      year: "numeric",
+                                                      month: "long",
+                                                      day: "numeric",
+                                                  })
+                                                : "-"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )
+            )}
+
+            {!tabDef.isInvites && !showInitialLoading && !error && filteredSubmissions.length === 0 && (
                 <div className={styles.emptyState}>
                     <h4>Nothing here</h4>
                     <p>
@@ -403,69 +645,127 @@ const V2ApprovalsPage = () => {
                 </div>
             )}
 
-            {!showInitialLoading && !error && filteredSubmissions.length > 0 && (
+            {!tabDef.isInvites && !showInitialLoading && !error && filteredSubmissions.length > 0 && (
                 <div className={styles.tableWrap}>
                     <table className={styles.legacyTable}>
                         <thead>
                             <tr>
                                 <th>▲ Contractor Name</th>
-                                <th>Approval Stage</th>
+                                {!tabDef.isInvites && <th>Approval Stage</th>}
+                                {(activeTab === "park-requests" || activeTab === "completed-l2") && (
+                                    <>
+                                        <th>Park Reason</th>
+                                        <th>Requested By</th>
+                                    </>
+                                )}
+                                {tabDef.l3FiltersEnabled && <th>Cert Health</th>}
                                 <th>Action</th>
-                                <th>▲ Last Contractor Update</th>
+                                <th>▲ Last Update</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredSubmissions.map((s) => (
-                                <tr key={s._id} className={s.isPriority ? styles.rowPriority : ""}>
-                                    <td>
-                                        <Link href={`/staff/v2-approvals/${s._id}`} className={styles.contractorLink}>
-                                            {(s.companyName || "(no name)").toUpperCase()}
-                                        </Link>
-                                        {s.isPriority && (
-                                            <span className={styles.priorityBadge}>★ Priority</span>
+                            {filteredSubmissions.map((s, idx) => {
+                                const attention = needsAttention(s)
+                                const shadeCls = idx % 2 === 1 ? styles.rowShade : ""
+                                const attentionCls = attention ? styles.rowAttention : ""
+                                const priorityCls = s.isPriority ? styles.rowPriority : ""
+                                const rowClass = [shadeCls, attentionCls, priorityCls]
+                                    .filter(Boolean)
+                                    .join(" ")
+                                const health = l3Health[s._id]
+                                return (
+                                    <tr key={s._id} className={rowClass}>
+                                        <td>
+                                            <Link href={`/staff/v2-approvals/${s._id}`} className={styles.contractorLink}>
+                                                {(s.companyName || "(no name)").toUpperCase()}
+                                            </Link>
+                                            {s.isPriority && (
+                                                <span className={styles.priorityBadge}>★ Priority</span>
+                                            )}
+                                            {attention && (
+                                                <span className={styles.attentionBadge}>Action needed</span>
+                                            )}
+                                        </td>
+                                        {!tabDef.isInvites && (
+                                            <td>
+                                                <span className={styles.stagePillLegacy}>
+                                                    Stage {stageForRow(s)}
+                                                </span>
+                                            </td>
                                         )}
-                                    </td>
-                                    <td>
-                                        <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
-                                    </td>
-                                    <td>
-                                        <div className={styles.actionCell}>
-                                            {/* Prioritise is only meaningful for in-flight submissions.
-                                                L3 approved contractors are done - they are not pending
-                                                anyone's review, so there is nothing to push to the top
-                                                of the queue. Same for parked / returned where the
-                                                contractor needs to act first. */}
-                                            {canPriority && s.status === "pending" && !s.approved && (
-                                                <button
-                                                    className={styles.btnDeprioritise}
-                                                    onClick={() => togglePriority(s)}
-                                                    disabled={togglingPriorityId === s._id}
-                                                >
-                                                    {s.isPriority ? "▼ Deprioritise" : "▲ Prioritise"}
-                                                    {togglingPriorityId === s._id && <ButtonLoadingIcon />}
-                                                </button>
-                                            )}
-                                            {s.status === "pending" && (
-                                                <button
-                                                    className={styles.btnProcessLegacy}
-                                                    onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
-                                                >
-                                                    PROCESS STAGE {stageForRow(s)}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className={styles.dateCell}>
-                                        {s.updatedAt
-                                            ? new Date(s.updatedAt).toLocaleDateString("en-US", {
-                                                  year: "numeric",
-                                                  month: "long",
-                                                  day: "numeric",
-                                              })
-                                            : "-"}
-                                    </td>
-                                </tr>
-                            ))}
+                                        {(activeTab === "park-requests" || activeTab === "completed-l2") && (
+                                            <>
+                                                <td className={styles.parkReasonCell}>
+                                                    {s.hold?.reason || "-"}
+                                                </td>
+                                                <td className={styles.dateCell}>
+                                                    {s.hold?.requestedBy?.name ||
+                                                        s.hold?.requestedBy?.email ||
+                                                        "-"}
+                                                </td>
+                                            </>
+                                        )}
+                                        {tabDef.l3FiltersEnabled && (
+                                            <td>
+                                                {health ? (
+                                                    <span
+                                                        className={`${styles.healthBadge} ${
+                                                            health === "healthy"
+                                                                ? styles.healthHealthy
+                                                                : health === "expiring"
+                                                                  ? styles.healthExpiring
+                                                                  : styles.healthExpired
+                                                        }`}
+                                                    >
+                                                        {health}
+                                                    </span>
+                                                ) : (
+                                                    <span className={styles.dim}>...</span>
+                                                )}
+                                            </td>
+                                        )}
+                                        <td>
+                                            <div className={styles.actionCell}>
+                                                {canPriority && s.status === "pending" && !s.approved && (
+                                                    <button
+                                                        className={styles.btnDeprioritise}
+                                                        onClick={() => togglePriority(s)}
+                                                        disabled={togglingPriorityId === s._id}
+                                                    >
+                                                        {s.isPriority ? "▼ Deprioritise" : "▲ Prioritise"}
+                                                        {togglingPriorityId === s._id && <ButtonLoadingIcon />}
+                                                    </button>
+                                                )}
+                                                {s.status === "pending" && (
+                                                    <button
+                                                        className={styles.btnProcessLegacy}
+                                                        onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
+                                                    >
+                                                        PROCESS STAGE {stageForRow(s)}
+                                                    </button>
+                                                )}
+                                                {s.status !== "pending" && (
+                                                    <button
+                                                        className={styles.btnProcessLegacy}
+                                                        onClick={() => router.push(`/staff/v2-approvals/${s._id}`)}
+                                                    >
+                                                        VIEW
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className={styles.dateCell}>
+                                            {s.updatedAt
+                                                ? new Date(s.updatedAt).toLocaleDateString("en-US", {
+                                                      year: "numeric",
+                                                      month: "long",
+                                                      day: "numeric",
+                                                  })
+                                                : "-"}
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>
