@@ -1406,15 +1406,13 @@ const V2SubmissionDetailPage = () => {
                                     {new Date(submission.returnTime).toLocaleString("en-NG")}
                                 </span>
                             )}
-                            {(invite || portalAdmin) && (
-                                <button
-                                    type="button"
-                                    className={styles.btnLink}
-                                    onClick={() => setInviteDetailsOpen(true)}
-                                >
-                                    View invite & portal admin
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className={styles.btnLink}
+                                onClick={() => setInviteDetailsOpen(true)}
+                            >
+                                View invite & portal admin
+                            </button>
                         </div>
                     )}
                 </div>
