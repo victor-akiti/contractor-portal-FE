@@ -1352,7 +1352,6 @@ const V2SubmissionDetailPage = () => {
                         <span className={`${styles.statusBadge} ${styles[`status_${submission.status.replace(" ", "_")}`] || ""}`}>
                             {submission.status}
                         </span>
-                        <span className={styles.cycle}>Cycle #{submission.cycleNumber || 1}</span>
                         <span className={styles.metaPill}>Group: {groupName}</span>
                         {formVersion?.versionNumber != null && (
                             <span className={styles.metaPill}>Form v{formVersion.versionNumber}</span>
@@ -1385,9 +1384,6 @@ const V2SubmissionDetailPage = () => {
                         Cycle pill (no longer in the queue table). */}
                     {["Admin", "HOD", "VRM"].includes(role) && (
                         <div className={styles.inviteReadout}>
-                            <span>
-                                <strong>Cycle:</strong> #{submission.cycleNumber || 1}
-                            </span>
                             {submission.createdAt && (
                                 <span>
                                     <strong>Started:</strong>{" "}
