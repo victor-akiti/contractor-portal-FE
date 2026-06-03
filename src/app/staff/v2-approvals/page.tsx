@@ -354,7 +354,15 @@ const V2ApprovalsPage = () => {
 {/* Email moved off the row per V1 parity. It still shows on the
                                 detail page header. */}
                         {s.isPriority && (
-                            <span className={styles.priorityBadge}>★ Priority</span>
+                            <span
+                                className={styles.priorityBadge}
+                                data-tooltip="This badge indicates that AMNI already works with this contractor."
+                                aria-label="Priority contractor - AMNI already works with this contractor"
+                                tabIndex={0}
+                                role="note"
+                            >
+                                Priority
+                            </span>
                         )}
                         {attention && (
                             <span className={styles.attentionBadge}>Action needed</span>
