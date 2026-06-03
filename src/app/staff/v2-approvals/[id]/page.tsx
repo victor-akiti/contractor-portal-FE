@@ -2590,74 +2590,84 @@ const V2SubmissionDetailPage = () => {
                             </p>
                         </div>
                         <div className={styles.modalBody}>
-                            <div className={styles.inviteSummary}>
-                                <h4>Invite</h4>
+                            {/* Mirror V1's two-section layout: Original
+                                Invitation Details + Contractor Portal
+                                Administrator. Only the fields V1
+                                actually shows. recommendedBy renders
+                                only when populated, same as V1. */}
+                            <section className={styles.inviteSection}>
+                                <h4>Original Invitation Details</h4>
                                 {invite ? (
-                                    <ul>
-                                        <li>
-                                            <span>Company:</span> {invite.companyName || "-"}
-                                        </li>
-                                        <li>
-                                            <span>Invited:</span>{" "}
-                                            {invite.name || `${invite.fname || ""} ${invite.lname || ""}`}
-                                        </li>
-                                        <li>
-                                            <span>Email:</span> {invite.email}
-                                        </li>
-                                        {invite.phone?.number && (
-                                            <li>
-                                                <span>Phone:</span>{" "}
-                                                {invite.phone?.countryCode || ""} {invite.phone.number}
-                                            </li>
+                                    <dl className={styles.inviteDl}>
+                                        <div>
+                                            <dt>Invited Company Name</dt>
+                                            <dd>{invite.companyName || "-"}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Invited By</dt>
+                                            <dd>
+                                                {invite.invitedBy?.name ||
+                                                    invite.invitedBy?.email ||
+                                                    "-"}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>Invited At</dt>
+                                            <dd>
+                                                {invite.createdAt
+                                                    ? new Date(invite.createdAt).toLocaleString("en-GB")
+                                                    : "-"}
+                                            </dd>
+                                        </div>
+                                        {invite.recommendedBy?.name && (
+                                            <>
+                                                <div>
+                                                    <dt>Recommended By</dt>
+                                                    <dd>{invite.recommendedBy.name}</dd>
+                                                </div>
+                                                {invite.recommendedBy.department && (
+                                                    <div>
+                                                        <dt>Recommender&apos;s Department</dt>
+                                                        <dd>{invite.recommendedBy.department}</dd>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
-                                        <li>
-                                            <span>Invited by:</span>{" "}
-                                            {invite.invitedBy?.name ||
-                                                invite.invitedBy?.email ||
-                                                "-"}
-                                        </li>
-                                        <li>
-                                            <span>Sent:</span>{" "}
-                                            {invite.createdAt
-                                                ? new Date(invite.createdAt).toLocaleString("en-NG")
-                                                : "-"}
-                                        </li>
-                                        <li>
-                                            <span>Status:</span> {invite.approvalStatus || "-"}
-                                        </li>
-                                    </ul>
+                                    </dl>
                                 ) : (
                                     <p className={styles.dim}>
-                                        No V2 invite linked. This submission was
-                                        probably backfilled from V1.
+                                        No V2 invite linked. This contractor was
+                                        backfilled from V1.
                                     </p>
                                 )}
-                            </div>
+                            </section>
 
-                            <div className={styles.inviteSummary}>
-                                <h4>Portal Administrator</h4>
+                            <section className={styles.inviteSection}>
+                                <h4>Contractor Portal Administrator</h4>
                                 {portalAdmin ? (
-                                    <ul>
-                                        <li>
-                                            <span>Name:</span> {portalAdmin.name || "-"}
-                                        </li>
-                                        <li>
-                                            <span>Email:</span> {portalAdmin.email || "-"}
-                                        </li>
-                                        <li>
-                                            <span>Role:</span> {portalAdmin.role || "-"}
-                                        </li>
-                                        <li>
-                                            <span>Registered:</span>{" "}
-                                            {portalAdmin.createdAt
-                                                ? new Date(portalAdmin.createdAt).toLocaleString("en-NG")
-                                                : "-"}
-                                        </li>
-                                    </ul>
+                                    <dl className={styles.inviteDl}>
+                                        <div>
+                                            <dt>Name</dt>
+                                            <dd>{portalAdmin.name || "-"}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Email</dt>
+                                            <dd>{portalAdmin.email || "-"}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Phone</dt>
+                                            <dd>
+                                                {typeof portalAdmin.phone === "string"
+                                                    ? portalAdmin.phone
+                                                    : portalAdmin.phone?.internationalNumber ||
+                                                      portalAdmin.phone?.number ||
+                                                      "-"}
+                                            </dd>
+                                        </div>
+                                    </dl>
                                 ) : (
                                     <p className={styles.dim}>
-                                        No portal admin registered yet for this
-                                        contractor.
+                                        No portal administrator registered yet.
                                     </p>
                                 )}
                                 {["Admin", "HOD"].includes(role) && (
@@ -2699,7 +2709,7 @@ const V2SubmissionDetailPage = () => {
                                         )}
                                     </div>
                                 )}
-                            </div>
+                            </section>
                         </div>
                         <div className={styles.modalActions}>
                             <button
