@@ -107,6 +107,10 @@ const V2InvitesPage = () => {
     const [ackUnique, setAckUnique] = useState(false)
     const similarTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
     const similarSeq = useRef(0)
+    // Email check runs on blur (not as the user types) and only ever
+    // surfaces exact matches. A non-null value blocks submit.
+    const [emailMatch, setEmailMatch] = useState<SimilarMatch | null>(null)
+    const [emailChecking, setEmailChecking] = useState(false)
 
     // An EXACT name match (case-insensitive, whitespace-collapsed) cannot
     // be acknowledged-away — that company definitively already exists on
@@ -187,7 +191,37 @@ const V2InvitesPage = () => {
         setSimilarMatches([])
         setSimilarLoading(false)
         setAckUnique(false)
+        setEmailMatch(null)
+        setEmailChecking(false)
         setShowCreate(true)
+    }
+
+    // Naive but strict enough for a check-on-blur — matches typical address
+    // shape; the BE re-validates.
+    const looksLikeEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim())
+
+    const onEmailBlur = async () => {
+        const e = cEmail.trim().toLowerCase()
+        if (!e || !looksLikeEmail(e)) {
+            setEmailMatch(null)
+            return
+        }
+        setEmailChecking(true)
+        try {
+            const result = await getProtected(
+                `api/v2/invites/find-by-email?email=${encodeURIComponent(e)}`,
+                user?.role,
+            )
+            if (result?.status === "OK") {
+                setEmailMatch(result.data?.match || null)
+            } else {
+                setEmailMatch(null)
+            }
+        } catch {
+            setEmailMatch(null)
+        } finally {
+            setEmailChecking(false)
+        }
     }
 
     // Debounced "similar companies" search wired to the company-name input.
@@ -721,7 +755,31 @@ const V2InvitesPage = () => {
                                     </div>
                                     <div className={styles.formRow}>
                                         <label>Email <span className={styles.required}>*</span></label>
-                                        <input type="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} disabled={creating} />
+                                        <input
+                                            type="email"
+                                            value={cEmail}
+                                            onChange={(e) => {
+                                                setCEmail(e.target.value)
+                                                // Stale matches must not stick when the user keeps typing.
+                                                if (emailMatch) setEmailMatch(null)
+                                            }}
+                                            onBlur={onEmailBlur}
+                                            disabled={creating}
+                                        />
+                                        {emailChecking && (
+                                            <p className={styles.helpText}>Checking email…</p>
+                                        )}
+                                        {emailMatch && (
+                                            <div className={styles.modalError}>
+                                                <ErrorText
+                                                    text={
+                                                        emailMatch.type === "submission"
+                                                            ? `${cEmail.trim()} is already registered as a contractor on the portal (${emailMatch.companyName}${emailMatch.status ? `, status: ${emailMatch.status}` : ""}). You cannot invite this email again.`
+                                                            : `${cEmail.trim()} has an active invite (${emailMatch.companyName}${emailMatch.status ? `, status: ${emailMatch.status}` : ""}). Void it first if you need to re-issue.`
+                                                    }
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     <div className={styles.formRow}>
                                         <label>Phone</label>
@@ -833,16 +891,20 @@ const V2InvitesPage = () => {
                                     groups.length === 0 ||
                                     !ackUnique ||
                                     similarLoading ||
-                                    !!exactMatch
+                                    emailChecking ||
+                                    !!exactMatch ||
+                                    !!emailMatch
                                 }
                                 title={
-                                    exactMatch
-                                        ? `"${exactMatch.companyName}" already exists on the portal.`
-                                        : !ackUnique
-                                            ? "Tick the confirmation that this company is not a duplicate."
-                                            : similarLoading
-                                                ? "Waiting for the similar-companies search to finish."
-                                                : undefined
+                                    emailMatch
+                                        ? `${cEmail.trim()} is already in use.`
+                                        : exactMatch
+                                            ? `"${exactMatch.companyName}" already exists on the portal.`
+                                            : !ackUnique
+                                                ? "Tick the confirmation that this company is not a duplicate."
+                                                : similarLoading || emailChecking
+                                                    ? "Waiting for duplicate-check to finish."
+                                                    : undefined
                                 }
                             >
                                 Create invite
