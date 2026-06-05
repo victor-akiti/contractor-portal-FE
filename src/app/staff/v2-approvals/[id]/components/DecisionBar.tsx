@@ -25,6 +25,7 @@ interface Props {
     openParkRequestModal: () => void
     openReturnPrevModal: () => void
     openReturnEarlierModal: () => void
+    openEbaReturnModal: () => void
     openParkL2Modal: () => void
     openRevertL3Modal: () => void
     openUnparkModal: () => void
@@ -54,6 +55,7 @@ const DecisionBar = ({
     openParkRequestModal,
     openReturnPrevModal,
     openReturnEarlierModal,
+    openEbaReturnModal,
     openParkL2Modal,
     openRevertL3Modal,
     openUnparkModal,
@@ -74,7 +76,8 @@ const DecisionBar = ({
         can.returnEarlier ||
         can.returnToE ||
         can.returnToF ||
-        can.doNotAdd
+        can.doNotAdd ||
+        can.returnForEbaCorrection
     if (!anyDecision) return null
 
     const stageBlockedAtD =
@@ -202,6 +205,7 @@ const DecisionBar = ({
                     can.returnEarlier ||
                     can.returnToE ||
                     can.returnToF ||
+                    can.returnForEbaCorrection ||
                     can.retrieve ||
                     can.revertFromL3) && (
                         <div className={styles.decisionGroup}>
@@ -231,6 +235,17 @@ const DecisionBar = ({
                                         title="Hop one stage back on the staff side with a reason. The contractor is not notified."
                                     >
                                         Return for Research
+                                    </button>
+                                )}
+                                {can.returnForEbaCorrection && (
+                                    <button
+                                        className={styles.btnDanger}
+                                        disabled={!!actionRunning}
+                                        onClick={openEbaReturnModal}
+                                        title="Send the submission one stage back to the editor so the flagged EBA fields can be corrected. Stays on the staff side."
+                                    >
+                                        Return for EBA Correction
+                                        {actionRunning === "return-for-eba-correction" && <ButtonLoadingIcon />}
                                     </button>
                                 )}
                                 {can.returnEarlier && (
