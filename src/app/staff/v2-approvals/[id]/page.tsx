@@ -343,6 +343,14 @@ const V2SubmissionDetailPage = () => {
     // back to the editor when flagged EBA edits are outstanding.
     const [ebaReturnOpen, setEbaReturnOpen] = useState(false)
     const [ebaReturnReason, setEbaReturnReason] = useState("")
+    // HOD-only Change Group modal. Groups are lazy-loaded on open since
+    // the list is cosmetic to anyone who can't move contractors.
+    const [changeGroupOpen, setChangeGroupOpen] = useState(false)
+    const [changeGroupList, setChangeGroupList] = useState<any[]>([])
+    const [changeGroupTarget, setChangeGroupTarget] = useState("")
+    const [changeGroupReason, setChangeGroupReason] = useState("")
+    const [changeGroupActing, setChangeGroupActing] = useState(false)
+    const [changeGroupError, setChangeGroupError] = useState("")
     // Editor's "Respond to flag" modal — replies without changing the
     // field value, clears the flag and flips the edit back to active.
     const [respondingToEdit, setRespondingToEdit] = useState<FieldEditRow | null>(null)
@@ -1015,6 +1023,60 @@ const V2SubmissionDetailPage = () => {
         }
     }
 
+    const openChangeGroup = async () => {
+        setChangeGroupError("")
+        setChangeGroupReason("")
+        setChangeGroupTarget("")
+        setChangeGroupOpen(true)
+        try {
+            const r = await getProtected("api/v2/groups", role)
+            if (r?.status === "OK") {
+                setChangeGroupList(r.data?.groups || [])
+            }
+        } catch {
+            // Non-fatal — the modal renders an empty picker which the
+            // controller will reject; the error surfaces inline.
+        }
+    }
+
+    const submitChangeGroup = async () => {
+        if (!id) return
+        if (!changeGroupTarget) {
+            setChangeGroupError("Pick a target group.")
+            return
+        }
+        if (!changeGroupReason.trim()) {
+            setChangeGroupError("A reason is required.")
+            return
+        }
+        setChangeGroupActing(true)
+        setChangeGroupError("")
+        try {
+            const r = await postProtected(
+                `api/v2/submissions/${id}/change-group`,
+                { newGroupId: changeGroupTarget, reason: changeGroupReason.trim() },
+                role,
+            )
+            if (r?.status === "OK") {
+                setChangeGroupOpen(false)
+                if (r.data?.restarted) {
+                    // Submission was voided in favour of a fresh invite —
+                    // there's nothing left to render here. Drop back to
+                    // the queue.
+                    window.location.href = "/staff/v2-approvals"
+                    return
+                }
+                await fetchAll()
+            } else {
+                setChangeGroupError(r?.error?.message || "Change failed")
+            }
+        } catch (e: any) {
+            setChangeGroupError(e?.message || "Unexpected error")
+        } finally {
+            setChangeGroupActing(false)
+        }
+    }
+
     const submitReturnForEbaCorrection = async () => {
         if (!id) return
         if (!ebaReturnReason.trim()) {
@@ -1442,6 +1504,18 @@ const V2SubmissionDetailPage = () => {
                         {formVersion?.versionNumber != null && (
                             <span className={styles.metaPill}>Form v{formVersion.versionNumber}</span>
                         )}
+                        {["Admin", "HOD"].includes(role) &&
+                            submission.status !== "approved" &&
+                            submission.isActive !== false && (
+                                <button
+                                    type="button"
+                                    className={styles.btnLink}
+                                    onClick={openChangeGroup}
+                                    title="Move this contractor to a different group. Same form template = reclassify; different form template = void + re-invite."
+                                >
+                                    Change group
+                                </button>
+                            )}
                     </div>
                     {/* Park reason readout - visible whenever a hold reason
                         is recorded (request-park, parked, do-not-add at L2).
@@ -2613,6 +2687,107 @@ const V2SubmissionDetailPage = () => {
                     onClose={() => setReturnEarlierOpen(false)}
                 />
             )}
+
+            {changeGroupOpen && (() => {
+                const currentGroupId = String(
+                    (submission.groupId as any)?._id || submission.groupId || "",
+                )
+                const target = changeGroupList.find(
+                    (g: any) => g._id === changeGroupTarget,
+                )
+                const current = changeGroupList.find(
+                    (g: any) => g._id === currentGroupId,
+                )
+                // listGroups populates formTemplateId so we may receive either
+                // a raw ObjectId or a sub-document with _id. Normalise.
+                const tplId = (g: any) =>
+                    String(g?.formTemplateId?._id || g?.formTemplateId || "")
+                const sameTemplate =
+                    !!target && !!current && tplId(target) === tplId(current)
+                return (
+                    <Modal>
+                        <div className={styles.modalCard}>
+                            <div className={styles.modalHeader}>
+                                <h3>Change group</h3>
+                                <p className={styles.modalSub}>
+                                    Pick the group this contractor should sit in. If the
+                                    new group is bound to the same form template, this is
+                                    a pure reclassification and the contractor's progress
+                                    is preserved. If it points at a different form
+                                    template, the current submission is voided and a
+                                    fresh invite is issued — the contractor will have to
+                                    start over.
+                                </p>
+                            </div>
+                            <div className={styles.modalBody}>
+                                <label className={styles.modalLabel}>Target group</label>
+                                <select
+                                    value={changeGroupTarget}
+                                    onChange={(e) => setChangeGroupTarget(e.target.value)}
+                                    disabled={changeGroupActing}
+                                >
+                                    <option value="">Pick a group…</option>
+                                    {changeGroupList
+                                        .filter((g: any) => g._id !== currentGroupId)
+                                        .map((g: any) => (
+                                            <option key={g._id} value={g._id}>
+                                                {g.name}
+                                            </option>
+                                        ))}
+                                </select>
+                                {target && (
+                                    <p className={styles.helpText}>
+                                        {sameTemplate
+                                            ? "Same form template — contractor keeps their submission."
+                                            : "Different form template — current submission will be voided and a fresh invite will be issued to the same email."}
+                                    </p>
+                                )}
+                                <label
+                                    className={styles.modalLabel}
+                                    style={{ marginTop: 12 }}
+                                >
+                                    Reason
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Logged on the submission's history."
+                                    value={changeGroupReason}
+                                    onChange={(e) => setChangeGroupReason(e.target.value)}
+                                    disabled={changeGroupActing}
+                                />
+                                {changeGroupError && <ErrorText text={changeGroupError} />}
+                            </div>
+                            <div className={styles.modalActions}>
+                                <button
+                                    className={styles.btnSecondary}
+                                    onClick={() => setChangeGroupOpen(false)}
+                                    disabled={changeGroupActing}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className={
+                                        target && !sameTemplate
+                                            ? styles.btnDanger
+                                            : styles.btnPrimary
+                                    }
+                                    onClick={submitChangeGroup}
+                                    disabled={
+                                        changeGroupActing ||
+                                        !changeGroupTarget ||
+                                        !changeGroupReason.trim()
+                                    }
+                                >
+                                    {target && !sameTemplate
+                                        ? "Void & re-invite"
+                                        : "Reclassify"}
+                                    {changeGroupActing && <ButtonLoadingIcon />}
+                                </button>
+                            </div>
+                        </div>
+                    </Modal>
+                )
+            })()}
 
             {ebaReturnOpen && (
                 <Modal>
