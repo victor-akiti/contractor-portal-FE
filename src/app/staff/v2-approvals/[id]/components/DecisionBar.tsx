@@ -119,9 +119,29 @@ const DecisionBar = ({
             )}
             {submission.status === "pending" && ebaFlaggedOutstanding && (
                 <div className={styles.remarkGate}>
-                    A flagged EBA edit is outstanding. Return the application
-                    to the contractor for correction — it cannot advance until
-                    the flag is resolved.
+                    {submission.level === 1 || submission.level === 4 ? (
+                        <>
+                            A flagged EBA edit is outstanding. Use{" "}
+                            <strong>Return for EBA Correction</strong> to send
+                            it back to the editor — advance unlocks once every
+                            flag is resolved and the application is re-pushed
+                            to you.
+                        </>
+                    ) : submission.level === 0 || submission.level === 3 ? (
+                        <>
+                            A flagged EBA edit is outstanding. Open the{" "}
+                            <strong>Edit Audit</strong> tab and either re-edit
+                            the field or respond to the reviewer's note —
+                            advance unlocks automatically once every flag
+                            flips back to active.
+                        </>
+                    ) : (
+                        <>
+                            A flagged EBA edit is outstanding from an earlier
+                            stage. Send the application back to that stage so
+                            the editor can resolve it.
+                        </>
+                    )}
                 </div>
             )}
             {stageBlockedAtD && (
