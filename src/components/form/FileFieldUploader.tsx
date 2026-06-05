@@ -253,7 +253,7 @@ const FileFieldUploader = ({
                     {value.map((f, i) => {
                         const expStat = isCertificate && hasExpiryDate ? certExpiryStatus(f.expiryDate) : null
                         return (
-                            <div key={(f._id || f.updateCode) + i} className={styles.fileCard}>
+                            <div key={f._id || f.updateCode || `f${i}`} className={styles.fileCard}>
                                 <div className={styles.fileRow}>
                                     <div className={styles.fileIcon}>{extOf(f.name) || "FILE"}</div>
                                     <div className={styles.fileMeta}>
@@ -271,7 +271,9 @@ const FileFieldUploader = ({
                                                     {expStat}
                                                 </span>
                                             )}
-                                            <span className={styles.dim}>slot {f.updateCode.slice(-6)}</span>
+                                            {f.updateCode && (
+                                                <span className={styles.dim}>slot {f.updateCode.slice(-6)}</span>
+                                            )}
                                         </div>
                                         {f.reviewRemarks && (
                                             <div className={styles.reviewRemarks}>
