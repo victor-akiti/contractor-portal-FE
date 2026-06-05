@@ -4,8 +4,8 @@ import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { getProtected } from "@/requests/get"
-import { postProtected } from "@/requests/post"
 import { patchProtected } from "@/requests/patch"
+import { postProtected } from "@/requests/post"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
@@ -77,7 +77,7 @@ const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
 const V2InvitesPage = () => {
     const user = useSelector((state: any) => state.user.user)
 
-    const [activeTab, setActiveTab] = useState<ApprovalStatus | "all">("pending_hod")
+    const [activeTab, setActiveTab] = useState<ApprovalStatus | "all">(user?.role === "HOD" ? "pending_hod" : user.role === "Supervisor" ? "pending_supervisor" : user.role === "Admin" ? "approved" : "all")
     const [invites, setInvites] = useState<InviteV2[]>([])
     const [groups, setGroups] = useState<Group[]>([])
     const [loading, setLoading] = useState(true)
