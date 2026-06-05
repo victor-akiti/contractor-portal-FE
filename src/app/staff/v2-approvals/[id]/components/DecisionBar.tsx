@@ -16,6 +16,8 @@ interface Props {
     actionError: string
     hasActiveRemarksThisCycle: boolean
     allSectionsReviewed: boolean
+    ebaActiveAwaitingReview: boolean
+    ebaFlaggedOutstanding: boolean
     runAction: (action: ActionKey, payload?: Record<string, any>) => Promise<boolean>
     openEndUserPicker: () => void
     openServicesModal: () => void
@@ -43,6 +45,8 @@ const DecisionBar = ({
     actionError,
     hasActiveRemarksThisCycle,
     allSectionsReviewed,
+    ebaActiveAwaitingReview,
+    ebaFlaggedOutstanding,
     runAction,
     openEndUserPicker,
     openServicesModal,
@@ -102,6 +106,19 @@ const DecisionBar = ({
                 <div className={styles.remarkGate}>
                     Tick the Reviewed checkbox on each section before
                     processing forward.
+                </div>
+            )}
+            {submission.status === "pending" && ebaActiveAwaitingReview && (
+                <div className={styles.remarkGate}>
+                    There are EBA edits awaiting your review on the Edit Audit
+                    tab. Accept or flag each one before processing forward.
+                </div>
+            )}
+            {submission.status === "pending" && ebaFlaggedOutstanding && (
+                <div className={styles.remarkGate}>
+                    A flagged EBA edit is outstanding. Return the application
+                    to the contractor for correction — it cannot advance until
+                    the flag is resolved.
                 </div>
             )}
             {stageBlockedAtD && (
@@ -221,7 +238,7 @@ const DecisionBar = ({
                                         className={styles.btnSecondary}
                                         disabled={!!actionRunning}
                                         onClick={openReturnEarlierModal}
-                                        title="HOD only: send back to any earlier stage with a remark for that stage's owner. Contractor is not notified."
+                                        title="Admin only: send back to any earlier stage with a remark for that stage's owner. Contractor is not notified. Not available at Stage F / G — use Return for Research there."
                                     >
                                         Return to Earlier Stage
                                     </button>
