@@ -1185,11 +1185,27 @@ const V2SubmissionDetailPage = () => {
         // remarks are historical context for senior reviewers and do not
         // block forward movement (see BE remark gate in applyTransition).
         const remarkBlocks = submission.level === 0 && hasActiveRemarksThisCycle
+        // EBA gate (mirrors BE assertEbaReviewedBeforeAdvance):
+        //   - Stage C reviews Stage-B edits, Stage F reviews Stage-D edits.
+        //   - Advance is blocked while the reviewer has unreviewed (active)
+        //     edits at the editable level below them, and at ANY stage while
+        //     any flagged edit is outstanding (flag = go back, not forward).
+        const reviewerEditLevel =
+            submission.level === 1 ? 0 : submission.level === 4 ? 2 : null
+        const ebaActiveAwaitingReview =
+            reviewerEditLevel !== null &&
+            fieldEdits.some(
+                (e) =>
+                    e.status === "active" && e.editedAtLevel === reviewerEditLevel,
+            )
+        const ebaFlaggedOutstanding = fieldEdits.some((e) => e.status === "flagged")
+        const ebaBlocks = ebaActiveAwaitingReview || ebaFlaggedOutstanding
         return {
             advance:
                 pending &&
                 submission.level < 5 &&
                 !remarkBlocks &&
+                !ebaBlocks &&
                 allSectionsReviewed &&
                 (submission.level !== 2 || canActAtStageD),
             finalApprove:
@@ -1197,6 +1213,7 @@ const V2SubmissionDetailPage = () => {
                 submission.level === 5 &&
                 isExec &&
                 !remarkBlocks &&
+                !ebaBlocks &&
                 allSectionsReviewed,
             // Stage D End Users cannot return to contractor (legacy parity);
             // only HOD/Admin can. Their only "send away" option at Stage D
@@ -1222,18 +1239,21 @@ const V2SubmissionDetailPage = () => {
             // or "do not add" (park at L2).
             returnToF: pending && submission.level === 5 && isExec,
             doNotAdd: pending && submission.level === 5 && isExec,
-            // HOD-only "return to earlier stage" - useful when HOD spots a
-            // VRM-level mistake at Stage F. Visible at levels 2-5 (need at
-            // least one earlier stage to bounce back to).
-            // Return to Earlier Stage is Admin-only - it bypasses the
-            // natural review chain by skipping stages. Other reviewers
-            // use Return for Research (one stage back) for DD-style
-            // questions, or the standard Return to Contractor for
-            // Stage B / C review returns where research isn't needed.
+            // Return to Earlier Stage is Admin-only and the natural
+            // escape-hatch when an early-stage mistake is caught later.
+            // Hidden at Stage F (level 4) and Stage G (level 5): at those
+            // seats the canonical send-back is Return for Research, which
+            // hops one stage back and forces a note for the receiving
+            // reviewer so they have the context they need. Even an Admin
+            // account acting as HOD should follow that flow rather than
+            // skip stages with the dropdown.
             returnEarlier:
-                pending && submission.level >= 1 && isAdmin,
+                pending &&
+                submission.level >= 1 &&
+                submission.level < 4 &&
+                isAdmin,
         }
-    }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed])
+    }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed, fieldEdits])
 
     if (loading) {
         return (
@@ -2401,6 +2421,15 @@ const V2SubmissionDetailPage = () => {
                 actionError={actionError}
                 hasActiveRemarksThisCycle={hasActiveRemarksThisCycle}
                 allSectionsReviewed={allSectionsReviewed}
+                ebaActiveAwaitingReview={
+                    (submission.level === 1 || submission.level === 4) &&
+                    fieldEdits.some(
+                        (e) =>
+                            e.status === "active" &&
+                            e.editedAtLevel === (submission.level === 1 ? 0 : 2),
+                    )
+                }
+                ebaFlaggedOutstanding={fieldEdits.some((e) => e.status === "flagged")}
                 runAction={runAction}
                 openEndUserPicker={openEndUserPicker}
                 openServicesModal={openServicesModal}
