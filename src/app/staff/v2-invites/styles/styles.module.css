@@ -249,6 +249,75 @@
 .formRow label { font-size: 0.88rem; color: #333; font-weight: 600; }
 .required { color: #d34141; }
 
+/* New-invite modal: wider card + 2-column body so the similar-companies
+   side panel can sit beside the form, V1-style. */
+.modalCardWide { width: min(900px, 96vw); }
+.createGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    gap: 22px;
+    align-items: start;
+}
+@media (max-width: 720px) {
+    .createGrid { grid-template-columns: 1fr; }
+}
+.createFormCol { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sidePanel {
+    background: #fafbfc;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px;
+    overflow-y: auto;
+}
+.sidePanelHeader {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sidePanelHint { font-size: 0.78rem; color: #777; margin: 0; }
+.sideMatchList { display: flex; flex-direction: column; gap: 8px; }
+.sideMatchItem {
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: white;
+    font-size: 0.85rem;
+}
+.sideMatchName { font-weight: 600; color: #222; word-break: break-word; }
+.sideMatchMeta { font-size: 0.78rem; color: #666; margin-top: 2px; word-break: break-word; }
+.sideMatchType {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3949ab;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+.sideMatchType.submission { background: #e8f5e9; color: #2e7d32; }
+.ackRow {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding-top: 4px;
+}
+.ackRow input { margin-top: 3px; }
+.ackRow label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.35;
+}
+
 .formRow input,
 .formRow textarea,
 .formRow select {
