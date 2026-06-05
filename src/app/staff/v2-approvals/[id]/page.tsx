@@ -1306,13 +1306,23 @@ const V2SubmissionDetailPage = () => {
         //     any flagged edit is outstanding (flag = go back, not forward).
         const reviewerEditLevel =
             submission.level === 1 ? 0 : submission.level === 4 ? 3 : null
+        // Scope to current cycle so prior-cycle leftovers (e.g. flagged
+        // edits the contractor already addressed on their own side after a
+        // return) don't block the new pass forever.
+        const currentCycle = submission.cycleNumber || 1
         const ebaActiveAwaitingReview =
             reviewerEditLevel !== null &&
             fieldEdits.some(
                 (e) =>
-                    e.status === "active" && e.editedAtLevel === reviewerEditLevel,
+                    e.status === "active" &&
+                    e.editedAtLevel === reviewerEditLevel &&
+                    (e.cycleNumber || 1) === currentCycle,
             )
-        const ebaFlaggedOutstanding = fieldEdits.some((e) => e.status === "flagged")
+        const ebaFlaggedOutstanding = fieldEdits.some(
+            (e) =>
+                e.status === "flagged" &&
+                (e.cycleNumber || 1) === currentCycle,
+        )
         const ebaBlocks = ebaActiveAwaitingReview || ebaFlaggedOutstanding
         return {
             advance:
@@ -1378,7 +1388,8 @@ const V2SubmissionDetailPage = () => {
                 fieldEdits.some(
                     (e) =>
                         e.status === "flagged" &&
-                        e.editedAtLevel === (submission.level === 1 ? 0 : 3),
+                        e.editedAtLevel === (submission.level === 1 ? 0 : 3) &&
+                        (e.cycleNumber || 1) === (submission.cycleNumber || 1),
                 ),
         }
     }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed, fieldEdits])
@@ -1719,14 +1730,27 @@ const V2SubmissionDetailPage = () => {
                                     onClick={() => setTab("edits")}
                                 >
                                     Edit Audit ({fieldEdits.length})
-                                    {fieldEdits.some(
-                                        (e) =>
-                                            (e.status === "active" || e.status === "flagged") &&
-                                            ((submission.level === 1 && e.editedAtLevel === 0) ||
-                                                (submission.level === 4 && e.editedAtLevel === 3) ||
-                                                (submission.level === 0 && e.editedAtLevel === 0 && e.status === "flagged") ||
-                                                (submission.level === 3 && e.editedAtLevel === 3 && e.status === "flagged")),
-                                    ) && (
+                                    {fieldEdits.some((e) => {
+                                        if ((e.cycleNumber || 1) !== (submission.cycleNumber || 1)) return false
+                                        // Reviewer seat (C / F): unreviewed (active) OR still-flagged
+                                        // edits from the editor below count as "needs attention".
+                                        if (submission.level === 1 && e.editedAtLevel === 0) {
+                                            return e.status === "active" || e.status === "flagged"
+                                        }
+                                        if (submission.level === 4 && e.editedAtLevel === 3) {
+                                            return e.status === "active" || e.status === "flagged"
+                                        }
+                                        // Editor seat (B / E): only flagged rows are work-to-do.
+                                        // Once the editor edits or responds, the row flips back to
+                                        // active and the badge drops.
+                                        if (submission.level === 0 && e.editedAtLevel === 0) {
+                                            return e.status === "flagged"
+                                        }
+                                        if (submission.level === 3 && e.editedAtLevel === 3) {
+                                            return e.status === "flagged"
+                                        }
+                                        return false
+                                    }) && (
                                         <span className={styles.tabBadge} aria-label="EBA review needed">
                                             !
                                         </span>
@@ -2624,10 +2648,15 @@ const V2SubmissionDetailPage = () => {
                     fieldEdits.some(
                         (e) =>
                             e.status === "active" &&
-                            e.editedAtLevel === (submission.level === 1 ? 0 : 3),
+                            e.editedAtLevel === (submission.level === 1 ? 0 : 3) &&
+                            (e.cycleNumber || 1) === (submission.cycleNumber || 1),
                     )
                 }
-                ebaFlaggedOutstanding={fieldEdits.some((e) => e.status === "flagged")}
+                ebaFlaggedOutstanding={fieldEdits.some(
+                    (e) =>
+                        e.status === "flagged" &&
+                        (e.cycleNumber || 1) === (submission.cycleNumber || 1),
+                )}
                 runAction={runAction}
                 openEndUserPicker={openEndUserPicker}
                 openServicesModal={openServicesModal}
