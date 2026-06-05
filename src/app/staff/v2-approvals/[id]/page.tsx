@@ -1,9 +1,9 @@
 'use client'
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
-import SuccessMessage from "@/components/successMessage"
 import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
 import Modal from "@/components/modal"
+import SuccessMessage from "@/components/successMessage"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
@@ -16,12 +16,12 @@ import ApprovalReviewView from "./ApprovalReviewView"
 import DueDiligencePanel from "./DueDiligencePanel"
 import DecisionBar from "./components/DecisionBar"
 import DoNotAddModal from "./components/DoNotAddModal"
-import RevertFromL3Modal from "./components/RevertFromL3Modal"
 import EndUserPickerModal from "./components/EndUserPickerModal"
 import HodReturnInbox from "./components/HodReturnInbox"
 import RemarksArchive from "./components/RemarksArchive"
 import ReturnForResearchModal from "./components/ReturnForResearchModal"
 import ReturnToEarlierStageModal from "./components/ReturnToEarlierStageModal"
+import RevertFromL3Modal from "./components/RevertFromL3Modal"
 import ServicesModal from "./components/ServicesModal"
 import StageRoleBriefingCard from "./components/StageRoleBriefingCard"
 import styles from "./styles.module.css"
@@ -1450,21 +1450,21 @@ const V2SubmissionDetailPage = () => {
                         see why a submission was paused. */}
                     {(submission as any).hold?.reason &&
                         ["park requested", "parked"].includes(submission.status) && (
-                        <div className={styles.holdReadout}>
-                            <strong>Park reason:</strong>{" "}
-                            {(submission as any).hold.reason}
-                            {(submission as any).hold.requestedBy?.name && (
-                                <span className={styles.dim}>
-                                    {" - "}
-                                    {(submission as any).hold.requestedBy.name}
-                                    {(submission as any).hold.requestedBy.date &&
-                                        ` on ${new Date(
-                                            (submission as any).hold.requestedBy.date,
-                                        ).toLocaleDateString("en-NG")}`}
-                                </span>
-                            )}
-                        </div>
-                    )}
+                            <div className={styles.holdReadout}>
+                                <strong>Park reason:</strong>{" "}
+                                {(submission as any).hold.reason}
+                                {(submission as any).hold.requestedBy?.name && (
+                                    <span className={styles.dim}>
+                                        {" - "}
+                                        {(submission as any).hold.requestedBy.name}
+                                        {(submission as any).hold.requestedBy.date &&
+                                            ` on ${new Date(
+                                                (submission as any).hold.requestedBy.date,
+                                            ).toLocaleDateString("en-NG")}`}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     {/* Lifecycle timestamps. Ordered the way the
                         application actually unfolds: Started ->
                         Submitted -> Last returned (if any), and a
@@ -1565,8 +1565,8 @@ const V2SubmissionDetailPage = () => {
                    suppressed by passing no-op handlers - the CTA is the
                    only interactive bit and it makes no sense without
                    approval mode. */
-                openEndUserPicker={inApprovalMode ? openEndUserPicker : (() => {}) as any}
-                openServicesModal={inApprovalMode ? openServicesModal : (() => {}) as any}
+                openEndUserPicker={inApprovalMode ? openEndUserPicker : (() => { }) as any}
+                openServicesModal={inApprovalMode ? openServicesModal : (() => { }) as any}
                 openDueDiligenceTab={() => setTab("due-diligence")}
                 hideCta={!inApprovalMode}
             />
@@ -2173,11 +2173,11 @@ const V2SubmissionDetailPage = () => {
                                     (h as any).extraData?.note
                                 const otherExtras: Array<[string, any]> = (h as any).extraData
                                     ? Object.entries((h as any).extraData).filter(
-                                          ([k, v]) =>
-                                              !["reason", "message", "note"].includes(k) &&
-                                              (typeof v === "string" || typeof v === "number") &&
-                                              String(v).length > 0,
-                                      )
+                                        ([k, v]) =>
+                                            !["reason", "message", "note"].includes(k) &&
+                                            (typeof v === "string" || typeof v === "number") &&
+                                            String(v).length > 0,
+                                    )
                                     : []
                                 return (
                                     <li key={idx} className={styles.historyItem}>
@@ -2201,7 +2201,7 @@ const V2SubmissionDetailPage = () => {
                                         )}
                                         {otherExtras.length > 0 && (
                                             <ul className={styles.historyExtras}>
-                                                {otherExtras.map(([k, v]) => (
+                                                {otherExtras.filter(([k, v]) => k?.toLocaleLowerCase() !== "source").map(([k, v]) => (
                                                     <li key={k}>
                                                         <span>{k}:</span> {String(v)}
                                                     </li>
@@ -2915,8 +2915,8 @@ const V2SubmissionDetailPage = () => {
                                                 {typeof portalAdmin.phone === "string"
                                                     ? portalAdmin.phone
                                                     : portalAdmin.phone?.internationalNumber ||
-                                                      portalAdmin.phone?.number ||
-                                                      "-"}
+                                                    portalAdmin.phone?.number ||
+                                                    "-"}
                                             </dd>
                                         </div>
                                     </dl>
