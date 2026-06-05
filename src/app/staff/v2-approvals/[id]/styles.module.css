@@ -184,6 +184,22 @@
     font-weight: 600;
 }
 
+.tabBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    padding: 0 5px;
+    background: #d34141;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 999px;
+    vertical-align: 1px;
+}
+
 .tabBody {
     background: white;
     border: 1px solid #ececec;

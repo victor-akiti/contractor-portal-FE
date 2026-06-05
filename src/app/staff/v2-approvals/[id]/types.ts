@@ -32,6 +32,7 @@ export type ActionKey =
     | "revert-from-l3"
     | "return-to-previous-stage"
     | "return-to-earlier-stage"
+    | "return-for-eba-correction"
     | "park-at-l2"
 
 export interface Remark {
@@ -131,6 +132,7 @@ export interface CanDecide {
     returnToF?: boolean
     doNotAdd?: boolean
     returnEarlier?: boolean
+    returnForEbaCorrection?: boolean
 }
 
 // ─── Pure helpers (shared by tabs + modals) ──────────────────────────────

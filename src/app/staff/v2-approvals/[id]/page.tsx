@@ -67,6 +67,7 @@ type ActionKey =
     | "revert-from-l3"
     | "return-to-previous-stage"
     | "return-to-earlier-stage"
+    | "return-for-eba-correction"
     | "park-at-l2"
 
 interface Remark {
@@ -339,6 +340,16 @@ const V2SubmissionDetailPage = () => {
 
     // EBA state
     const [fieldEdits, setFieldEdits] = useState<FieldEditRow[]>([])
+    // Reviewer's "Return for EBA correction" modal — bounces one stage
+    // back to the editor when flagged EBA edits are outstanding.
+    const [ebaReturnOpen, setEbaReturnOpen] = useState(false)
+    const [ebaReturnReason, setEbaReturnReason] = useState("")
+    // Editor's "Respond to flag" modal — replies without changing the
+    // field value, clears the flag and flips the edit back to active.
+    const [respondingToEdit, setRespondingToEdit] = useState<FieldEditRow | null>(null)
+    const [respondReason, setRespondReason] = useState("")
+    const [respondActing, setRespondActing] = useState(false)
+    const [respondError, setRespondError] = useState("")
 
     // Migration status
     const [migrationStatus, setMigrationStatus] = useState<any>(null)
@@ -974,6 +985,48 @@ const V2SubmissionDetailPage = () => {
         }
     }
 
+    // Editor at B/E replies to a flagged edit without changing the field
+    // value. Clears the flag and flips the row back to "active" so the
+    // reviewer re-sees it after the next advance.
+    const submitRespondToFlag = async () => {
+        if (!respondingToEdit || !id) return
+        if (!respondReason.trim()) {
+            setRespondError("A response is required.")
+            return
+        }
+        setRespondActing(true)
+        setRespondError("")
+        try {
+            const result = await postProtected(
+                `api/v2/submissions/${id}/edits/${respondingToEdit._id}/respond`,
+                { response: respondReason.trim() },
+                role,
+            )
+            if (result?.status === "OK") {
+                setRespondingToEdit(null)
+                setRespondReason("")
+                await fetchAll()
+            } else {
+                setRespondError(result?.error?.message || "Respond failed")
+            }
+        } catch (e: any) {
+            setRespondError(e?.message || "Unexpected error")
+        } finally {
+            setRespondActing(false)
+        }
+    }
+
+    const submitReturnForEbaCorrection = async () => {
+        if (!id) return
+        if (!ebaReturnReason.trim()) {
+            setActionError("A reason is required.")
+            return
+        }
+        await runAction("return-for-eba-correction", { reason: ebaReturnReason.trim() })
+        setEbaReturnOpen(false)
+        setEbaReturnReason("")
+    }
+
     const acceptEdit = async (edit: FieldEditRow) => {
         if (!id) return
         const ok = await confirmDialog({
@@ -1186,12 +1239,12 @@ const V2SubmissionDetailPage = () => {
         // block forward movement (see BE remark gate in applyTransition).
         const remarkBlocks = submission.level === 0 && hasActiveRemarksThisCycle
         // EBA gate (mirrors BE assertEbaReviewedBeforeAdvance):
-        //   - Stage C reviews Stage-B edits, Stage F reviews Stage-D edits.
+        //   - Stage C reviews Stage-B edits, Stage F reviews Stage-E edits.
         //   - Advance is blocked while the reviewer has unreviewed (active)
         //     edits at the editable level below them, and at ANY stage while
         //     any flagged edit is outstanding (flag = go back, not forward).
         const reviewerEditLevel =
-            submission.level === 1 ? 0 : submission.level === 4 ? 2 : null
+            submission.level === 1 ? 0 : submission.level === 4 ? 3 : null
         const ebaActiveAwaitingReview =
             reviewerEditLevel !== null &&
             fieldEdits.some(
@@ -1252,6 +1305,20 @@ const V2SubmissionDetailPage = () => {
                 submission.level >= 1 &&
                 submission.level < 4 &&
                 isAdmin,
+            // Reviewer at C/F bounces back to the editor at B/E so the
+            // flagged EBA fields can be resolved. Only surfaces when at
+            // least one flagged edit is outstanding at the editor's
+            // stage — otherwise it would collapse into a normal one-step
+            // back (use Return for Research for that).
+            returnForEbaCorrection:
+                pending &&
+                (submission.level === 1 || submission.level === 4) &&
+                (isSupervisor || isHod) &&
+                fieldEdits.some(
+                    (e) =>
+                        e.status === "flagged" &&
+                        e.editedAtLevel === (submission.level === 1 ? 0 : 3),
+                ),
         }
     }, [submission, role, user, hasActiveRemarksThisCycle, allSectionsReviewed, fieldEdits])
 
@@ -1579,6 +1646,18 @@ const V2SubmissionDetailPage = () => {
                                     onClick={() => setTab("edits")}
                                 >
                                     Edit Audit ({fieldEdits.length})
+                                    {fieldEdits.some(
+                                        (e) =>
+                                            (e.status === "active" || e.status === "flagged") &&
+                                            ((submission.level === 1 && e.editedAtLevel === 0) ||
+                                                (submission.level === 4 && e.editedAtLevel === 3) ||
+                                                (submission.level === 0 && e.editedAtLevel === 0 && e.status === "flagged") ||
+                                                (submission.level === 3 && e.editedAtLevel === 3 && e.status === "flagged")),
+                                    ) && (
+                                        <span className={styles.tabBadge} aria-label="EBA review needed">
+                                            !
+                                        </span>
+                                    )}
                                 </button>
                                 <button
                                     className={`${styles.tab} ${tab === "comments" ? styles.tabActive : ""}`}
@@ -1900,6 +1979,32 @@ const V2SubmissionDetailPage = () => {
                                             {e.flaggedReason}
                                         </div>
                                     )}
+                                    {(e as any).flagResolution?.previousFlag?.flaggedReason && (
+                                        <div className={styles.certRemarks}>
+                                            <strong>
+                                                Previously flagged
+                                                {(e as any).flagResolution.previousFlag.flaggedAtStage
+                                                    ? ` at Stage ${(e as any).flagResolution.previousFlag.flaggedAtStage}`
+                                                    : ""}
+                                                :
+                                            </strong>{" "}
+                                            {(e as any).flagResolution.previousFlag.flaggedReason}
+                                            {(e as any).flagResolution.response && (
+                                                <div>
+                                                    <strong>
+                                                        {(e as any).flagResolution.resolvedBy?.name || "Editor"}{" "}
+                                                        responded:
+                                                    </strong>{" "}
+                                                    {(e as any).flagResolution.response}
+                                                </div>
+                                            )}
+                                            {(e as any).flagResolution.resolutionType === "edited" && (
+                                                <div className={styles.dim}>
+                                                    Resolved by editing the field above.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                     {e.status === "active" && editReviewerNow && (
                                         <div className={styles.certActions}>
                                             <button
@@ -1916,6 +2021,26 @@ const V2SubmissionDetailPage = () => {
                                             </button>
                                         </div>
                                     )}
+                                    {e.status === "flagged" &&
+                                        ebaEditableNow &&
+                                        e.editedAtLevel === submission.level && (
+                                            <div className={styles.certActions}>
+                                                <button
+                                                    className={styles.btnSecondary}
+                                                    onClick={() => {
+                                                        setRespondingToEdit(e)
+                                                        setRespondReason("")
+                                                        setRespondError("")
+                                                    }}
+                                                    title="Reply without changing the field. Clears the flag so the reviewer re-sees the edit on the next pass."
+                                                >
+                                                    Respond to flag
+                                                </button>
+                                                <span className={styles.dim}>
+                                                    Or edit the field on the form tab — that also clears the flag.
+                                                </span>
+                                            </div>
+                                        )}
                                 </li>
                             ))}
                         </ul>
@@ -2426,7 +2551,7 @@ const V2SubmissionDetailPage = () => {
                     fieldEdits.some(
                         (e) =>
                             e.status === "active" &&
-                            e.editedAtLevel === (submission.level === 1 ? 0 : 2),
+                            e.editedAtLevel === (submission.level === 1 ? 0 : 3),
                     )
                 }
                 ebaFlaggedOutstanding={fieldEdits.some((e) => e.status === "flagged")}
@@ -2437,6 +2562,7 @@ const V2SubmissionDetailPage = () => {
                 openParkRequestModal={() => setParkRequestOpen(true)}
                 openReturnPrevModal={() => { setReturnPrevReason(""); setReturnPrevOpen(true) }}
                 openReturnEarlierModal={() => { setReturnEarlierLevel(0); setReturnEarlierReason(""); setReturnEarlierOpen(true) }}
+                openEbaReturnModal={() => { setEbaReturnReason(""); setEbaReturnOpen(true) }}
                 openParkL2Modal={() => { setParkL2Reason(""); setParkL2Open(true) }}
                 openRevertL3Modal={() => { setRevertL3Reason(""); setRevertL3Level(5); setRevertL3Open(true) }}
                 openUnparkModal={() => { setUnparkReason(""); setUnparkOpen(true) }}
@@ -2487,6 +2613,110 @@ const V2SubmissionDetailPage = () => {
                     onSubmit={submitReturnEarlier}
                     onClose={() => setReturnEarlierOpen(false)}
                 />
+            )}
+
+            {ebaReturnOpen && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Return for EBA Correction</h3>
+                            <p className={styles.modalSub}>
+                                Sends this submission back to Stage{" "}
+                                {String.fromCharCode(66 + submission.level - 1)} so the
+                                editor can resolve every flagged EBA field. Stays on the
+                                staff side — the contractor is not notified.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <label className={styles.modalLabel}>
+                                Reason for the editor
+                            </label>
+                            <textarea
+                                rows={4}
+                                placeholder="Summarise what the editor must address."
+                                value={ebaReturnReason}
+                                onChange={(e) => setEbaReturnReason(e.target.value)}
+                            />
+                            {actionError && <ErrorText text={actionError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setEbaReturnOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitReturnForEbaCorrection}
+                                disabled={
+                                    actionRunning === "return-for-eba-correction" ||
+                                    !ebaReturnReason.trim()
+                                }
+                            >
+                                Return for EBA Correction
+                                {actionRunning === "return-for-eba-correction" && (
+                                    <ButtonLoadingIcon />
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {respondingToEdit && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Respond to flag</h3>
+                            <p className={styles.modalSub}>
+                                Reply to {respondingToEdit.flaggedBy?.name || "the reviewer"}'s
+                                concern on{" "}
+                                <strong>
+                                    {fieldLabelFromSchema(
+                                        formVersion?.schema,
+                                        respondingToEdit.fieldKey,
+                                    )}
+                                </strong>
+                                . The flag clears and the edit becomes active again so the
+                                reviewer re-sees it after the next advance. If you'd rather
+                                change the field value, edit it on the form tab instead —
+                                that also clears the flag.
+                            </p>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <div className={styles.certRemarks}>
+                                <strong>Flag:</strong> {respondingToEdit.flaggedReason}
+                            </div>
+                            <label className={styles.modalLabel}>Your response</label>
+                            <textarea
+                                rows={4}
+                                placeholder="Explain why the original value stands."
+                                value={respondReason}
+                                onChange={(e) => setRespondReason(e.target.value)}
+                                disabled={respondActing}
+                            />
+                            {respondError && <ErrorText text={respondError} />}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setRespondingToEdit(null)}
+                                disabled={respondActing}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnPrimary}
+                                onClick={submitRespondToFlag}
+                                disabled={respondActing || !respondReason.trim()}
+                            >
+                                Send response
+                                {respondActing && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             )}
 
             {parkL2Open && (

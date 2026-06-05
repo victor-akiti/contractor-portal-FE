@@ -108,6 +108,24 @@ const V2InvitesPage = () => {
     const similarTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
     const similarSeq = useRef(0)
 
+    // An EXACT name match (case-insensitive, whitespace-collapsed) cannot
+    // be acknowledged-away — that company definitively already exists on
+    // the portal or has been invited, and the originator must use that
+    // record rather than create a new one.
+    const exactMatch = useMemo(() => {
+        const t = cCompany.trim().replace(/\s+/g, " ").toLowerCase()
+        if (!t) return null
+        return (
+            similarMatches.find(
+                (m) =>
+                    String(m.companyName || "")
+                        .trim()
+                        .replace(/\s+/g, " ")
+                        .toLowerCase() === t,
+            ) || null
+        )
+    }, [cCompany, similarMatches])
+
     // Approve / reject state
     const [actingId, setActingId] = useState<string | null>(null)
     const [rejectingId, setRejectingId] = useState<string | null>(null)
@@ -777,18 +795,28 @@ const V2InvitesPage = () => {
                                 </aside>
                             </div>
 
-                            <div className={styles.ackRow}>
-                                <input
-                                    id="ackUnique"
-                                    type="checkbox"
-                                    checked={ackUnique}
-                                    onChange={(e) => setAckUnique(e.target.checked)}
-                                    disabled={creating || cCompany.trim().length < 3}
-                                />
-                                <label htmlFor="ackUnique">
-                                    I have reviewed the list and confirm <strong>{cCompany.trim() || "this company"}</strong> is not already on the portal or invited.
-                                </label>
-                            </div>
+                            {exactMatch ? (
+                                <div className={styles.modalError}>
+                                    <ErrorText
+                                        text={`"${exactMatch.companyName}" is already ${
+                                            exactMatch.type === "submission" ? "on the portal" : "invited"
+                                        }${exactMatch.status ? ` (status: ${exactMatch.status})` : ""}. You cannot create a new invite under the same name.`}
+                                    />
+                                </div>
+                            ) : (
+                                <div className={styles.ackRow}>
+                                    <input
+                                        id="ackUnique"
+                                        type="checkbox"
+                                        checked={ackUnique}
+                                        onChange={(e) => setAckUnique(e.target.checked)}
+                                        disabled={creating || cCompany.trim().length < 3}
+                                    />
+                                    <label htmlFor="ackUnique">
+                                        I have reviewed the list and confirm <strong>{cCompany.trim() || "this company"}</strong> is not already on the portal or invited.
+                                    </label>
+                                </div>
+                            )}
 
                             {createError && <div className={styles.modalError}><ErrorText text={createError} /></div>}
                             {createSuccess && <div className={styles.modalSuccess}><SuccessMessage message={createSuccess} /></div>}
@@ -800,13 +828,21 @@ const V2InvitesPage = () => {
                             <button
                                 className={styles.btnPrimary}
                                 onClick={submitCreate}
-                                disabled={creating || groups.length === 0 || !ackUnique || similarLoading}
+                                disabled={
+                                    creating ||
+                                    groups.length === 0 ||
+                                    !ackUnique ||
+                                    similarLoading ||
+                                    !!exactMatch
+                                }
                                 title={
-                                    !ackUnique
-                                        ? "Tick the confirmation that this company is not a duplicate."
-                                        : similarLoading
-                                            ? "Waiting for the similar-companies search to finish."
-                                            : undefined
+                                    exactMatch
+                                        ? `"${exactMatch.companyName}" already exists on the portal.`
+                                        : !ackUnique
+                                            ? "Tick the confirmation that this company is not a duplicate."
+                                            : similarLoading
+                                                ? "Waiting for the similar-companies search to finish."
+                                                : undefined
                                 }
                             >
                                 Create invite
