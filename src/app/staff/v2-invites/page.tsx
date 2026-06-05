@@ -6,7 +6,7 @@ import SuccessMessage from "@/components/successMessage"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { patchProtected } from "@/requests/patch"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
@@ -94,6 +94,19 @@ const V2InvitesPage = () => {
     const [creating, setCreating] = useState(false)
     const [createError, setCreateError] = useState("")
     const [createSuccess, setCreateSuccess] = useState("")
+    // Similar-companies side panel state + ack checkbox.
+    type SimilarMatch = {
+        type: "invite" | "submission"
+        companyName: string
+        email?: string
+        status?: string
+        level?: number
+    }
+    const [similarMatches, setSimilarMatches] = useState<SimilarMatch[]>([])
+    const [similarLoading, setSimilarLoading] = useState(false)
+    const [ackUnique, setAckUnique] = useState(false)
+    const similarTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const similarSeq = useRef(0)
 
     // Approve / reject state
     const [actingId, setActingId] = useState<string | null>(null)
@@ -153,7 +166,48 @@ const V2InvitesPage = () => {
         setCGroupId(groups[0]?._id || "")
         setCreateError("")
         setCreateSuccess("")
+        setSimilarMatches([])
+        setSimilarLoading(false)
+        setAckUnique(false)
         setShowCreate(true)
+    }
+
+    // Debounced "similar companies" search wired to the company-name input.
+    // Each keystroke schedules a 500ms-deferred lookup; in-flight responses
+    // are dropped when a newer query starts so stale lists don't flash in.
+    const onCompanyChange = (next: string) => {
+        setCCompany(next)
+        // Any edit invalidates the prior acknowledgement — the user has to
+        // re-confirm against the new list before the create button unlocks.
+        setAckUnique(false)
+        if (similarTimer.current) clearTimeout(similarTimer.current)
+        const trimmed = next.trim()
+        if (trimmed.length < 3) {
+            setSimilarMatches([])
+            setSimilarLoading(false)
+            return
+        }
+        setSimilarLoading(true)
+        const mySeq = ++similarSeq.current
+        similarTimer.current = setTimeout(async () => {
+            try {
+                const result = await getProtected(
+                    `api/v2/invites/find-similar?q=${encodeURIComponent(trimmed)}`,
+                    user?.role,
+                )
+                if (mySeq !== similarSeq.current) return
+                if (result?.status === "OK") {
+                    setSimilarMatches(result.data?.matches || [])
+                } else {
+                    setSimilarMatches([])
+                }
+            } catch {
+                if (mySeq !== similarSeq.current) return
+                setSimilarMatches([])
+            } finally {
+                if (mySeq === similarSeq.current) setSimilarLoading(false)
+            }
+        }, 500)
     }
 
     const submitCreate = async () => {
@@ -172,6 +226,11 @@ const V2InvitesPage = () => {
                 groupId: cGroupId,
             }
             if (cPhone.trim()) payload.phone = { number: cPhone.trim() }
+            // The user has explicitly confirmed via the side-panel checkbox
+            // that this company is not a duplicate, so pass through the
+            // BE's similar-name gate. The BE also re-runs the check as a
+            // safety net.
+            payload.acknowledgeSimilar = true
             const result = await postProtected("api/v2/invites", payload, user?.role)
             if (result?.status === "OK") {
                 setCreateSuccess(`Invite created for ${cEmail.trim()} — waiting for HOD approval.`)
@@ -625,51 +684,110 @@ const V2InvitesPage = () => {
 
             {showCreate && (
                 <Modal>
-                    <div className={styles.modalCard}>
+                    <div className={`${styles.modalCard} ${styles.modalCardWide}`}>
                         <div className={styles.modalHeader}>
                             <h3>New invite</h3>
                         </div>
                         <div className={styles.modalBody}>
-                            <div className={styles.formGrid}>
-                                <div className={styles.formRow}>
-                                    <label>First name <span className={styles.required}>*</span></label>
-                                    <input value={cFname} onChange={(e) => setCFname(e.target.value)} disabled={creating} />
-                                </div>
-                                <div className={styles.formRow}>
-                                    <label>Last name <span className={styles.required}>*</span></label>
-                                    <input value={cLname} onChange={(e) => setCLname(e.target.value)} disabled={creating} />
-                                </div>
-                            </div>
-                            <div className={styles.formRow}>
-                                <label>Email <span className={styles.required}>*</span></label>
-                                <input type="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} disabled={creating} />
-                            </div>
-                            <div className={styles.formRow}>
-                                <label>Phone</label>
-                                <input value={cPhone} onChange={(e) => setCPhone(e.target.value)} disabled={creating} />
-                            </div>
-                            <div className={styles.formRow}>
-                                <label>Company name <span className={styles.required}>*</span></label>
-                                <input value={cCompany} onChange={(e) => setCCompany(e.target.value)} disabled={creating} />
-                            </div>
-                            <div className={styles.formRow}>
-                                <label>Group <span className={styles.required}>*</span></label>
-                                {groups.length === 0 ? (
-                                    <div className={styles.inlineWarning}>
-                                        No contractor groups defined. Create a group first.
+                            <div className={styles.createGrid}>
+                                <div className={styles.createFormCol}>
+                                    <div className={styles.formGrid}>
+                                        <div className={styles.formRow}>
+                                            <label>First name <span className={styles.required}>*</span></label>
+                                            <input value={cFname} onChange={(e) => setCFname(e.target.value)} disabled={creating} />
+                                        </div>
+                                        <div className={styles.formRow}>
+                                            <label>Last name <span className={styles.required}>*</span></label>
+                                            <input value={cLname} onChange={(e) => setCLname(e.target.value)} disabled={creating} />
+                                        </div>
                                     </div>
-                                ) : (
-                                    <select value={cGroupId} onChange={(e) => setCGroupId(e.target.value)} disabled={creating}>
-                                        <option value="">Select a group…</option>
-                                        {groups.map((g) => (
-                                            <option key={g._id} value={g._id}>{g.name}</option>
-                                        ))}
-                                    </select>
-                                )}
-                                <p className={styles.helpText}>
-                                    The form attached to the invite is the group's current published template version,
-                                    stamped at the moment HOD approves.
-                                </p>
+                                    <div className={styles.formRow}>
+                                        <label>Email <span className={styles.required}>*</span></label>
+                                        <input type="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} disabled={creating} />
+                                    </div>
+                                    <div className={styles.formRow}>
+                                        <label>Phone</label>
+                                        <input value={cPhone} onChange={(e) => setCPhone(e.target.value)} disabled={creating} />
+                                    </div>
+                                    <div className={styles.formRow}>
+                                        <label>Company name <span className={styles.required}>*</span></label>
+                                        <input
+                                            value={cCompany}
+                                            onChange={(e) => onCompanyChange(e.target.value)}
+                                            disabled={creating}
+                                            placeholder="Start typing to see similar companies"
+                                        />
+                                    </div>
+                                    <div className={styles.formRow}>
+                                        <label>Group <span className={styles.required}>*</span></label>
+                                        {groups.length === 0 ? (
+                                            <div className={styles.inlineWarning}>
+                                                No contractor groups defined. Create a group first.
+                                            </div>
+                                        ) : (
+                                            <select value={cGroupId} onChange={(e) => setCGroupId(e.target.value)} disabled={creating}>
+                                                <option value="">Select a group…</option>
+                                                {groups.map((g) => (
+                                                    <option key={g._id} value={g._id}>{g.name}</option>
+                                                ))}
+                                            </select>
+                                        )}
+                                        <p className={styles.helpText}>
+                                            The form attached to the invite is the group's current published template version,
+                                            stamped at the moment HOD approves.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <aside className={styles.sidePanel}>
+                                    <div className={styles.sidePanelHeader}>
+                                        <span>Similar Registered Companies</span>
+                                        {similarLoading && <ButtonLoadingIcon />}
+                                    </div>
+                                    {cCompany.trim().length < 3 ? (
+                                        <p className={styles.sidePanelHint}>
+                                            Start typing a company name (at least 3 characters) to see matches already on the portal or invited.
+                                        </p>
+                                    ) : similarMatches.length === 0 ? (
+                                        <p className={styles.sidePanelHint}>
+                                            {similarLoading
+                                                ? "Searching…"
+                                                : "No similar companies found."}
+                                        </p>
+                                    ) : (
+                                        <div className={styles.sideMatchList}>
+                                            {similarMatches.map((m, i) => (
+                                                <div key={`${m.type}-${m.companyName}-${i}`} className={styles.sideMatchItem}>
+                                                    <div>
+                                                        <span
+                                                            className={`${styles.sideMatchType} ${m.type === "submission" ? styles.submission : ""}`}
+                                                        >
+                                                            {m.type === "submission" ? "On portal" : "Invited"}
+                                                        </span>
+                                                        <span className={styles.sideMatchName}>{m.companyName}</span>
+                                                    </div>
+                                                    <div className={styles.sideMatchMeta}>
+                                                        {m.status && <>Status: {m.status}</>}
+                                                        {m.email && <> · {m.email}</>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </aside>
+                            </div>
+
+                            <div className={styles.ackRow}>
+                                <input
+                                    id="ackUnique"
+                                    type="checkbox"
+                                    checked={ackUnique}
+                                    onChange={(e) => setAckUnique(e.target.checked)}
+                                    disabled={creating || cCompany.trim().length < 3}
+                                />
+                                <label htmlFor="ackUnique">
+                                    I have reviewed the list and confirm <strong>{cCompany.trim() || "this company"}</strong> is not already on the portal or invited.
+                                </label>
                             </div>
 
                             {createError && <div className={styles.modalError}><ErrorText text={createError} /></div>}
@@ -682,7 +800,14 @@ const V2InvitesPage = () => {
                             <button
                                 className={styles.btnPrimary}
                                 onClick={submitCreate}
-                                disabled={creating || groups.length === 0}
+                                disabled={creating || groups.length === 0 || !ackUnique || similarLoading}
+                                title={
+                                    !ackUnique
+                                        ? "Tick the confirmation that this company is not a duplicate."
+                                        : similarLoading
+                                            ? "Waiting for the similar-companies search to finish."
+                                            : undefined
+                                }
                             >
                                 Create invite
                                 {creating && <ButtonLoadingIcon />}
