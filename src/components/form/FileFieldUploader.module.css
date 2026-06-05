@@ -1,0 +1,235 @@
+.uploader {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fileList { display: flex; flex-direction: column; gap: 8px; }
+
+.fileCard {
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fileRow { display: flex; align-items: center; gap: 12px; }
+
+.fileIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: #f3f3f3;
+    color: #555;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    flex-shrink: 0;
+}
+
+.fileMeta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+
+.fileLink {
+    color: #1a1a1a;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.fileLink:hover { color: #e67509; text-decoration: underline; }
+
+.fileSub { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+.dim { color: #999; font-size: 0.78rem; }
+
+.fileActions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+.linkBtn {
+    background: none;
+    border: none;
+    color: #e67509;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0;
+}
+.linkBtnDanger {
+    background: none;
+    border: none;
+    color: #c0392b;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0;
+}
+
+.statusBadge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.statusPending  { background: #fff4e0; color: #6b4500; }
+.statusApproved { background: #e6f6e8; color: #1f7a2a; }
+.statusRejected { background: #fde6e6; color: #a32525; }
+.statusNeutral  { background: #f0f0f0; color: #555; }
+
+.expiry_expired  { background: #fde6e6; color: #a32525; }
+.expiry_expiring { background: #fff4e0; color: #6b4500; }
+.expiry_healthy  { background: #e6f6e8; color: #1f7a2a; }
+
+.reviewRemarks {
+    background: #fff5ed;
+    border: 1px solid #ffd5b3;
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #6b3d04;
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+.certDates {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px dashed #f0f0f0;
+}
+
+.certDates label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex: 1 1 160px;
+}
+
+.certDates input {
+    padding: 7px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: normal;
+    color: #1a1a1a;
+}
+.certDates input:focus { outline: none; border-color: #e67509; }
+.certDates input:disabled { background: #f9f9f9; color: #999; }
+
+.dropZone {
+    background: #fafafa;
+    border: 1px dashed #d0d0d0;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.browseBtn {
+    background: #e67509;
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.88rem;
+}
+.browseBtn:disabled { background: #ddb091; cursor: not-allowed; }
+
+.reuseBtn {
+    background: white;
+    color: #333;
+    border: 1px solid #d0d0d0;
+    padding: 9px 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.cancelReupload {
+    background: white;
+    color: #c0392b;
+    border: 1px solid #f3c4be;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.formatHint { color: #999; font-size: 0.78rem; margin: 0; }
+
+.errText { color: #c0392b; font-size: 0.85rem; margin: 0; }
+
+.reuseBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.reuseCard {
+    background: white;
+    width: min(520px, 100%);
+    border-radius: 10px;
+    padding: 20px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.reuseCard h4 { margin: 0; }
+
+.reuseList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+
+.reuseList button {
+    width: 100%;
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    text-align: left;
+    font-size: 0.9rem;
+}
+.reuseList button:hover { border-color: #e67509; background: #fff5ed; }
+
+.reuseFooter { display: flex; justify-content: flex-end; }
+.reuseFooter button {
+    background: white;
+    border: 1px solid #d0d0d0;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}

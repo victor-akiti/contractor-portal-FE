@@ -83,7 +83,25 @@ export const getProtected = async (route, role) => {
       const result = await request.json();
       return result;
     } else {
-      throw new Error("Request failed");
+      // Non-OK with a response — parse the BE error body so callers see
+      // the actual message instead of a generic "Request failed". Same
+      // FAILED envelope as post/put/patch/delete.
+      try {
+        const errorBody = await request.json();
+        const msg =
+          errorBody?.error?.message ||
+          errorBody?.message ||
+          `Request failed with status ${request.status}`;
+        return {
+          status: "FAILED",
+          error: { ...errorBody?.error, message: msg },
+        };
+      } catch {
+        return {
+          status: "FAILED",
+          error: { message: `Request failed with status ${request.status}` },
+        };
+      }
     }
   } catch (error) {
     console.error({ error });

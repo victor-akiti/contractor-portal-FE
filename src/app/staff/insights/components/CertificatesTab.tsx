@@ -5,7 +5,6 @@ import { fetchCertificates } from '../api';
 import type { CertificatesData, DateRange, Period } from '../types';
 import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
-import PeriodSelector from './PeriodSelector';
 import SortableTable from './SortableTable';
 import StatCard from './StatCard';
 
@@ -26,14 +25,7 @@ function CardDivider() {
   );
 }
 
-interface CertificatesTabProps {
-  period: Period;
-  dateRange?: DateRange;
-  rawDateRange: DateRange;
-  onPeriodChange: (p: Period, dr: DateRange) => void;
-}
-
-export default function CertificatesTab({ period, dateRange, rawDateRange, onPeriodChange }: CertificatesTabProps) {
+export default function CertificatesTab({ period, dateRange }: { period: Period; dateRange?: DateRange }) {
   const [data, setData] = useState<CertificatesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,12 +75,29 @@ export default function CertificatesTab({ period, dateRange, rawDateRange, onPer
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* Live cert health cards — not period-filtered */}
-      {loading ? <CardsSkeleton count={5} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
+      {/* ── Refresh ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>Period: <strong style={{ color: '#343a40' }}>{period}</strong></span>
+        <button onClick={load} style={{ padding: '0.3rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: '#fff', fontSize: '0.8rem', cursor: 'pointer' }}>
+          ↻ Refresh
+        </button>
+      </div>
+
+      {/* ── Stat cards — grouped: total → breakdown ── */}
+      {loading ? <CardsSkeleton count={8} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Live cert health — not filtered by period
-          </p>
+
+          {/* Group 1: review status */}
+          {/* <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
+            <StatCard label="Total Certs Tracked" value={data.statusBreakdown.totalTracked}      color="default" />
+            <StatCard label="Approved (period)"   value={data.statusBreakdown.approvedInPeriod}  color="green" />
+            <StatCard label="Pending Review"      value={data.statusBreakdown.pending}           color="amber" />
+            <StatCard label="Rejected (period)"   value={data.statusBreakdown.rejectedInPeriod}  color="red" />
+          </div> */}
+
+          {/* <CardDivider /> */}
+
+          {/* Group 2: health / expiry */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
             <StatCard label="Total Certs Tracked" value={data.statusBreakdown.totalTracked} color="default" />
             <StatCard label="No Expiry" value={data.expiryBreakdown.noExpiry} color="default" />
@@ -96,30 +105,17 @@ export default function CertificatesTab({ period, dateRange, rawDateRange, onPer
             <StatCard label="Expiring Soon" value={data.expiryBreakdown.expiringSoon} color="amber" />
             <StatCard label="Expired" value={data.expiryBreakdown.expired} color="red" />
           </div>
-        </div>
-      )}
 
-      {/* Period selector — live health above, period-filtered review stats below */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-        <p style={{ margin: 0, fontSize: '0.72rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Review performance — filtered by period
-        </p>
-        <PeriodSelector
-          period={period}
-          rawDateRange={rawDateRange}
-          onChange={onPeriodChange}
-          onRefresh={load}
-          loading={loading}
-        />
-      </div>
+          <CardDivider />
 
-      {/* Period-filtered review performance cards */}
-      {!loading && !error && data && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
-          <StatCard label="Approval Rate" value={fmtPct(data.approvalRate)} color="green" />
-          <StatCard label="Avg Review Days" value={fmt(data.avgReviewDays)} sub="days" color="blue" />
-          <StatCard label="Reviewed in Period" value={data.summary.reviewedInPeriod} color="blue" />
-          <StatCard label="Contractors with Pending Reviews" value={data.companiesWithPendingCerts} color="amber" />
+          {/* Group 3: performance metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
+            <StatCard label="Approval Rate" value={fmtPct(data.approvalRate)} color="green" />
+            <StatCard label="Avg Review Days" value={fmt(data.avgReviewDays)} sub="days" color="blue" />
+            <StatCard label="Reviewed in Period" value={data.summary.reviewedInPeriod} color="blue" />
+            <StatCard label="Contractors with Pending Reviews" value={data.companiesWithPendingCerts} color="amber" />
+            {/* <StatCard label="Critical Expiry" value={data.summary.criticalExpiry} color="red" /> */}
+          </div>
         </div>
       )}
 

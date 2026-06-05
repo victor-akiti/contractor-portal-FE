@@ -162,15 +162,18 @@ export const postProtected = async (route, body, role) => {
             return await request.json();
         }
 
-        // Not ok but responded — parse the error body so callers can read structured errors
+        // Not ok but responded — parse the error body so callers can read structured errors.
+        // BE error shape is { status: "Failed", error: { message } } so check the nested
+        // .error.message before falling back to the top-level .message or a generic banner.
         try {
             const errorBody = await request.json();
+            const msg =
+                errorBody?.error?.message ||
+                errorBody?.message ||
+                `Request failed with status ${request.status}`;
             return {
                 status: "FAILED",
-                error: {
-                    message: errorBody.message || `Request failed with status ${request.status}`,
-                    ...errorBody,
-                },
+                error: { ...errorBody?.error, message: msg },
             };
         } catch {
             return {
@@ -229,15 +232,17 @@ export const postProtectedMultipart = async (route, body, role) => {
 
         if (request.ok) return request.json();
 
-        // Not ok — parse and return structured error so callers can display it
+        // Not ok — parse and return structured error so callers can display it.
+        // Nested .error.message takes precedence over the top-level shape.
         try {
             const errorBody = await request.json();
+            const msg =
+                errorBody?.error?.message ||
+                errorBody?.message ||
+                `Request failed with status ${request.status}`;
             return {
                 status: "FAILED",
-                error: {
-                    message: errorBody.message || errorBody.error?.message || `Request failed with status ${request.status}`,
-                    ...errorBody,
-                },
+                error: { ...errorBody?.error, message: msg },
             };
         } catch {
             return {

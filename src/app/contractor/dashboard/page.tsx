@@ -159,11 +159,33 @@ const Dashboard = () => {
     const [updateCertificateError, setUpdateCertificateError] = useState("")
     const [updatingCertificate, setUpdatingCertificate] = useState(false)
     const [updateCertificateSuccess, setUpdateCertificateSuccess] = useState("")
+
+    // V2 application surface — appears only when the contractor's account is
+    // linked to a SubmissionV2 via the V2 invite/registration flow.
+    const [v2Submission, setV2Submission] = useState<{ status: string; cycleNumber?: number } | null>(null)
+    const [v2Probed, setV2Probed] = useState(false)
     const user = useSelector((state: any) => state.user.user)
 
     useEffect(() => {
         fetchDashboardData()
+        probeV2Submission()
     }, [])
+
+    const probeV2Submission = async () => {
+        try {
+            const r = await getProtected("api/v2/submissions/mine", user?.role)
+            if (r?.status === "OK" && r.data?.submission) {
+                setV2Submission({
+                    status: r.data.submission.status,
+                    cycleNumber: r.data.submission.cycleNumber,
+                })
+            }
+        } catch {
+            // No V2 submission linked — that's fine, this contractor predates V2.
+        } finally {
+            setV2Probed(true)
+        }
+    }
 
     const fetchDashboardData = async () => {
         try {
@@ -314,6 +336,52 @@ const Dashboard = () => {
             <div className={styles.dashboardHeader}>
                 <h3 className={styles.dashboardTitle}>Your Dashboard</h3>
             </div>
+
+            {/* V2 Application CTA — only when this contractor's account is
+                linked to a SubmissionV2 (i.e. they came in via the new
+                invite/registration flow). */}
+            {v2Probed && v2Submission && (
+                <div
+                    style={{
+                        background: "white",
+                        border: "1px solid #ffd5b3",
+                        borderLeft: "4px solid #e67509",
+                        borderRadius: "8px",
+                        padding: "16px 20px",
+                        marginBottom: "20px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "12px",
+                    }}
+                >
+                    <div>
+                        <strong style={{ display: "block", marginBottom: 4 }}>
+                            Your application form
+                        </strong>
+                        <span style={{ color: "#666", fontSize: "0.9rem" }}>
+                            Status: <strong>{v2Submission.status}</strong>
+                            {v2Submission.cycleNumber ? ` · cycle ${v2Submission.cycleNumber}` : ""}
+                        </span>
+                    </div>
+                    <Link
+                        href="/contractor/v2/application"
+                        style={{
+                            background: "#e67509",
+                            color: "white",
+                            padding: "10px 16px",
+                            borderRadius: "6px",
+                            fontWeight: 600,
+                            textDecoration: "none",
+                        }}
+                    >
+                        {v2Submission.status === "draft" || v2Submission.status === "returned"
+                            ? "Continue application"
+                            : "View application"}
+                    </Link>
+                </div>
+            )}
 
             {/* Loading State */}
             {fetchingDashboardData && (
