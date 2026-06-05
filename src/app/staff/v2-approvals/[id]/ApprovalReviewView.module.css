@@ -1,326 +1,466 @@
 /* ApprovalReviewView - clean label-value review layout for staff. */
 
-.reviewView { display: flex; flex-direction: column; gap: 28px; }
+.reviewView {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
 
-.pageBlock { display: flex; flex-direction: column; gap: 14px; }
+.pageBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
-.pageHead { border-bottom: 1px solid #ececec; padding-bottom: 8px; }
-.pageHead h3 { margin: 0; color: #1a1a1a; font-size: 1.05rem; }
-.pageHead p { margin: 4px 0 0 0; color: #777; font-size: 0.88rem; }
+.pageHead {
+  border-bottom: 1px solid #ececec;
+  padding-bottom: 8px;
+}
+.pageHead h3 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 1.05rem;
+}
+.pageHead p {
+  margin: 4px 0 0 0;
+  color: #777;
+  font-size: 0.88rem;
+}
 
 .sectionBlock {
-    background: #fafafa;
-    border: 1px solid #ececec;
-    border-radius: 8px;
-    padding: 14px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  background: #fafafa;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sectionHead {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
 }
-.sectionHeadMain { flex: 1 1 240px; min-width: 0; }
-.sectionHead h4 { margin: 0; color: #1a1a1a; font-size: 0.95rem; }
+.sectionHeadMain {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.sectionHead h4 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 0.95rem;
+}
 
 .sectionCheck {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
-    background: white;
-    font-size: 0.82rem;
-    color: #444;
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
-    flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.82rem;
+  color: #444;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
 }
 .sectionCheck:hover:not(.sectionCheckDisabled) {
-    border-color: #1f7a2a;
-    color: #1a1a1a;
+  border-color: #1f7a2a;
+  color: #1a1a1a;
 }
 .sectionCheckOn {
-    background: #e6f6e8;
-    border-color: #1f7a2a;
-    color: #1f7a2a;
+  background: #e6f6e8;
+  border-color: #1f7a2a;
+  color: #1f7a2a;
 }
 .sectionCheckDisabled {
-    opacity: 0.55;
-    cursor: not-allowed;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .sectionCheck input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: inherit;
-    accent-color: #1f7a2a;
+  width: 16px;
+  height: 16px;
+  cursor: inherit;
+  accent-color: #1f7a2a;
 }
-.sectionDesc { margin: 4px 0 8px 0; color: #777; font-size: 0.85rem; }
+.sectionDesc {
+  margin: 4px 0 8px 0;
+  color: #777;
+  font-size: 0.85rem;
+}
 
 .sectionInstance {
-    border: 1px solid #ececec;
-    border-radius: 6px;
-    padding: 10px 12px;
-    background: white;
-    margin-top: 8px;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: white;
+  margin-top: 8px;
 }
 .sectionInstanceHead {
-    font-size: 0.78rem;
-    color: #777;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px dashed #ececec;
+  font-size: 0.78rem;
+  color: #777;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #ececec;
 }
 
 .fieldRow {
-    padding: 10px 0;
-    border-top: 1px dashed #ececec;
+  padding: 10px 0;
+  border-top: 1px dashed #ececec;
 }
-.fieldRow:first-of-type { border-top: 1px dashed transparent; padding-top: 4px; }
+.fieldRow:first-of-type {
+  border-top: 1px dashed transparent;
+  padding-top: 4px;
+}
 
 .fieldHead {
-    display: grid;
-    grid-template-columns: minmax(180px, 220px) 1fr auto;
-    gap: 16px;
-    align-items: start;
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) 1fr auto;
+  gap: 16px;
+  align-items: start;
 }
 @media (max-width: 760px) {
-    .fieldHead { grid-template-columns: 1fr; gap: 4px; }
+  .fieldHead {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 
-.fieldLabelWrap { display: flex; flex-direction: column; gap: 2px; }
-.fieldLabel { font-size: 0.85rem; color: #555; font-weight: 600; }
-.fieldHelp { font-size: 0.75rem; color: #999; }
-.fieldValue { color: #1a1a1a; font-size: 0.92rem; line-height: 1.5; word-break: break-word; }
+.fieldLabelWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fieldLabel {
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 600;
+}
+.fieldHelp {
+  font-size: 0.75rem;
+  color: #999;
+}
+.fieldValue {
+  color: #1a1a1a;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
 
-.empty { color: #aaa; font-style: italic; font-size: 0.88rem; }
+.empty {
+  color: #aaa;
+  font-style: italic;
+  font-size: 0.88rem;
+}
 
-.fileList { display: flex; flex-direction: column; gap: 4px; }
-.fileRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fileRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 .fileLink {
-    color: #e67509;
-    text-decoration: none;
-    font-weight: 600;
+  color: #e67509;
+  text-decoration: none;
+  font-weight: 600;
 }
-.fileLink:hover { text-decoration: underline; }
-.fileMeta { color: #999; font-size: 0.78rem; }
+.fileLink:hover {
+  text-decoration: underline;
+}
+.fileMeta {
+  color: #999;
+  font-size: 0.78rem;
+}
 
-.chipList { display: flex; flex-wrap: wrap; gap: 4px; }
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
 .chip {
-    background: #fff5ed;
-    border: 1px solid #ffd5b3;
-    color: #6b3d04;
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 0.82rem;
-    font-weight: 500;
+  background: #fff5ed;
+  border: 1px solid #ffd5b3;
+  color: #6b3d04;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
 }
 
-.longText { white-space: pre-wrap; margin: 0; }
+.longText {
+  white-space: pre-wrap;
+  margin: 0;
+}
 
 .fieldActions {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .actionBtn {
-    background: white;
-    border: 1px solid #d0d0d0;
-    color: #444;
-    padding: 4px 10px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 0.78rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+  background: white;
+  border: 1px solid #d0d0d0;
+  color: #444;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
-.actionBtn:hover { background: #fafafa; }
+.actionBtn:hover {
+  background: #fafafa;
+}
 
 .actionBtnPrimary {
-    background: #2256a3;
-    color: white;
-    border: none;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    cursor: pointer;
+  background: #2256a3;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
 }
-.actionBtnPrimary:hover { background: #1a4682; }
+.actionBtnPrimary:hover {
+  background: #1a4682;
+}
 
 .notesCount {
-    background: #e67509;
-    color: white;
-    border-radius: 10px;
-    padding: 0 6px;
-    font-size: 0.7rem;
-    line-height: 1.4;
-    min-width: 18px;
-    text-align: center;
+  background: #e67509;
+  color: white;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  min-width: 18px;
+  text-align: center;
 }
 
 .editBadge {
-    border-radius: 10px;
-    padding: 2px 8px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.editBadgeActive { background: #fff5ed; color: #b85a06; border: 1px solid #ffd5b3; }
-.editBadgeFlagged { background: #fde6e6; color: #a32525; border: 1px solid #f3c4be; }
-.editBadgeAccepted { background: #e6f6e8; color: #1f7a2a; border: 1px solid #b8e0bf; }
+.editBadgeActive {
+  background: #fff5ed;
+  color: #b85a06;
+  border: 1px solid #ffd5b3;
+}
+.editBadgeFlagged {
+  background: #fde6e6;
+  color: #a32525;
+  border: 1px solid #f3c4be;
+}
+.editBadgeAccepted {
+  background: #e6f6e8;
+  color: #1f7a2a;
+  border: 1px solid #b8e0bf;
+}
 
 .notesPanel {
-    margin-top: 12px;
-    background: white;
-    border: 1px solid #ececec;
-    border-radius: 8px;
-    padding: 12px 14px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+  margin-top: 12px;
+  background: white;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 @media (max-width: 760px) {
-    .notesPanel { grid-template-columns: 1fr; }
+  .notesPanel {
+    grid-template-columns: 1fr;
+  }
 }
 
-.notesCol { display: flex; flex-direction: column; gap: 8px; }
+.notesCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .notesColHead {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #555;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #555;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .linkBtn {
-    background: none;
-    border: none;
-    color: #e67509;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.78rem;
-    padding: 0;
+  background: none;
+  border: none;
+  color: #e67509;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0;
 }
 
-.notesList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.notesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .notesList li {
-    background: #fafafa;
-    border: 1px solid #ececec;
-    border-radius: 6px;
-    padding: 6px 8px;
+  background: #fafafa;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  padding: 6px 8px;
 }
-.notesList p { margin: 0 0 2px 0; color: #333; font-size: 0.85rem; line-height: 1.4; }
+.notesList p {
+  margin: 0 0 2px 0;
+  color: #333;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
 
-.dim { color: #999; font-size: 0.78rem; margin: 0; }
+.dim {
+  color: #999;
+  font-size: 0.78rem;
+  margin: 0;
+}
 
 .multiFieldGroup {
-    border-left: 2px solid #ececec;
-    padding-left: 10px;
-    margin: 6px 0 6px 6px;
+  border-left: 2px solid #ececec;
+  padding-left: 10px;
+  margin: 6px 0 6px 6px;
 }
-.multiFieldInstance { padding: 4px 0; }
+.multiFieldInstance {
+  padding: 4px 0;
+}
 .multiFieldHead {
-    font-size: 0.74rem;
-    color: #777;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 4px;
+  font-size: 0.74rem;
+  color: #777;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
 }
 
 .addressedBlock {
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px dashed #ececec;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #ececec;
 }
 .addressedHead {
-    color: #1f7a2a;
-    font-size: 0.74rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
+  color: #1f7a2a;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
 }
 .addressedItem {
-    background: #f4fbf5 !important;
-    border-color: #b8e0bf !important;
+  background: #f4fbf5 !important;
+  border-color: #b8e0bf !important;
 }
 .addressedCheck {
-    color: #1f7a2a;
-    font-weight: 700;
+  color: #1f7a2a;
+  font-weight: 700;
 }
 
 /* Toggle row in the review toolbar - sits above the form to control
    whether empty optional fields render. */
 .reviewToolbar {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 12px 16px;
-    background: #fffaf3;
-    border: 1px solid #ffd5b3;
-    border-radius: 10px;
-    margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 .toggleRow {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    color: #523200;
-    font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: max-content;
+  padding: 12px 16px;
+  background: #fffaf3;
+  border: 1px solid #ffd5b3;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #523200;
+  font-weight: 600;
 }
 .toggleRow input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-    accent-color: #d56500;
-    cursor: pointer;
+  width: 22px;
+  height: 22px;
+  accent-color: #d56500;
+  cursor: pointer;
 }
 
 /* ── Legibility pass ──────────────────────────────────────────────────
    Older C&P staff reviewers asked for larger checkboxes and more
    generous padding so the review surface is easier to scan. */
-.pageHead h3 { font-size: 1.2rem; }
-.pageHead p { font-size: 0.95rem; }
+.pageHead h3 {
+  font-size: 1.2rem;
+}
+.pageHead p {
+  font-size: 0.95rem;
+}
 
-.sectionBlock { padding: 20px 22px; gap: 6px; }
-.sectionHead h4 { font-size: 1.05rem; }
-.sectionDesc { font-size: 0.92rem; }
+.sectionBlock {
+  padding: 20px 22px;
+  gap: 6px;
+}
+.sectionHead h4 {
+  font-size: 1.05rem;
+}
+.sectionDesc {
+  font-size: 0.92rem;
+}
 
 .sectionCheck {
-    padding: 10px 16px;
-    font-size: 0.95rem;
-    border-radius: 10px;
-    border-width: 2px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  border-width: 2px;
 }
 .sectionCheck input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
+  width: 22px;
+  height: 22px;
 }
 
-.fieldRow { padding: 14px 0; }
-.fieldRow:first-of-type { padding-top: 8px; }
-.fieldHead { grid-template-columns: minmax(220px, 260px) 1fr auto; gap: 20px; }
-.fieldLabel { font-size: 0.95rem !important; }
-.fieldValue { font-size: 0.95rem !important; }
+.fieldRow {
+  padding: 14px 0;
+}
+.fieldRow:first-of-type {
+  padding-top: 8px;
+}
+.fieldHead {
+  grid-template-columns: minmax(220px, 260px) 1fr auto;
+  gap: 20px;
+}
+.fieldLabel {
+  font-size: 0.95rem !important;
+}
+.fieldValue {
+  font-size: 0.95rem !important;
+}
