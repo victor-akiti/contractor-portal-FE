@@ -387,11 +387,15 @@ const V2ApprovalsPage = () => {
             render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
         })
         // V1 parity: End Users by NAME, only when the Supervisor has
-        // narrowed the Within Amni Review tab to Stage D rows via the
-        // Completed Stage chip. On other stages the assignment hasn't
-        // happened yet (or has already been acted on) so the column
-        // would always be empty / irrelevant.
-        if (activeTab === "pending-l2" && stageFilter === "D") {
+        // narrowed the Within Amni Review tab to "Completed Stage C"
+        // rows — those are currently at internal Stage D (level 2)
+        // where the assigned End Users are doing their review. On any
+        // other stage chip the assignment either hasn't happened yet
+        // or has already been acted on, so the column would be empty
+        // / irrelevant. (Yes, stageFilter "C" → level 2 → Stage D
+        // current; the chip label and the filter value disagree by
+        // design — see the BE completedStage map.)
+        if (activeTab === "pending-l2" && stageFilter === "C") {
             cols.push({
                 key: "endUsers",
                 label: "End Users",

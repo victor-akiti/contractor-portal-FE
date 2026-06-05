@@ -165,18 +165,35 @@ const DecisionBar = ({
                     <div className={styles.decisionGroup}>
                         <span className={styles.decisionGroupLabel}>Stage Tasks</span>
                         <div className={styles.decisionButtons}>
-                            {can.assignEndUsers && (
-                                <button
-                                    className={styles.btnSecondary}
-                                    disabled={!!actionRunning}
-                                    onClick={openEndUserPicker}
-                                >
-                                    {Array.isArray(submission.selectedEndUsers) &&
-                                        submission.selectedEndUsers.length > 0
-                                        ? `End Users (${submission.selectedEndUsers.length})`
-                                        : "Assign End Users"}
-                                </button>
-                            )}
+                            {can.assignEndUsers && (() => {
+                                const arr = (submission.selectedEndUsers || []) as any[]
+                                if (arr.length === 0) {
+                                    return (
+                                        <button
+                                            className={styles.btnSecondary}
+                                            disabled={!!actionRunning}
+                                            onClick={openEndUserPicker}
+                                        >
+                                            Assign End Users
+                                        </button>
+                                    )
+                                }
+                                const names = arr.map((u) =>
+                                    typeof u === "string"
+                                        ? u.slice(-6)
+                                        : u?.name || u?.email || "—",
+                                )
+                                return (
+                                    <button
+                                        className={styles.btnSecondary}
+                                        disabled={!!actionRunning}
+                                        onClick={openEndUserPicker}
+                                        title={names.join(", ")}
+                                    >
+                                        End Users: {names.join(", ")}
+                                    </button>
+                                )
+                            })()}
                             {can.recordServices && (
                                 <button
                                     className={styles.btnSecondary}
