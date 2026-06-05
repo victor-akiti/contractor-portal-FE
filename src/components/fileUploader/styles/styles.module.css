@@ -50,7 +50,7 @@
 .uploadFileModal footer {
   display: flex;
   flex-direction: row;
-  justify-content: end;
+  justify-content: flex-end;
   padding-top: 20px;
   border-top-style: solid;
   border-top-color: rgb(226, 226, 226);

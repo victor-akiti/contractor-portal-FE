@@ -5,7 +5,7 @@
   padding: 10px;
   margin-bottom: 20px;
   border-radius: 10px;
-  justify-content: start !important;
+  justify-content: flex-start !important;
 }
 .successMessage p {
   margin: 0px;
