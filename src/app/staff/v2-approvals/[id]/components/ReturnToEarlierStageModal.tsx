@@ -48,6 +48,7 @@ const ReturnToEarlierStageModal = ({
                 <select
                     value={targetLevel}
                     onChange={(e) => setTargetLevel(Number(e.target.value))}
+                    className={styles.formSelect}
                 >
                     {Array.from({ length: currentLevel }, (_, i) => i).map((lvl) => (
                         <option key={lvl} value={lvl}>

@@ -23,6 +23,7 @@ import ReturnForResearchModal from "./components/ReturnForResearchModal"
 import ReturnToEarlierStageModal from "./components/ReturnToEarlierStageModal"
 import RevertFromL3Modal from "./components/RevertFromL3Modal"
 import ServicesModal from "./components/ServicesModal"
+import StageRoleBriefingCard from "./components/StageRoleBriefingCard"
 import styles from "./styles.module.css"
 
 interface Certificate {
@@ -1640,7 +1641,7 @@ const V2SubmissionDetailPage = () => {
                 )
             })()}
 
-            {/* <StageRoleBriefingCard
+            <StageRoleBriefingCard
                 submission={submission}
                 role={role}
                 user={user}
@@ -1648,12 +1649,12 @@ const V2SubmissionDetailPage = () => {
                    ("here's what your stage is"), but its CTA button is
                    suppressed by passing no-op handlers - the CTA is the
                    only interactive bit and it makes no sense without
-                   approval mode. 
+                   approval mode.  */
                 openEndUserPicker={inApprovalMode ? openEndUserPicker : (() => { }) as any}
                 openServicesModal={inApprovalMode ? openServicesModal : (() => { }) as any}
                 openDueDiligenceTab={() => setTab("due-diligence")}
                 hideCta={!inApprovalMode}
-            /> */}
+            />
             <HodReturnInbox submission={submission} />
 
             {migrationStatus?.available && (
@@ -1751,10 +1752,10 @@ const V2SubmissionDetailPage = () => {
                                         }
                                         return false
                                     }) && (
-                                        <span className={styles.tabBadge} aria-label="EBA review needed">
-                                            !
-                                        </span>
-                                    )}
+                                            <span className={styles.tabBadge} aria-label="EBA review needed">
+                                                !
+                                            </span>
+                                        )}
                                 </button>
                                 <button
                                     className={`${styles.tab} ${tab === "comments" ? styles.tabActive : ""}`}
