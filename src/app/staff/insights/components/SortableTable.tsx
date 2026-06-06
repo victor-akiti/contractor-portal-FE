@@ -112,7 +112,7 @@ export default function SortableTable<T extends object>({
                   <td key={String(col.key)} style={{ padding: '0.7rem 1rem', verticalAlign: 'middle' }}>
                     {col.render
                       ? col.render(row)
-                      : (row[col.key as keyof T] == null ? '—' : String(row[col.key as keyof T]))}
+                      : (row[col.key as keyof T] == null ? '-' : String(row[col.key as keyof T]))}
                   </td>
                 ))}
               </tr>

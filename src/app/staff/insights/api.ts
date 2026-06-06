@@ -140,7 +140,7 @@ export async function downloadExport(path: string, filename: string): Promise<vo
       if (token) headers['Authorization'] = `Bearer ${token}`;
     }
   } catch {
-    // continue without auth header — cookie handles it
+    // continue without auth header - cookie handles it
   }
 
   const res = await fetch(`${BACKEND_BASE_URL}/${path}`, {

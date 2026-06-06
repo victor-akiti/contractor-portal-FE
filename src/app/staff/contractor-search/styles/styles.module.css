@@ -1,5 +1,5 @@
 /* ============================================================
-   VENDOR SEARCH PAGE — styles.module.css
+   VENDOR SEARCH PAGE - styles.module.css
    ============================================================ */
 
 /* ── Page shell ─────────────────────────────────────────── */
@@ -629,14 +629,14 @@
   font-family: var(--font-family-base);
 }
 
-/* Activity tags — primary orange tint */
+/* Activity tags - primary orange tint */
 .tagActivity {
   background-color: transparent; /*#e8f0fe;*/
   color: #1a56a4;
   border: 1px solid #c5d8fb;
 }
 
-/* Activity tag — this specific one matched the query */
+/* Activity tag - this specific one matched the query */
 .tagActivityMatched {
   background-color: #1a56a4;
   color: #fff;
@@ -644,14 +644,14 @@
   box-shadow: 0 0 0 2px rgba(26, 86, 164, 0.25);
 }
 
-/* Category tags — neutral blue-grey */
+/* Category tags - neutral blue-grey */
 .tagCategory {
   background-color: transparent; /* var(--color-primary-light) */
   color: var(--color-primary-dark);
   border: 1px solid #f5c6a0;
 }
 
-/* Category tag — this specific one matched the query */
+/* Category tag - this specific one matched the query */
 .tagCategoryMatched {
   background-color: var(--color-primary);
   color: #fff;

@@ -33,7 +33,7 @@ export default function CertReviewModal({ item, userRole, onClose }: Props) {
     const [reviewCertificate, { isLoading }] = useReviewCertificateMutation();
 
     const formatDate = (dateStr?: string) => {
-        if (!dateStr) return "—";
+        if (!dateStr) return "-";
         return new Date(dateStr).toLocaleDateString("en-NG");
     };
 

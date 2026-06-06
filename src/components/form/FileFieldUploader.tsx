@@ -1,11 +1,11 @@
 'use client'
 
-// FileFieldUploader — the actual upload widget for file / certificate
+// FileFieldUploader - the actual upload widget for file / certificate
 // fields in the V2 form renderer.
 //
 // Two upload modes depending on the host page:
 //   • Contractor (hash-authed): POST /api/v2/upload/by-hash/:hash
-//     — public endpoint, the invite hash is the auth token.
+//     - public endpoint, the invite hash is the auth token.
 //   • Staff: POST /api/v2/upload  (Firebase auth via standard helper)
 //
 // Per-file metadata stored as part of the field's value:
@@ -109,7 +109,7 @@ const FileFieldUploader = ({
     const uploadOne = async (file: File): Promise<FileFieldValue | null> => {
         const ext = extOf(file.name)
         if (!formatAllowed(ext)) {
-            setError(`"${file.name}" — .${ext.toLowerCase()} is not in the allowed formats (${allowedFormats.join(", ")})`)
+            setError(`"${file.name}" - .${ext.toLowerCase()} is not in the allowed formats (${allowedFormats.join(", ")})`)
             return null
         }
         if (file.size > 25 * 1024 * 1024) {
@@ -130,7 +130,7 @@ const FileFieldUploader = ({
             : `${BACKEND_BASE_URL}/api/v2/upload`
 
         const headers: Record<string, string> = {}
-        // Staff path — attach the Firebase token. Lazy-import to avoid pulling
+        // Staff path - attach the Firebase token. Lazy-import to avoid pulling
         // firebase into the contractor bundle.
         if (!uploadAuthHash) {
             const { auth } = await import("@/lib/firebase")
@@ -199,7 +199,7 @@ const FileFieldUploader = ({
             // Honor maxAllowedFiles.
             const room = Math.max(0, maxAllowedFiles - value.length)
             if (room === 0) {
-                setError(`Already at max (${maxAllowedFiles}) — remove one before adding more.`)
+                setError(`Already at max (${maxAllowedFiles}) - remove one before adding more.`)
                 return
             }
             const toUpload = arr.slice(0, room)
@@ -238,7 +238,7 @@ const FileFieldUploader = ({
         }
         const room = Math.max(0, maxAllowedFiles - value.length)
         if (room === 0) {
-            setError(`Already at max (${maxAllowedFiles}) — remove one before adding more.`)
+            setError(`Already at max (${maxAllowedFiles}) - remove one before adding more.`)
             return
         }
         onChange([...value, cloned])

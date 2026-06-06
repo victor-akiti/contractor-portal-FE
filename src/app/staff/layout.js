@@ -55,7 +55,7 @@ const MENU_ITEMS = [
 // -----------------------------------
 const Layout = ({ children }) => {
   // -----------------------------------
-  // HYDRATION FIX — rendered only on client
+  // HYDRATION FIX - rendered only on client
   // -----------------------------------
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])

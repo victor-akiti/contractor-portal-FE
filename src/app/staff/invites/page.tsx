@@ -357,13 +357,13 @@ const Invites = () => {
 
     const noticeModalAction = () => {
         if (registrationStatus.status === 2) {
-            // Company already invited with same name AND same email — block creation, just send reminder
+            // Company already invited with same name AND same email - block creation, just send reminder
             sendNewInvite()
         } else if (registrationStatus.status === 5) {
             // Similar names found, user confirmed to proceed
             sendNewInvite()
         } else {
-            // Same name, different email — update & resend
+            // Same name, different email - update & resend
             sendNewInvite()
         }
         closeNoticeModal()
@@ -503,7 +503,7 @@ const Invites = () => {
                                         if (selectedExistingCompany._id && value.trim().toLowerCase() !== selectedExistingCompany.companyName?.trim().toLowerCase()) {
                                             setSelectedExistingCompany(invitedCompanyTemplate)
                                         }
-                                        // Proper debounce using a timer ref — replaces the broken _.debounce() pattern
+                                        // Proper debounce using a timer ref - replaces the broken _.debounce() pattern
                                         if (companySearchTimerRef.current) clearTimeout(companySearchTimerRef.current)
                                         companySearchTimerRef.current = setTimeout(() => findCompany(value), 500)
                                     }}

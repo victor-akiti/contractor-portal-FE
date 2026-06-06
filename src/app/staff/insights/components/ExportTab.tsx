@@ -50,7 +50,7 @@ export default function ExportTab() {
       {/* ── Vendor Timeline ── */}
       <ExportCard
         title="Vendor Timeline Report"
-        description="Complete timeline of all vendor registration events — submissions, progressions, returns, approvals, and stage transitions — with timestamps and durations."
+        description="Complete timeline of all vendor registration events - submissions, progressions, returns, approvals, and stage transitions - with timestamps and durations."
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <label style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Status filter:</label>
@@ -84,7 +84,7 @@ export default function ExportTab() {
       {/* ── Approval Timeline ── */}
       <ExportCard
         title="Approval Timeline Report"
-        description="Full log of approver actions across all stages — who approved what, when, response times, and stage-by-stage breakdowns for all vendors in the system."
+        description="Full log of approver actions across all stages - who approved what, when, response times, and stage-by-stage breakdowns for all vendors in the system."
       >
         {approvalError && (
           <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '0.375rem', padding: '0.625rem 1rem', color: '#dc2626', fontSize: '0.875rem', marginBottom: '0.75rem' }}>

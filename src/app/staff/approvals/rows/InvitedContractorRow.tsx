@@ -66,17 +66,17 @@ export default function InvitedContractorRow({
   };
 
   const getRecommendedBy = () => {
-    // Source 1 — recommendedBy on root invite
+    // Source 1 - recommendedBy on root invite
     if (inviteDetails?.recommendedBy) {
       return inviteDetails.recommendedBy;
     }
 
-    // Source 2 — recommendedBy in last inviteHistory entry
+    // Source 2 - recommendedBy in last inviteHistory entry
     if (inviteDetails?.inviteHistory?.length > 0) {
       const last = inviteDetails.inviteHistory[inviteDetails.inviteHistory.length - 1];
       if (last?.recommendedBy) return last.recommendedBy;
 
-      // Source 3 — recommendedBy nested under previousInvite
+      // Source 3 - recommendedBy nested under previousInvite
       if (last?.previousInvite?.recommendedBy) {
         return last.previousInvite.recommendedBy;
       }

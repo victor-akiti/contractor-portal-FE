@@ -1086,7 +1086,7 @@ const StageB = ({ approvalData, formPages, vendorID, remarksHistory = [], compan
 
                                                                 {
                                                                     sectionHistoryRemarks.map((historyEntry, historyIndex) => <div key={historyIndex} className={styles.remarksContent}>
-                                                                        <p>Return — {moment(historyEntry.date).format("DD MMM YYYY")}</p>
+                                                                        <p>Return - {moment(historyEntry.date).format("DD MMM YYYY")}</p>
 
                                                                         <div>
                                                                             {historyEntry.remarks[item.pageTitle][sectionItem.title].map((remarkItem: any, remarkIndex: number) => <div key={remarkIndex} className={styles.remarksItem}>

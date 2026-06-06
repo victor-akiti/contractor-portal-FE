@@ -11,8 +11,8 @@ import { CardsSkeleton, ChartSkeleton } from './LoadingSkeleton';
 import { fetchTrends, fetchPerformance } from '../api';
 import type { TrendsData, PerformanceData, DateRange, Period } from '../types';
 
-const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined)        => (v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
+const fmt    = (v: number | null | undefined, d = 1) => (v == null ? '-' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined)        => (v == null ? '-' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`);
 
 const LINE_SERIES = [
   { key: 'progressions', name: 'Progressions',          color: '#e67509' },
@@ -173,7 +173,7 @@ export default function TrendsTab({ period, dateRange }: { period: Period; dateR
             <CardDivider />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
               <StatCard label="Park approval rate"
-                value={data.holdStats.approvalRate == null ? '—' : `${data.holdStats.approvalRate.toFixed(1)}%`}
+                value={data.holdStats.approvalRate == null ? '-' : `${data.holdStats.approvalRate.toFixed(1)}%`}
                 color="blue" />
             </div>
           </div>

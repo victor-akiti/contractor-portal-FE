@@ -1,4 +1,4 @@
-/* Contractor V2 form-fill page styles. Standalone — no staff layout. */
+/* Contractor V2 form-fill page styles. Standalone - no staff layout. */
 
 .page {
     min-height: 100vh;
@@ -112,7 +112,7 @@
     font-size: 0.88rem;
 }
 
-/* Page tabs — mirrors the form-builder pagination so contractors can navigate
+/* Page tabs - mirrors the form-builder pagination so contractors can navigate
    between pages while filling. */
 .pageTabs {
     display: flex;

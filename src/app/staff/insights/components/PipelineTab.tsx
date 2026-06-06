@@ -10,8 +10,8 @@ import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import SortableTable from './SortableTable';
 import StatCard from './StatCard';
 
-const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`);
+const fmt = (v: number | null | undefined, d = 1) => (v == null ? '-' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined) => (v == null ? '-' : `${v.toFixed(1)}%`);
 
 const STAGE_COLORS = [
   '#e67509', '#2563eb', '#16a34a', '#7c3aed',
@@ -153,7 +153,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
                 <YAxis dataKey="stage" type="category" tick={{ fontSize: 11 }} width={70} />
                 <Tooltip
                   formatter={(v: number, _: string, props: { payload?: { actual?: number | null; vendors?: number } }) => [
-                    props.payload?.actual == null ? '—' : `${v.toFixed(1)} days`,
+                    props.payload?.actual == null ? '-' : `${v.toFixed(1)} days`,
                     `Avg wait (${props.payload?.vendors ?? '?'} contractors)`,
                   ]}
                 />
@@ -173,7 +173,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
                 <YAxis dataKey="stage" type="category" tick={{ fontSize: 11 }} width={70} />
                 <Tooltip
                   formatter={(v: number, _: string, props: { payload?: { actual?: number | null; samples?: number } }) => [
-                    props.payload?.actual == null ? '—' : `${v.toFixed(1)} days`,
+                    props.payload?.actual == null ? '-' : `${v.toFixed(1)} days`,
                     `Avg completion (n=${props.payload?.samples ?? '?'})`,
                   ]}
                 />
@@ -270,7 +270,7 @@ export default function PipelineTab({ period, dateRange }: { period: Period; dat
                   const d = r.daysWaiting as number | null;
                   return (
                     <span style={{ color: d != null && d > 30 ? '#dc2626' : d != null && d > 14 ? '#d97706' : undefined, fontWeight: 500 }}>
-                      {d != null ? `${d.toFixed(0)}d` : '—'}
+                      {d != null ? `${d.toFixed(0)}d` : '-'}
                     </span>
                   );
                 }

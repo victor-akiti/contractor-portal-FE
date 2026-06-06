@@ -1,22 +1,22 @@
 'use client'
 
-// FormRenderer — renders a FormSchema, handles every field-type the
+// FormRenderer - renders a FormSchema, handles every field-type the
 // FormBuilder can produce, evaluates conditional visibility, supports
 // repeated fields & sections, and exposes a `validateSchema` helper so
 // the host page can block submission until the answers satisfy the
 // builder's validation rules.
 //
 // Field-type coverage:
-//   shortText, longText, email, phone, number (with isCurrency), date  — input
-//   dropdown, radioButtons                                              — single-select
-//   checkBoxes, multiSelect                                             — multi-select
-//   file, certificate                                                   — upload widget
-//   textBlock                                                           — display-only
+//   shortText, longText, email, phone, number (with isCurrency), date  - input
+//   dropdown, radioButtons                                              - single-select
+//   checkBoxes, multiSelect                                             - multi-select
+//   file, certificate                                                   - upload widget
+//   textBlock                                                           - display-only
 //
 // Modes:
-//   fill      — contractor editing
-//   view      — read-only display for the contractor / generic view
-//   approval  — read-only display for staff approval (honors hideOnApproval)
+//   fill      - contractor editing
+//   view      - read-only display for the contractor / generic view
+//   approval  - read-only display for staff approval (honors hideOnApproval)
 //
 // allowMultiple:
 //   - Field-level: answers[fieldKey] is an array of values; UI lets the
@@ -167,7 +167,7 @@ interface Props {
     editReviewerNow?: boolean
     // Active + flagged edits by fieldPath ("rcNumber" or "directors[2].directorShares").
     fieldEditsByPath?: Record<string, FieldEditRow>
-    // Edit triggers — host owns the modals.
+    // Edit triggers - host owns the modals.
     onEditField?: (args: {
         field: Field
         fieldPath: string
@@ -177,7 +177,7 @@ interface Props {
     onFlagEdit?: (edit: FieldEditRow) => void
     onAcceptEdit?: (edit: FieldEditRow) => void
 
-    // When provided, only this page is rendered — used by host pages that
+    // When provided, only this page is rendered - used by host pages that
     // implement a tabbed-by-page layout (contractor application). Leave
     // undefined to render every page sequentially (default).
     activePageKey?: string
@@ -190,7 +190,7 @@ const fieldLabelForMode = (field: Field, mode: FormMode): string =>
     mode === "approval" && field.approvalLabel ? field.approvalLabel : field.label
 
 // Evaluate visibleIf against a flat answer scope. `scope` is the relevant
-// view of answers — for a top-level field that's the full answers map; for a
+// view of answers - for a top-level field that's the full answers map; for a
 // field inside a section instance that's the instance's own object.
 const isFieldVisible = (field: Field, scope: Record<string, any>): boolean => {
     if (!field.visibleIf) return VISIBILITY_FALLBACK
@@ -305,7 +305,7 @@ export function validateSchema(
                         return
                     }
                 } catch {
-                    /* invalid regex — let it pass; the builder should warn */
+                    /* invalid regex - let it pass; the builder should warn */
                 }
             }
         }
@@ -583,7 +583,12 @@ const FormRenderer = ({
                 {remarkIndicator}
             </>
         )
-        const helpEl = field.helpText ? <p className={styles.fieldHelp}>{field.helpText}</p> : null
+        // Field help text is contractor-facing guidance — hide it on every
+        // staff view (approval mode, read-only browse, edit-audit, etc.) so
+        // the form reads as a clean record of what the contractor entered
+        // rather than a how-to. Staff fall back to the section/page intros
+        // for context.
+        const helpEl = field.helpText && !readOnly ? <p className={styles.fieldHelp}>{field.helpText}</p> : null
         const errEl = fieldErr ? <p className={styles.fieldError}>{fieldErr}</p> : null
 
         // Apply defaultValue when value is undefined (only matters in fill mode).
@@ -671,7 +676,7 @@ const FormRenderer = ({
                             {labelEl}
                             <div className={styles.readonlyValue}>
                                 {currentAmount === "" ? (
-                                    <span className={styles.placeholderText}>—</span>
+                                    <span className={styles.placeholderText}>-</span>
                                 ) : (
                                     formatCurrencyValue(currentAmount, currentCurrency)
                                 )}
@@ -902,7 +907,7 @@ const FormRenderer = ({
                                 dangerouslySetInnerHTML={{ __html: field.text }}
                             />
                         )}
-                        {field.helpText && <p className={styles.fieldHelp}>{field.helpText}</p>}
+                        {field.helpText && !readOnly && <p className={styles.fieldHelp}>{field.helpText}</p>}
                     </div>
                 )
 
@@ -1136,7 +1141,7 @@ const SectionHeader = ({
     </>
 )
 
-// MultiInstanceField — renders an allowMultiple field, with add/remove
+// MultiInstanceField - renders an allowMultiple field, with add/remove
 // controls. Each instance is rendered via the renderOne callback.
 const MultiInstanceField = ({
     field, values, disabled, errKeyPrefix, onChange, renderOne,
@@ -1201,7 +1206,7 @@ const MultiInstanceField = ({
     )
 }
 
-// EbaWrap — decorates a rendered field with EBA edit affordances:
+// EbaWrap - decorates a rendered field with EBA edit affordances:
 //   • If field.eba && ebaEditableNow → shows "Edit" pencil button. Calls
 //     onEditField with the metadata the host needs to open its edit modal.
 //   • If there's an active edit on this fieldPath → highlights the field
@@ -1312,7 +1317,7 @@ const EbaWrap = ({
     )
 }
 
-// FreeTextMultiSelect — contractor types a value, presses Enter (or blurs
+// FreeTextMultiSelect - contractor types a value, presses Enter (or blurs
 // with content) to push it into the array. Each entry renders as a chip
 // with an inline ✕ to remove. Mirrors the legacy multiSelectText widget.
 const FreeTextMultiSelect = ({
