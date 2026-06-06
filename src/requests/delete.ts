@@ -118,7 +118,7 @@ export const deleteProtected = async (route: string, body?: any, role?: string) 
             const result = await request.json();
             return result;
         } else {
-            // Non-OK with a response — parse the BE error body so callers
+            // Non-OK with a response - parse the BE error body so callers
             // see the actual message instead of "Request failed with
             // status 409". Same FAILED envelope shape as post/put/patch.
             try {

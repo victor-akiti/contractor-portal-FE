@@ -44,7 +44,7 @@ interface Certificate {
     createdAt?: string
 }
 
-// V2 Submission detail — single submission review surface.
+// V2 Submission detail - single submission review surface.
 //
 // Tabs:
 //   - Form (FormRenderer in view mode, with active remarks inline)
@@ -53,7 +53,7 @@ interface Certificate {
 //
 // Actions sidebar exposes the state-machine transitions filtered by what the
 // state machine allows for the current status/level (without re-implementing
-// the rules here — we just hide buttons that obviously don't apply).
+// the rules here - we just hide buttons that obviously don't apply).
 
 type ActionKey =
     | "advance"
@@ -229,7 +229,7 @@ const StagePill = ({ submission }: { submission: Submission }) => {
 // showing before.
 const renderEditValue = (v: any): React.ReactNode => {
     if (v === undefined || v === null || v === "") {
-        return <span className={styles.dim}>—</span>
+        return <span className={styles.dim}>-</span>
     }
     if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
         return <span>{String(v)}</span>
@@ -340,7 +340,7 @@ const V2SubmissionDetailPage = () => {
 
     // EBA state
     const [fieldEdits, setFieldEdits] = useState<FieldEditRow[]>([])
-    // Reviewer's "Return for EBA correction" modal — bounces one stage
+    // Reviewer's "Return for EBA correction" modal - bounces one stage
     // back to the editor when flagged EBA edits are outstanding.
     const [ebaReturnOpen, setEbaReturnOpen] = useState(false)
     const [ebaReturnReason, setEbaReturnReason] = useState("")
@@ -352,7 +352,7 @@ const V2SubmissionDetailPage = () => {
     const [changeGroupReason, setChangeGroupReason] = useState("")
     const [changeGroupActing, setChangeGroupActing] = useState(false)
     const [changeGroupError, setChangeGroupError] = useState("")
-    // Editor's "Respond to flag" modal — replies without changing the
+    // Editor's "Respond to flag" modal - replies without changing the
     // field value, clears the flag and flips the edit back to active.
     const [respondingToEdit, setRespondingToEdit] = useState<FieldEditRow | null>(null)
     const [respondReason, setRespondReason] = useState("")
@@ -963,7 +963,7 @@ const V2SubmissionDetailPage = () => {
             bodyText:
                 unsafe
                     ? `This migration removes ${diff.removedFieldKeys.length} field(s) and changes the type of ${diff.changedTypeFieldKeys.length} field(s). The removed answers will be stashed under __migration_dropped_v${migrationStatus?.fromVersion?.versionNumber} on the submission so they're recoverable, but they won't appear on the form. Continue?`
-                    : `Migrating from v${migrationStatus?.fromVersion?.versionNumber} to v${migrationStatus?.toVersion?.versionNumber}. No data loss — ${diff?.addedFieldKeys?.length || 0} new field(s) will appear, ${diff?.requiredAddedFieldKeys?.length || 0} of them required.`,
+                    : `Migrating from v${migrationStatus?.fromVersion?.versionNumber} to v${migrationStatus?.toVersion?.versionNumber}. No data loss - ${diff?.addedFieldKeys?.length || 0} new field(s) will appear, ${diff?.requiredAddedFieldKeys?.length || 0} of them required.`,
             confirmText: "Migrate",
             destructive: !!unsafe,
         })
@@ -1035,7 +1035,7 @@ const V2SubmissionDetailPage = () => {
                 setChangeGroupList(r.data?.groups || [])
             }
         } catch {
-            // Non-fatal — the modal renders an empty picker which the
+            // Non-fatal - the modal renders an empty picker which the
             // controller will reject; the error surfaces inline.
         }
     }
@@ -1061,7 +1061,7 @@ const V2SubmissionDetailPage = () => {
             if (r?.status === "OK") {
                 setChangeGroupOpen(false)
                 if (r.data?.restarted) {
-                    // Submission was voided in favour of a fresh invite —
+                    // Submission was voided in favour of a fresh invite -
                     // there's nothing left to render here. Drop back to
                     // the queue.
                     window.location.href = "/staff/v2-approvals"
@@ -1189,7 +1189,7 @@ const V2SubmissionDetailPage = () => {
 
     const answers = useMemo<Record<string, any>>(() => {
         if (!submission?.answers) return {}
-        // Mongoose Map may serialize as a plain object — handle both.
+        // Mongoose Map may serialize as a plain object - handle both.
         if (submission.answers instanceof Map) return Object.fromEntries(submission.answers as any)
         return submission.answers as Record<string, any>
     }, [submission])
@@ -1380,7 +1380,7 @@ const V2SubmissionDetailPage = () => {
             // Reviewer at C/F bounces back to the editor at B/E so the
             // flagged EBA fields can be resolved. Only surfaces when at
             // least one flagged edit is outstanding at the editor's
-            // stage — otherwise it would collapse into a normal one-step
+            // stage - otherwise it would collapse into a normal one-step
             // back (use Return for Research for that).
             returnForEbaCorrection:
                 pending &&
@@ -1675,7 +1675,7 @@ const V2SubmissionDetailPage = () => {
                             {migrationStatus.diff?.changedTypeFieldKeys?.length || 0} type-changed
                             {migrationStatus.diff?.isSafe
                                 ? " · safe migration"
-                                : " · unsafe — review impact before migrating"}
+                                : " · unsafe - review impact before migrating"}
                         </p>
                         {migrationError && <p className={styles.migrationErr}>{migrationError}</p>}
                     </div>
@@ -2135,7 +2135,7 @@ const V2SubmissionDetailPage = () => {
                                                     Respond to flag
                                                 </button>
                                                 <span className={styles.dim}>
-                                                    Or edit the field on the form tab — that also clears the flag.
+                                                    Or edit the field on the form tab - that also clears the flag.
                                                 </span>
                                             </div>
                                         )}
@@ -2421,7 +2421,7 @@ const V2SubmissionDetailPage = () => {
                 </Modal>
             )}
 
-            {/* EBA edit modal — renders a single-field FormRenderer instance
+            {/* EBA edit modal - renders a single-field FormRenderer instance
                 in fill mode so the VRM can update the value using the right
                 input type for the field. */}
             {editingField && formVersion && (
@@ -2745,7 +2745,7 @@ const V2SubmissionDetailPage = () => {
                                     a pure reclassification and the contractor's progress
                                     is preserved. If it points at a different form
                                     template, the current submission is voided and a
-                                    fresh invite is issued — the contractor will have to
+                                    fresh invite is issued - the contractor will have to
                                     start over.
                                 </p>
                             </div>
@@ -2768,8 +2768,8 @@ const V2SubmissionDetailPage = () => {
                                 {target && (
                                     <p className={styles.helpText}>
                                         {sameTemplate
-                                            ? "Same form template — contractor keeps their submission."
-                                            : "Different form template — current submission will be voided and a fresh invite will be issued to the same email."}
+                                            ? "Same form template - contractor keeps their submission."
+                                            : "Different form template - current submission will be voided and a fresh invite will be issued to the same email."}
                                     </p>
                                 )}
                                 <label
@@ -2828,7 +2828,7 @@ const V2SubmissionDetailPage = () => {
                                 Sends this submission back to Stage{" "}
                                 {String.fromCharCode(66 + submission.level - 1)} so the
                                 editor can resolve every flagged EBA field. Stays on the
-                                staff side — the contractor is not notified.
+                                staff side - the contractor is not notified.
                             </p>
                         </div>
                         <div className={styles.modalBody}>
@@ -2884,7 +2884,7 @@ const V2SubmissionDetailPage = () => {
                                 </strong>
                                 . The flag clears and the edit becomes active again so the
                                 reviewer re-sees it after the next advance. If you'd rather
-                                change the field value, edit it on the form tab instead —
+                                change the field value, edit it on the form tab instead -
                                 that also clears the flag.
                             </p>
                         </div>

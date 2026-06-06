@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * DueDiligencePanel — combined Stage E (record DD), Stage F (HOD review)
+ * DueDiligencePanel - combined Stage E (record DD), Stage F (HOD review)
  * and Stage G (Executive Approver view) UI.
  *
  * Behaviour by level:

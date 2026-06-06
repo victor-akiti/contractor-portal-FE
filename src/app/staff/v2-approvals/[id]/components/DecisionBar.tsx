@@ -123,7 +123,7 @@ const DecisionBar = ({
                         <>
                             A flagged EBA edit is outstanding. Use{" "}
                             <strong>Return for EBA Correction</strong> to send
-                            it back to the editor — advance unlocks once every
+                            it back to the editor - advance unlocks once every
                             flag is resolved and the application is re-pushed
                             to you.
                         </>
@@ -131,7 +131,7 @@ const DecisionBar = ({
                         <>
                             A flagged EBA edit is outstanding. Open the{" "}
                             <strong>Edit Audit</strong> tab and either re-edit
-                            the field or respond to the reviewer's note —
+                            the field or respond to the reviewer's note -
                             advance unlocks automatically once every flag
                             flips back to active.
                         </>
@@ -181,7 +181,7 @@ const DecisionBar = ({
                                 const names = arr.map((u) =>
                                     typeof u === "string"
                                         ? u.slice(-6)
-                                        : u?.name || u?.email || "—",
+                                        : u?.name || u?.email || "-",
                                 )
                                 return (
                                     <button
@@ -290,7 +290,7 @@ const DecisionBar = ({
                                         className={styles.btnSecondary}
                                         disabled={!!actionRunning}
                                         onClick={openReturnEarlierModal}
-                                        title="Admin only: send back to any earlier stage with a remark for that stage's owner. Contractor is not notified. Not available at Stage F / G — use Return for Research there."
+                                        title="Admin only: send back to any earlier stage with a remark for that stage's owner. Contractor is not notified. Not available at Stage F / G - use Return for Research there."
                                     >
                                         Return to Earlier Stage
                                     </button>

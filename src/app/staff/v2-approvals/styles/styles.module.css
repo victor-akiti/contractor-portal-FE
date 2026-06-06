@@ -418,6 +418,34 @@
   font-size: 0.88rem;
   margin-right: 4px;
 }
+.sortRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  background: #fafbfc;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+}
+.sortSelect {
+  padding: 6px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.88rem;
+  color: #222;
+}
+.priorityToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: #333;
+  cursor: pointer;
+}
+.priorityToggle input { cursor: pointer; }
 .chip {
   background: white;
   border: 1px solid #ddd;

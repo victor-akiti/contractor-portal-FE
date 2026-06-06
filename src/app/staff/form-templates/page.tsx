@@ -40,7 +40,7 @@ const FormTemplatesPage = () => {
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [newName, setNewName] = useState("")
     const [newDescription, setNewDescription] = useState("")
-    const [autoMigrate, setAutoMigrate] = useState(false)
+    const [autoMigrate, setAutoMigrate] = useState(true)
     const [creating, setCreating] = useState(false)
     const [createError, setCreateError] = useState("")
     const [createSuccess, setCreateSuccess] = useState("")
@@ -162,7 +162,7 @@ const FormTemplatesPage = () => {
                                 onChange={(e) => setAutoMigrate(e.target.checked)}
                                 disabled={creating}
                             />
-                            <span>Allow safe auto-migration</span>
+                            <span>Allow migration of contractor data to latest form version when only safe changes are made.</span>
                         </label>
                         <p className={styles.helpText}>
                             When you publish a new version with only optional additive
@@ -293,8 +293,8 @@ const FormTemplatesPage = () => {
                                             {t.status}
                                         </span>
                                     </td>
-                                    <td>{t.currentVersionId ? "yes" : <span className={styles.dim}>—</span>}</td>
-                                    <td>{t.workingDraftId ? "yes" : <span className={styles.dim}>—</span>}</td>
+                                    <td>{t.currentVersionId ? "yes" : <span className={styles.dim}>-</span>}</td>
+                                    <td>{t.workingDraftId ? "yes" : <span className={styles.dim}>-</span>}</td>
                                     <td>
                                         {t.autoMigrateOnSafePublish ? (
                                             <span className={styles.dotOn}>on</span>
@@ -303,7 +303,7 @@ const FormTemplatesPage = () => {
                                         )}
                                     </td>
                                     <td className={styles.dim}>
-                                        {t.updatedAt ? new Date(t.updatedAt).toLocaleDateString("en-NG") : "—"}
+                                        {t.updatedAt ? new Date(t.updatedAt).toLocaleDateString("en-NG") : "-"}
                                     </td>
                                     <td className={styles.actionsCell}>
                                         <Link

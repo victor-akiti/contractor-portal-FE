@@ -1,6 +1,6 @@
 'use client'
 
-// useConfirmDialog — promise-based confirmation modal hook.
+// useConfirmDialog - promise-based confirmation modal hook.
 //
 // Replaces ad-hoc window.confirm() calls with the existing
 // <ConfirmationDialog> wrapped in <Modal>, so destructive actions get the

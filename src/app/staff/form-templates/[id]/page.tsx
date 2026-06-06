@@ -16,7 +16,7 @@ import { useSelector } from "react-redux"
 import styles from "../styles/styles.module.css"
 import detailStyles from "./styles/detail.module.css"
 
-// Form Template detail — read + light edit + publish.
+// Form Template detail - read + light edit + publish.
 //
 // The full schema editor (drag-and-drop page/section/field builder) is a
 // follow-up. This page covers what the user can do without it: see the
@@ -66,7 +66,7 @@ const TemplateDetailPage = () => {
     const [showEditModal, setShowEditModal] = useState(false)
     const [editName, setEditName] = useState("")
     const [editDescription, setEditDescription] = useState("")
-    const [editAutoMigrate, setEditAutoMigrate] = useState(false)
+    const [editAutoMigrate, setEditAutoMigrate] = useState(true)
     const [saving, setSaving] = useState(false)
     const [editError, setEditError] = useState("")
 
@@ -74,7 +74,7 @@ const TemplateDetailPage = () => {
     const [publishError, setPublishError] = useState("")
     const [publishSuccess, setPublishSuccess] = useState("")
 
-    // Draft schema editor state — now uses the visual FormBuilder.
+    // Draft schema editor state - now uses the visual FormBuilder.
     const [draftSchema, setDraftSchema] = useState<FormSchema | null>(null)
     const [draftSchemaDirty, setDraftSchemaDirty] = useState(false)
     const [seededFromVersion, setSeededFromVersion] = useState<number | null>(null)
@@ -183,7 +183,8 @@ const TemplateDetailPage = () => {
         if (!template) return
         setEditName(template.name)
         setEditDescription(template.description || "")
-        setEditAutoMigrate(!!template.autoMigrateOnSafePublish)
+        // Default to enabled when the template hasn't set a value yet.
+        setEditAutoMigrate(template.autoMigrateOnSafePublish !== false)
         setEditError("")
         setShowEditModal(true)
     }
@@ -243,7 +244,7 @@ const TemplateDetailPage = () => {
             )
             if (result?.status === "OK") {
                 setPublishSuccess(
-                    `Published v${result.data.newVersion?.versionNumber || "?"} — new contractors will use it.`
+                    `Published v${result.data.newVersion?.versionNumber || "?"} - new contractors will use it.`
                 )
                 await fetchAll()
             } else {
@@ -338,7 +339,7 @@ const TemplateDetailPage = () => {
                 </div>
             )}
 
-            {/* Schema editor — JSON paste for now; drag-and-drop UI is a follow-up. */}
+            {/* Schema editor - JSON paste for now; drag-and-drop UI is a follow-up. */}
             <section className={detailStyles.section}>
                 <div className={detailStyles.sectionHeader}>
                     <h3 className={detailStyles.sectionTitle}>Form schema</h3>
@@ -355,7 +356,7 @@ const TemplateDetailPage = () => {
                         {seededFromVersion != null && !draftSchemaDirty && (
                             <div className={detailStyles.seedBanner}>
                                 Loaded from <strong>v{seededFromVersion}</strong>. Edits go to a new
-                                working draft — the published version stays live until you publish
+                                working draft - the published version stays live until you publish
                                 the draft.
                             </div>
                         )}
@@ -433,12 +434,12 @@ const TemplateDetailPage = () => {
                                         <td className={styles.dim}>
                                             {v.publishedAt
                                                 ? new Date(v.publishedAt).toLocaleString("en-NG")
-                                                : "—"}
+                                                : "-"}
                                         </td>
                                         <td className={styles.dim}>
                                             {v.createdAt
                                                 ? new Date(v.createdAt).toLocaleDateString("en-NG")
-                                                : "—"}
+                                                : "-"}
                                         </td>
                                         <td>
                                             {canEdit && !isDraft && !template.workingDraftId && (
@@ -525,7 +526,7 @@ const TemplateDetailPage = () => {
                                         onChange={(e) => setEditAutoMigrate(e.target.checked)}
                                         disabled={saving}
                                     />
-                                    <span>Allow safe auto-migration</span>
+                                    <span>Allow migration of contractor data to latest form version when only safe changes are made.</span>
                                 </label>
                             </div>
                             {editError && (

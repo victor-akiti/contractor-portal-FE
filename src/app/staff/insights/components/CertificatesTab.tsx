@@ -8,8 +8,8 @@ import { CardsSkeleton, ChartSkeleton, TableSkeleton } from './LoadingSkeleton';
 import SortableTable from './SortableTable';
 import StatCard from './StatCard';
 
-const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`);
+const fmt = (v: number | null | undefined, d = 1) => (v == null ? '-' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined) => (v == null ? '-' : `${v.toFixed(1)}%`);
 
 const EXPIRY_COLORS = ['#dc2626', '#f59e0b', '#16a34a', '#9ca3af'];
 const STATUS_COLORS = ['#16a34a', '#f59e0b', '#dc2626', '#6b7280'];
@@ -83,7 +83,7 @@ export default function CertificatesTab({ period, dateRange }: { period: Period;
         </button>
       </div>
 
-      {/* ── Stat cards — grouped: total → breakdown ── */}
+      {/* ── Stat cards - grouped: total → breakdown ── */}
       {loading ? <CardsSkeleton count={8} /> : error ? <ErrorCard message={error} onRetry={load} /> : data && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
 

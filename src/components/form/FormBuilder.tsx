@@ -1,6 +1,6 @@
 'use client'
 
-// FormBuilder — visual schema editor for FormTemplate working drafts.
+// FormBuilder - visual schema editor for FormTemplate working drafts.
 //
 // Layout mirrors the legacy /staff/form-builder canvas pattern:
 //   • Toolbar at the top (export / import / counts)
@@ -55,7 +55,7 @@ const NUMERIC_TYPES = new Set(["number", "currency"])
 const FILE_TYPES = new Set(["file", "certificate"])
 const CURRENCY_TYPES = new Set(["currency"])
 
-// File-format catalogue — matches the legacy builder's options.
+// File-format catalogue - matches the legacy builder's options.
 const FILE_FORMATS = ["PDF", "JPG", "PNG", "SVG", "GIF", "DOC", "DOCX", "XLS", "XLSX", "PPT", "PPTM"]
 
 // Default currency catalogue. The builder author picks a subset (or types in
@@ -93,7 +93,7 @@ interface Field {
     validation?: Validation
     visibleIf?: VisibleIf | null
 
-    // EBA — "Editable by Amni": when true, this field can be edited by
+    // EBA - "Editable by Amni": when true, this field can be edited by
     // VRM at Stage B (and at Stage E if also visible there). Downstream
     // reviewers (Supervisor at C, HOD at F) see edits highlighted with
     // a full audit trail and can flag / return.
@@ -120,7 +120,7 @@ interface Field {
     allowSelectPreviouslyUploadedFile?: boolean
     hasExpiryDate?: boolean
 
-    // textBlock — rich content (HTML or markdown). We store as string;
+    // textBlock - rich content (HTML or markdown). We store as string;
     // the renderer decides how to display.
     text?: string
 }
@@ -210,7 +210,7 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
     const activePageIdx = selection?.pageIdx ?? 0
     const activePage = pages[activePageIdx] || pages[0] || null
 
-    // Cross-field key uniqueness lookups — used by the visibility-rule
+    // Cross-field key uniqueness lookups - used by the visibility-rule
     // field picker so it can't reference a section/page key.
     const allFieldKeys = useMemo(() => {
         const out: string[] = []
@@ -236,7 +236,7 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
         return out
     }, [pages])
 
-    // Build "taken set excluding self" — the inspector passes its own current
+    // Build "taken set excluding self" - the inspector passes its own current
     // key so a row doesn't fail its own uniqueness check.
     const keysExcluding = useCallback(
         (self: string | undefined) => {
@@ -817,7 +817,7 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Inspector — Empty
+// Inspector - Empty
 // ═══════════════════════════════════════════════════════════════════════════
 const EmptyInspector = () => (
     <div className={styles.inspectorEmpty}>
@@ -830,7 +830,7 @@ const EmptyInspector = () => (
 )
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Inspector — Page
+// Inspector - Page
 // ═══════════════════════════════════════════════════════════════════════════
 interface PageInspectorProps {
     page: Page
@@ -920,7 +920,7 @@ const PageInspector = ({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Inspector — Section
+// Inspector - Section
 // ═══════════════════════════════════════════════════════════════════════════
 interface SectionInspectorProps {
     section: Section
@@ -1062,7 +1062,7 @@ const SectionInspector = ({
                     </>
                 ) : (
                     <p className={styles.dim}>
-                        Off — contractors see this section exactly once.
+                        Off - contractors see this section exactly once.
                     </p>
                 )}
             </SubBlock>
@@ -1097,7 +1097,7 @@ const SectionInspector = ({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Inspector — Field
+// Inspector - Field
 // ═══════════════════════════════════════════════════════════════════════════
 interface FieldInspectorProps {
     field: Field
@@ -1145,7 +1145,7 @@ const FieldInspector = ({
         }
         if (!TYPE_HAS_OPTIONS.has(type)) patch.options = undefined
 
-        // File / certificate defaults — preserve existing if already a file-type.
+        // File / certificate defaults - preserve existing if already a file-type.
         if (FILE_TYPES.has(type)) {
             if (field.maxAllowedFiles == null) patch.maxAllowedFiles = 1
             if (!field.allowedFormats || field.allowedFormats.length === 0) {
@@ -1164,7 +1164,7 @@ const FieldInspector = ({
             patch.hasExpiryDate = undefined
         }
 
-        // Currency defaults — only relevant when switching INTO currency.
+        // Currency defaults - only relevant when switching INTO currency.
         if (CURRENCY_TYPES.has(type)) {
             if (!field.currencyOptions || field.currencyOptions.length === 0) {
                 patch.currencyOptions = ["NGN", "USD"]
@@ -1450,7 +1450,7 @@ const FieldInspector = ({
                         </>
                     ) : (
                         <p className={styles.dim}>
-                            Off — contractors see a single instance of this field.
+                            Off - contractors see a single instance of this field.
                         </p>
                     )}
                 </SubBlock>
@@ -1526,7 +1526,7 @@ const FieldInspector = ({
                                 <code>certStatus</code> (pending → approved/rejected), and{" "}
                                 <code>updateCode</code> (stable slot ID so re-uploads replace in-place rather than
                                 creating duplicates). Re-uploads automatically flip status back to{" "}
-                                <em>pending</em> for staff re-review. Expiry status is computed at view time —
+                                <em>pending</em> for staff re-review. Expiry status is computed at view time -
                                 no cron needed.
                             </div>
                         </>

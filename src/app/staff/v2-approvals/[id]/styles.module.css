@@ -481,7 +481,7 @@
 .expiry_expiring { background: #fff4e0; color: #6b4500; }
 .expiry_healthy  { background: #e6f6e8; color: #1f7a2a; }
 
-/* Migration banner — shown at top of staff submission detail when the
+/* Migration banner - shown at top of staff submission detail when the
    template has been republished since this submission was created. */
 .migrationBanner {
     background: #fff8f0;

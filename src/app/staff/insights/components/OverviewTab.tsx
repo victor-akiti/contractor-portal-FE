@@ -14,8 +14,8 @@ import ErrorCard from './ErrorCard';
 import { CardsSkeleton, ChartSkeleton } from './LoadingSkeleton';
 import StatCard from './StatCard';
 
-const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
-const fmtPct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`);
+const fmt = (v: number | null | undefined, d = 1) => (v == null ? '-' : v.toFixed(d));
+const fmtPct = (v: number | null | undefined) => (v == null ? '-' : `${v.toFixed(1)}%`);
 const fmtChg = (v: number | null | undefined) =>
   v == null ? null : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
 
@@ -206,9 +206,9 @@ export default function OverviewTab({ period, dateRange }: { period: Period; dat
           <CardDivider />
           {/* Certificates quick look */}
           {/* <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-            <StatCard label="Certs in review" value={certData?.statusBreakdown.pending ?? '—'} color="amber" />
-            <StatCard label="Expired certs" value={certData?.expiryBreakdown.expired ?? '—'} color="red" />
-            <StatCard label="Expiring soon" value={certData?.expiryBreakdown.expiringSoon ?? '—'} color="amber" />
+            <StatCard label="Certs in review" value={certData?.statusBreakdown.pending ?? '-'} color="amber" />
+            <StatCard label="Expired certs" value={certData?.expiryBreakdown.expired ?? '-'} color="red" />
+            <StatCard label="Expiring soon" value={certData?.expiryBreakdown.expiringSoon ?? '-'} color="amber" />
           </div> */}
         </div>
       )}
@@ -372,7 +372,7 @@ function PriorityFastTrackCard({ pv }: { pv: PriorityVendors }) {
           { label: 'Parked', value: pv.parked, color: '#b91c1c' },
           {
             label: 'Approval rate',
-            value: pv.approvalRate != null ? `${pv.approvalRate.toFixed(1)}%` : '—',
+            value: pv.approvalRate != null ? `${pv.approvalRate.toFixed(1)}%` : '-',
             color: '#e67509',
           },
         ].map(({ label, value, color }) => (

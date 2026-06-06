@@ -40,7 +40,7 @@ const PRESET_PERIODS: Period[] = ['7d', '14d', '30d', '60d', '90d', '180d', '1y'
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-// ── Suspense wrapper — required for useSearchParams in App Router ─────────────
+// ── Suspense wrapper - required for useSearchParams in App Router ─────────────
 export default function InsightsPage() {
   return (
     <Suspense>
@@ -56,7 +56,7 @@ function InsightsPageInner() {
   const user = useSelector((state: { user: { user: { role?: string } | null } }) => state.user.user);
   const role = user?.role ?? '';
 
-  // Initialise active tab from URL — only read once on mount
+  // Initialise active tab from URL - only read once on mount
   const [activeTab, setActiveTab] = useState<TabKey>(() => {
     const t = searchParams.get('tab') as TabKey;
     return t && ALL_TABS.some(d => d.key === t) ? t : 'overview';
@@ -163,7 +163,7 @@ function InsightsPageInner() {
           Custom
         </button>
 
-        {/* Date inputs — visible when Custom selected */}
+        {/* Date inputs - visible when Custom selected */}
         {period === 'custom' && (
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.25rem' }}>
             <input
@@ -221,7 +221,7 @@ function InsightsPageInner() {
         ))}
       </div>
 
-      {/* ── Tab content — keep visited tabs mounted so period changes refetch ── */}
+      {/* ── Tab content - keep visited tabs mounted so period changes refetch ── */}
       <div>
         {visited.includes('overview') && (
           <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>

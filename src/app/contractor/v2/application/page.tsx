@@ -3,7 +3,7 @@
 // V2 contractor application page.
 //
 // Route: /contractor/v2/application
-// Auth: Firebase (contractor logged in as Vendor — gated by /contractor layout).
+// Auth: Firebase (contractor logged in as Vendor - gated by /contractor layout).
 //
 // Replaces the earlier hash-authed /contractor/v2/form/[hash] page. The
 // invite is now only a registration gate; once the contractor has a login,
@@ -81,7 +81,7 @@ const countRequired = (page: any, answers: Record<string, any>): number => {
     let n = 0
     for (const sec of page.sections || []) {
         if (sec.allowMultiple) {
-            // Required count across configured instances — fall back to 1 row.
+            // Required count across configured instances - fall back to 1 row.
             const instances: any[] = Array.isArray(answers?.[sec.key]) ? answers[sec.key] : [{}]
             instances.forEach((inst) => {
                 for (const f of sec.fields || []) {
@@ -135,7 +135,7 @@ const V2ApplicationPage = () => {
     const [submitError, setSubmitError] = useState("")
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-    // Active page tab — contractor steps through the form one page at a time.
+    // Active page tab - contractor steps through the form one page at a time.
     const [activePageKey, setActivePageKey] = useState<string | null>(null)
     // Autosave: track whether unsynced edits exist + last save timestamp.
     const [dirty, setDirty] = useState(false)
@@ -450,7 +450,7 @@ const V2ApplicationPage = () => {
                     )}
                 </header>
 
-                {/* Page tab strip — mirrors the form-builder pagination so the
+                {/* Page tab strip - mirrors the form-builder pagination so the
                     contractor can jump between pages and pick up where they
                     left off (autosave handles persistence). Only one page is
                     rendered at a time via activePageKey on FormRenderer. */}

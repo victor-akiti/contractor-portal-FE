@@ -81,7 +81,7 @@ function formatTimestamp(ts: string): string {
 }
 
 function formatDateRange(from: string, to: string): string {
-  if (!from || !to) return "—"
+  if (!from || !to) return "-"
   const fmt = (s: string) => {
     const d = new Date(s)
     return `${d.getDate()} ${d.toLocaleDateString("en-GB", { month: "short" })} ${d.getFullYear()}`
@@ -336,15 +336,15 @@ const ErrorTrackerPage = () => {
     <div className={styles.statCards}>
       <div className={styles.statCard}>
         <div className={styles.statLabel}>Total Errors</div>
-        <div className={styles.statValue}>{loading ? "—" : (stats?.total ?? 0)}</div>
+        <div className={styles.statValue}>{loading ? "-" : (stats?.total ?? 0)}</div>
       </div>
       <div className={`${styles.statCard} ${styles.statRed}`}>
         <div className={styles.statLabel}>5xx Server Errors</div>
-        <div className={styles.statValue}>{loading ? "—" : (stats?.fiveXX ?? 0)}</div>
+        <div className={styles.statValue}>{loading ? "-" : (stats?.fiveXX ?? 0)}</div>
       </div>
       <div className={`${styles.statCard} ${styles.statOrange}`}>
         <div className={styles.statLabel}>4xx Client Errors</div>
-        <div className={styles.statValue}>{loading ? "—" : (stats?.fourXX ?? 0)}</div>
+        <div className={styles.statValue}>{loading ? "-" : (stats?.fourXX ?? 0)}</div>
       </div>
       <div className={`${styles.statCard} ${styles.statPurple}`}>
         <div className={styles.statLabel}>Selected Period</div>
@@ -551,7 +551,7 @@ const ErrorTrackerPage = () => {
                         </span>
                       ) : err.userName ? (
                         <span>{truncate(err.userName, 26)}</span>
-                      ) : "—"}
+                      ) : "-"}
                       {err.companyName && (
                         <span className={styles.companyLabel}>{truncate(err.companyName, 22)}</span>
                       )}
@@ -668,36 +668,36 @@ const ErrorTrackerPage = () => {
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Response Time</span>
                 <span className={styles.detailValue}>
-                  {err.responseTimeMs != null ? `${err.responseTimeMs}ms` : "—"}
+                  {err.responseTimeMs != null ? `${err.responseTimeMs}ms` : "-"}
                 </span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Source</span>
-                <span className={styles.detailValue}>{err.source ?? "—"}</span>
+                <span className={styles.detailValue}>{err.source ?? "-"}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>User Email</span>
-                <span className={styles.detailValue}>{err.userEmail ?? "—"}</span>
+                <span className={styles.detailValue}>{err.userEmail ?? "-"}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>User Name</span>
-                <span className={styles.detailValue}>{err.userName ?? "—"}</span>
+                <span className={styles.detailValue}>{err.userName ?? "-"}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Company</span>
-                <span className={styles.detailValue}>{err.companyName ?? "—"}</span>
+                <span className={styles.detailValue}>{err.companyName ?? "-"}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>User ID</span>
-                <span className={`${styles.detailValue} ${styles.detailMono}`}>{err.userId ?? "—"}</span>
+                <span className={`${styles.detailValue} ${styles.detailMono}`}>{err.userId ?? "-"}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>IP Address</span>
-                <span className={styles.detailValue}>{err.ip ?? "—"}</span>
+                <span className={styles.detailValue}>{err.ip ?? "-"}</span>
               </div>
               <div className={`${styles.detailItem} ${styles.detailItemFull}`}>
                 <span className={styles.detailLabel}>User Agent</span>
-                <span className={`${styles.detailValue} ${styles.detailWrap}`}>{err.userAgent ?? "—"}</span>
+                <span className={`${styles.detailValue} ${styles.detailWrap}`}>{err.userAgent ?? "-"}</span>
               </div>
             </div>
 

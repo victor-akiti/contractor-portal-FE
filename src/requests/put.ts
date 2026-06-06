@@ -118,7 +118,7 @@ export const putProtected = async (route: string, body: any, role?: string) => {
             const result = await request.json();
             return result;
         } else {
-            // Non-OK with a response — parse error body so callers see the BE
+            // Non-OK with a response - parse error body so callers see the BE
             // error message (e.g. "Cannot advance to Stage D: ..."). Returns
             // a FAILED envelope matching what post/patch do, so callers can
             // read result?.error?.message uniformly.

@@ -90,7 +90,7 @@ const STATUS_OPTIONS = [
     { label: "Park Requested", value: "park requested" },
 ]
 
-// Default "L3 First" client-side sort — L3 → Priority → stage hierarchy.
+// Default "L3 First" client-side sort - L3 → Priority → stage hierarchy.
 function stageSort(a: VendorResult, b: VendorResult): number {
     const aIsL3 = a.status?.displayStage === "L3"
     const bIsL3 = b.status?.displayStage === "L3"
@@ -102,7 +102,7 @@ function stageSort(a: VendorResult, b: VendorResult): number {
         const bPri = b.status?.isPriority ?? false
         if (aPri !== bPri) return aPri ? -1 : 1
     }
-    // 3. By approvalLevel descending — higher level = further in pipeline = shown first
+    // 3. By approvalLevel descending - higher level = further in pipeline = shown first
     return (b.status?.approvalLevel ?? 0) - (a.status?.approvalLevel ?? 0)
 }
 
@@ -154,7 +154,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 //                 <span key={i} className={styles.matchedByGroup}>
 //                     {i > 0 && <span className={styles.matchedBySep}> | </span>}
 //                     <span className={styles.matchedByField}>{items[0].label}</span>
-//                     {" — "}
+//                     {" - "}
 //                     <span className={styles.matchedByValues}>
 //                         {items.map((m, j) => (
 //                             <span key={j}>
@@ -259,7 +259,7 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                 </div>
             </div>
 
-            {/* Matched pills — always visible when collapsed */}
+            {/* Matched pills - always visible when collapsed */}
             {hasMatchedPills && !expanded && (
                 <div className={styles.matchedPillsRow}>
                     {matchedCategories.map((c, i) => (
@@ -289,7 +289,7 @@ function VendorCard({ vendor, searchQuery, isPinned }: { vendor: VendorResult; s
                                         .join(" ")}
                                     {primaryContact.designation && (
                                         <span className={styles.designation}>
-                                            {" "}— {primaryContact.designation}
+                                            {" "}- {primaryContact.designation}
                                         </span>
                                     )}
                                 </span>
@@ -484,7 +484,7 @@ export default function VendorSearchPage() {
     // Parked contractors get their own separate toggle.
     const parkedResults = allResults.filter((v) => v.status?.status === "parked" || v.status?.status === "suspended")
     // Main results: must be submitted into the approval pipeline, not parked, not returned.
-    // Using `submitted` as the gate is more reliable than matching status strings —
+    // Using `submitted` as the gate is more reliable than matching status strings -
     // unsubmitted contractors can have various status.status values but submitted===false.
     const filteredResults = allResults.filter(
         (v) =>
@@ -493,7 +493,7 @@ export default function VendorSearchPage() {
             v.status?.status !== "suspended" &&
             v.status?.status !== "returned"
     )
-    // Unsubmitted (pending) and returned contractors are grouped together — hidden
+    // Unsubmitted (pending) and returned contractors are grouped together - hidden
     // from the main list and accessible via the "partially completed" toggle.
     const returnedResults = allResults
         .filter(
@@ -508,7 +508,7 @@ export default function VendorSearchPage() {
             ? [...filteredResults].sort((a, b) => b.score - a.score)
             : [...filteredResults].sort(stageSort)
 
-    // Highest score among non-L3 results — used to flag L3 cards pinned above
+    // Highest score among non-L3 results - used to flag L3 cards pinned above
     // more relevant non-L3 matches in the default sort.
     const maxNonL3Score = filteredResults
         .filter((v) => v.status?.displayStage !== "L3")
@@ -814,7 +814,7 @@ export default function VendorSearchPage() {
                         )}
 
 
-                        {/* Hidden groups — above main results */}
+                        {/* Hidden groups - above main results */}
                         {showParked && parkedResults.length > 0 && (
                             <div className={styles.hiddenSection}>
                                 <p className={styles.hiddenSectionLabel}>Parked contractors</p>

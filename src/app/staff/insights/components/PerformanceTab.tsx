@@ -8,10 +8,10 @@ import { CardsSkeleton, TableSkeleton } from './LoadingSkeleton';
 import SortableTable from './SortableTable';
 import StatCard from './StatCard';
 
-const fmt = (v: number | null | undefined, d = 1) => (v == null ? '—' : v.toFixed(d));
+const fmt = (v: number | null | undefined, d = 1) => (v == null ? '-' : v.toFixed(d));
 
 function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
-  if (days == null) return <span style={{ color: '#9ca3af' }}>—</span>;
+  if (days == null) return <span style={{ color: '#9ca3af' }}>-</span>;
   const color = days < 3 ? '#15803d' : days <= 7 ? '#d97706' : '#dc2626';
   const bg    = days < 3 ? '#f0fdf4' : days <= 7 ? '#fffbeb' : '#fef2f2';
   return (
@@ -22,7 +22,7 @@ function ResponseDaysBadge({ days }: { days: number | null | undefined }) {
 }
 
 function DwellBadge({ days, label }: { days: number | null | undefined; label: string }) {
-  if (days == null) return <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>—</span>;
+  if (days == null) return <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>-</span>;
   const color = days < 7 ? '#15803d' : days <= 21 ? '#d97706' : '#dc2626';
   return (
     <span style={{ fontSize: '0.8rem' }}>
@@ -71,7 +71,7 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
     { key: 'stageBreakdown',  label: 'By stage (B-G)', width: '180px',
       render: (r) => {
         const s = r.stageBreakdown as { B: number; C: number; D: number; E: number; F: number; G: number };
-        if (!s) return '—';
+        if (!s) return '-';
         return (
           <span style={{ fontSize: '0.75rem', color: '#6c757d' }}>
             B:{s.B} C:{s.C} D:{s.D} E:{s.E} F:{s.F} G:{s.G}
@@ -99,7 +99,7 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
           <StatCard label="Total approvers"    value={data.summary.totalApproversInPeriod}   color="default" />
           <StatCard label="Active this period" value={data.summary.activeApproversInPeriod}  color="blue" />
           <StatCard label="Avg response time"  value={fmt(data.summary.systemAvgResponseDays)} sub="days" color="amber" />
-          <StatCard label="Bottleneck stage"   value={data.summary.bottleneckStage ?? '—'}   color="red" />
+          <StatCard label="Bottleneck stage"   value={data.summary.bottleneckStage ?? '-'}   color="red" />
         </div>
       )}
 
@@ -144,7 +144,7 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
                 render: (r) => <DwellBadge days={r.avgCompletionDwellDays as number | null} label="hist." /> },
               { key: 'currentVendors',         label: 'Contractors here', width: '130px' },
               { key: 'responsibleRoles',       label: 'Responsible',
-                render: (r) => <span style={{ fontSize: '0.8rem' }}>{(r.responsibleRoles as string[])?.join(', ') || '—'}</span> },
+                render: (r) => <span style={{ fontSize: '0.8rem' }}>{(r.responsibleRoles as string[])?.join(', ') || '-'}</span> },
             ]}
             rows={stageRows}
             defaultSortKey="avgCurrentDwellDays"
@@ -194,7 +194,7 @@ export default function PerformanceTab({ period, dateRange }: { period: Period; 
                                 color: c.daysWaiting != null && c.daysWaiting > 30 ? '#dc2626' : c.daysWaiting != null && c.daysWaiting > 14 ? '#d97706' : undefined,
                                 fontWeight: 500,
                               }}>
-                                {c.daysWaiting != null ? `${c.daysWaiting.toFixed(0)}d` : '—'}
+                                {c.daysWaiting != null ? `${c.daysWaiting.toFixed(0)}d` : '-'}
                               </td>
                             </tr>
                           ))}

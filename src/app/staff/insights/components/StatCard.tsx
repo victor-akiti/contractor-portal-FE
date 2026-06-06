@@ -22,7 +22,7 @@ const colorMap = {
 
 export default function StatCard({ label, value, sub, color = 'default', icon, tooltip }: StatCardProps) {
   const c = colorMap[color];
-  const display = value === null || value === undefined ? '—' : value;
+  const display = value === null || value === undefined ? '-' : value;
   const [tipVisible, setTipVisible] = useState(false);
 
   return (

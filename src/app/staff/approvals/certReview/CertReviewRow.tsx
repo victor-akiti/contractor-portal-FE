@@ -19,14 +19,14 @@ interface Props {
 
 export default function CertReviewRow({ item, onReview }: Props) {
     const formatDate = (dateStr?: string) => {
-        if (!dateStr) return "—";
+        if (!dateStr) return "-";
         return new Date(dateStr).toLocaleDateString("en-NG");
     };
 
     return (
         <tr>
             <td className={styles.certLabel}>{item.label}</td>
-            <td className={styles.sectionLabel}>{item.section || "—"}</td>
+            <td className={styles.sectionLabel}>{item.section || "-"}</td>
             <td className={styles.fileName} title={item.name}>{item.name}</td>
             <td className={styles.dateText}>{formatDate(item.createdAt)}</td>
             <td className={styles.dateText}>{formatDate(item.issueDate)}</td>

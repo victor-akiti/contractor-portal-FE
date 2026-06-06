@@ -142,8 +142,13 @@ const CACHE_TTL_MS = 60_000 // 60s stale-while-revalidate window
 const listCache = new Map<string, { rows: SubmissionV2Row[]; fetchedAt: number }>()
 let countsCache: { counts: Counts; fetchedAt: number } | null = null
 
-const cacheKey = (role: string, tabName: string, completedStage: string): string =>
-    `${role}|${tabName}|${completedStage}`
+const cacheKey = (
+    role: string,
+    tabName: string,
+    completedStage: string,
+    sortBy: string = "name",
+    priorityPin: boolean = true,
+): string => `${role}|${tabName}|${completedStage}|${sortBy}|${priorityPin ? "p1" : "p0"}`
 
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
@@ -155,6 +160,11 @@ const V2ApprovalsPage = () => {
     const [search, setSearch] = useState("")
     const [searchBy, setSearchBy] = useState<string>("all")
     const [debouncedSearch, setDebouncedSearch] = useState("")
+    // V1 parity: default sort is companyName asc; priority-pin is an
+    // independent toggle that defaults ON (so urgent contractors still
+    // rise to the top until the user opts out).
+    const [sortBy, setSortBy] = useState<"name" | "date">("name")
+    const [priorityPin, setPriorityPin] = useState(true)
     const [submissions, setSubmissions] = useState<SubmissionV2Row[]>([])
     const [invites, setInvites] = useState<InviteRow[]>([])
     // Per-row L3 certificate health (only populated when the L3 tab is
@@ -228,7 +238,7 @@ const V2ApprovalsPage = () => {
             }
             return
         }
-        const key = cacheKey(user.role, activeTab, stageFilter)
+        const key = cacheKey(user.role, activeTab, stageFilter, sortBy, priorityPin)
         const cached = listCache.get(key)
         const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
         if (cached) {
@@ -244,6 +254,8 @@ const V2ApprovalsPage = () => {
             if (tabDef.stageFiltersEnabled && stageFilter !== "All") {
                 params.set("completedStage", stageFilter)
             }
+            params.set("sortBy", sortBy)
+            params.set("priorityPin", priorityPin ? "true" : "false")
             const qs = params.toString() ? `?${params.toString()}` : ""
             const list = await getProtected(`api/v2/submissions${qs}`, user.role)
             if (list?.status === "OK") {
@@ -329,7 +341,7 @@ const V2ApprovalsPage = () => {
         fetchList()
         fetchCounts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, activeTab, stageFilter])
+    }, [user?.role, activeTab, stageFilter, sortBy, priorityPin])
 
     // Columns for the submissions table, built per-tab so the right
     // legacy V1 columns appear in the right tabs. The shared "search
@@ -353,9 +365,10 @@ const V2ApprovalsPage = () => {
                         </Link>
 {/* Email moved off the row per V1 parity. It still shows on the
                                 detail page header. */}
-                        {s.isPriority && (
+                        {s.isPriority && !tabDef.l3FiltersEnabled && (
                             <span
                                 className={styles.priorityBadge}
+                                title="This badge indicates that AMNI already works with this contractor."
                                 data-tooltip="This badge indicates that AMNI already works with this contractor."
                                 aria-label="Priority contractor - AMNI already works with this contractor"
                                 tabIndex={0}
@@ -371,30 +384,36 @@ const V2ApprovalsPage = () => {
                 )
             },
         })
-        cols.push({
-            key: "stage",
-            label: "Approval Stage",
-            sortValue: (s) => stageForRow(s),
-            render: (s) => (
-                <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
-            ),
-        })
-        cols.push({
-            key: "group",
-            label: "Group",
-            sortValue: (s) => groupLabel(s.groupId),
-            searchValue: (s) => groupLabel(s.groupId),
-            render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
-        })
+        // L3 queue is a registry of approved contractors — Approval Stage
+        // and Group are not useful there (every row is L3 / same purpose),
+        // so trim the columns to Contractor Name + Cert Health + Last
+        // Update only. Other tabs keep the full set.
+        if (!tabDef.l3FiltersEnabled) {
+            cols.push({
+                key: "stage",
+                label: "Approval Stage",
+                sortValue: (s) => stageForRow(s),
+                render: (s) => (
+                    <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
+                ),
+            })
+            cols.push({
+                key: "group",
+                label: "Group",
+                sortValue: (s) => groupLabel(s.groupId),
+                searchValue: (s) => groupLabel(s.groupId),
+                render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
+            })
+        }
         // V1 parity: End Users by NAME, only when the Supervisor has
         // narrowed the Within Amni Review tab to "Completed Stage C"
-        // rows — those are currently at internal Stage D (level 2)
+        // rows - those are currently at internal Stage D (level 2)
         // where the assigned End Users are doing their review. On any
         // other stage chip the assignment either hasn't happened yet
         // or has already been acted on, so the column would be empty
         // / irrelevant. (Yes, stageFilter "C" → level 2 → Stage D
         // current; the chip label and the filter value disagree by
-        // design — see the BE completedStage map.)
+        // design - see the BE completedStage map.)
         if (activeTab === "pending-l2" && stageFilter === "C") {
             cols.push({
                 key: "endUsers",
@@ -420,7 +439,7 @@ const V2ApprovalsPage = () => {
                                 const name =
                                     typeof u === "string"
                                         ? u.slice(-6)
-                                        : u?.name || u?.email || "—"
+                                        : u?.name || u?.email || "-"
                                 return (
                                     <span key={i} className={styles.endUserNamePill}>
                                         {name}
@@ -483,7 +502,9 @@ const V2ApprovalsPage = () => {
         }
         // Cycle moved to the contractor profile on the detail page;
         // it doesn't deserve a column in the queue (per ask #7).
-        cols.push({
+        // L3 queue is registry-style — the row link on the Contractor
+        // Name column is enough; no Action column.
+        if (!tabDef.l3FiltersEnabled) cols.push({
             key: "action",
             label: "Action",
             inSearchByMenu: false,
@@ -929,6 +950,31 @@ const V2ApprovalsPage = () => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
+                </div>
+            )}
+
+            {!tabDef.isInvites && (
+                <div className={styles.sortRow}>
+                    <span className={styles.filterLabel}>Sort:</span>
+                    <select
+                        className={styles.sortSelect}
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as "name" | "date")}
+                    >
+                        <option value="name">Company name (A-Z)</option>
+                        <option value="date">Last updated (newest first)</option>
+                    </select>
+                    <label
+                        className={styles.priorityToggle}
+                        title="When on, contractors flagged as Priority pin to the top of every queue."
+                    >
+                        <input
+                            type="checkbox"
+                            checked={priorityPin}
+                            onChange={(e) => setPriorityPin(e.target.checked)}
+                        />
+                        <span>Pin priority to top</span>
+                    </label>
                 </div>
             )}
 

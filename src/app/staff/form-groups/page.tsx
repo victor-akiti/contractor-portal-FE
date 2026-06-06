@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
-// Contractor Groups — list + create.
+// Contractor Groups - list + create.
 // One group → one FormTemplate (required at create, immutable except via fork).
 
 interface FormTemplate {
@@ -119,9 +119,9 @@ const FormGroupsPage = () => {
     }
 
     const templateName = (t: FormTemplate | string | null | undefined): string => {
-        if (!t) return "—"
+        if (!t) return "-"
         if (typeof t === "string") return t
-        return t.name || "—"
+        return t.name || "-"
     }
 
     return (
@@ -204,7 +204,7 @@ const FormGroupsPage = () => {
                                     <td className={styles.dim}>
                                         {g.createdAt
                                             ? new Date(g.createdAt).toLocaleDateString("en-NG")
-                                            : "—"}
+                                            : "-"}
                                     </td>
                                 </tr>
                             ))}
