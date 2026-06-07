@@ -137,12 +137,12 @@ const STAGE_FILTERS = ["A", "B", "C", "D", "E", "F"]
 const CACHE_TTL_MS = 60_000 // 60s stale-while-revalidate window
 
 // Module-level cache so navigating away + back doesn't refetch. Keyed by
-// "<role>|<status>|<approved>|<completedStage>".
+// "<role>|<tabName>". The stage chip filters client-side now, so it is
+// not part of the cache key — one fetch per tab covers every chip.
 const listCache = new Map<string, { rows: SubmissionV2Row[]; fetchedAt: number }>()
 let countsCache: { counts: Counts; fetchedAt: number } | null = null
 
-const cacheKey = (role: string, tabName: string, completedStage: string): string =>
-    `${role}|${tabName}|${completedStage}`
+const cacheKey = (role: string, tabName: string): string => `${role}|${tabName}`
 
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
@@ -291,7 +291,7 @@ const V2ApprovalsPage = () => {
             }
             return
         }
-        const key = cacheKey(user.role, activeTab, stageFilter)
+        const key = cacheKey(user.role, activeTab)
         const cached = listCache.get(key)
         const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
         if (cached) {
@@ -304,9 +304,10 @@ const V2ApprovalsPage = () => {
             setError("")
             const params = new URLSearchParams()
             Object.entries(tabDef.filter).forEach(([k, v]) => params.set(k, v))
-            if (tabDef.stageFiltersEnabled && stageFilter !== "All") {
-                params.set("completedStage", stageFilter)
-            }
+            // V1 parity: fetch the entire pending-l2 set in one shot, then
+            // filter by stage chip client-side. Avoids one refetch per
+            // chip click and keeps row reference identity stable across
+            // chip changes (so column-header sorts persist).
             const qs = params.toString() ? `?${params.toString()}` : ""
             const list = await getProtected(`api/v2/submissions${qs}`, user.role)
             if (list?.status === "OK") {
@@ -392,7 +393,7 @@ const V2ApprovalsPage = () => {
         fetchList()
         fetchCounts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, activeTab, stageFilter])
+    }, [user?.role, activeTab])
 
     // Columns for the submissions table, built per-tab so the right
     // legacy V1 columns appear in the right tabs. The shared "search
@@ -762,33 +763,13 @@ const V2ApprovalsPage = () => {
     }
 
     // Client-side search + L3-health filter over the loaded submissions list.
-    const filteredSubmissions = useMemo(() => {
-        let rows = submissions
-        if (tabDef.l3FiltersEnabled && l3Filter !== "All") {
-            const want = l3Filter.toLowerCase() as "healthy" | "expiring" | "expired"
-            rows = rows.filter((s) => l3Health[s._id] === want)
-        }
-        if (!debouncedSearch) return rows
-        return rows.filter((s) => matchesSearch(s, debouncedSearch, false))
-    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef])
-
-    // Filtered invites (client-side search). V1 invites tab matches both
-    // companyName and email; everything else matches companyName only.
-    const filteredInvites = useMemo(() => {
-        if (!debouncedSearch) return invites
-        return invites.filter((i) => matchesSearch(i, debouncedSearch, true))
-    }, [invites, debouncedSearch])
-
-    // "Attention needed" predicate per row. Lights up rows where the
-    // current viewer can actually take an action (their role appears in
-    // STAGE_ACTORS for that stage AND it's pending). This is what the
-    // V1 queue used to draw attention to entries you owned.
+    // "Can act" predicate: does the current viewer's role appear in
+    // STAGE_ACTORS for this row's stage? End Users at Stage D are
+    // further narrowed to the ones the Supervisor actually assigned.
     const canActOnRow = (s: SubmissionV2Row): boolean => {
         if (s.status !== "pending") return false
         const allowed = STAGE_ACTORS[s.level] || []
         if (!allowed.includes(user?.role)) return false
-        // Stage D is owned by the End Users the Supervisor assigned;
-        // non-assigned End Users can view but not act.
         if (s.level === 2 && user?.role === "End User") {
             const ids = (s.selectedEndUsers || []).map((u: any) =>
                 typeof u === "string" ? u : String(u?._id || u),
@@ -797,15 +778,58 @@ const V2ApprovalsPage = () => {
         }
         return true
     }
-
-    // "Action Needed" highlight is only shown at Stage D (per the
-    // ask), and only on rows where the current viewer can act. Other
-    // stages already light up via the Process Stage X button and the
-    // VRM's normal queue routine.
+    // "Action Needed" highlight: lit on Stage D rows the viewer can
+    // act on. Drives both the row badge and the sort that pins these
+    // rows to the top.
     const needsAttention = (s: SubmissionV2Row): boolean => {
         if (s.level !== 2) return false
         return canActOnRow(s)
     }
+
+    const filteredSubmissions = useMemo(() => {
+        let rows = submissions
+        if (tabDef.l3FiltersEnabled && l3Filter !== "All") {
+            const want = l3Filter.toLowerCase() as "healthy" | "expiring" | "expired"
+            rows = rows.filter((s) => l3Health[s._id] === want)
+        }
+        // V1 parity: the "Completed Stage X" chip filters the pending-l2
+        // tab client-side. BE no longer narrows by level, so one fetch
+        // serves every chip.
+        if (tabDef.stageFiltersEnabled && stageFilter !== "All") {
+            const chipToLevel = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 } as Record<string, number>
+            const target = chipToLevel[stageFilter]
+            if (target !== undefined) rows = rows.filter((s) => s.level === target)
+        }
+        if (debouncedSearch) {
+            rows = rows.filter((s) => matchesSearch(s, debouncedSearch, false))
+        }
+        // V1 parity sort: needsAttention DESC, then companyName ASC
+        // (case-insensitive, locale-aware). The BE returns rows in
+        // companyName order already; this pass moves attention-needed
+        // rows to the top and keeps the rest alphabetical. Returns a
+        // new array so the useMemo stays referentially correct.
+        const collator = new Intl.Collator(undefined, {
+            sensitivity: "base",
+            numeric: true,
+        })
+        return [...rows].sort((a, b) => {
+            const an = needsAttention(a) ? 1 : 0
+            const bn = needsAttention(b) ? 1 : 0
+            if (an !== bn) return bn - an
+            return collator.compare(a.companyName || "", b.companyName || "")
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef, stageFilter, user?.role, user?._id])
+
+    // Filtered invites (client-side search). V1 invites tab matches both
+    // companyName and email; everything else matches companyName only.
+    const filteredInvites = useMemo(() => {
+        if (!debouncedSearch) return invites
+        return invites.filter((i) => matchesSearch(i, debouncedSearch, true))
+    }, [invites, debouncedSearch])
+
+    // canActOnRow + needsAttention now live above filteredSubmissions
+    // so the sort can read them directly. See the top of this component.
 
     // Inline action runner for queue rows (currently the Park Request
     // tab: Approve / Decline / Withdraw). Confirms via the shared
