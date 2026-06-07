@@ -169,6 +169,16 @@ const V2ApprovalsPage = () => {
     const [togglingPriorityId, setTogglingPriorityId] = useState<string | null>(null)
     const [inlineActingId, setInlineActingId] = useState<string | null>(null)
     const [exporting, setExporting] = useState<"current" | "all" | null>(null)
+    // Top-of-page Quick Search (V1 parity). Cross-tab search across
+    // companyName + contractorEmail with a status-scope dropdown.
+    // Results render as a dropdown popup with VIEW / Process buttons.
+    type QuickFilter = "all" | "draft" | "pending" | "parked" | "returned" | "park requested" | "l3"
+    const [quickQuery, setQuickQuery] = useState("")
+    const [quickFilter, setQuickFilter] = useState<QuickFilter>("all")
+    const [quickResults, setQuickResults] = useState<SubmissionV2Row[]>([])
+    const [quickOpen, setQuickOpen] = useState(false)
+    const [quickLoading, setQuickLoading] = useState(false)
+    const quickResultRef = useRef<HTMLDivElement | null>(null)
     const { confirm: confirmDialog, dialog: confirmDialogEl } = useConfirmDialog()
 
     const canPriority = ["Admin", "HOD", "Supervisor"].includes(user?.role)
@@ -186,6 +196,57 @@ const V2ApprovalsPage = () => {
     useEffect(() => {
         setStageFilter("All")
     }, [activeTab])
+
+    // Quick Search: V1 parity (debounce 300ms, min 2 chars). Calls the
+    // existing listSubmissions endpoint with a search regex + status
+    // scope so the results are scoped by the dropdown choice. L3 chooses
+    // approved=true rather than a status string.
+    useEffect(() => {
+        const q = quickQuery.trim()
+        if (q.length < 2) {
+            setQuickResults([])
+            return
+        }
+        const handle = setTimeout(async () => {
+            setQuickLoading(true)
+            try {
+                const params = new URLSearchParams()
+                params.set("search", q)
+                params.set("limit", "20")
+                if (quickFilter === "l3") {
+                    params.set("approved", "true")
+                } else if (quickFilter !== "all") {
+                    params.set("status", quickFilter)
+                }
+                const r = await getProtected(
+                    `api/v2/submissions?${params.toString()}`,
+                    user?.role,
+                )
+                if (r?.status === "OK") {
+                    setQuickResults(r.data?.submissions || [])
+                } else {
+                    setQuickResults([])
+                }
+            } catch {
+                setQuickResults([])
+            } finally {
+                setQuickLoading(false)
+            }
+        }, 300)
+        return () => clearTimeout(handle)
+    }, [quickQuery, quickFilter, user?.role])
+
+    // Click-outside closes the result popup.
+    useEffect(() => {
+        if (!quickOpen) return
+        const onClick = (e: MouseEvent) => {
+            if (!quickResultRef.current?.contains(e.target as Node)) {
+                setQuickOpen(false)
+            }
+        }
+        window.addEventListener("mousedown", onClick)
+        return () => window.removeEventListener("mousedown", onClick)
+    }, [quickOpen])
 
     const tabsForTabsComponent = useMemo(() => {
         if (!counts) return TAB_DEFS.map((t) => ({ name: t.name, label: t.label }))
@@ -864,13 +925,93 @@ const V2ApprovalsPage = () => {
         <div className={styles.page}>
             <h2 className={styles.pageTitle}>Registration Approvals</h2>
 
-            {/* V1 parity: the only search box is the inline 'Filter by
-                company name' input that sits under the stage chips
-                (or directly beneath the tabs on non-stage tabs). The
-                top-of-page Quick Search bar with a 'Search By' dropdown
-                has been removed - V1 doesn't expose one. Export
-                buttons keep their own row. */}
-            <div className={styles.exportRow}>
+            {/* V1 parity: Quick Search at the top — cross-tab search
+                across companyName + contractorEmail with a status-scope
+                dropdown. Results render as a popup beneath the input
+                with VIEW + Process buttons. The per-tab 'Filter by
+                company name' input under the stage chips is separate
+                and only filters the current tab's rows. */}
+            <div className={styles.quickSearchRow}>
+                <div className={styles.quickSearch} ref={quickResultRef}>
+                    <label className={styles.quickSearchLabel}>Quick Search</label>
+                    <div className={styles.quickSearchInputRow}>
+                        <input
+                            className={styles.quickSearchInput}
+                            placeholder="Type Company Name or Email..."
+                            value={quickQuery}
+                            onFocus={() => setQuickOpen(true)}
+                            onChange={(e) => {
+                                setQuickQuery(e.target.value)
+                                setQuickOpen(true)
+                            }}
+                        />
+                        <select
+                            className={styles.quickSearchScope}
+                            value={quickFilter}
+                            onChange={(e) => setQuickFilter(e.target.value as QuickFilter)}
+                        >
+                            <option value="all">All Registered Contractors</option>
+                            <option value="draft">Not Yet Submitted</option>
+                            <option value="pending">Within Amni Review L2</option>
+                            <option value="parked">Parked Contractors</option>
+                            <option value="l3">L3</option>
+                            <option value="returned">Returned</option>
+                            <option value="park requested">Park Requested</option>
+                        </select>
+                    </div>
+                    {quickQuery.trim().length > 0 && quickOpen && (
+                        <div className={styles.quickSearchResults}>
+                            {quickQuery.trim().length < 2 ? (
+                                <p className={styles.quickSearchEmpty}>Enter a longer query...</p>
+                            ) : quickLoading ? (
+                                <div className={styles.quickSearchLoading}>
+                                    <ButtonLoadingIcon /> Searching...
+                                </div>
+                            ) : quickResults.length > 0 ? (
+                                quickResults.map((row) => {
+                                    const stage = stageForRow(row)
+                                    const stageLabel =
+                                        row.status === "parked"
+                                            ? "Parked"
+                                            : row.status === "returned"
+                                                ? `Stage ${stage} (Returned)`
+                                                : `Stage ${stage}`
+                                    const canProcess = row.status === "pending"
+                                    return (
+                                        <div key={row._id} className={styles.quickSearchItem}>
+                                            <div className={styles.quickSearchItemMeta}>
+                                                <p className={styles.quickSearchItemName}>
+                                                    {(row.companyName || "(no name)").toUpperCase()}
+                                                </p>
+                                                <p className={styles.quickSearchItemStage}>{stageLabel}</p>
+                                            </div>
+                                            <div className={styles.quickSearchItemActions}>
+                                                <Link
+                                                    href={`/staff/v2-approvals/${row._id}`}
+                                                    onClick={() => setQuickOpen(false)}
+                                                >
+                                                    <button className={styles.btnLink}>VIEW</button>
+                                                </Link>
+                                                {canProcess && (
+                                                    <Link
+                                                        href={`/staff/v2-approvals/${row._id}?mode=approve`}
+                                                        onClick={() => setQuickOpen(false)}
+                                                    >
+                                                        <button className={styles.btnLink}>
+                                                            Process Stage {stage}
+                                                        </button>
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            ) : (
+                                <p className={styles.quickSearchEmpty}>No results found</p>
+                            )}
+                        </div>
+                    )}
+                </div>
                 <div className={styles.exportButtons}>
                     <button
                         className={styles.exportSecondary}

@@ -446,6 +446,106 @@
   cursor: pointer;
 }
 .priorityToggle input { cursor: pointer; }
+
+/* V1-parity Quick Search at the top of the page. */
+.quickSearchRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.quickSearch {
+  position: relative;
+  flex: 1 1 360px;
+  min-width: 280px;
+  max-width: 640px;
+}
+.quickSearchLabel {
+  display: block;
+  font-size: 0.82rem;
+  color: #555;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.quickSearchInputRow {
+  display: flex;
+  gap: 6px;
+}
+.quickSearchInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.quickSearchScope {
+  padding: 8px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.88rem;
+  color: #222;
+  min-width: 180px;
+}
+.quickSearchResults {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  max-height: 400px;
+  overflow-y: auto;
+}
+.quickSearchEmpty {
+  margin: 0;
+  padding: 16px 18px;
+  color: #888;
+  font-size: 0.88rem;
+  text-align: center;
+}
+.quickSearchLoading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: #555;
+  font-size: 0.88rem;
+}
+.quickSearchItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f3f3f3;
+}
+.quickSearchItem:last-child { border-bottom: none; }
+.quickSearchItem:hover { background: #fafafa; }
+.quickSearchItemMeta { min-width: 0; flex: 1; }
+.quickSearchItemName {
+  margin: 0 0 2px 0;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+.quickSearchItemStage {
+  margin: 0;
+  color: #666;
+  font-size: 0.8rem;
+}
+.quickSearchItemActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
 .chip {
   background: white;
   border: 1px solid #ddd;
