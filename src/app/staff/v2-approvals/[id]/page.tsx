@@ -3078,20 +3078,44 @@ const V2SubmissionDetailPage = () => {
                                                     : "-"}
                                             </dd>
                                         </div>
-                                        {invite.recommendedBy?.name && (
-                                            <>
-                                                <div>
-                                                    <dt>Recommended By</dt>
-                                                    <dd>{invite.recommendedBy.name}</dd>
-                                                </div>
-                                                {invite.recommendedBy.department && (
+                                        {(() => {
+                                            // V2-native invites populate recommendedBy as a
+                                            // User doc; V1-backfilled invites store the V1
+                                            // sub-doc on recommendedByMeta because V1's
+                                            // recommendedBy carries extra fields V2's User
+                                            // schema does not. Read meta first, then fall
+                                            // back to the populated User.
+                                            const meta =
+                                                (invite as any).recommendedByMeta ||
+                                                (invite.recommendedBy &&
+                                                typeof invite.recommendedBy === "object" &&
+                                                "name" in invite.recommendedBy
+                                                    ? invite.recommendedBy
+                                                    : null)
+                                            if (!meta?.name && !meta?.email) return null
+                                            return (
+                                                <>
                                                     <div>
-                                                        <dt>Recommender&apos;s Department</dt>
-                                                        <dd>{invite.recommendedBy.department}</dd>
+                                                        <dt>Recommended By</dt>
+                                                        <dd>
+                                                            {meta.name || meta.email || "-"}
+                                                        </dd>
                                                     </div>
-                                                )}
-                                            </>
-                                        )}
+                                                    {meta.department && (
+                                                        <div>
+                                                            <dt>Recommender&apos;s Department</dt>
+                                                            <dd>{meta.department}</dd>
+                                                        </div>
+                                                    )}
+                                                    {meta.email && meta.name && (
+                                                        <div>
+                                                            <dt>Recommender&apos;s Email</dt>
+                                                            <dd>{meta.email}</dd>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )
+                                        })()}
                                     </dl>
                                 ) : (
                                     <p className={styles.dim}>
