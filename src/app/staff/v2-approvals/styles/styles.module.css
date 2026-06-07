@@ -933,6 +933,43 @@
 .inviteUsed { background: #eef3fa; color: #1a4d8f; border-color: #c9d8ec; }
 .inviteArchived { background: #f1f1f1; color: #666; border-color: #ddd; }
 
+/* V1-parity invite row blocks */
+.inviteContactCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 280px;
+}
+.inviteContactName {
+  margin: 0;
+  font-weight: 600;
+  color: #222;
+  font-size: 0.85rem;
+}
+.inviteContactLine {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #555;
+  word-break: break-word;
+}
+.inviteStatusCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+.inviteStatusLine {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #666;
+}
+.inviteStatusReason {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #a32525;
+  font-style: italic;
+}
+
 .subRowLine { color: #888; font-size: 0.82rem; margin-top: 2px; }
 
 /* End User names rendered as small pills in the queue. */
