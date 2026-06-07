@@ -59,11 +59,32 @@ interface SubmissionV2Row {
 interface InviteRow {
     _id: string
     companyName?: string
+    fname?: string
+    lname?: string
+    name?: string
     email?: string
-    used?: boolean
-    archived?: boolean
+    phone?: { number?: string; countryCode?: string } | string
+    approvalStatus?:
+        | "pending_supervisor"
+        | "returned_to_originator"
+        | "pending_hod"
+        | "approved"
+        | "rejected"
+        | "used"
+        | "expired"
+        | "voided"
+    invitedBy?: { uid?: string; name?: string; email?: string }
+    recommendedBy?: { _id?: string; name?: string; email?: string } | string | null
+    recommendedByMeta?: { uid?: string; name?: string; email?: string; department?: string }
     createdAt?: string
     updatedAt?: string
+    approvedAt?: string
+    expiry?: string
+    rejectedReason?: string
+    voidReason?: string
+    // Legacy compatibility hooks — older code paths used these.
+    used?: boolean
+    archived?: boolean
     expiresAt?: string
 }
 
@@ -680,13 +701,81 @@ const V2ApprovalsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, tabDef, l3Health, canPriority, togglingPriorityId, stageFilter])
 
-    const inviteColumns: DataTableColumn<InviteRow>[] = useMemo(
-        () => [
+    const inviteColumns: DataTableColumn<InviteRow>[] = useMemo(() => {
+        // Mirrors V1's three-column row layout (InvitedContractorRow.tsx):
+        //   1. Company (uppercase)
+        //   2. Contact: full name, email, phone, Recommended By (name + dept)
+        //   3. Status: badge + dates (sent / approved / expiry / voided)
+        // V1's Recommended By is sourced from recommendedByMeta (carried
+        // forward verbatim by the V1 invite migration) and falls back to
+        // a populated recommendedBy User for V2-native invites.
+        const formatDate = (v?: string | Date | null) => {
+            if (!v) return null
+            const d = new Date(v)
+            return Number.isFinite(d.getTime())
+                ? d.toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                  })
+                : null
+        }
+        const recommended = (i: InviteRow) => {
+            const meta = i.recommendedByMeta
+            if (meta?.name || meta?.email) return meta
+            const populated =
+                i.recommendedBy && typeof i.recommendedBy === "object"
+                    ? (i.recommendedBy as any)
+                    : null
+            if (populated?.name || populated?.email) {
+                return {
+                    name: populated.name,
+                    email: populated.email,
+                    department: populated.department,
+                }
+            }
+            return null
+        }
+        const phoneStr = (i: InviteRow) => {
+            const p = i.phone
+            if (!p) return ""
+            if (typeof p === "string") return p
+            if (p.number) return p.countryCode ? `${p.countryCode} ${p.number}` : p.number
+            return ""
+        }
+        const statusLabel = (s?: InviteRow["approvalStatus"]) => {
+            switch (s) {
+                case "pending_supervisor":
+                    return "Pending Supervisor"
+                case "returned_to_originator":
+                    return "Returned to Originator"
+                case "pending_hod":
+                    return "Pending HOD"
+                case "approved":
+                    return "Approved"
+                case "used":
+                    return "Used"
+                case "rejected":
+                    return "Rejected"
+                case "voided":
+                    return "Voided"
+                case "expired":
+                    return "Expired"
+                default:
+                    return s || "-"
+            }
+        }
+        const statusClass = (s?: InviteRow["approvalStatus"]) => {
+            if (s === "used") return styles.inviteUsed
+            if (s === "voided" || s === "rejected" || s === "expired") return styles.inviteArchived
+            return styles.inviteActive
+        }
+        return [
             {
                 key: "company",
-                label: "Invited Name",
+                label: "Invited Company",
                 sortValue: (i) => i.companyName,
-                searchValue: (i) => i.companyName,
+                searchValue: (i) => `${i.companyName || ""} ${i.email || ""}`,
                 render: (i) => (
                     <Link
                         href={`/staff/v2-invites/${i._id}`}
@@ -697,49 +786,95 @@ const V2ApprovalsPage = () => {
                 ),
             },
             {
-                key: "email",
-                label: "Email",
-                sortValue: (i) => i.email,
-                searchValue: (i) => i.email,
-                render: (i) => <span className={styles.dateCell}>{i.email || "-"}</span>,
+                key: "contact",
+                label: "Contact",
+                sortValue: (i) =>
+                    `${i.fname || ""} ${i.lname || ""} ${i.email || ""}`.trim(),
+                searchValue: (i) =>
+                    `${i.fname || ""} ${i.lname || ""} ${i.email || ""}`,
+                render: (i) => {
+                    const rec = recommended(i)
+                    const fullName =
+                        `${i.fname || ""} ${i.lname || ""}`.trim() ||
+                        i.name ||
+                        ""
+                    return (
+                        <div className={styles.inviteContactCell}>
+                            {fullName && <p className={styles.inviteContactName}>{fullName.toUpperCase()}</p>}
+                            {i.email && <p className={styles.inviteContactLine}>{i.email}</p>}
+                            {phoneStr(i) && (
+                                <p className={styles.inviteContactLine}>{phoneStr(i)}</p>
+                            )}
+                            {rec && (
+                                <p className={styles.inviteContactLine}>
+                                    Recommended by: <strong>{rec.name || rec.email || "-"}</strong>
+                                    {rec.department ? ` (${rec.department})` : ""}
+                                </p>
+                            )}
+                        </div>
+                    )
+                },
+            },
+            {
+                key: "invitedBy",
+                label: "Invited By",
+                sortValue: (i) => i.invitedBy?.name || i.invitedBy?.email,
+                searchValue: (i) =>
+                    `${i.invitedBy?.name || ""} ${i.invitedBy?.email || ""}`,
+                render: (i) => (
+                    <span className={styles.dateCell}>
+                        {i.invitedBy?.name || i.invitedBy?.email || "-"}
+                    </span>
+                ),
             },
             {
                 key: "status",
                 label: "Status",
-                sortValue: (i) => (i.used ? "used" : i.archived ? "archived" : "active"),
-                render: (i) => (
-                    <span
-                        className={`${styles.stagePillLegacy} ${
-                            i.used
-                                ? styles.inviteUsed
-                                : i.archived
-                                  ? styles.inviteArchived
-                                  : styles.inviteActive
-                        }`}
-                    >
-                        {i.used ? "Used" : i.archived ? "Archived" : "Active"}
-                    </span>
-                ),
+                sortValue: (i) => i.approvalStatus,
+                render: (i) => {
+                    const sent = formatDate(i.createdAt)
+                    const approvedAt = formatDate(i.approvedAt)
+                    const expires = formatDate(i.expiry)
+                    return (
+                        <div className={styles.inviteStatusCell}>
+                            <span
+                                className={`${styles.stagePillLegacy} ${statusClass(i.approvalStatus)}`}
+                            >
+                                {statusLabel(i.approvalStatus)}
+                            </span>
+                            {sent && (
+                                <p className={styles.inviteStatusLine}>Sent: {sent}</p>
+                            )}
+                            {approvedAt && (
+                                <p className={styles.inviteStatusLine}>Approved: {approvedAt}</p>
+                            )}
+                            {expires && (
+                                <p className={styles.inviteStatusLine}>Expires: {expires}</p>
+                            )}
+                            {i.approvalStatus === "rejected" && i.rejectedReason && (
+                                <p className={styles.inviteStatusReason}>
+                                    {i.rejectedReason}
+                                </p>
+                            )}
+                            {i.approvalStatus === "voided" && i.voidReason && (
+                                <p className={styles.inviteStatusReason}>
+                                    Voided: {i.voidReason}
+                                </p>
+                            )}
+                        </div>
+                    )
+                },
             },
             {
                 key: "createdAt",
                 label: "Sent",
                 sortValue: (i) => (i.createdAt ? new Date(i.createdAt) : 0),
                 render: (i) => (
-                    <span className={styles.dateCell}>
-                        {i.createdAt
-                            ? new Date(i.createdAt).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                              })
-                            : "-"}
-                    </span>
+                    <span className={styles.dateCell}>{formatDate(i.createdAt) || "-"}</span>
                 ),
             },
-        ],
-        [],
-    )
+        ]
+    }, [])
 
 
     // V1 parity: the filter input only scopes against company name on
