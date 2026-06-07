@@ -3,7 +3,6 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Tabs from "@/components/tabs"
 import DataTable, { DataTableColumn } from "@/components/dataTable/DataTable"
-import SearchBar, { SearchByOption } from "@/components/dataTable/SearchBar"
 import StageLegend from "./StageLegend"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
@@ -142,13 +141,8 @@ const CACHE_TTL_MS = 60_000 // 60s stale-while-revalidate window
 const listCache = new Map<string, { rows: SubmissionV2Row[]; fetchedAt: number }>()
 let countsCache: { counts: Counts; fetchedAt: number } | null = null
 
-const cacheKey = (
-    role: string,
-    tabName: string,
-    completedStage: string,
-    sortBy: string = "name",
-    priorityPin: boolean = true,
-): string => `${role}|${tabName}|${completedStage}|${sortBy}|${priorityPin ? "p1" : "p0"}`
+const cacheKey = (role: string, tabName: string, completedStage: string): string =>
+    `${role}|${tabName}|${completedStage}`
 
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
@@ -158,13 +152,11 @@ const V2ApprovalsPage = () => {
     const [stageFilter, setStageFilter] = useState<string>("All")
     const [l3Filter, setL3Filter] = useState<L3Filter>("All")
     const [search, setSearch] = useState("")
-    const [searchBy, setSearchBy] = useState<string>("all")
     const [debouncedSearch, setDebouncedSearch] = useState("")
-    // V1 parity: default sort is companyName asc; priority-pin is an
-    // independent toggle that defaults ON (so urgent contractors still
-    // rise to the top until the user opts out).
-    const [sortBy, setSortBy] = useState<"name" | "date">("name")
-    const [priorityPin, setPriorityPin] = useState(true)
+    // V1 parity: BE always sorts companyName asc with isPriority pinned
+    // to the top. Column-header clicks on the DataTable re-sort
+    // client-side. No FE toggle (V1 doesn't expose one either) - we
+    // rely on the BE defaults.
     const [submissions, setSubmissions] = useState<SubmissionV2Row[]>([])
     const [invites, setInvites] = useState<InviteRow[]>([])
     // Per-row L3 certificate health (only populated when the L3 tab is
@@ -238,7 +230,7 @@ const V2ApprovalsPage = () => {
             }
             return
         }
-        const key = cacheKey(user.role, activeTab, stageFilter, sortBy, priorityPin)
+        const key = cacheKey(user.role, activeTab, stageFilter)
         const cached = listCache.get(key)
         const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
         if (cached) {
@@ -254,8 +246,6 @@ const V2ApprovalsPage = () => {
             if (tabDef.stageFiltersEnabled && stageFilter !== "All") {
                 params.set("completedStage", stageFilter)
             }
-            params.set("sortBy", sortBy)
-            params.set("priorityPin", priorityPin ? "true" : "false")
             const qs = params.toString() ? `?${params.toString()}` : ""
             const list = await getProtected(`api/v2/submissions${qs}`, user.role)
             if (list?.status === "OK") {
@@ -341,7 +331,7 @@ const V2ApprovalsPage = () => {
         fetchList()
         fetchCounts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, activeTab, stageFilter, sortBy, priorityPin])
+    }, [user?.role, activeTab, stageFilter])
 
     // Columns for the submissions table, built per-tab so the right
     // legacy V1 columns appear in the right tabs. The shared "search
@@ -689,39 +679,25 @@ const V2ApprovalsPage = () => {
         [],
     )
 
-    // Build a "Search by" options list from whichever set of columns is
-    // active on the current tab.
-    const searchByOptions: SearchByOption[] = useMemo(() => {
-        const cols = tabDef.isInvites ? inviteColumns : submissionColumns
-        return cols
-            .filter((c) => !!c.searchValue && c.inSearchByMenu !== false)
-            .map((c) => ({ key: c.key, label: c.label }))
-    }, [tabDef.isInvites, submissionColumns, inviteColumns])
 
-    // Reset searchBy when tab changes - the available scopes change too.
-    useEffect(() => {
-        setSearchBy("all")
-    }, [activeTab])
-
-    const matchesSearch = <T,>(
+    // V1 parity: the filter input only scopes against company name on
+    // every submission tab (returned, parked, etc.). On the invites tab
+    // it scopes against company name OR email — matching V1's "Filter by
+    // company name or email address" input. No multi-scope dropdown.
+    const matchesSearch = <T extends { companyName?: string; email?: string; contractorEmail?: string }>(
         row: T,
-        cols: DataTableColumn<T>[],
         query: string,
-        scope: string,
+        isInvites: boolean,
     ): boolean => {
         if (!query) return true
         const q = query.toLowerCase()
-        if (scope === "all") {
-            for (const c of cols) {
-                if (!c.searchValue) continue
-                const v = String(c.searchValue(row) || "").toLowerCase()
-                if (v.includes(q)) return true
-            }
-            return false
+        const name = String(row?.companyName || "").toLowerCase()
+        if (name.includes(q)) return true
+        if (isInvites) {
+            const email = String(row?.email || row?.contractorEmail || "").toLowerCase()
+            if (email.includes(q)) return true
         }
-        const c = cols.find((c) => c.key === scope)
-        if (!c?.searchValue) return true
-        return String(c.searchValue(row) || "").toLowerCase().includes(q)
+        return false
     }
 
     // Client-side search + L3-health filter over the loaded submissions list.
@@ -732,14 +708,15 @@ const V2ApprovalsPage = () => {
             rows = rows.filter((s) => l3Health[s._id] === want)
         }
         if (!debouncedSearch) return rows
-        return rows.filter((s) => matchesSearch(s, submissionColumns, debouncedSearch, searchBy))
-    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef, submissionColumns, searchBy])
+        return rows.filter((s) => matchesSearch(s, debouncedSearch, false))
+    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef])
 
-    // Filtered invites (client-side search).
+    // Filtered invites (client-side search). V1 invites tab matches both
+    // companyName and email; everything else matches companyName only.
     const filteredInvites = useMemo(() => {
         if (!debouncedSearch) return invites
-        return invites.filter((i) => matchesSearch(i, inviteColumns, debouncedSearch, searchBy))
-    }, [invites, debouncedSearch, inviteColumns, searchBy])
+        return invites.filter((i) => matchesSearch(i, debouncedSearch, true))
+    }, [invites, debouncedSearch])
 
     // "Attention needed" predicate per row. Lights up rows where the
     // current viewer can actually take an action (their role appears in
@@ -887,16 +864,13 @@ const V2ApprovalsPage = () => {
         <div className={styles.page}>
             <h2 className={styles.pageTitle}>Registration Approvals</h2>
 
-            <div className={styles.searchRow}>
-                <SearchBar
-                    label="Quick Search"
-                    value={search}
-                    onChange={setSearch}
-                    searchBy={searchBy}
-                    onSearchByChange={setSearchBy}
-                    options={searchByOptions}
-                    placeholder="Type to filter the current tab"
-                />
+            {/* V1 parity: the only search box is the inline 'Filter by
+                company name' input that sits under the stage chips
+                (or directly beneath the tabs on non-stage tabs). The
+                top-of-page Quick Search bar with a 'Search By' dropdown
+                has been removed - V1 doesn't expose one. Export
+                buttons keep their own row. */}
+            <div className={styles.exportRow}>
                 <div className={styles.exportButtons}>
                     <button
                         className={styles.exportSecondary}
@@ -932,7 +906,10 @@ const V2ApprovalsPage = () => {
                         className={`${styles.chip} ${stageFilter === "All" ? styles.chipActive : ""}`}
                         onClick={() => setStageFilter("All")}
                     >
-                        All{counts ? ` (${counts.pending})` : ""}
+                        All
+                        {stageFilter === "All"
+                            ? ` (${filteredSubmissions.length})`
+                            : ""}
                     </button>
                     {STAGE_FILTERS.map((s) => (
                         <button
@@ -941,6 +918,9 @@ const V2ApprovalsPage = () => {
                             onClick={() => setStageFilter(s)}
                         >
                             Completed Stage {s}
+                            {stageFilter === s
+                                ? ` (${filteredSubmissions.length})`
+                                : ""}
                         </button>
                     ))}
                     <input
@@ -953,28 +933,19 @@ const V2ApprovalsPage = () => {
                 </div>
             )}
 
-            {!tabDef.isInvites && (
-                <div className={styles.sortRow}>
-                    <span className={styles.filterLabel}>Sort:</span>
-                    <select
-                        className={styles.sortSelect}
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as "name" | "date")}
-                    >
-                        <option value="name">Company name (A-Z)</option>
-                        <option value="date">Last updated (newest first)</option>
-                    </select>
-                    <label
-                        className={styles.priorityToggle}
-                        title="When on, contractors flagged as Priority pin to the top of every queue."
-                    >
-                        <input
-                            type="checkbox"
-                            checked={priorityPin}
-                            onChange={(e) => setPriorityPin(e.target.checked)}
-                        />
-                        <span>Pin priority to top</span>
-                    </label>
+            {!tabDef.stageFiltersEnabled && (
+                <div className={styles.filterChips}>
+                    <input
+                        type="search"
+                        className={styles.inlineFilterInput}
+                        placeholder={
+                            tabDef.isInvites
+                                ? "Filter by company name or email address"
+                                : "Filter by company name"
+                        }
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
             )}
 
@@ -1015,12 +986,6 @@ const V2ApprovalsPage = () => {
                             {f}
                         </button>
                     ))}
-                </div>
-            )}
-
-            {refreshing && (
-                <div className={styles.refreshingHint}>
-                    <ButtonLoadingIcon /> Refreshing...
                 </div>
             )}
 
