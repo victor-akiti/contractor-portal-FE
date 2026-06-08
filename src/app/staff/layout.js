@@ -29,24 +29,24 @@ import styles from "./styles/styles.module.css"
 const ADMIN_ROLES = ["Admin", "HOD"]
 const ERROR_TRACKER_ROLES = ["Admin", "IT Admin"]
 const INSIGHTS_ROLES = [
-  "Admin", "HOD", "VRM", "Executive Approver",
+  "Admin", "HOD", "VRM", "Executive Approver","C and P Staff", "Supervisor",
   //"IT Admin", "Amni Staff", "C and P Staff", "Insurance Officer",
 ]
 
 const MENU_ITEMS = [
   { href: "/staff/approvals", label: "Registration Approvals" },
-  { href: "/staff/invites", label: "Registration Invites" },
+  { href: "/staff/v2-approvals", label: "Approvals (New)", adminOnly: false },
+  // { href: "/staff/invites", label: "Registration Invites" },
+  { href: "/staff/v2-invites", label: "Invites (New)", requiredRoles: INSIGHTS_ROLES },
   { href: "/staff/contractor-search", label: "Contractor Search" },
   { href: "/staff/jobCategories", label: "Job Categories" },
-  { href: "/staff/events", label: "Events" },
-  { href: "/staff/forms", label: "Forms", adminOnly: true },
-  { href: "/staff/form-templates", label: "Form Templates", adminOnly: true },
-  { href: "/staff/form-groups", label: "Contractor Groups", adminOnly: true },
-  { href: "/staff/v2-invites", label: "V2 Invites", adminOnly: true },
-  { href: "/staff/v2-approvals", label: "V2 Approvals", adminOnly: true },
+  // { href: "/staff/forms", label: "Forms", adminOnly: true },
+  { href: "/staff/form-templates", label: "Form Templates (New)", adminOnly: true },
+  { href: "/staff/form-groups", label: "Contractor Groups (New)", adminOnly: true },
   { href: "/staff/userManagement", label: "Roles & User Management", adminOnly: true },
   { href: "/staff/error-tracker", label: "Error Tracker", requiredRoles: ERROR_TRACKER_ROLES },
   { href: "/staff/insights", label: "Approval Insights", requiredRoles: INSIGHTS_ROLES },
+  { href: "/staff/events", label: "Events", requiredRoles: INSIGHTS_ROLES },
   { href: "/staff/settings", label: "Account Settings" },
 ]
 

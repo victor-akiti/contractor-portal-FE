@@ -99,7 +99,7 @@ interface InviteRow {
 const STAGE_ACTORS: Record<number, string[]> = {
     0: ["Admin", "HOD", "VRM"],
     1: ["Admin", "HOD", "Supervisor"],
-    2: ["End User"],
+    2: ["End User", "Admin", "Amni Staff"],
     3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
     4: ["Admin", "HOD"],
     5: ["Admin", "Executive Approver"],
@@ -898,12 +898,11 @@ const V2ApprovalsPage = () => {
         if (s.status !== "pending") return false
         const allowed = STAGE_ACTORS[s.level] || []
         if (!allowed.includes(user?.role)) return false
-        console.log({ see: s.selectedEndUsers, user, })
-        if (s.level === 2 && user?.role === "End User" || s.selectedEndUsers?.find(x => x._id === user?._id)) {
-            const ids = (s.selectedEndUsers || []).map((u: any) =>
-                typeof u === "string" ? u : String(u?._id || u),
-            )
-            if (!user?._id || !ids.includes(String(user._id))) return false
+
+        const isEndUser = Boolean(s.selectedEndUsers?.find((u) => u._id === user?._id));
+
+        if (s.level === 2 && !isEndUser) {
+            return false
         }
         return true
     }
@@ -916,7 +915,7 @@ const V2ApprovalsPage = () => {
     }
 
     const filteredSubmissions = useMemo(() => {
-        let rows = submissions
+        let rows = submissions?.sort((a, b) => needsAttention(a) && needsAttention(b) ? 0 : needsAttention(a) ? -1 : 1) || []
         if (tabDef.l3FiltersEnabled && l3Filter !== "All") {
             const want = l3Filter.toLowerCase() as "healthy" | "expiring" | "expired"
             rows = rows.filter((s) => l3Health[s._id] === want)
@@ -1320,7 +1319,7 @@ const V2ApprovalsPage = () => {
                     columns={submissionColumns}
                     rows={filteredSubmissions}
                     rowKey={(r) => r._id}
-                    initialSort={{ key: "company", dir: "desc" }}
+                    initialSort={{ key: "", dir: "asc" }}
                     rowClassName={(s) => {
                         const a = needsAttention(s) ? styles.rowAttention : ""
                         const p = s.isPriority ? styles.rowPriority : ""
