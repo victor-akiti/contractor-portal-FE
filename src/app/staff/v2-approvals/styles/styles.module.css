@@ -612,34 +612,32 @@
 .rowPriority td:first-child {
   box-shadow: inset 3px 0 0 #f59e0b;
 }
-/* Priority pill — V1 parity. Animated star + tooltip on hover. */
+/* Priority pill — V1 parity. Star + label sit on the flex axis with
+   a real gap so there's no overlap at any zoom level. */
 .priorityBadge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   color: #78350f;
   border: 1px solid #fbbf24;
   border-radius: 999px;
-  padding: 2px 10px 2px 22px;
+  padding: 3px 12px;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin-left: 8px;
-  position: relative;
+  line-height: 1;
   cursor: help;
   box-shadow: 0 1px 3px rgba(146, 64, 14, 0.12);
 }
 .priorityBadge::before {
   content: "★";
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
   color: #d97706;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   line-height: 1;
+  position: static;
 }
 .actionCell {
   display: flex;
