@@ -273,7 +273,7 @@ const ResendInvite = () => {
 
     const noticeModalAction = () => {
         // All modal action cases (reminder, update & resend, or confirmed similar-name bypass)
-        // route through sendNewInvite — the backend enforces deduplication on its end.
+        // route through sendNewInvite - the backend enforces deduplication on its end.
         sendNewInvite()
         closeNoticeModal()
     }
@@ -419,7 +419,7 @@ const ResendInvite = () => {
                                             if (selectedExistingCompany._id && value.trim().toLowerCase() !== selectedExistingCompany.companyName?.trim().toLowerCase()) {
                                                 setSelectedExistingCompany(invitedCompanyTemplate)
                                             }
-                                            // Proper debounce using a timer ref — replaces the broken _.debounce() pattern
+                                            // Proper debounce using a timer ref - replaces the broken _.debounce() pattern
                                             if (companySearchTimerRef.current) clearTimeout(companySearchTimerRef.current)
                                             companySearchTimerRef.current = setTimeout(() => findCompany(value), 500)
                                         }}

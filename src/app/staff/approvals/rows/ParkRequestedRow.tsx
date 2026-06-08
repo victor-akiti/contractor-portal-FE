@@ -35,7 +35,7 @@ export default function ParkRequestedRow({
         <p>{companyRecord?.flags?.hold?.requestedBy?.name}</p>
       </td>
       <td>
-        <p>{companyRecord?.flags?.hold?.reason ?? "—"}</p>
+        <p>{companyRecord?.flags?.hold?.reason ?? "-"}</p>
       </td>
       <td>
         {companyRecord.endUsers &&

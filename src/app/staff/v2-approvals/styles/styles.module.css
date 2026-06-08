@@ -261,37 +261,53 @@
   gap: 10px;
   align-items: center;
 }
+/* Export buttons — V1 typography & weight, with secondary/primary pairing. */
 .exportSecondary {
-  background: #fff;
-  color: #c2410c;
-  border: 1px solid #f5d0b3;
-  padding: 9px 18px;
+  background: #ffffff;
+  color: #f47c20;
+  border: 2px solid #f47c20;
+  padding: 10px 22px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.86rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.3px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 2px 6px rgba(79, 79, 79, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.exportSecondary:hover {
-  background: #fff7f0;
+.exportSecondary:hover:not(:disabled) {
+  background: #fff5ed;
+  transform: translateY(-1px);
+}
+.exportSecondary:active:not(:disabled) {
+  transform: translateY(0);
 }
 .exportPrimary {
-  background: #d56500;
-  color: white;
+  background: linear-gradient(135deg, #f47c20 0%, #e67509 100%);
+  color: #ffffff;
   border: none;
-  padding: 9px 18px;
+  padding: 10px 22px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.86rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.3px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 2px 8px rgba(244, 124, 32, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.exportPrimary:hover {
-  background: #b85700;
+.exportPrimary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(244, 124, 32, 0.4);
+}
+.exportPrimary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(244, 124, 32, 0.3);
 }
 .exportPrimary:disabled,
 .exportSecondary:disabled {
@@ -299,109 +315,128 @@
   cursor: not-allowed;
 }
 
-/* Stage Legend */
+/* Stage Legend — ported verbatim from V1 (src/app/staff/approvals/styles/styles.module.css) */
 .stageLegend {
-  background: white;
+  margin-bottom: 16px;
   border: 1px solid #ececec;
   border-radius: 8px;
-  margin: 14px 0;
-  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .legendToggle {
   width: 100%;
-  background: transparent;
-  border: none;
-  padding: 12px 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 12px 16px;
+  background: none;
+  border: none;
   cursor: pointer;
-  color: #c2410c;
-  font-weight: 600;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  transition: background-color 0.2s ease;
 }
 .legendToggle:hover {
-  background: #fff7f0;
+  background-color: #fafafa;
 }
 .legendIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #d56500;
-  color: white;
-  font-style: italic;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  color: #f47c20;
+  font-weight: 200;
+  padding: 0;
 }
 .chevron {
   margin-left: auto;
-  color: #888;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  color: #777;
+  transition: transform 0.2s ease;
+}
+.chevronOpen {
+  transform: rotate(180deg);
 }
 .legendContent {
-  padding: 8px 16px 16px;
+  padding: 0 16px 16px;
   border-top: 1px solid #f0f0f0;
+  animation: legendSlideDown 0.2s ease;
+}
+@keyframes legendSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .legendGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 12px;
+  margin-top: 12px;
 }
 .legendItem {
-  background: #fafafa;
-  border: 1px solid #efefef;
-  border-radius: 8px;
-  padding: 10px 12px;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
+}
+.legendItem:hover {
+  border-color: #f9b67c;
+  box-shadow: 0 2px 6px rgba(230, 117, 9, 0.1);
+  transform: translateY(-2px);
 }
 .legendHeader {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 .legendStage {
-  background: #fff5ed;
-  color: #6b3d04;
-  border: 1px solid #ffd5b3;
-  border-radius: 12px;
-  padding: 2px 10px;
-  font-size: 0.78rem;
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #f47c20;
+  color: white;
+  font-size: 0.85rem;
   font-weight: 600;
+  border-radius: 6px;
 }
 .legendStatus {
-  font-size: 0.74rem;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-weight: 600;
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid;
 }
 .statusUnchecked {
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fcd34d;
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
 }
 .statusUnverified {
-  background: #e0e7ff;
-  color: #3730a3;
-  border: 1px solid #a5b4fc;
+  background-color: #cfe2ff;
+  border-color: #0d6efd;
+  color: #084298;
 }
 .statusVerified {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #86efac;
+  background-color: #d1e7dd;
+  border-color: #198754;
+  color: #0f5132;
 }
 .legendTitle {
-  margin: 4px 0 4px 0;
-  font-size: 0.88rem;
-  color: #222;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
 }
 .legendDescription {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: #555;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 /* Filter chips */
@@ -417,6 +452,143 @@
   font-weight: 600;
   font-size: 0.88rem;
   margin-right: 4px;
+}
+.sortRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  background: #fafbfc;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+}
+.sortSelect {
+  padding: 6px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.88rem;
+  color: #222;
+}
+.priorityToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: #333;
+  cursor: pointer;
+}
+.priorityToggle input {
+  cursor: pointer;
+}
+
+/* V1-parity Quick Search at the top of the page. */
+.quickSearchRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.quickSearch {
+  position: relative;
+  flex: 1 1 360px;
+  min-width: 280px;
+  max-width: 640px;
+}
+.quickSearchLabel {
+  display: block;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.quickSearchInputRow {
+  display: flex;
+  gap: 6px;
+}
+.quickSearchInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.quickSearchScope {
+  padding: 8px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.88rem;
+  color: #222;
+  min-width: 180px;
+}
+.quickSearchResults {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  max-height: 400px;
+  overflow-y: auto;
+}
+.quickSearchEmpty {
+  margin: 0;
+  padding: 16px 18px;
+  color: #888;
+  font-size: 0.88rem;
+  text-align: center;
+}
+.quickSearchLoading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: #555;
+  font-size: 0.88rem;
+}
+.quickSearchItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f3f3f3;
+}
+.quickSearchItem:last-child {
+  border-bottom: none;
+}
+.quickSearchItem:hover {
+  background: #fafafa;
+}
+.quickSearchItemMeta {
+  min-width: 0;
+  flex: 1;
+}
+.quickSearchItemName {
+  margin: 0 0 2px 0;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+.quickSearchItemStage {
+  margin: 0;
+  color: #666;
+  font-size: 0.8rem;
+}
+.quickSearchItemActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
 }
 .chip {
   background: white;
@@ -440,16 +612,34 @@
 .rowPriority td:first-child {
   box-shadow: inset 3px 0 0 #f59e0b;
 }
+/* Priority pill — V1 parity. Animated star + tooltip on hover. */
 .priorityBadge {
-  display: inline-block;
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fcd34d;
-  border-radius: 12px;
-  padding: 1px 8px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #78350f;
+  border: 1px solid #fbbf24;
+  border-radius: 999px;
+  padding: 2px 10px 2px 22px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   margin-left: 8px;
+  position: relative;
+  cursor: help;
+  box-shadow: 0 1px 3px rgba(146, 64, 14, 0.12);
+}
+.priorityBadge::before {
+  content: "★";
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #d97706;
+  font-size: 0.78rem;
+  line-height: 1;
 }
 .actionCell {
   display: flex;
@@ -570,15 +760,45 @@
   opacity: 0.8;
 }
 
-/* Quiet "refreshing..." note shown above the table while a background
-   fetch is running. Doesn't clear the table - prevents the repaint flash. */
-.refreshingHint {
-  display: inline-flex;
+/* Centered page-loader wrapper — used while the initial fetch resolves.
+   Matches the V1 Loading component (gear spinner) and is always
+   centered both axes so it never sits awkwardly to the left. */
+.pageLoaderWrap {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  color: #666;
-  font-size: 0.78rem;
-  margin: 6px 0;
+  justify-content: center;
+  min-height: 360px;
+  width: 100%;
+}
+/* The classic inline "refreshing…" note is replaced by a top-right
+   Toast on the page; this class is kept hidden as a no-op so any
+   legacy reference doesn't throw. */
+.refreshingHint {
+  display: none;
+}
+
+/* Uniform input padding across search / select / inline filter. */
+.inlineFilterInput,
+.sortSelect,
+.quickSearchInput,
+.quickSearchScope {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid #d4d4d4;
+  font-size: 0.9rem;
+  background: white;
+  color: #1a1a1a;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.inlineFilterInput:focus,
+.sortSelect:focus,
+.quickSearchInput:focus,
+.quickSearchScope:focus {
+  outline: none;
+  border-color: #f47c20;
+  box-shadow: 0 0 0 3px rgba(244, 124, 32, 0.15);
 }
 
 /* Inline search input that sits within the filter chip row, mirroring
@@ -681,70 +901,77 @@
    hover tooltip. data-tooltip attribute drives the tooltip via the
    ::after pseudo-element, no extra DOM needed. */
 .priorityBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 12px;
-    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-    color: #856404;
-    font-size: 0.72rem;
-    font-weight: 600;
-    border-radius: 12px;
-    margin-left: 8px;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-    animation: priorityPulse 2s ease-in-out infinite;
-    position: relative;
-    cursor: help;
-    vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #856404;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 12px;
+  margin-left: 8px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  animation: priorityPulse 2s ease-in-out infinite;
+  position: relative;
+  cursor: help;
+  vertical-align: middle;
 }
 .priorityBadge::before {
-    content: "⭐";
-    font-size: 12px;
+  content: "⭐";
+  font-size: 12px;
 }
 @keyframes priorityPulse {
-    0%, 100% { box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3); }
-    50%      { box-shadow: 0 2px 12px rgba(255, 215, 0, 0.5); }
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.5);
+  }
 }
 .priorityBadge[data-tooltip]::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(-8px);
-    background-color: #1a1a1a;
-    color: white;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 400;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    transition-delay: 0s;
-    z-index: 1000;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    line-height: 1.4;
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background-color: #1a1a1a;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  transition-delay: 0s;
+  z-index: 1000;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  line-height: 1.4;
 }
 .priorityBadge[data-tooltip]:hover::after,
 .priorityBadge[data-tooltip]:focus::after {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-    transition-delay: 0.2s;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0.2s;
 }
 .priorityBadge:focus {
-    outline: 2px solid rgba(255, 215, 0, 0.8);
-    outline-offset: 2px;
+  outline: 2px solid rgba(255, 215, 0, 0.8);
+  outline-offset: 2px;
 }
 @media (max-width: 768px) {
-    .priorityBadge[data-tooltip]::after {
-        bottom: auto;
-        top: calc(100% + 10px);
-        transform: translateX(-50%) translateY(8px);
-        white-space: normal;
-        max-width: 220px;
-        text-align: center;
-    }
+  .priorityBadge[data-tooltip]::after {
+    bottom: auto;
+    top: calc(100% + 10px);
+    transform: translateX(-50%) translateY(8px);
+    white-space: normal;
+    max-width: 220px;
+    text-align: center;
+  }
 }
 .rowPriority td:first-child {
   box-shadow: inset 3px 0 0 #f59e0b;
@@ -754,112 +981,203 @@
 
 /* Alternating row shade like the legacy queue. The shade is subtle so
    priority and attention highlights still read. */
-.rowShade td { background: #fafafa; }
+.rowShade td {
+  background: #fafafa;
+}
 
 /* Row that needs the current viewer's attention - lights up with a
    left-edge orange bar and a soft tint. Used when the row is pending,
    the viewer's role can act at that stage AND (at Stage D) they are
    in the selectedEndUsers list. */
-.rowAttention td:first-child { box-shadow: inset 3px 0 0 #d56500; }
-.rowAttention td { background: #fff7ed; }
-.rowAttention.rowShade td { background: #fff2e0; }
+.rowAttention td:first-child {
+  box-shadow: inset 3px 0 0 #d56500;
+}
+.rowAttention td {
+  background: #fff7ed;
+}
+.rowAttention.rowShade td {
+  background: #fff2e0;
+}
 .attentionBadge {
-    display: inline-block;
-    margin-left: 8px;
-    background: #fff5ed;
-    color: #6b3d04;
-    border: 1px solid #ffd5b3;
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  display: inline-block;
+  margin-left: 8px;
+  background: #fff5ed;
+  color: #6b3d04;
+  border: 1px solid #ffd5b3;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* L3 cert health pill */
 .healthBadge {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 12px;
-    font-size: 0.74rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.healthHealthy { background: #e7f5e7; color: #2d5d2d; border: 1px solid #b7d8b7; }
-.healthExpiring { background: #fff4e0; color: #6b4500; border: 1px solid #f5d99c; }
-.healthExpired { background: #fde6e6; color: #a32525; border: 1px solid #f5b3b3; }
+.healthHealthy {
+  background: #e7f5e7;
+  color: #2d5d2d;
+  border: 1px solid #b7d8b7;
+}
+.healthExpiring {
+  background: #fff4e0;
+  color: #6b4500;
+  border: 1px solid #f5d99c;
+}
+.healthExpired {
+  background: #fde6e6;
+  color: #a32525;
+  border: 1px solid #f5b3b3;
+}
 
 /* Park Reason cell - long text, max-width and wrap. */
 .parkReasonCell {
-    max-width: 280px;
-    color: #444;
-    font-size: 0.86rem;
-    line-height: 1.4;
-    white-space: normal;
+  max-width: 280px;
+  color: #444;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 /* Invite status pill variants */
-.inviteActive { background: #e7f5e7; color: #2d5d2d; border-color: #b7d8b7; }
-.inviteUsed { background: #eef3fa; color: #1a4d8f; border-color: #c9d8ec; }
-.inviteArchived { background: #f1f1f1; color: #666; border-color: #ddd; }
+.inviteActive {
+  background: #e7f5e7;
+  color: #2d5d2d;
+  border-color: #b7d8b7;
+}
+.inviteUsed {
+  background: #eef3fa;
+  color: #1a4d8f;
+  border-color: #c9d8ec;
+}
+.inviteArchived {
+  background: #f1f1f1;
+  color: #666;
+  border-color: #ddd;
+}
 
-.subRowLine { color: #888; font-size: 0.82rem; margin-top: 2px; }
+/* V1-parity invite row blocks */
+.inviteContactCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 280px;
+}
+.inviteContactName {
+  margin: 0;
+  font-weight: 600;
+  color: #222;
+  font-size: 0.85rem;
+}
+.inviteContactLine {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #555;
+  word-break: break-word;
+}
+.inviteStatusCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+.inviteStatusLine {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #666;
+}
+.inviteStatusReason {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #a32525;
+  font-style: italic;
+}
+
+.subRowLine {
+  color: #888;
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
 
 /* End User names rendered as small pills in the queue. */
 .endUserNames {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .endUserNamePill {
-    background: #eef3fa;
-    border: 1px solid #c9d8ec;
-    color: #1a4d8f;
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 0.78rem;
+  background: #eef3fa;
+  border: 1px solid #c9d8ec;
+  color: #1a4d8f;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
 }
 
 /* Filter chip - boost hover contrast so text never disappears
    against the hover background. */
-.chip:hover { background: #fff5ed; color: #1a1a1a; }
-.chipActive:hover { background: #b85700; color: white; }
+.chip:hover {
+  background: #fff5ed;
+  color: #1a1a1a;
+}
+.chipActive:hover {
+  background: #b85700;
+  color: white;
+}
 
 /* Inline park-request action buttons - sized to fit alongside the
    existing Action column buttons. */
 .btnInlineApprove,
 .btnInlineDecline,
 .btnInlineWithdraw {
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-    letter-spacing: 0.02em;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  letter-spacing: 0.02em;
 }
 .btnInlineApprove {
-    background: white;
-    color: #1f5d1f;
-    border: 1.5px solid #b7d8b7;
+  background: white;
+  color: #1f5d1f;
+  border: 1.5px solid #b7d8b7;
 }
-.btnInlineApprove:hover { background: #e7f5e7; border-color: #2d7d2d; }
+.btnInlineApprove:hover {
+  background: #e7f5e7;
+  border-color: #2d7d2d;
+}
 .btnInlineDecline {
-    background: white;
-    color: #8a1f1f;
-    border: 1.5px solid #f5b3b3;
+  background: white;
+  color: #8a1f1f;
+  border: 1.5px solid #f5b3b3;
 }
-.btnInlineDecline:hover { background: #fdecec; border-color: #c33232; }
+.btnInlineDecline:hover {
+  background: #fdecec;
+  border-color: #c33232;
+}
 .btnInlineWithdraw {
-    background: white;
-    color: #5b2a99;
-    border: 1.5px solid #d2bff0;
+  background: white;
+  color: #5b2a99;
+  border: 1.5px solid #d2bff0;
 }
-.btnInlineWithdraw:hover { background: #f1eaff; border-color: #5b2a99; }
+.btnInlineWithdraw:hover {
+  background: #f1eaff;
+  border-color: #5b2a99;
+}
 .btnInlineApprove:disabled,
 .btnInlineDecline:disabled,
-.btnInlineWithdraw:disabled { opacity: 0.6; cursor: not-allowed; }
+.btnInlineWithdraw:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

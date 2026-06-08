@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
-// V2 Invites — parallel invite surface (InviteV2).
+// V2 Invites - parallel invite surface (InviteV2).
 //
 // Flow:
 //   1. Staff create an invite against a contractor group (status=pending_hod).
@@ -113,7 +113,7 @@ const V2InvitesPage = () => {
     const [emailChecking, setEmailChecking] = useState(false)
 
     // An EXACT name match (case-insensitive, whitespace-collapsed) cannot
-    // be acknowledged-away — that company definitively already exists on
+    // be acknowledged-away - that company definitively already exists on
     // the portal or has been invited, and the originator must use that
     // record rather than create a new one.
     const exactMatch = useMemo(() => {
@@ -167,7 +167,7 @@ const V2InvitesPage = () => {
             const result = await getProtected("api/v2/groups", user?.role)
             if (result?.status === "OK") setGroups(result.data?.groups || [])
         } catch {
-            // non-fatal — create modal will surface the empty state
+            // non-fatal - create modal will surface the empty state
         }
     }
 
@@ -196,7 +196,7 @@ const V2InvitesPage = () => {
         setShowCreate(true)
     }
 
-    // Naive but strict enough for a check-on-blur — matches typical address
+    // Naive but strict enough for a check-on-blur - matches typical address
     // shape; the BE re-validates.
     const looksLikeEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim())
 
@@ -229,7 +229,7 @@ const V2InvitesPage = () => {
     // are dropped when a newer query starts so stale lists don't flash in.
     const onCompanyChange = (next: string) => {
         setCCompany(next)
-        // Any edit invalidates the prior acknowledgement — the user has to
+        // Any edit invalidates the prior acknowledgement - the user has to
         // re-confirm against the new list before the create button unlocks.
         setAckUnique(false)
         if (similarTimer.current) clearTimeout(similarTimer.current)
@@ -285,7 +285,7 @@ const V2InvitesPage = () => {
             payload.acknowledgeSimilar = true
             const result = await postProtected("api/v2/invites", payload, user?.role)
             if (result?.status === "OK") {
-                setCreateSuccess(`Invite created for ${cEmail.trim()} — waiting for HOD approval.`)
+                setCreateSuccess(`Invite created for ${cEmail.trim()} - waiting for HOD approval.`)
                 await fetchInvites(activeTab)
                 setTimeout(() => setShowCreate(false), 900)
             } else {
@@ -415,7 +415,7 @@ const V2InvitesPage = () => {
         }
     }
 
-    // Originator resubmit modal state — for the simplest case we let them
+    // Originator resubmit modal state - for the simplest case we let them
     // change the category (groupId) inline. Other fields can be edited via a
     // dedicated edit page later.
     const [resubmittingId, setResubmittingId] = useState<string | null>(null)
@@ -507,15 +507,15 @@ const V2InvitesPage = () => {
             setCopied(hash)
             setTimeout(() => setCopied(null), 1500)
         } catch {
-            // Older browsers — fall back to selection
+            // Older browsers - fall back to selection
             window.prompt("Copy this link:", link)
         }
     }
 
     const groupName = (g: Group | string | null | undefined): string => {
-        if (!g) return "—"
+        if (!g) return "-"
         if (typeof g === "string") return g
-        return g.name || "—"
+        return g.name || "-"
     }
 
     const statusCounts = useMemo(() => {
@@ -574,7 +574,7 @@ const V2InvitesPage = () => {
                     <p>
                         {activeTab === "pending_hod"
                             ? "No invites are currently awaiting HOD approval."
-                            : `No invites with status "${activeTab}".`}
+                            : `No invites here.`}
                     </p>
                 </div>
             )}
@@ -611,7 +611,7 @@ const V2InvitesPage = () => {
                                     <td className={styles.dim}>
                                         {inv.createdAt
                                             ? new Date(inv.createdAt).toLocaleDateString("en-NG")
-                                            : "—"}
+                                            : "-"}
                                     </td>
                                     <td className={styles.actionCol}>
                                         <div className={styles.actionsRow}>
@@ -703,7 +703,7 @@ const V2InvitesPage = () => {
                                                             className={styles.btnReject}
                                                             disabled={actingId === inv._id}
                                                             onClick={() => openVoid(inv._id)}
-                                                            title="Change category — voids this invite. Create a new one with the correct category."
+                                                            title="Change category - voids this invite. Create a new one with the correct category."
                                                         >
                                                             Change category
                                                         </button>
@@ -856,9 +856,8 @@ const V2InvitesPage = () => {
                             {exactMatch ? (
                                 <div className={styles.modalError}>
                                     <ErrorText
-                                        text={`"${exactMatch.companyName}" is already ${
-                                            exactMatch.type === "submission" ? "on the portal" : "invited"
-                                        }${exactMatch.status ? ` (status: ${exactMatch.status})` : ""}. You cannot create a new invite under the same name.`}
+                                        text={`"${exactMatch.companyName}" is already ${exactMatch.type === "submission" ? "on the portal" : "invited"
+                                            }${exactMatch.status ? ` (status: ${exactMatch.status})` : ""}. You cannot create a new invite under the same name.`}
                                     />
                                 </div>
                             ) : (
@@ -976,7 +975,7 @@ const V2InvitesPage = () => {
                                     rows={4}
                                     value={returnReason}
                                     onChange={(e) => setReturnReason(e.target.value)}
-                                    placeholder="e.g. Wrong category — this vendor offers offshore services, not legal."
+                                    placeholder="e.g. Wrong category - this vendor offers offshore services, not legal."
                                     disabled={actingId === returningId}
                                 />
                             </div>
@@ -1011,7 +1010,7 @@ const V2InvitesPage = () => {
                 <Modal>
                     <div className={styles.modalCard}>
                         <div className={styles.modalHeader}>
-                            <h3>Change category — void this invite</h3>
+                            <h3>Change category - void this invite</h3>
                         </div>
                         <div className={styles.modalBody}>
                             <p className={styles.helpText}>
@@ -1019,7 +1018,7 @@ const V2InvitesPage = () => {
                                 the registration process. Voiding this invite cancels the
                                 current registration so you can issue a fresh invite with
                                 the correct category. The vendor's prior submission (if any)
-                                will be marked inactive and disappear from approval queues —
+                                will be marked inactive and disappear from approval queues -
                                 the audit trail is preserved.
                             </p>
                             <div className={styles.formRow}>

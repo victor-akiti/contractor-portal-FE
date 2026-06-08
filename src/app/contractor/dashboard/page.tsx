@@ -160,7 +160,7 @@ const Dashboard = () => {
     const [updatingCertificate, setUpdatingCertificate] = useState(false)
     const [updateCertificateSuccess, setUpdateCertificateSuccess] = useState("")
 
-    // V2 application surface — appears only when the contractor's account is
+    // V2 application surface - appears only when the contractor's account is
     // linked to a SubmissionV2 via the V2 invite/registration flow.
     const [v2Submission, setV2Submission] = useState<{ status: string; cycleNumber?: number } | null>(null)
     const [v2Probed, setV2Probed] = useState(false)
@@ -181,7 +181,7 @@ const Dashboard = () => {
                 })
             }
         } catch {
-            // No V2 submission linked — that's fine, this contractor predates V2.
+            // No V2 submission linked - that's fine, this contractor predates V2.
         } finally {
             setV2Probed(true)
         }
@@ -337,7 +337,7 @@ const Dashboard = () => {
                 <h3 className={styles.dashboardTitle}>Your Dashboard</h3>
             </div>
 
-            {/* V2 Application CTA — only when this contractor's account is
+            {/* V2 Application CTA - only when this contractor's account is
                 linked to a SubmissionV2 (i.e. they came in via the new
                 invite/registration flow). */}
             {v2Probed && v2Submission && (
@@ -362,7 +362,7 @@ const Dashboard = () => {
                         </strong>
                         <span style={{ color: "#666", fontSize: "0.9rem" }}>
                             Status: <strong>{v2Submission.status}</strong>
-                            {v2Submission.cycleNumber ? ` · cycle ${v2Submission.cycleNumber}` : ""}
+                            {/* {v2Submission.cycleNumber ? ` · cycle ${v2Submission.cycleNumber}` : ""} */}
                         </span>
                     </div>
                     <Link
@@ -520,22 +520,22 @@ const Dashboard = () => {
                                         </div>
 
                                         <div className={styles.companyActions}>
-                                            <Link href={`/contractor/application/view/${company.vendor}`} className={styles.actionLink}>
+                                            {/* <Link href={`/contractor/application/view/${company.vendor}`} className={styles.actionLink}>
                                                 View
-                                            </Link>
+                                            </Link> */}
 
                                             <Link href={`/contractor/settings/${company._id}`} className={styles.actionLink}>
                                                 Settings
                                             </Link>
 
-                                            {(!company.flags.submitted || company.flags.stage === "returned" || company.flags.status === "returned") && (
+                                            {/* {(!company.flags.submitted || company.flags.stage === "returned" || company.flags.status === "returned") && (
                                                 <Link
                                                     href={`/contractor/form/form/${company.vendor}`}
                                                     className={`${styles.actionLink} ${styles.actionLinkPrimary}`}
                                                 >
                                                     Continue & Submit
                                                 </Link>
-                                            )}
+                                            )} */}
                                         </div>
                                     </div>
                                 ))}
@@ -561,7 +561,7 @@ const Dashboard = () => {
                         )}
                     </div>
 
-                    {/* Rejected Certificates Section — shown only when non-empty */}
+                    {/* Rejected Certificates Section - shown only when non-empty */}
                     {(dashboardData.rejectedCertificates ?? []).length > 0 && (
                         <>
                             <hr className={styles.divider} />
@@ -571,7 +571,7 @@ const Dashboard = () => {
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                             <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
-                                        Action Required — Rejected Certificates
+                                        Action Required - Rejected Certificates
                                     </h5>
                                 </div>
 
@@ -626,14 +626,14 @@ const Dashboard = () => {
                                                     </td>
                                                     <td className={styles.certSectionLabel}>
                                                         {getCertSectionTitle(certificate) ?? (
-                                                            <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-sm)" }}>—</span>
+                                                            <span style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-sm)" }}>-</span>
                                                         )}
                                                     </td>
                                                     <td>
                                                         <div className={styles.expiryDate}>
                                                             {certificate.issueDate
                                                                 ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
-                                                                : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                                : <span style={{ color: "var(--color-text-secondary)" }}>-</span>
                                                             }
                                                         </div>
                                                     </td>
@@ -644,7 +644,7 @@ const Dashboard = () => {
                                                             </svg>
                                                             {certificate.expiryDate
                                                                 ? new Date(certificate.expiryDate).toLocaleDateString("en-NG")
-                                                                : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                                : <span style={{ color: "var(--color-text-secondary)" }}>-</span>
                                                             }
                                                         </div>
                                                     </td>
@@ -674,7 +674,7 @@ const Dashboard = () => {
                         </>
                     )}
 
-                    {/* Pending Review Section — shown only when non-empty */}
+                    {/* Pending Review Section - shown only when non-empty */}
                     {(dashboardData.pendingCertificates ?? []).length > 0 && (
                         <>
                             <hr className={styles.divider} />
@@ -718,7 +718,7 @@ const Dashboard = () => {
                                                             ? new Date(certificate.updatedAt).toLocaleDateString("en-NG")
                                                             : certificate.createdAt
                                                                 ? new Date(certificate.createdAt).toLocaleDateString("en-NG")
-                                                                : "—"}
+                                                                : "-"}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -782,7 +782,7 @@ const Dashboard = () => {
                                                     <div className={styles.expiryDate}>
                                                         {certificate.issueDate
                                                             ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
-                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                            : <span style={{ color: "var(--color-text-secondary)" }}>-</span>
                                                         }
                                                     </div>
                                                 </td>
@@ -880,7 +880,7 @@ const Dashboard = () => {
                                                     <div className={styles.expiryDate}>
                                                         {certificate.issueDate
                                                             ? new Date(certificate.issueDate).toLocaleDateString("en-NG")
-                                                            : <span style={{ color: "var(--color-text-secondary)" }}>—</span>
+                                                            : <span style={{ color: "var(--color-text-secondary)" }}>-</span>
                                                         }
                                                     </div>
                                                 </td>

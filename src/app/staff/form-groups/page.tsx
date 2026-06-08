@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
-// Contractor Groups — list + create.
+// Contractor Groups - list + create.
 // One group → one FormTemplate (required at create, immutable except via fork).
 
 interface FormTemplate {
@@ -119,9 +119,9 @@ const FormGroupsPage = () => {
     }
 
     const templateName = (t: FormTemplate | string | null | undefined): string => {
-        if (!t) return "—"
+        if (!t) return "-"
         if (typeof t === "string") return t
-        return t.name || "—"
+        return t.name || "-"
     }
 
     return (
@@ -175,7 +175,7 @@ const FormGroupsPage = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Template</th>
+                                <th>Form Template</th>
                                 <th>Status</th>
                                 <th>Created</th>
                             </tr>
@@ -194,9 +194,8 @@ const FormGroupsPage = () => {
                                     <td>{templateName(g.formTemplateId)}</td>
                                     <td>
                                         <span
-                                            className={`${styles.statusBadge} ${
-                                                g.isActive ? styles.status_active : styles.status_inactive
-                                            }`}
+                                            className={`${styles.statusBadge} ${g.isActive ? styles.status_active : styles.status_inactive
+                                                }`}
                                         >
                                             {g.isActive ? "active" : "inactive"}
                                         </span>
@@ -204,7 +203,7 @@ const FormGroupsPage = () => {
                                     <td className={styles.dim}>
                                         {g.createdAt
                                             ? new Date(g.createdAt).toLocaleDateString("en-NG")
-                                            : "—"}
+                                            : "-"}
                                     </td>
                                 </tr>
                             ))}

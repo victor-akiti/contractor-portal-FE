@@ -7,8 +7,8 @@
 // Firebase + UserModel account that's linked to their InviteV2's SubmissionV2.
 //
 // Endpoints:
-//   GET  /api/v2/auth/register/validate/:hash  — pre-fill fname/lname/email
-//   POST /api/v2/auth/register                 — create the account
+//   GET  /api/v2/auth/register/validate/:hash  - pre-fill fname/lname/email
+//   POST /api/v2/auth/register                 - create the account
 //
 // After success, the contractor follows the Login link and signs in like any
 // Vendor; they'll land on the contractor dashboard which surfaces their V2

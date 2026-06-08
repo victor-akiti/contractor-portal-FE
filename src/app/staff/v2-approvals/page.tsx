@@ -1,21 +1,23 @@
 'use client'
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import ErrorText from "@/components/errorText"
-import Tabs from "@/components/tabs"
 import DataTable, { DataTableColumn } from "@/components/dataTable/DataTable"
-import SearchBar, { SearchByOption } from "@/components/dataTable/SearchBar"
-import StageLegend from "./StageLegend"
+import ErrorText from "@/components/errorText"
+import Loading from "@/components/loading"
+import Tabs from "@/components/tabs"
+import Toast from "@/components/toast"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
+import { BACKEND_BASE_URL } from "@/lib/config"
+import { auth } from "@/lib/firebase"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
-import { BACKEND_BASE_URL } from "@/lib/config"
-import { auth } from "@/lib/firebase"
 import { getIdToken } from "firebase/auth"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
+import PriorityBadge from "../approvals/ui/PriorityBadge"
+import StageLegend from "./StageLegend"
 import styles from "./styles/styles.module.css"
 
 // V2 Approvals queue. Layout mirrors legacy /staff/approvals so reviewers
@@ -60,11 +62,32 @@ interface SubmissionV2Row {
 interface InviteRow {
     _id: string
     companyName?: string
+    fname?: string
+    lname?: string
+    name?: string
     email?: string
-    used?: boolean
-    archived?: boolean
+    phone?: { number?: string; countryCode?: string } | string
+    approvalStatus?:
+    | "pending_supervisor"
+    | "returned_to_originator"
+    | "pending_hod"
+    | "approved"
+    | "rejected"
+    | "used"
+    | "expired"
+    | "voided"
+    invitedBy?: { uid?: string; name?: string; email?: string }
+    recommendedBy?: { _id?: string; name?: string; email?: string } | string | null
+    recommendedByMeta?: { uid?: string; name?: string; email?: string; department?: string }
     createdAt?: string
     updatedAt?: string
+    approvedAt?: string
+    expiry?: string
+    rejectedReason?: string
+    voidReason?: string
+    // Legacy compatibility hooks — older code paths used these.
+    used?: boolean
+    archived?: boolean
     expiresAt?: string
 }
 
@@ -76,7 +99,7 @@ interface InviteRow {
 const STAGE_ACTORS: Record<number, string[]> = {
     0: ["Admin", "HOD", "VRM"],
     1: ["Admin", "HOD", "Supervisor"],
-    2: ["Admin", "HOD", "End User"],
+    2: ["End User", "Admin", "Amni Staff"],
     3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
     4: ["Admin", "HOD"],
     5: ["Admin", "Executive Approver"],
@@ -138,12 +161,12 @@ const STAGE_FILTERS = ["A", "B", "C", "D", "E", "F"]
 const CACHE_TTL_MS = 60_000 // 60s stale-while-revalidate window
 
 // Module-level cache so navigating away + back doesn't refetch. Keyed by
-// "<role>|<status>|<approved>|<completedStage>".
+// "<role>|<tabName>". The stage chip filters client-side now, so it is
+// not part of the cache key — one fetch per tab covers every chip.
 const listCache = new Map<string, { rows: SubmissionV2Row[]; fetchedAt: number }>()
 let countsCache: { counts: Counts; fetchedAt: number } | null = null
 
-const cacheKey = (role: string, tabName: string, completedStage: string): string =>
-    `${role}|${tabName}|${completedStage}`
+const cacheKey = (role: string, tabName: string): string => `${role}|${tabName}`
 
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
@@ -153,8 +176,11 @@ const V2ApprovalsPage = () => {
     const [stageFilter, setStageFilter] = useState<string>("All")
     const [l3Filter, setL3Filter] = useState<L3Filter>("All")
     const [search, setSearch] = useState("")
-    const [searchBy, setSearchBy] = useState<string>("all")
     const [debouncedSearch, setDebouncedSearch] = useState("")
+    // V1 parity: BE always sorts companyName asc with isPriority pinned
+    // to the top. Column-header clicks on the DataTable re-sort
+    // client-side. No FE toggle (V1 doesn't expose one either) - we
+    // rely on the BE defaults.
     const [submissions, setSubmissions] = useState<SubmissionV2Row[]>([])
     const [invites, setInvites] = useState<InviteRow[]>([])
     // Per-row L3 certificate health (only populated when the L3 tab is
@@ -167,6 +193,16 @@ const V2ApprovalsPage = () => {
     const [togglingPriorityId, setTogglingPriorityId] = useState<string | null>(null)
     const [inlineActingId, setInlineActingId] = useState<string | null>(null)
     const [exporting, setExporting] = useState<"current" | "all" | null>(null)
+    // Top-of-page Quick Search (V1 parity). Cross-tab search across
+    // companyName + contractorEmail with a status-scope dropdown.
+    // Results render as a dropdown popup with VIEW / Process buttons.
+    type QuickFilter = "all" | "draft" | "pending" | "parked" | "returned" | "park requested" | "l3"
+    const [quickQuery, setQuickQuery] = useState("")
+    const [quickFilter, setQuickFilter] = useState<QuickFilter>("all")
+    const [quickResults, setQuickResults] = useState<SubmissionV2Row[]>([])
+    const [quickOpen, setQuickOpen] = useState(false)
+    const [quickLoading, setQuickLoading] = useState(false)
+    const quickResultRef = useRef<HTMLDivElement | null>(null)
     const { confirm: confirmDialog, dialog: confirmDialogEl } = useConfirmDialog()
 
     const canPriority = ["Admin", "HOD", "Supervisor"].includes(user?.role)
@@ -184,6 +220,57 @@ const V2ApprovalsPage = () => {
     useEffect(() => {
         setStageFilter("All")
     }, [activeTab])
+
+    // Quick Search: V1 parity (debounce 300ms, min 2 chars). Calls the
+    // existing listSubmissions endpoint with a search regex + status
+    // scope so the results are scoped by the dropdown choice. L3 chooses
+    // approved=true rather than a status string.
+    useEffect(() => {
+        const q = quickQuery.trim()
+        if (q.length < 2) {
+            setQuickResults([])
+            return
+        }
+        const handle = setTimeout(async () => {
+            setQuickLoading(true)
+            try {
+                const params = new URLSearchParams()
+                params.set("search", q)
+                params.set("limit", "20")
+                if (quickFilter === "l3") {
+                    params.set("approved", "true")
+                } else if (quickFilter !== "all") {
+                    params.set("status", quickFilter)
+                }
+                const r = await getProtected(
+                    `api/v2/submissions?${params.toString()}`,
+                    user?.role,
+                )
+                if (r?.status === "OK") {
+                    setQuickResults(r.data?.submissions || [])
+                } else {
+                    setQuickResults([])
+                }
+            } catch {
+                setQuickResults([])
+            } finally {
+                setQuickLoading(false)
+            }
+        }, 300)
+        return () => clearTimeout(handle)
+    }, [quickQuery, quickFilter, user?.role])
+
+    // Click-outside closes the result popup.
+    useEffect(() => {
+        if (!quickOpen) return
+        const onClick = (e: MouseEvent) => {
+            if (!quickResultRef.current?.contains(e.target as Node)) {
+                setQuickOpen(false)
+            }
+        }
+        window.addEventListener("mousedown", onClick)
+        return () => window.removeEventListener("mousedown", onClick)
+    }, [quickOpen])
 
     const tabsForTabsComponent = useMemo(() => {
         if (!counts) return TAB_DEFS.map((t) => ({ name: t.name, label: t.label }))
@@ -228,7 +315,7 @@ const V2ApprovalsPage = () => {
             }
             return
         }
-        const key = cacheKey(user.role, activeTab, stageFilter)
+        const key = cacheKey(user.role, activeTab)
         const cached = listCache.get(key)
         const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
         if (cached) {
@@ -241,9 +328,10 @@ const V2ApprovalsPage = () => {
             setError("")
             const params = new URLSearchParams()
             Object.entries(tabDef.filter).forEach(([k, v]) => params.set(k, v))
-            if (tabDef.stageFiltersEnabled && stageFilter !== "All") {
-                params.set("completedStage", stageFilter)
-            }
+            // V1 parity: fetch the entire pending-l2 set in one shot, then
+            // filter by stage chip client-side. Avoids one refetch per
+            // chip click and keeps row reference identity stable across
+            // chip changes (so column-header sorts persist).
             const qs = params.toString() ? `?${params.toString()}` : ""
             const list = await getProtected(`api/v2/submissions${qs}`, user.role)
             if (list?.status === "OK") {
@@ -329,7 +417,7 @@ const V2ApprovalsPage = () => {
         fetchList()
         fetchCounts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, activeTab, stageFilter])
+    }, [user?.role, activeTab])
 
     // Columns for the submissions table, built per-tab so the right
     // legacy V1 columns appear in the right tabs. The shared "search
@@ -351,18 +439,10 @@ const V2ApprovalsPage = () => {
                         >
                             {(s.companyName || "(no name)").toUpperCase()}
                         </Link>
-{/* Email moved off the row per V1 parity. It still shows on the
+                        {/* Email moved off the row per V1 parity. It still shows on the
                                 detail page header. */}
-                        {s.isPriority && (
-                            <span
-                                className={styles.priorityBadge}
-                                data-tooltip="This badge indicates that AMNI already works with this contractor."
-                                aria-label="Priority contractor - AMNI already works with this contractor"
-                                tabIndex={0}
-                                role="note"
-                            >
-                                Priority
-                            </span>
+                        {s.isPriority && !tabDef.l3FiltersEnabled && (
+                            <PriorityBadge />
                         )}
                         {attention && (
                             <span className={styles.attentionBadge}>Action needed</span>
@@ -371,30 +451,36 @@ const V2ApprovalsPage = () => {
                 )
             },
         })
-        cols.push({
-            key: "stage",
-            label: "Approval Stage",
-            sortValue: (s) => stageForRow(s),
-            render: (s) => (
-                <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
-            ),
-        })
-        cols.push({
-            key: "group",
-            label: "Group",
-            sortValue: (s) => groupLabel(s.groupId),
-            searchValue: (s) => groupLabel(s.groupId),
-            render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
-        })
+        // L3 queue is a registry of approved contractors — Approval Stage
+        // and Group are not useful there (every row is L3 / same purpose),
+        // so trim the columns to Contractor Name + Cert Health + Last
+        // Update only. Other tabs keep the full set.
+        if (!tabDef.l3FiltersEnabled) {
+            cols.push({
+                key: "stage",
+                label: "Approval Stage",
+                sortValue: (s) => stageForRow(s),
+                render: (s) => (
+                    <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
+                ),
+            })
+            // cols.push({
+            //     key: "group",
+            //     label: "Group",
+            //     sortValue: (s) => groupLabel(s.groupId),
+            //     searchValue: (s) => groupLabel(s.groupId),
+            //     render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
+            // })
+        }
         // V1 parity: End Users by NAME, only when the Supervisor has
         // narrowed the Within Amni Review tab to "Completed Stage C"
-        // rows — those are currently at internal Stage D (level 2)
+        // rows - those are currently at internal Stage D (level 2)
         // where the assigned End Users are doing their review. On any
         // other stage chip the assignment either hasn't happened yet
         // or has already been acted on, so the column would be empty
         // / irrelevant. (Yes, stageFilter "C" → level 2 → Stage D
         // current; the chip label and the filter value disagree by
-        // design — see the BE completedStage map.)
+        // design - see the BE completedStage map.)
         if (activeTab === "pending-l2" && stageFilter === "C") {
             cols.push({
                 key: "endUsers",
@@ -420,7 +506,7 @@ const V2ApprovalsPage = () => {
                                 const name =
                                     typeof u === "string"
                                         ? u.slice(-6)
-                                        : u?.name || u?.email || "—"
+                                        : u?.name || u?.email || "-"
                                 return (
                                     <span key={i} className={styles.endUserNamePill}>
                                         {name}
@@ -467,13 +553,12 @@ const V2ApprovalsPage = () => {
                     if (!h) return <span className={styles.dim}>...</span>
                     return (
                         <span
-                            className={`${styles.healthBadge} ${
-                                h === "healthy"
-                                    ? styles.healthHealthy
-                                    : h === "expiring"
-                                      ? styles.healthExpiring
-                                      : styles.healthExpired
-                            }`}
+                            className={`${styles.healthBadge} ${h === "healthy"
+                                ? styles.healthHealthy
+                                : h === "expiring"
+                                    ? styles.healthExpiring
+                                    : styles.healthExpired
+                                }`}
                         >
                             {h}
                         </span>
@@ -483,7 +568,9 @@ const V2ApprovalsPage = () => {
         }
         // Cycle moved to the contractor profile on the detail page;
         // it doesn't deserve a column in the queue (per ask #7).
-        cols.push({
+        // L3 queue is registry-style — the row link on the Contractor
+        // Name column is enough; no Action column.
+        if (!tabDef.l3FiltersEnabled) cols.push({
             key: "action",
             label: "Action",
             inSearchByMenu: false,
@@ -558,8 +645,8 @@ const V2ApprovalsPage = () => {
                             PROCESS STAGE {stageForRow(s)}
                         </button>
                     ) : activeTab !== "park-requests" &&
-                      s.status === "parked" &&
-                      ["Admin", "HOD"].includes(user?.role) ? (
+                        s.status === "parked" &&
+                        ["Admin", "HOD"].includes(user?.role) ? (
                         // Parked rows: HOD / Admin go straight into
                         // approval mode so the Unpark button is one
                         // click away.
@@ -592,10 +679,10 @@ const V2ApprovalsPage = () => {
                 <span className={styles.dateCell}>
                     {s.updatedAt
                         ? new Date(s.updatedAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                          })
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        })
                         : "-"}
                 </span>
             ),
@@ -607,13 +694,81 @@ const V2ApprovalsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, tabDef, l3Health, canPriority, togglingPriorityId, stageFilter])
 
-    const inviteColumns: DataTableColumn<InviteRow>[] = useMemo(
-        () => [
+    const inviteColumns: DataTableColumn<InviteRow>[] = useMemo(() => {
+        // Mirrors V1's three-column row layout (InvitedContractorRow.tsx):
+        //   1. Company (uppercase)
+        //   2. Contact: full name, email, phone, Recommended By (name + dept)
+        //   3. Status: badge + dates (sent / approved / expiry / voided)
+        // V1's Recommended By is sourced from recommendedByMeta (carried
+        // forward verbatim by the V1 invite migration) and falls back to
+        // a populated recommendedBy User for V2-native invites.
+        const formatDate = (v?: string | Date | null) => {
+            if (!v) return null
+            const d = new Date(v)
+            return Number.isFinite(d.getTime())
+                ? d.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                })
+                : null
+        }
+        const recommended = (i: InviteRow) => {
+            const meta = i.recommendedByMeta
+            if (meta?.name || meta?.email) return meta
+            const populated =
+                i.recommendedBy && typeof i.recommendedBy === "object"
+                    ? (i.recommendedBy as any)
+                    : null
+            if (populated?.name || populated?.email) {
+                return {
+                    name: populated.name,
+                    email: populated.email,
+                    department: populated.department,
+                }
+            }
+            return null
+        }
+        const phoneStr = (i: InviteRow) => {
+            const p = i.phone
+            if (!p) return ""
+            if (typeof p === "string") return p
+            if (p.number) return p.countryCode ? `${p.countryCode} ${p.number}` : p.number
+            return ""
+        }
+        const statusLabel = (s?: InviteRow["approvalStatus"]) => {
+            switch (s) {
+                case "pending_supervisor":
+                    return "Pending Supervisor"
+                case "returned_to_originator":
+                    return "Returned to Originator"
+                case "pending_hod":
+                    return "Pending HOD"
+                case "approved":
+                    return "Approved"
+                case "used":
+                    return "Used"
+                case "rejected":
+                    return "Rejected"
+                case "voided":
+                    return "Voided"
+                case "expired":
+                    return "Expired"
+                default:
+                    return s || "-"
+            }
+        }
+        const statusClass = (s?: InviteRow["approvalStatus"]) => {
+            if (s === "used") return styles.inviteUsed
+            if (s === "voided" || s === "rejected" || s === "expired") return styles.inviteArchived
+            return styles.inviteActive
+        }
+        return [
             {
                 key: "company",
-                label: "Invited Name",
+                label: "Invited Company",
                 sortValue: (i) => i.companyName,
-                searchValue: (i) => i.companyName,
+                searchValue: (i) => `${i.companyName || ""} ${i.email || ""}`,
                 render: (i) => (
                     <Link
                         href={`/staff/v2-invites/${i._id}`}
@@ -624,129 +779,185 @@ const V2ApprovalsPage = () => {
                 ),
             },
             {
-                key: "email",
-                label: "Email",
-                sortValue: (i) => i.email,
-                searchValue: (i) => i.email,
-                render: (i) => <span className={styles.dateCell}>{i.email || "-"}</span>,
+                key: "contact",
+                label: "Contact",
+                sortValue: (i) =>
+                    `${i.fname || ""} ${i.lname || ""} ${i.email || ""}`.trim(),
+                searchValue: (i) =>
+                    `${i.fname || ""} ${i.lname || ""} ${i.email || ""}`,
+                render: (i) => {
+                    const rec = recommended(i)
+                    const fullName =
+                        `${i.fname || ""} ${i.lname || ""}`.trim() ||
+                        i.name ||
+                        ""
+                    return (
+                        <div className={styles.inviteContactCell}>
+                            {fullName && <p className={styles.inviteContactName}>{fullName.toUpperCase()}</p>}
+                            {i.email && <p className={styles.inviteContactLine}>{i.email}</p>}
+                            {phoneStr(i) && (
+                                <p className={styles.inviteContactLine}>{phoneStr(i)}</p>
+                            )}
+                            {rec && (
+                                <p className={styles.inviteContactLine}>
+                                    Recommended by: <strong>{rec.name || rec.email || "-"}</strong>
+                                    {rec.department ? ` (${rec.department})` : ""}
+                                </p>
+                            )}
+                        </div>
+                    )
+                },
+            },
+            {
+                key: "invitedBy",
+                label: "Invited By",
+                sortValue: (i) => i.invitedBy?.name || i.invitedBy?.email,
+                searchValue: (i) =>
+                    `${i.invitedBy?.name || ""} ${i.invitedBy?.email || ""}`,
+                render: (i) => (
+                    <span className={styles.dateCell}>
+                        {i.invitedBy?.name || i.invitedBy?.email || "-"}
+                    </span>
+                ),
             },
             {
                 key: "status",
                 label: "Status",
-                sortValue: (i) => (i.used ? "used" : i.archived ? "archived" : "active"),
-                render: (i) => (
-                    <span
-                        className={`${styles.stagePillLegacy} ${
-                            i.used
-                                ? styles.inviteUsed
-                                : i.archived
-                                  ? styles.inviteArchived
-                                  : styles.inviteActive
-                        }`}
-                    >
-                        {i.used ? "Used" : i.archived ? "Archived" : "Active"}
-                    </span>
-                ),
+                sortValue: (i) => i.approvalStatus,
+                render: (i) => {
+                    const sent = formatDate(i.createdAt)
+                    const approvedAt = formatDate(i.approvedAt)
+                    const expires = formatDate(i.expiry)
+                    return (
+                        <div className={styles.inviteStatusCell}>
+                            <span
+                                className={`${styles.stagePillLegacy} ${statusClass(i.approvalStatus)}`}
+                            >
+                                {statusLabel(i.approvalStatus)}
+                            </span>
+                            {sent && (
+                                <p className={styles.inviteStatusLine}>Sent: {sent}</p>
+                            )}
+                            {approvedAt && (
+                                <p className={styles.inviteStatusLine}>Approved: {approvedAt}</p>
+                            )}
+                            {expires && (
+                                <p className={styles.inviteStatusLine}>Expires: {expires}</p>
+                            )}
+                            {i.approvalStatus === "rejected" && i.rejectedReason && (
+                                <p className={styles.inviteStatusReason}>
+                                    {i.rejectedReason}
+                                </p>
+                            )}
+                            {i.approvalStatus === "voided" && i.voidReason && (
+                                <p className={styles.inviteStatusReason}>
+                                    Voided: {i.voidReason}
+                                </p>
+                            )}
+                        </div>
+                    )
+                },
             },
             {
                 key: "createdAt",
                 label: "Sent",
                 sortValue: (i) => (i.createdAt ? new Date(i.createdAt) : 0),
                 render: (i) => (
-                    <span className={styles.dateCell}>
-                        {i.createdAt
-                            ? new Date(i.createdAt).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                              })
-                            : "-"}
-                    </span>
+                    <span className={styles.dateCell}>{formatDate(i.createdAt) || "-"}</span>
                 ),
             },
-        ],
-        [],
-    )
+        ]
+    }, [])
 
-    // Build a "Search by" options list from whichever set of columns is
-    // active on the current tab.
-    const searchByOptions: SearchByOption[] = useMemo(() => {
-        const cols = tabDef.isInvites ? inviteColumns : submissionColumns
-        return cols
-            .filter((c) => !!c.searchValue && c.inSearchByMenu !== false)
-            .map((c) => ({ key: c.key, label: c.label }))
-    }, [tabDef.isInvites, submissionColumns, inviteColumns])
 
-    // Reset searchBy when tab changes - the available scopes change too.
-    useEffect(() => {
-        setSearchBy("all")
-    }, [activeTab])
-
-    const matchesSearch = <T,>(
+    // V1 parity: the filter input only scopes against company name on
+    // every submission tab (returned, parked, etc.). On the invites tab
+    // it scopes against company name OR email — matching V1's "Filter by
+    // company name or email address" input. No multi-scope dropdown.
+    const matchesSearch = <T extends { companyName?: string; email?: string; contractorEmail?: string }>(
         row: T,
-        cols: DataTableColumn<T>[],
         query: string,
-        scope: string,
+        isInvites: boolean,
     ): boolean => {
         if (!query) return true
         const q = query.toLowerCase()
-        if (scope === "all") {
-            for (const c of cols) {
-                if (!c.searchValue) continue
-                const v = String(c.searchValue(row) || "").toLowerCase()
-                if (v.includes(q)) return true
-            }
-            return false
+        const name = String(row?.companyName || "").toLowerCase()
+        if (name.includes(q)) return true
+        if (isInvites) {
+            const email = String(row?.email || row?.contractorEmail || "").toLowerCase()
+            if (email.includes(q)) return true
         }
-        const c = cols.find((c) => c.key === scope)
-        if (!c?.searchValue) return true
-        return String(c.searchValue(row) || "").toLowerCase().includes(q)
+        return false
     }
 
     // Client-side search + L3-health filter over the loaded submissions list.
-    const filteredSubmissions = useMemo(() => {
-        let rows = submissions
-        if (tabDef.l3FiltersEnabled && l3Filter !== "All") {
-            const want = l3Filter.toLowerCase() as "healthy" | "expiring" | "expired"
-            rows = rows.filter((s) => l3Health[s._id] === want)
-        }
-        if (!debouncedSearch) return rows
-        return rows.filter((s) => matchesSearch(s, submissionColumns, debouncedSearch, searchBy))
-    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef, submissionColumns, searchBy])
-
-    // Filtered invites (client-side search).
-    const filteredInvites = useMemo(() => {
-        if (!debouncedSearch) return invites
-        return invites.filter((i) => matchesSearch(i, inviteColumns, debouncedSearch, searchBy))
-    }, [invites, debouncedSearch, inviteColumns, searchBy])
-
-    // "Attention needed" predicate per row. Lights up rows where the
-    // current viewer can actually take an action (their role appears in
-    // STAGE_ACTORS for that stage AND it's pending). This is what the
-    // V1 queue used to draw attention to entries you owned.
+    // "Can act" predicate: does the current viewer's role appear in
+    // STAGE_ACTORS for this row's stage? End Users at Stage D are
+    // further narrowed to the ones the Supervisor actually assigned.
     const canActOnRow = (s: SubmissionV2Row): boolean => {
         if (s.status !== "pending") return false
         const allowed = STAGE_ACTORS[s.level] || []
         if (!allowed.includes(user?.role)) return false
-        // Stage D is owned by the End Users the Supervisor assigned;
-        // non-assigned End Users can view but not act.
-        if (s.level === 2 && user?.role === "End User") {
-            const ids = (s.selectedEndUsers || []).map((u: any) =>
-                typeof u === "string" ? u : String(u?._id || u),
-            )
-            if (!user?._id || !ids.includes(String(user._id))) return false
+
+        const isEndUser = Boolean(s.selectedEndUsers?.find((u) => u._id === user?._id));
+
+        if (s.level === 2 && !isEndUser) {
+            return false
         }
         return true
     }
-
-    // "Action Needed" highlight is only shown at Stage D (per the
-    // ask), and only on rows where the current viewer can act. Other
-    // stages already light up via the Process Stage X button and the
-    // VRM's normal queue routine.
+    // "Action Needed" highlight: lit on Stage D rows the viewer can
+    // act on. Drives both the row badge and the sort that pins these
+    // rows to the top.
     const needsAttention = (s: SubmissionV2Row): boolean => {
         if (s.level !== 2) return false
         return canActOnRow(s)
     }
+
+    const filteredSubmissions = useMemo(() => {
+        let rows = submissions?.sort((a, b) => needsAttention(a) && needsAttention(b) ? 0 : needsAttention(a) ? -1 : 1) || []
+        if (tabDef.l3FiltersEnabled && l3Filter !== "All") {
+            const want = l3Filter.toLowerCase() as "healthy" | "expiring" | "expired"
+            rows = rows.filter((s) => l3Health[s._id] === want)
+        }
+        // V1 parity: the "Completed Stage X" chip filters the pending-l2
+        // tab client-side. BE no longer narrows by level, so one fetch
+        // serves every chip.
+        if (tabDef.stageFiltersEnabled && stageFilter !== "All") {
+            const chipToLevel = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 } as Record<string, number>
+            const target = chipToLevel[stageFilter]
+            if (target !== undefined) rows = rows.filter((s) => s.level === target)
+        }
+        if (debouncedSearch) {
+            rows = rows.filter((s) => matchesSearch(s, debouncedSearch, false))
+        }
+        // V1 parity sort: needsAttention DESC, then companyName ASC
+        // (case-insensitive, locale-aware). The BE returns rows in
+        // companyName order already; this pass moves attention-needed
+        // rows to the top and keeps the rest alphabetical. Returns a
+        // new array so the useMemo stays referentially correct.
+        const collator = new Intl.Collator(undefined, {
+            sensitivity: "base",
+            numeric: true,
+        })
+        return [...rows].sort((a, b) => {
+            const an = needsAttention(a) ? 1 : 0
+            const bn = needsAttention(b) ? 1 : 0
+            if (an !== bn) return bn - an
+            return collator.compare(a.companyName || "", b.companyName || "")
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [submissions, debouncedSearch, l3Filter, l3Health, tabDef, stageFilter, user?.role, user?._id])
+
+    // Filtered invites (client-side search). V1 invites tab matches both
+    // companyName and email; everything else matches companyName only.
+    const filteredInvites = useMemo(() => {
+        if (!debouncedSearch) return invites
+        return invites.filter((i) => matchesSearch(i, debouncedSearch, true))
+    }, [invites, debouncedSearch])
+
+    // canActOnRow + needsAttention now live above filteredSubmissions
+    // so the sort can read them directly. See the top of this component.
 
     // Inline action runner for queue rows (currently the Park Request
     // tab: Approve / Decline / Withdraw). Confirms via the shared
@@ -761,11 +972,10 @@ const V2ApprovalsPage = () => {
         const verb = isApprove ? "Approve" : "Decline"
         const ok = await confirmDialog({
             headerText: `${verb} park request?`,
-            bodyText: `${
-                isApprove
-                    ? "Confirms the request - status flips to Parked and movement stops."
-                    : "Rejects the request - the application goes back to its current stage."
-            }`,
+            bodyText: `${isApprove
+                ? "Confirms the request - status flips to Parked and movement stops."
+                : "Rejects the request - the application goes back to its current stage."
+                }`,
             confirmText: verb,
             destructive: false,
         })
@@ -864,18 +1074,94 @@ const V2ApprovalsPage = () => {
 
     return (
         <div className={styles.page}>
-            <h2 className={styles.pageTitle}>Registration Approvals</h2>
 
-            <div className={styles.searchRow}>
-                <SearchBar
-                    label="Quick Search"
-                    value={search}
-                    onChange={setSearch}
-                    searchBy={searchBy}
-                    onSearchByChange={setSearchBy}
-                    options={searchByOptions}
-                    placeholder="Type to filter the current tab"
-                />
+            {/* V1 parity: Quick Search at the top — cross-tab search
+                across companyName + contractorEmail with a status-scope
+                dropdown. Results render as a popup beneath the input
+                with VIEW + Process buttons. The per-tab 'Filter by
+                company name' input under the stage chips is separate
+                and only filters the current tab's rows. */}
+            <div className={styles.quickSearchRow}>
+                <div className={styles.quickSearch} ref={quickResultRef}>
+                    <label className={styles.quickSearchLabel}>Quick Search</label>
+                    <div className={styles.quickSearchInputRow}>
+                        <input
+                            className={styles.quickSearchInput}
+                            placeholder="Type Company Name or Email..."
+                            value={quickQuery}
+                            onFocus={() => setQuickOpen(true)}
+                            onChange={(e) => {
+                                setQuickQuery(e.target.value)
+                                setQuickOpen(true)
+                            }}
+                        />
+                        <select
+                            className={styles.quickSearchScope}
+                            value={quickFilter}
+                            onChange={(e) => setQuickFilter(e.target.value as QuickFilter)}
+                        >
+                            <option value="all">All Registered Contractors</option>
+                            <option value="draft">Not Yet Submitted</option>
+                            <option value="pending">Within Amni Review L2</option>
+                            <option value="parked">Parked Contractors</option>
+                            <option value="l3">L3</option>
+                            <option value="returned">Returned</option>
+                            <option value="park requested">Park Requested</option>
+                        </select>
+                    </div>
+                    {quickQuery.trim().length > 0 && quickOpen && (
+                        <div className={styles.quickSearchResults}>
+                            {quickQuery.trim().length < 2 ? (
+                                <p className={styles.quickSearchEmpty}>Enter a longer query...</p>
+                            ) : quickLoading ? (
+                                <div className={styles.quickSearchLoading}>
+                                    <ButtonLoadingIcon /> Searching...
+                                </div>
+                            ) : quickResults.length > 0 ? (
+                                quickResults.map((row) => {
+                                    const stage = stageForRow(row)
+                                    const stageLabel =
+                                        row.status === "parked"
+                                            ? "Parked"
+                                            : row.status === "returned"
+                                                ? `Stage ${stage} (Returned)`
+                                                : `Stage ${stage}`
+                                    const canProcess = row.status === "pending"
+                                    return (
+                                        <div key={row._id} className={styles.quickSearchItem}>
+                                            <div className={styles.quickSearchItemMeta}>
+                                                <p className={styles.quickSearchItemName}>
+                                                    {(row.companyName || "(no name)").toUpperCase()}
+                                                </p>
+                                                <p className={styles.quickSearchItemStage}>{stageLabel}</p>
+                                            </div>
+                                            <div className={styles.quickSearchItemActions}>
+                                                <Link
+                                                    href={`/staff/v2-approvals/${row._id}`}
+                                                    onClick={() => setQuickOpen(false)}
+                                                >
+                                                    <button className={styles.btnLink}>VIEW</button>
+                                                </Link>
+                                                {canProcess && (
+                                                    <Link
+                                                        href={`/staff/v2-approvals/${row._id}?mode=approve`}
+                                                        onClick={() => setQuickOpen(false)}
+                                                    >
+                                                        <button className={styles.btnLink}>
+                                                            Process Stage {stage}
+                                                        </button>
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            ) : (
+                                <p className={styles.quickSearchEmpty}>No results found</p>
+                            )}
+                        </div>
+                    )}
+                </div>
                 <div className={styles.exportButtons}>
                     <button
                         className={styles.exportSecondary}
@@ -911,7 +1197,10 @@ const V2ApprovalsPage = () => {
                         className={`${styles.chip} ${stageFilter === "All" ? styles.chipActive : ""}`}
                         onClick={() => setStageFilter("All")}
                     >
-                        All{counts ? ` (${counts.pending})` : ""}
+                        All
+                        {stageFilter === "All"
+                            ? ` (${filteredSubmissions.length})`
+                            : ""}
                     </button>
                     {STAGE_FILTERS.map((s) => (
                         <button
@@ -920,6 +1209,9 @@ const V2ApprovalsPage = () => {
                             onClick={() => setStageFilter(s)}
                         >
                             Completed Stage {s}
+                            {stageFilter === s
+                                ? ` (${filteredSubmissions.length})`
+                                : ""}
                         </button>
                     ))}
                     <input
@@ -932,16 +1224,30 @@ const V2ApprovalsPage = () => {
                 </div>
             )}
 
-            {refreshing && (
-                <div className={styles.refreshingHint}>
-                    <ButtonLoadingIcon /> Refreshing...
+            {!tabDef.stageFiltersEnabled && (
+                <div className={styles.filterChips}>
+                    <input
+                        type="search"
+                        className={styles.inlineFilterInput}
+                        placeholder={
+                            tabDef.isInvites
+                                ? "Filter by company name or email address"
+                                : "Filter by company name"
+                        }
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
             )}
 
+            {/* Refreshing state now floats as a top-right Toast so the
+                table doesn't shift mid-fetch. The Toast component is
+                rendered once at the page root below. */}
+            <Toast show={refreshing} message="Refreshing…" tone="info" />
+
             {showInitialLoading && (
-                <div className={styles.emptyState}>
-                    <ButtonLoadingIcon />
-                    <p>Loading...</p>
+                <div className={styles.pageLoaderWrap}>
+                    <Loading message="Loading approvals…" />
                 </div>
             )}
 
@@ -969,12 +1275,6 @@ const V2ApprovalsPage = () => {
                             {f}
                         </button>
                     ))}
-                </div>
-            )}
-
-            {refreshing && (
-                <div className={styles.refreshingHint}>
-                    <ButtonLoadingIcon /> Refreshing...
                 </div>
             )}
 
@@ -1019,7 +1319,7 @@ const V2ApprovalsPage = () => {
                     columns={submissionColumns}
                     rows={filteredSubmissions}
                     rowKey={(r) => r._id}
-                    initialSort={{ key: "updatedAt", dir: "desc" }}
+                    initialSort={{ key: "", dir: "asc" }}
                     rowClassName={(s) => {
                         const a = needsAttention(s) ? styles.rowAttention : ""
                         const p = s.isPriority ? styles.rowPriority : ""

@@ -118,7 +118,7 @@ export interface ReviewerPerf {
 export interface CertificatesData {
   period: string;
   statusBreakdown: {
-    /** Current staff review queue — never period-filtered */
+    /** Current staff review queue - never period-filtered */
     pending: number;
     approvedInPeriod: number;
     rejectedInPeriod: number;
