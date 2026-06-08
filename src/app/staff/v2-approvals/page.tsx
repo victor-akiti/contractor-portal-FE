@@ -30,6 +30,8 @@ import styles from "./styles/styles.module.css"
 //    state. No BE round-trip on each keystroke (matches legacy
 //    filterCompaniesByName / filterInvitedCompaniesByNameOrEmail).
 //  - Counts fetched once and cached; refreshed only after a mutation.
+//  - Tab switching cancels any in-flight requests for the previous tab
+//    and clears previous tab's data to prevent cross-tab data leakage.
 
 interface GroupRef { _id: string; name: string }
 interface VersionRef { _id: string; versionNumber?: number }
@@ -168,6 +170,16 @@ let countsCache: { counts: Counts; fetchedAt: number } | null = null
 
 const cacheKey = (role: string, tabName: string): string => `${role}|${tabName}`
 
+// AbortController registry for canceling in-flight requests when switching tabs
+let activeAbortController: AbortController | null = null
+
+const cancelCurrentRequest = () => {
+    if (activeAbortController) {
+        activeAbortController.abort()
+        activeAbortController = null
+    }
+}
+
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
     const router = useRouter()
@@ -216,9 +228,18 @@ const V2ApprovalsPage = () => {
         return () => clearTimeout(id)
     }, [search])
 
-    // Reset stage chip when switching tabs.
+    // Reset stage chip and clear data when switching tabs.
     useEffect(() => {
+        // Cancel any in-flight request from the previous tab
+        cancelCurrentRequest()
+
+        // Clear previous tab's data to prevent showing stale data
+        setSubmissions([])
+        setInvites([])
+        setL3Health({})
+        setError("")
         setStageFilter("All")
+        setInitialLoadDone(false)
     }, [activeTab])
 
     // Quick Search: V1 parity (debounce 300ms, min 2 chars). Calls the
@@ -236,7 +257,7 @@ const V2ApprovalsPage = () => {
             try {
                 const params = new URLSearchParams()
                 params.set("search", q)
-                params.set("limit", "20")
+                params.set("limit", "1000")
                 if (quickFilter === "l3") {
                     params.set("approved", "true")
                 } else if (quickFilter !== "all") {
@@ -299,30 +320,51 @@ const V2ApprovalsPage = () => {
     // TTL. force=true bypasses the TTL (used after mutations).
     const fetchList = async (force = false) => {
         if (!user?.role) return
+
+        // Cancel any existing request before starting a new one
+        cancelCurrentRequest()
+
+        // Create new AbortController for this request
+        const abortController = new AbortController()
+        activeAbortController = abortController
+
         // Invites tab uses /api/v2/invites and a different row shape.
         if (tabDef.isInvites) {
             try {
                 setRefreshing(true)
                 setError("")
-                const r = await getProtected("api/v2/invites", user.role)
+                const r = await getProtected("api/v2/invites", user.role, abortController.signal)
+                // Check if request was aborted
+                if (abortController.signal.aborted) return
                 if (r?.status === "OK") setInvites(r.data?.invites || [])
                 else setError(r?.error?.message || "Failed to load invites")
             } catch (e: any) {
+                if (e?.name === 'AbortError' || e?.message?.includes('abort')) {
+                    // Request was cancelled, ignore error
+                    return
+                }
                 setError(e?.message || "Failed to load")
             } finally {
-                setRefreshing(false)
-                setInitialLoadDone(true)
+                if (!abortController.signal.aborted) {
+                    setRefreshing(false)
+                    setInitialLoadDone(true)
+                }
+                if (activeAbortController === abortController) {
+                    activeAbortController = null
+                }
             }
             return
         }
+
         const key = cacheKey(user.role, activeTab)
         const cached = listCache.get(key)
         const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
-        if (cached) {
+        if (cached && !force) {
             setSubmissions(cached.rows)
             setInitialLoadDone(true)
         }
         if (fresh && !force) return
+
         try {
             setRefreshing(true)
             setError("")
@@ -333,7 +375,9 @@ const V2ApprovalsPage = () => {
             // chip click and keeps row reference identity stable across
             // chip changes (so column-header sorts persist).
             const qs = params.toString() ? `?${params.toString()}` : ""
-            const list = await getProtected(`api/v2/submissions${qs}`, user.role)
+            const list = await getProtected(`api/v2/submissions${qs}`, user.role, abortController.signal)
+            // Check if request was aborted
+            if (abortController.signal.aborted) return
             if (list?.status === "OK") {
                 const rows = list.data?.submissions || []
                 listCache.set(key, { rows, fetchedAt: Date.now() })
@@ -347,10 +391,19 @@ const V2ApprovalsPage = () => {
                 setError(list?.error?.message || "Failed to load submissions")
             }
         } catch (e: any) {
+            if (e?.name === 'AbortError' || e?.message?.includes('abort')) {
+                // Request was cancelled, ignore error
+                return
+            }
             setError(e?.message || "Failed to load")
         } finally {
-            setRefreshing(false)
-            setInitialLoadDone(true)
+            if (!abortController.signal.aborted) {
+                setRefreshing(false)
+                setInitialLoadDone(true)
+            }
+            if (activeAbortController === abortController) {
+                activeAbortController = null
+            }
         }
     }
 
@@ -416,6 +469,11 @@ const V2ApprovalsPage = () => {
     useEffect(() => {
         fetchList()
         fetchCounts()
+
+        // Cleanup: cancel any in-flight request when component unmounts
+        return () => {
+            cancelCurrentRequest()
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.role, activeTab])
 
