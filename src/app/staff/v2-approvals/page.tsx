@@ -1,22 +1,23 @@
 'use client'
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
-import ErrorText from "@/components/errorText"
-import Tabs from "@/components/tabs"
 import DataTable, { DataTableColumn } from "@/components/dataTable/DataTable"
+import ErrorText from "@/components/errorText"
 import Loading from "@/components/loading"
+import Tabs from "@/components/tabs"
 import Toast from "@/components/toast"
-import StageLegend from "./StageLegend"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
+import { BACKEND_BASE_URL } from "@/lib/config"
+import { auth } from "@/lib/firebase"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
-import { BACKEND_BASE_URL } from "@/lib/config"
-import { auth } from "@/lib/firebase"
 import { getIdToken } from "firebase/auth"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
+import PriorityBadge from "../approvals/ui/PriorityBadge"
+import StageLegend from "./StageLegend"
 import styles from "./styles/styles.module.css"
 
 // V2 Approvals queue. Layout mirrors legacy /staff/approvals so reviewers
@@ -67,14 +68,14 @@ interface InviteRow {
     email?: string
     phone?: { number?: string; countryCode?: string } | string
     approvalStatus?:
-        | "pending_supervisor"
-        | "returned_to_originator"
-        | "pending_hod"
-        | "approved"
-        | "rejected"
-        | "used"
-        | "expired"
-        | "voided"
+    | "pending_supervisor"
+    | "returned_to_originator"
+    | "pending_hod"
+    | "approved"
+    | "rejected"
+    | "used"
+    | "expired"
+    | "voided"
     invitedBy?: { uid?: string; name?: string; email?: string }
     recommendedBy?: { _id?: string; name?: string; email?: string } | string | null
     recommendedByMeta?: { uid?: string; name?: string; email?: string; department?: string }
@@ -98,7 +99,7 @@ interface InviteRow {
 const STAGE_ACTORS: Record<number, string[]> = {
     0: ["Admin", "HOD", "VRM"],
     1: ["Admin", "HOD", "Supervisor"],
-    2: ["Admin", "HOD", "End User"],
+    2: ["End User"],
     3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
     4: ["Admin", "HOD"],
     5: ["Admin", "Executive Approver"],
@@ -438,19 +439,10 @@ const V2ApprovalsPage = () => {
                         >
                             {(s.companyName || "(no name)").toUpperCase()}
                         </Link>
-{/* Email moved off the row per V1 parity. It still shows on the
+                        {/* Email moved off the row per V1 parity. It still shows on the
                                 detail page header. */}
                         {s.isPriority && !tabDef.l3FiltersEnabled && (
-                            <span
-                                className={styles.priorityBadge}
-                                title="This badge indicates that AMNI already works with this contractor."
-                                data-tooltip="This badge indicates that AMNI already works with this contractor."
-                                aria-label="Priority contractor - AMNI already works with this contractor"
-                                tabIndex={0}
-                                role="note"
-                            >
-                                Priority
-                            </span>
+                            <PriorityBadge />
                         )}
                         {attention && (
                             <span className={styles.attentionBadge}>Action needed</span>
@@ -472,13 +464,13 @@ const V2ApprovalsPage = () => {
                     <span className={styles.stagePillLegacy}>Stage {stageForRow(s)}</span>
                 ),
             })
-            cols.push({
-                key: "group",
-                label: "Group",
-                sortValue: (s) => groupLabel(s.groupId),
-                searchValue: (s) => groupLabel(s.groupId),
-                render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
-            })
+            // cols.push({
+            //     key: "group",
+            //     label: "Group",
+            //     sortValue: (s) => groupLabel(s.groupId),
+            //     searchValue: (s) => groupLabel(s.groupId),
+            //     render: (s) => <span className={styles.dim}>{groupLabel(s.groupId)}</span>,
+            // })
         }
         // V1 parity: End Users by NAME, only when the Supervisor has
         // narrowed the Within Amni Review tab to "Completed Stage C"
@@ -561,13 +553,12 @@ const V2ApprovalsPage = () => {
                     if (!h) return <span className={styles.dim}>...</span>
                     return (
                         <span
-                            className={`${styles.healthBadge} ${
-                                h === "healthy"
-                                    ? styles.healthHealthy
-                                    : h === "expiring"
-                                      ? styles.healthExpiring
-                                      : styles.healthExpired
-                            }`}
+                            className={`${styles.healthBadge} ${h === "healthy"
+                                ? styles.healthHealthy
+                                : h === "expiring"
+                                    ? styles.healthExpiring
+                                    : styles.healthExpired
+                                }`}
                         >
                             {h}
                         </span>
@@ -654,8 +645,8 @@ const V2ApprovalsPage = () => {
                             PROCESS STAGE {stageForRow(s)}
                         </button>
                     ) : activeTab !== "park-requests" &&
-                      s.status === "parked" &&
-                      ["Admin", "HOD"].includes(user?.role) ? (
+                        s.status === "parked" &&
+                        ["Admin", "HOD"].includes(user?.role) ? (
                         // Parked rows: HOD / Admin go straight into
                         // approval mode so the Unpark button is one
                         // click away.
@@ -688,10 +679,10 @@ const V2ApprovalsPage = () => {
                 <span className={styles.dateCell}>
                     {s.updatedAt
                         ? new Date(s.updatedAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                          })
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        })
                         : "-"}
                 </span>
             ),
@@ -716,10 +707,10 @@ const V2ApprovalsPage = () => {
             const d = new Date(v)
             return Number.isFinite(d.getTime())
                 ? d.toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                  })
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                })
                 : null
         }
         const recommended = (i: InviteRow) => {
@@ -907,7 +898,8 @@ const V2ApprovalsPage = () => {
         if (s.status !== "pending") return false
         const allowed = STAGE_ACTORS[s.level] || []
         if (!allowed.includes(user?.role)) return false
-        if (s.level === 2 && user?.role === "End User") {
+        console.log({ see: s.selectedEndUsers, user, })
+        if (s.level === 2 && user?.role === "End User" || s.selectedEndUsers?.find(x => x._id === user?._id)) {
             const ids = (s.selectedEndUsers || []).map((u: any) =>
                 typeof u === "string" ? u : String(u?._id || u),
             )
@@ -981,11 +973,10 @@ const V2ApprovalsPage = () => {
         const verb = isApprove ? "Approve" : "Decline"
         const ok = await confirmDialog({
             headerText: `${verb} park request?`,
-            bodyText: `${
-                isApprove
-                    ? "Confirms the request - status flips to Parked and movement stops."
-                    : "Rejects the request - the application goes back to its current stage."
-            }`,
+            bodyText: `${isApprove
+                ? "Confirms the request - status flips to Parked and movement stops."
+                : "Rejects the request - the application goes back to its current stage."
+                }`,
             confirmText: verb,
             destructive: false,
         })
@@ -1084,7 +1075,6 @@ const V2ApprovalsPage = () => {
 
     return (
         <div className={styles.page}>
-            <h2 className={styles.pageTitle}>Registration Approvals</h2>
 
             {/* V1 parity: Quick Search at the top — cross-tab search
                 across companyName + contractorEmail with a status-scope
@@ -1330,7 +1320,7 @@ const V2ApprovalsPage = () => {
                     columns={submissionColumns}
                     rows={filteredSubmissions}
                     rowKey={(r) => r._id}
-                    initialSort={{ key: "updatedAt", dir: "desc" }}
+                    initialSort={{ key: "company", dir: "desc" }}
                     rowClassName={(s) => {
                         const a = needsAttention(s) ? styles.rowAttention : ""
                         const p = s.isPriority ? styles.rowPriority : ""
