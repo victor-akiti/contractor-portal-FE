@@ -8,6 +8,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
+import { deleteProtected } from "@/requests/delete"
 import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
@@ -541,6 +542,14 @@ const V2SubmissionDetailPage = () => {
     const [commentError, setCommentError] = useState("")
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
     const [editingCommentText, setEditingCommentText] = useState("")
+    // Two-step delete: the trash button opens a confirmation modal that
+    // pins the comment id (and a snippet of its text for context); the
+    // confirm button issues the DELETE. Same 15-minute window as edit.
+    const [confirmDeleteComment, setConfirmDeleteComment] = useState<{
+        id: string
+        preview: string
+    } | null>(null)
+    const [deletingComment, setDeletingComment] = useState(false)
 
     const role = user?.role
 
@@ -837,6 +846,30 @@ const V2SubmissionDetailPage = () => {
             setCommentError(e?.message || "Unexpected error")
         } finally {
             setPostingComment(false)
+        }
+    }
+
+    const submitDeleteComment = async () => {
+        if (!confirmDeleteComment) return
+        try {
+            setDeletingComment(true)
+            setCommentError("")
+            const result = await deleteProtected(
+                `api/v2/comments/${confirmDeleteComment.id}`,
+                undefined,
+                role,
+            )
+            if (result?.status === "OK") {
+                setConfirmDeleteComment(null)
+                const c = await getProtected(`api/v2/submissions/${id}/comments`, role)
+                if (c?.status === "OK") setComments(c.data?.comments || [])
+            } else {
+                setCommentError(result?.error?.message || "Failed to delete comment")
+            }
+        } catch (e: any) {
+            setCommentError(e?.message || "Unexpected error")
+        } finally {
+            setDeletingComment(false)
         }
     }
 
@@ -2207,9 +2240,22 @@ const V2SubmissionDetailPage = () => {
                                             )}
                                             {c.editedAt && <span className={styles.dim}>(edited)</span>}
                                             {isAuthor && withinEditWindow && !isEditing && (
-                                                <button className={styles.btnLink} onClick={() => startEditComment(c)}>
-                                                    Edit
-                                                </button>
+                                                <>
+                                                    <button className={styles.btnLink} onClick={() => startEditComment(c)}>
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className={styles.btnLinkDanger}
+                                                        onClick={() =>
+                                                            setConfirmDeleteComment({
+                                                                id: c._id,
+                                                                preview: c.text.slice(0, 140),
+                                                            })
+                                                        }
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </>
                                             )}
                                         </div>
                                         {isEditing ? (
@@ -3209,6 +3255,50 @@ const V2SubmissionDetailPage = () => {
                                     Open invite page
                                 </Link>
                             )}
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {confirmDeleteComment && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Delete comment</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <p className={styles.helpText}>
+                                This will permanently delete your comment and any direct
+                                replies. This cannot be undone.
+                            </p>
+                            {confirmDeleteComment.preview && (
+                                <blockquote className={styles.deletePreview}>
+                                    {confirmDeleteComment.preview}
+                                    {confirmDeleteComment.preview.length >= 140 && "…"}
+                                </blockquote>
+                            )}
+                            {commentError && (
+                                <div className={styles.modalError}>
+                                    <ErrorText text={commentError} />
+                                </div>
+                            )}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setConfirmDeleteComment(null)}
+                                disabled={deletingComment}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnReject}
+                                onClick={submitDeleteComment}
+                                disabled={deletingComment}
+                            >
+                                Delete comment
+                                {deletingComment && <ButtonLoadingIcon />}
+                            </button>
                         </div>
                     </div>
                 </Modal>
