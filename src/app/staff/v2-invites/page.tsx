@@ -574,7 +574,7 @@ const V2InvitesPage = () => {
                     <p>
                         {activeTab === "pending_hod"
                             ? "No invites are currently awaiting HOD approval."
-                            : `No invites with status "${activeTab}".`}
+                            : `No invites here.`}
                     </p>
                 </div>
             )}
@@ -856,9 +856,8 @@ const V2InvitesPage = () => {
                             {exactMatch ? (
                                 <div className={styles.modalError}>
                                     <ErrorText
-                                        text={`"${exactMatch.companyName}" is already ${
-                                            exactMatch.type === "submission" ? "on the portal" : "invited"
-                                        }${exactMatch.status ? ` (status: ${exactMatch.status})` : ""}. You cannot create a new invite under the same name.`}
+                                        text={`"${exactMatch.companyName}" is already ${exactMatch.type === "submission" ? "on the portal" : "invited"
+                                            }${exactMatch.status ? ` (status: ${exactMatch.status})` : ""}. You cannot create a new invite under the same name.`}
                                     />
                                 </div>
                             ) : (

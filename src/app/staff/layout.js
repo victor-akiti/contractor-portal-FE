@@ -41,7 +41,7 @@ const MENU_ITEMS = [
   { href: "/staff/events", label: "Events" },
   { href: "/staff/forms", label: "Forms", adminOnly: true },
   { href: "/staff/form-templates", label: "Form Templates", adminOnly: true },
-  { href: "/staff/form-groups", label: "Form Groups", adminOnly: true },
+  { href: "/staff/form-groups", label: "Contractor Groups", adminOnly: true },
   { href: "/staff/v2-invites", label: "V2 Invites", adminOnly: true },
   { href: "/staff/v2-approvals", label: "V2 Approvals", adminOnly: true },
   { href: "/staff/userManagement", label: "Roles & User Management", adminOnly: true },

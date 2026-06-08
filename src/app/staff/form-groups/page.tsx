@@ -175,7 +175,7 @@ const FormGroupsPage = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Template</th>
+                                <th>Form Template</th>
                                 <th>Status</th>
                                 <th>Created</th>
                             </tr>
@@ -194,9 +194,8 @@ const FormGroupsPage = () => {
                                     <td>{templateName(g.formTemplateId)}</td>
                                     <td>
                                         <span
-                                            className={`${styles.statusBadge} ${
-                                                g.isActive ? styles.status_active : styles.status_inactive
-                                            }`}
+                                            className={`${styles.statusBadge} ${g.isActive ? styles.status_active : styles.status_inactive
+                                                }`}
                                         >
                                             {g.isActive ? "active" : "inactive"}
                                         </span>
