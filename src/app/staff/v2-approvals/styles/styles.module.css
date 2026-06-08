@@ -337,7 +337,9 @@
   color: #1a1a1a;
   transition: background-color 0.2s ease;
 }
-.legendToggle:hover { background-color: #fafafa; }
+.legendToggle:hover {
+  background-color: #fafafa;
+}
 .legendIcon {
   font-size: 1.25rem;
   color: #f47c20;
@@ -350,15 +352,23 @@
   color: #777;
   transition: transform 0.2s ease;
 }
-.chevronOpen { transform: rotate(180deg); }
+.chevronOpen {
+  transform: rotate(180deg);
+}
 .legendContent {
   padding: 0 16px 16px;
   border-top: 1px solid #f0f0f0;
   animation: legendSlideDown 0.2s ease;
 }
 @keyframes legendSlideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .legendGrid {
   display: grid;
@@ -470,7 +480,9 @@
   color: #333;
   cursor: pointer;
 }
-.priorityToggle input { cursor: pointer; }
+.priorityToggle input {
+  cursor: pointer;
+}
 
 /* V1-parity Quick Search at the top of the page. */
 .quickSearchRow {
@@ -489,7 +501,7 @@
 }
 .quickSearchLabel {
   display: block;
-  font-size: 0.82rem;
+  font-size: 1rem;
   color: #555;
   font-weight: 600;
   margin-bottom: 4px;
@@ -551,9 +563,16 @@
   padding: 10px 14px;
   border-bottom: 1px solid #f3f3f3;
 }
-.quickSearchItem:last-child { border-bottom: none; }
-.quickSearchItem:hover { background: #fafafa; }
-.quickSearchItemMeta { min-width: 0; flex: 1; }
+.quickSearchItem:last-child {
+  border-bottom: none;
+}
+.quickSearchItem:hover {
+  background: #fafafa;
+}
+.quickSearchItemMeta {
+  min-width: 0;
+  flex: 1;
+}
 .quickSearchItemName {
   margin: 0 0 2px 0;
   font-weight: 600;
@@ -754,7 +773,9 @@
 /* The classic inline "refreshing…" note is replaced by a top-right
    Toast on the page; this class is kept hidden as a no-op so any
    legacy reference doesn't throw. */
-.refreshingHint { display: none; }
+.refreshingHint {
+  display: none;
+}
 
 /* Uniform input padding across search / select / inline filter. */
 .inlineFilterInput,
@@ -767,7 +788,9 @@
   font-size: 0.9rem;
   background: white;
   color: #1a1a1a;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .inlineFilterInput:focus,
 .sortSelect:focus,
@@ -878,70 +901,77 @@
    hover tooltip. data-tooltip attribute drives the tooltip via the
    ::after pseudo-element, no extra DOM needed. */
 .priorityBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 12px;
-    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-    color: #856404;
-    font-size: 0.72rem;
-    font-weight: 600;
-    border-radius: 12px;
-    margin-left: 8px;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-    animation: priorityPulse 2s ease-in-out infinite;
-    position: relative;
-    cursor: help;
-    vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #856404;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 12px;
+  margin-left: 8px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  animation: priorityPulse 2s ease-in-out infinite;
+  position: relative;
+  cursor: help;
+  vertical-align: middle;
 }
 .priorityBadge::before {
-    content: "⭐";
-    font-size: 12px;
+  content: "⭐";
+  font-size: 12px;
 }
 @keyframes priorityPulse {
-    0%, 100% { box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3); }
-    50%      { box-shadow: 0 2px 12px rgba(255, 215, 0, 0.5); }
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.5);
+  }
 }
 .priorityBadge[data-tooltip]::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(-8px);
-    background-color: #1a1a1a;
-    color: white;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 400;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    transition-delay: 0s;
-    z-index: 1000;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    line-height: 1.4;
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background-color: #1a1a1a;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  transition-delay: 0s;
+  z-index: 1000;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  line-height: 1.4;
 }
 .priorityBadge[data-tooltip]:hover::after,
 .priorityBadge[data-tooltip]:focus::after {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-    transition-delay: 0.2s;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0.2s;
 }
 .priorityBadge:focus {
-    outline: 2px solid rgba(255, 215, 0, 0.8);
-    outline-offset: 2px;
+  outline: 2px solid rgba(255, 215, 0, 0.8);
+  outline-offset: 2px;
 }
 @media (max-width: 768px) {
-    .priorityBadge[data-tooltip]::after {
-        bottom: auto;
-        top: calc(100% + 10px);
-        transform: translateX(-50%) translateY(8px);
-        white-space: normal;
-        max-width: 220px;
-        text-align: center;
-    }
+  .priorityBadge[data-tooltip]::after {
+    bottom: auto;
+    top: calc(100% + 10px);
+    transform: translateX(-50%) translateY(8px);
+    white-space: normal;
+    max-width: 220px;
+    text-align: center;
+  }
 }
 .rowPriority td:first-child {
   box-shadow: inset 3px 0 0 #f59e0b;
@@ -951,56 +981,88 @@
 
 /* Alternating row shade like the legacy queue. The shade is subtle so
    priority and attention highlights still read. */
-.rowShade td { background: #fafafa; }
+.rowShade td {
+  background: #fafafa;
+}
 
 /* Row that needs the current viewer's attention - lights up with a
    left-edge orange bar and a soft tint. Used when the row is pending,
    the viewer's role can act at that stage AND (at Stage D) they are
    in the selectedEndUsers list. */
-.rowAttention td:first-child { box-shadow: inset 3px 0 0 #d56500; }
-.rowAttention td { background: #fff7ed; }
-.rowAttention.rowShade td { background: #fff2e0; }
+.rowAttention td:first-child {
+  box-shadow: inset 3px 0 0 #d56500;
+}
+.rowAttention td {
+  background: #fff7ed;
+}
+.rowAttention.rowShade td {
+  background: #fff2e0;
+}
 .attentionBadge {
-    display: inline-block;
-    margin-left: 8px;
-    background: #fff5ed;
-    color: #6b3d04;
-    border: 1px solid #ffd5b3;
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  display: inline-block;
+  margin-left: 8px;
+  background: #fff5ed;
+  color: #6b3d04;
+  border: 1px solid #ffd5b3;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* L3 cert health pill */
 .healthBadge {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 12px;
-    font-size: 0.74rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.healthHealthy { background: #e7f5e7; color: #2d5d2d; border: 1px solid #b7d8b7; }
-.healthExpiring { background: #fff4e0; color: #6b4500; border: 1px solid #f5d99c; }
-.healthExpired { background: #fde6e6; color: #a32525; border: 1px solid #f5b3b3; }
+.healthHealthy {
+  background: #e7f5e7;
+  color: #2d5d2d;
+  border: 1px solid #b7d8b7;
+}
+.healthExpiring {
+  background: #fff4e0;
+  color: #6b4500;
+  border: 1px solid #f5d99c;
+}
+.healthExpired {
+  background: #fde6e6;
+  color: #a32525;
+  border: 1px solid #f5b3b3;
+}
 
 /* Park Reason cell - long text, max-width and wrap. */
 .parkReasonCell {
-    max-width: 280px;
-    color: #444;
-    font-size: 0.86rem;
-    line-height: 1.4;
-    white-space: normal;
+  max-width: 280px;
+  color: #444;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 /* Invite status pill variants */
-.inviteActive { background: #e7f5e7; color: #2d5d2d; border-color: #b7d8b7; }
-.inviteUsed { background: #eef3fa; color: #1a4d8f; border-color: #c9d8ec; }
-.inviteArchived { background: #f1f1f1; color: #666; border-color: #ddd; }
+.inviteActive {
+  background: #e7f5e7;
+  color: #2d5d2d;
+  border-color: #b7d8b7;
+}
+.inviteUsed {
+  background: #eef3fa;
+  color: #1a4d8f;
+  border-color: #c9d8ec;
+}
+.inviteArchived {
+  background: #f1f1f1;
+  color: #666;
+  border-color: #ddd;
+}
 
 /* V1-parity invite row blocks */
 .inviteContactCell {
@@ -1039,61 +1101,83 @@
   font-style: italic;
 }
 
-.subRowLine { color: #888; font-size: 0.82rem; margin-top: 2px; }
+.subRowLine {
+  color: #888;
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
 
 /* End User names rendered as small pills in the queue. */
 .endUserNames {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .endUserNamePill {
-    background: #eef3fa;
-    border: 1px solid #c9d8ec;
-    color: #1a4d8f;
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 0.78rem;
+  background: #eef3fa;
+  border: 1px solid #c9d8ec;
+  color: #1a4d8f;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
 }
 
 /* Filter chip - boost hover contrast so text never disappears
    against the hover background. */
-.chip:hover { background: #fff5ed; color: #1a1a1a; }
-.chipActive:hover { background: #b85700; color: white; }
+.chip:hover {
+  background: #fff5ed;
+  color: #1a1a1a;
+}
+.chipActive:hover {
+  background: #b85700;
+  color: white;
+}
 
 /* Inline park-request action buttons - sized to fit alongside the
    existing Action column buttons. */
 .btnInlineApprove,
 .btnInlineDecline,
 .btnInlineWithdraw {
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-    letter-spacing: 0.02em;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  letter-spacing: 0.02em;
 }
 .btnInlineApprove {
-    background: white;
-    color: #1f5d1f;
-    border: 1.5px solid #b7d8b7;
+  background: white;
+  color: #1f5d1f;
+  border: 1.5px solid #b7d8b7;
 }
-.btnInlineApprove:hover { background: #e7f5e7; border-color: #2d7d2d; }
+.btnInlineApprove:hover {
+  background: #e7f5e7;
+  border-color: #2d7d2d;
+}
 .btnInlineDecline {
-    background: white;
-    color: #8a1f1f;
-    border: 1.5px solid #f5b3b3;
+  background: white;
+  color: #8a1f1f;
+  border: 1.5px solid #f5b3b3;
 }
-.btnInlineDecline:hover { background: #fdecec; border-color: #c33232; }
+.btnInlineDecline:hover {
+  background: #fdecec;
+  border-color: #c33232;
+}
 .btnInlineWithdraw {
-    background: white;
-    color: #5b2a99;
-    border: 1.5px solid #d2bff0;
+  background: white;
+  color: #5b2a99;
+  border: 1.5px solid #d2bff0;
 }
-.btnInlineWithdraw:hover { background: #f1eaff; border-color: #5b2a99; }
+.btnInlineWithdraw:hover {
+  background: #f1eaff;
+  border-color: #5b2a99;
+}
 .btnInlineApprove:disabled,
 .btnInlineDecline:disabled,
-.btnInlineWithdraw:disabled { opacity: 0.6; cursor: not-allowed; }
+.btnInlineWithdraw:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
