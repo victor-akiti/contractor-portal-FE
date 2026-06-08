@@ -71,9 +71,14 @@ const StageLegend = () => {
                 onClick={() => setExpanded((v) => !v)}
                 aria-expanded={expanded}
             >
-                <span className={styles.legendIcon}>i</span>
+                <span className={styles.legendIcon}>ⓘ</span>
                 <span>Stage Legend</span>
-                <span className={styles.chevron}>{expanded ? "v" : ">"}</span>
+                <span
+                    className={`${styles.chevron} ${expanded ? styles.chevronOpen : ""}`}
+                    aria-hidden
+                >
+                    ▾
+                </span>
             </button>
             {expanded && (
                 <div className={styles.legendContent}>

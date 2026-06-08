@@ -3,6 +3,8 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Tabs from "@/components/tabs"
 import DataTable, { DataTableColumn } from "@/components/dataTable/DataTable"
+import Loading from "@/components/loading"
+import Toast from "@/components/toast"
 import StageLegend from "./StageLegend"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
@@ -1249,16 +1251,14 @@ const V2ApprovalsPage = () => {
                 </div>
             )}
 
-            {refreshing && (
-                <div className={styles.refreshingHint}>
-                    <ButtonLoadingIcon /> Refreshing...
-                </div>
-            )}
+            {/* Refreshing state now floats as a top-right Toast so the
+                table doesn't shift mid-fetch. The Toast component is
+                rendered once at the page root below. */}
+            <Toast show={refreshing} message="Refreshing…" tone="info" />
 
             {showInitialLoading && (
-                <div className={styles.emptyState}>
-                    <ButtonLoadingIcon />
-                    <p>Loading...</p>
+                <div className={styles.pageLoaderWrap}>
+                    <Loading message="Loading approvals…" />
                 </div>
             )}
 
