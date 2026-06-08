@@ -362,7 +362,7 @@ const Dashboard = () => {
                         </strong>
                         <span style={{ color: "#666", fontSize: "0.9rem" }}>
                             Status: <strong>{v2Submission.status}</strong>
-                            {v2Submission.cycleNumber ? ` · cycle ${v2Submission.cycleNumber}` : ""}
+                            {/* {v2Submission.cycleNumber ? ` · cycle ${v2Submission.cycleNumber}` : ""} */}
                         </span>
                     </div>
                     <Link
@@ -520,22 +520,22 @@ const Dashboard = () => {
                                         </div>
 
                                         <div className={styles.companyActions}>
-                                            <Link href={`/contractor/application/view/${company.vendor}`} className={styles.actionLink}>
+                                            {/* <Link href={`/contractor/application/view/${company.vendor}`} className={styles.actionLink}>
                                                 View
-                                            </Link>
+                                            </Link> */}
 
                                             <Link href={`/contractor/settings/${company._id}`} className={styles.actionLink}>
                                                 Settings
                                             </Link>
 
-                                            {(!company.flags.submitted || company.flags.stage === "returned" || company.flags.status === "returned") && (
+                                            {/* {(!company.flags.submitted || company.flags.stage === "returned" || company.flags.status === "returned") && (
                                                 <Link
                                                     href={`/contractor/form/form/${company.vendor}`}
                                                     className={`${styles.actionLink} ${styles.actionLinkPrimary}`}
                                                 >
                                                     Continue & Submit
                                                 </Link>
-                                            )}
+                                            )} */}
                                         </div>
                                     </div>
                                 ))}
