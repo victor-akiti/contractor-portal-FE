@@ -485,6 +485,70 @@
   margin-top: 4px;
 }
 
+/* Recommended By section divider (V1 parity). A thin labeled rule that
+   separates the optional recommender block from the required fields above. */
+.formDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 2px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.formDivider::before,
+.formDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ececec;
+}
+
+/* Staff autocomplete dropdown that hangs off the Recommended By name
+   input. Width matches the input via absolute positioning; the parent
+   .formRow sets position: relative inline so this anchors correctly. */
+.autocompleteDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 20;
+}
+.autocompleteItem {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f3f3;
+}
+.autocompleteItem:last-child {
+  border-bottom: none;
+}
+.autocompleteItem:hover {
+  background: #fff7ed;
+}
+.staffName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #222;
+}
+.staffDetails {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: #666;
+  word-break: break-word;
+}
+.staffEmail {
+  color: #555;
+}
+
 .status_pending_supervisor {
   background: #fff4e0;
   color: #6b4500;

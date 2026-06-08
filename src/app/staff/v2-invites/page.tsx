@@ -62,6 +62,22 @@ interface InviteV2 {
     voidReason?: string
 }
 
+// Mirror of V1's invite-form department list. Auto-populated from the
+// selected staff member, but kept editable so the originator can override.
+const DEPARTMENTS = [
+    "Contracts and Procurement",
+    "Corporate Communications",
+    "Drilling",
+    "Finance",
+    "Legal",
+    "Human Resources",
+    "Internal Control and Risk Management",
+    "ICT",
+    "Insurance",
+    "Information Management",
+    "Operations",
+]
+
 const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
     { key: "pending_supervisor", label: "Pending Supervisor" },
     { key: "returned_to_originator", label: "Returned to originator" },
@@ -91,6 +107,13 @@ const V2InvitesPage = () => {
     const [cPhone, setCPhone] = useState("")
     const [cCompany, setCCompany] = useState("")
     const [cGroupId, setCGroupId] = useState("")
+    // Recommended-by (V1 parity): staff autocomplete fills uid/email/department,
+    // department is also a free dropdown so it can be edited or set without
+    // picking a staff member.
+    const [cRecommendedByName, setCRecommendedByName] = useState("")
+    const [cRecommendedByDepartment, setCRecommendedByDepartment] = useState("")
+    const [cRecommendedByEmail, setCRecommendedByEmail] = useState("")
+    const [cRecommendedByUid, setCRecommendedByUid] = useState("")
     const [creating, setCreating] = useState(false)
     const [createError, setCreateError] = useState("")
     const [createSuccess, setCreateSuccess] = useState("")
@@ -111,6 +134,20 @@ const V2InvitesPage = () => {
     // surfaces exact matches. A non-null value blocks submit.
     const [emailMatch, setEmailMatch] = useState<SimilarMatch | null>(null)
     const [emailChecking, setEmailChecking] = useState(false)
+
+    // Staff autocomplete for the Recommended By field (V1 parity).
+    type StaffMember = {
+        _id: string
+        name: string
+        email: string
+        department?: string
+        uid: string
+    }
+    const [allStaff, setAllStaff] = useState<StaffMember[]>([])
+    const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([])
+    const [showStaffDropdown, setShowStaffDropdown] = useState(false)
+    const [loadingStaff, setLoadingStaff] = useState(false)
+    const staffDropdownRef = useRef<HTMLDivElement | null>(null)
 
     // An EXACT name match (case-insensitive, whitespace-collapsed) cannot
     // be acknowledged-away - that company definitively already exists on
@@ -179,6 +216,75 @@ const V2InvitesPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.role, activeTab])
 
+    const fetchAllStaff = async () => {
+        try {
+            setLoadingStaff(true)
+            const result = await getProtected("users/staff/all", user?.role)
+            if (result?.status === "OK") {
+                setAllStaff(result.data || [])
+            }
+        } catch {
+            // non-fatal - field still works as a free-text name input
+        } finally {
+            setLoadingStaff(false)
+        }
+    }
+
+    useEffect(() => {
+        if (user?.role) fetchAllStaff()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.role])
+
+    // Close the staff autocomplete when the user clicks anywhere outside it.
+    useEffect(() => {
+        const handler = (event: MouseEvent) => {
+            if (
+                staffDropdownRef.current &&
+                !staffDropdownRef.current.contains(event.target as Node)
+            ) {
+                setShowStaffDropdown(false)
+            }
+        }
+        document.addEventListener("mousedown", handler)
+        return () => document.removeEventListener("mousedown", handler)
+    }, [])
+
+    const filterStaff = (searchTerm: string) => {
+        if (!searchTerm || searchTerm.length < 2) {
+            setFilteredStaff([])
+            setShowStaffDropdown(false)
+            return
+        }
+        const t = searchTerm.toLowerCase()
+        const filtered = allStaff
+            .filter(
+                (s) =>
+                    (s.name && s.name.toLowerCase().includes(t)) ||
+                    (s.email && s.email.toLowerCase().includes(t)) ||
+                    (s.department && s.department.toLowerCase().includes(t)),
+            )
+            .slice(0, 10)
+        setFilteredStaff(filtered)
+        setShowStaffDropdown(filtered.length > 0)
+    }
+
+    const onRecommendedByNameChange = (value: string) => {
+        setCRecommendedByName(value)
+        // Editing the name detaches the previously-selected staff member.
+        setCRecommendedByEmail("")
+        setCRecommendedByUid("")
+        filterStaff(value)
+    }
+
+    const selectStaffMember = (staff: StaffMember) => {
+        setCRecommendedByName(staff.name)
+        setCRecommendedByDepartment(staff.department || "")
+        setCRecommendedByEmail(staff.email || "")
+        setCRecommendedByUid(staff.uid || "")
+        setShowStaffDropdown(false)
+        setFilteredStaff([])
+    }
+
     const openCreate = () => {
         setCFname("")
         setCLname("")
@@ -186,6 +292,12 @@ const V2InvitesPage = () => {
         setCPhone("")
         setCCompany("")
         setCGroupId(groups[0]?._id || "")
+        setCRecommendedByName("")
+        setCRecommendedByDepartment("")
+        setCRecommendedByEmail("")
+        setCRecommendedByUid("")
+        setFilteredStaff([])
+        setShowStaffDropdown(false)
         setCreateError("")
         setCreateSuccess("")
         setSimilarMatches([])
@@ -278,6 +390,19 @@ const V2InvitesPage = () => {
                 groupId: cGroupId,
             }
             if (cPhone.trim()) payload.phone = { number: cPhone.trim() }
+            // V1-parity: only send recommendedBy if a name was typed. The
+            // backend persists this as recommendedByMeta on the InviteV2 doc
+            // so we don't lose the sub-doc fields (V2-native invites can
+            // also resolve a User ObjectId via recommendedBy, but the V1
+            // flow uses the sub-doc verbatim).
+            if (cRecommendedByName.trim()) {
+                payload.recommendedByMeta = {
+                    name: cRecommendedByName.trim(),
+                    department: cRecommendedByDepartment.trim() || undefined,
+                    email: cRecommendedByEmail.trim() || undefined,
+                    uid: cRecommendedByUid || undefined,
+                }
+            }
             // The user has explicitly confirmed via the side-panel checkbox
             // that this company is not a duplicate, so pass through the
             // BE's similar-name gate. The BE also re-runs the check as a
@@ -812,6 +937,73 @@ const V2InvitesPage = () => {
                                             The form attached to the invite is the group's current published template version,
                                             stamped at the moment HOD approves.
                                         </p>
+                                    </div>
+
+                                    {/* Recommended By (V1 parity). Optional. The name input is a
+                                        staff autocomplete - selecting an entry auto-fills the
+                                        department, email, and uid which are sent through as
+                                        recommendedByMeta on the InviteV2 doc. */}
+                                    <div className={styles.formDivider}>
+                                        <span>Recommendation Details (Optional)</span>
+                                    </div>
+                                    <div className={styles.formGrid}>
+                                        <div
+                                            className={styles.formRow}
+                                            ref={staffDropdownRef}
+                                            style={{ position: "relative" }}
+                                        >
+                                            <label htmlFor="recommendedByName">Recommended By</label>
+                                            <input
+                                                id="recommendedByName"
+                                                placeholder="Type to search staff or enter name"
+                                                value={cRecommendedByName}
+                                                onChange={(e) => onRecommendedByNameChange(e.target.value)}
+                                                onFocus={() => {
+                                                    if (cRecommendedByName.length >= 2 && filteredStaff.length > 0) {
+                                                        setShowStaffDropdown(true)
+                                                    }
+                                                }}
+                                                disabled={creating}
+                                                autoComplete="off"
+                                            />
+                                            {loadingStaff && (
+                                                <p className={styles.helpText}>Loading staff…</p>
+                                            )}
+                                            {showStaffDropdown && filteredStaff.length > 0 && (
+                                                <div className={styles.autocompleteDropdown}>
+                                                    {filteredStaff.map((staff) => (
+                                                        <div
+                                                            key={staff._id}
+                                                            className={styles.autocompleteItem}
+                                                            onClick={() => selectStaffMember(staff)}
+                                                        >
+                                                            <div className={styles.staffName}>{staff.name}</div>
+                                                            <div className={styles.staffDetails}>
+                                                                {staff.department && <span>{staff.department}</span>}
+                                                                {staff.department && staff.email && <span> • </span>}
+                                                                {staff.email && (
+                                                                    <span className={styles.staffEmail}>{staff.email}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className={styles.formRow}>
+                                            <label htmlFor="recommendedByDepartment">Department</label>
+                                            <select
+                                                id="recommendedByDepartment"
+                                                value={cRecommendedByDepartment}
+                                                onChange={(e) => setCRecommendedByDepartment(e.target.value)}
+                                                disabled={creating}
+                                            >
+                                                <option value="">Select or auto-filled from staff</option>
+                                                {DEPARTMENTS.map((d) => (
+                                                    <option key={d} value={d}>{d}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
