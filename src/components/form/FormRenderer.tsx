@@ -181,6 +181,14 @@ interface Props {
     // implement a tabbed-by-page layout (contractor application). Leave
     // undefined to render every page sequentially (default).
     activePageKey?: string
+
+    // ─── Field disable/hide for flagged-only editing ────────────────────
+    // Optional callback to determine if a field should be disabled.
+    // Called with sectionKey and fieldKey. Return true to disable the field.
+    isFieldDisabled?: (sectionKey: string, fieldKey: string) => boolean
+    // Optional callback to determine if a field should be hidden.
+    // Called with sectionKey and fieldKey. Return true to hide the field.
+    isFieldHidden?: (sectionKey: string, fieldKey: string) => boolean
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -201,8 +209,8 @@ const isFieldVisible = (field: Field, scope: Record<string, any>): boolean => {
         depVal === undefined || depVal === null
             ? ""
             : Array.isArray(depVal)
-              ? depVal.map(String).join(",")
-              : String(depVal)
+                ? depVal.map(String).join(",")
+                : String(depVal)
     if (op === "eq") return depStr === String(value)
     if (op === "neq") return depStr !== String(value)
     return VISIBILITY_FALLBACK
@@ -453,6 +461,8 @@ const FormRenderer = ({
     onFlagEdit,
     onAcceptEdit,
     activePageKey,
+    isFieldDisabled,
+    isFieldHidden,
 }: Props) => {
     const readOnly = mode !== "fill"
 
@@ -465,6 +475,7 @@ const FormRenderer = ({
     // the reviewer's notes.
     const [editedPaths, setEditedPaths] = useState<Set<string>>(new Set())
     const [editedSections, setEditedSections] = useState<Set<string>>(new Set())
+
     const markEdited = useCallback(
         (sectionKey: string, fieldPath: string) => {
             setEditedPaths((prev) =>
@@ -482,6 +493,20 @@ const FormRenderer = ({
         [onChange],
     )
 
+    // Check if a field should be hidden (applies before any rendering)
+    const shouldHideField = useCallback((sectionKey: string, fieldKey: string): boolean => {
+        return isFieldHidden ? isFieldHidden(sectionKey, fieldKey) : false
+    }, [isFieldHidden])
+
+    // Check if a field should be disabled
+    const shouldDisableField = useCallback((sectionKey: string, fieldKey: string): boolean => {
+        // First check if the host page wants to disable this field
+        if (isFieldDisabled && isFieldDisabled(sectionKey, fieldKey)) return true
+        // Also respect the field's own enabled flag
+        return false // The field's own enabled flag is handled in renderField
+    }, [isFieldDisabled])
+
+    // Early return after all hooks have been called
     if (!schema || !Array.isArray(schema.pages)) {
         return (
             <div className={styles.emptyState}>
@@ -499,6 +524,9 @@ const FormRenderer = ({
         scope: Record<string, any>,
         sectionKey?: string,
     ) => {
+        // Check if this field should be hidden
+        if (sectionKey && shouldHideField(sectionKey, field.key)) return null
+
         if (field.enabled === false && mode === "fill") {
             // Disabled in fill mode: still show as disabled so the user knows
             // it exists but can't be touched.
@@ -506,7 +534,11 @@ const FormRenderer = ({
         if (!isFieldVisible(field, scope)) return null
 
         const label = fieldLabelForMode(field, mode)
-        const disabled = readOnly || field.enabled === false
+
+        // Determine if field should be disabled (either by callback or field.enabled)
+        const disabledByCallback = sectionKey && shouldDisableField(sectionKey, field.key)
+        const disabled = readOnly || field.enabled === false || disabledByCallback
+
         const fieldErr = errors?.[errKey]
 
         // Wrap the upstream change handler so we can mark this path
@@ -579,6 +611,7 @@ const FormRenderer = ({
                         </span>
                     )}
                     {field.enabled === false && <span className={styles.disabledTag}>disabled</span>}
+                    {disabledByCallback && !field.enabled === false && <span className={styles.disabledTag}>disabled</span>}
                 </label>
                 {remarkIndicator}
             </>
@@ -670,7 +703,7 @@ const FormRenderer = ({
                 const currentAmount =
                     obj?.amount === undefined || obj?.amount === null ? "" : obj.amount
 
-                if (readOnly) {
+                if (readOnly || disabledByCallback) {
                     return (
                         <div key={errKey} className={styles.fieldRow}>
                             {labelEl}
@@ -938,6 +971,9 @@ const FormRenderer = ({
         >
             {section.fields.map((field) => {
                 const key = field.key
+                // Check if this field should be hidden before rendering anything
+                if (shouldHideField(section.key, field.key)) return null
+
                 if (field.allowMultiple) {
                     const arr: any[] = Array.isArray(instanceData?.[key]) ? instanceData[key] : []
                     return (
@@ -945,7 +981,7 @@ const FormRenderer = ({
                             key={key}
                             field={field}
                             values={arr}
-                            disabled={readOnly}
+                            disabled={readOnly || shouldDisableField(section.key, field.key)}
                             errKeyPrefix={`${errKeyPrefix}${field.key}`}
                             onChange={(next) => onInstanceChange({ [key]: next })}
                             renderOne={(val, i, onOne, oneErrKey) =>
@@ -1005,10 +1041,10 @@ const FormRenderer = ({
             return (
                 <div key={section.key} className={styles.section}>
                     <SectionHeader
-                    section={section}
-                    remarks={remarks}
-                    addressed={editedSections.has(section.key)}
-                />
+                        section={section}
+                        remarks={remarks}
+                        addressed={editedSections.has(section.key)}
+                    />
 
                     {effective.map((inst, idx) => (
                         <div key={idx} className={styles.sectionInstance}>
@@ -1057,6 +1093,10 @@ const FormRenderer = ({
             )
         }
 
+        // Check if this section has any visible fields (non-hidden)
+        const hasVisibleFields = section.fields.some(field => !shouldHideField(section.key, field.key))
+        if (!hasVisibleFields) return null
+
         return (
             <div key={section.key} className={styles.section}>
                 <SectionHeader
@@ -1074,12 +1114,12 @@ const FormRenderer = ({
             {schema.pages
                 .filter((page) => !activePageKey || page.key === activePageKey)
                 .map((page) => (
-                <section key={page.key} className={styles.page}>
-                    <h3 className={styles.pageTitle}>{page.title}</h3>
-                    {page.description && <p className={styles.pageDesc}>{page.description}</p>}
-                    {page.sections.map((section) => renderSection(section, page))}
-                </section>
-            ))}
+                    <section key={page.key} className={styles.page}>
+                        <h3 className={styles.pageTitle}>{page.title}</h3>
+                        {page.description && <p className={styles.pageDesc}>{page.description}</p>}
+                        {page.sections.map((section) => renderSection(section, page))}
+                    </section>
+                ))}
         </div>
     )
 }
@@ -1243,10 +1283,10 @@ const EbaWrap = ({
     const bannerClass = isFlagged
         ? styles.ebaBannerFlagged
         : isActive
-          ? styles.ebaBannerActive
-          : isAccepted
-            ? styles.ebaBannerAccepted
-            : ""
+            ? styles.ebaBannerActive
+            : isAccepted
+                ? styles.ebaBannerAccepted
+                : ""
 
     return (
         <div className={`${styles.ebaWrap} ${edit ? bannerClass : ""}`}>
@@ -1256,8 +1296,8 @@ const EbaWrap = ({
                         {isFlagged
                             ? `FLAGGED at Stage ${edit.flaggedAtStage}`
                             : isAccepted
-                              ? `Accepted edit from Stage ${edit.editedAtStage}`
-                              : `Edited at Stage ${edit.editedAtStage}`}
+                                ? `Accepted edit from Stage ${edit.editedAtStage}`
+                                : `Edited at Stage ${edit.editedAtStage}`}
                     </span>
                     <span className={styles.ebaCaptionMeta}>
                         by {edit.editedBy?.name || edit.editedBy?.role || "Amni staff"}
