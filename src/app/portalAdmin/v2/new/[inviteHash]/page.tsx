@@ -204,8 +204,7 @@ const RegisterV2 = () => {
                     <>
                         <p className={styles.companyHint}>
                             You're registering as the contractor admin for{" "}
-                            <strong>{invite.companyName}</strong>
-                            {invite.groupName ? <> ({invite.groupName})</> : null}.
+                            <strong>{invite.companyName}</strong>.
                         </p>
                         <form
                             onSubmit={(event) => {
@@ -253,15 +252,16 @@ const RegisterV2 = () => {
                                 disabled={creatingAccount}
                             />
 
-                            <div className={styles.acceptTermsDiv}>
-                                <input
-                                    type="checkbox"
-                                    checked={acceptedTerms}
-                                    onChange={(e) => setAcceptedTerms(e.target.checked)}
-                                    disabled={creatingAccount}
-                                />
-                                <label>
-                                    Accept our <Link href="/">terms and conditions</Link>
+                            <div className={styles.rememberMeContainer}>
+                                <label className={styles.checkboxLabel}>
+                                    <input
+                                        type="checkbox"
+                                        checked={acceptedTerms}
+                                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                        disabled={creatingAccount}
+                                    />
+                                    <span className={styles.checkboxText}>Accept our <Link href="/">terms and conditions</Link></span>
+
                                 </label>
                             </div>
 

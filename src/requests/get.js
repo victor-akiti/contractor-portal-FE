@@ -1,6 +1,6 @@
+import { BACKEND_BASE_URL } from "@/lib/config";
 import { auth } from "@/lib/firebase";
 import { getIdToken } from "firebase/auth";
-import { BACKEND_BASE_URL } from "@/lib/config";
 
 // Simple refresh state management
 let isRefreshing = false;
@@ -38,11 +38,18 @@ export const getPlain = async (route) => {
   }
 };
 
-export const getProtected = async (route, role) => {
+export const getProtected = async (route, role, signal = null) => {
   try {
     const baseUrl = `${BACKEND_BASE_URL}/${route}`;
 
     const authHeader = await getAuthHeader();
+
+    // Check if request was aborted before making it
+    if (signal?.aborted) {
+      const abortError = new Error("Request aborted");
+      abortError.name = "AbortError";
+      throw abortError;
+    }
 
     const request = await fetch(baseUrl, {
       method: "GET",
@@ -51,13 +58,28 @@ export const getProtected = async (route, role) => {
         ...authHeader, // 🔐 Fallback header, cookie remains primary
       },
       credentials: "include",
+      signal, // Pass the abort signal to fetch
     });
 
     if (request.status === 401) {
+      // Check if aborted before attempting refresh
+      if (signal?.aborted) {
+        const abortError = new Error("Request aborted");
+        abortError.name = "AbortError";
+        throw abortError;
+      }
+
       // Attempt to refresh token
       const refreshSuccess = await handleTokenRefresh();
 
       if (refreshSuccess) {
+        // Check if aborted before retry
+        if (signal?.aborted) {
+          const abortError = new Error("Request aborted");
+          abortError.name = "AbortError";
+          throw abortError;
+        }
+
         const retryAuthHeader = await getAuthHeader();
 
         // Retry the original request
@@ -68,6 +90,7 @@ export const getProtected = async (route, role) => {
             ...retryAuthHeader,
           },
           credentials: "include",
+          signal, // Pass signal to retry request as well
         });
 
         if (retryRequest.ok) {
@@ -104,6 +127,11 @@ export const getProtected = async (route, role) => {
       }
     }
   } catch (error) {
+    // Don't log AbortErrors as errors since they're expected for cancelled requests
+    if (error?.name === "AbortError") {
+      // Re-throw to let the caller handle cancellation
+      throw error;
+    }
     console.error({ error });
     throw error;
   }
