@@ -5,10 +5,10 @@ import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
+import { deleteProtected } from "@/requests/delete"
 import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
-import { deleteProtected } from "@/requests/delete"
 import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
@@ -1377,8 +1377,7 @@ const V2SubmissionDetailPage = () => {
             // only HOD/Admin can. Their only "send away" option at Stage D
             // is Request Park with a mandatory reason.
             returnToVendor:
-                pending, //&&
-            //(submission.level !== 2),
+                pending && (submission.level !== 2),
             requestPark: pending && (submission.level !== 2 || canActAtStageD),
             approvePark: parkRequested && isHod,
             declinePark: parkRequested && isHod,
@@ -3134,8 +3133,8 @@ const V2SubmissionDetailPage = () => {
                                             const meta =
                                                 (invite as any).recommendedByMeta ||
                                                 (invite.recommendedBy &&
-                                                typeof invite.recommendedBy === "object" &&
-                                                "name" in invite.recommendedBy
+                                                    typeof invite.recommendedBy === "object" &&
+                                                    "name" in invite.recommendedBy
                                                     ? invite.recommendedBy
                                                     : null)
                                             if (!meta?.name && !meta?.email) return null

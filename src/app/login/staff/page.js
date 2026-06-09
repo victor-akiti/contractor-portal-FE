@@ -78,7 +78,7 @@ const StaffLogin = () => {
 
       if (verificationResult.status === "OK") {
         dispatch(setUserData({ user: verificationResult.data.user }));
-        router.push("/staff/approvals");
+        router.push("/staff/v2-approvals");
       } else {
         setErrorMessage(verificationResult.error?.message || "Authentication failed");
       }

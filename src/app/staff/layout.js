@@ -32,9 +32,10 @@ const INSIGHTS_ROLES = [
   "Admin", "HOD", "VRM", "Executive Approver","C and P Staff", "Supervisor",
   //"IT Admin", "Amni Staff", "C and P Staff", "Insurance Officer",
 ]
+const PRIMARY_USER_ROLES = ["Admin", "HOD", "VRM"]
 
 const MENU_ITEMS = [
-  { href: "/staff/approvals", label: "Registration Approvals" },
+  { href: "/staff/approvals", label: "Registration Approvals", requiredRoles: PRIMARY_USER_ROLES },
   { href: "/staff/v2-approvals", label: "Approvals (New)", adminOnly: false },
   // { href: "/staff/invites", label: "Registration Invites" },
   { href: "/staff/v2-invites", label: "Invites (New)", requiredRoles: INSIGHTS_ROLES },
@@ -271,7 +272,7 @@ const Layout = ({ children }) => {
           <FontAwesomeIcon icon={sidebarCollapsed ? faBars : faTimes} />
         </button>
 
-        <Link href="/staff/approvals">
+        <Link href="/staff/v2-approvals">
           <Image
             src={logo}
             width={30}
