@@ -204,8 +204,7 @@ const RegisterV2 = () => {
                     <>
                         <p className={styles.companyHint}>
                             You're registering as the contractor admin for{" "}
-                            <strong>{invite.companyName}</strong>
-                            {invite.groupName ? <> ({invite.groupName})</> : null}.
+                            <strong>{invite.companyName}</strong>.
                         </p>
                         <form
                             onSubmit={(event) => {
