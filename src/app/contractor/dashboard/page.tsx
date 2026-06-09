@@ -162,7 +162,7 @@ const Dashboard = () => {
 
     // V2 application surface - appears only when the contractor's account is
     // linked to a SubmissionV2 via the V2 invite/registration flow.
-    const [v2Submission, setV2Submission] = useState<{ status: string; cycleNumber?: number } | null>(null)
+    const [v2Submission, setV2Submission] = useState<{ status: string; answers: Record<string, unknown>; cycleNumber?: number } | null>(null)
     const [v2Probed, setV2Probed] = useState(false)
     const user = useSelector((state: any) => state.user.user)
 
@@ -178,6 +178,7 @@ const Dashboard = () => {
                 setV2Submission({
                     status: r.data.submission.status,
                     cycleNumber: r.data.submission.cycleNumber,
+                    answers: r.data.submission.answers,
                 })
             }
         } catch {
@@ -330,6 +331,10 @@ const Dashboard = () => {
         setSelectedCertificate(rest)
     }
 
+    const isEmptyAnswers = v2Submission?.answers ? Object.keys(v2Submission.answers).length === 0 : true;
+    const isDraft = v2Submission?.status === "draft";
+    const isReturned = v2Submission?.status === "returned";
+
     return (
         <div className={styles.dashboard}>
             {/* Header */}
@@ -340,48 +345,6 @@ const Dashboard = () => {
             {/* V2 Application CTA - only when this contractor's account is
                 linked to a SubmissionV2 (i.e. they came in via the new
                 invite/registration flow). */}
-            {v2Probed && v2Submission && (
-                <div
-                    style={{
-                        background: "white",
-                        border: "1px solid #ffd5b3",
-                        borderLeft: "4px solid #e67509",
-                        borderRadius: "8px",
-                        padding: "16px 20px",
-                        marginBottom: "20px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        gap: "12px",
-                    }}
-                >
-                    <div>
-                        <strong style={{ display: "block", marginBottom: 4 }}>
-                            Your application form
-                        </strong>
-                        <span style={{ color: "#666", fontSize: "0.9rem" }}>
-                            Status: <strong>{v2Submission.status}</strong>
-                            {/* {v2Submission.cycleNumber ? ` · cycle ${v2Submission.cycleNumber}` : ""} */}
-                        </span>
-                    </div>
-                    <Link
-                        href="/contractor/v2/application"
-                        style={{
-                            background: "#e67509",
-                            color: "white",
-                            padding: "10px 16px",
-                            borderRadius: "6px",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                        }}
-                    >
-                        {v2Submission.status === "draft" || v2Submission.status === "returned"
-                            ? "Continue application"
-                            : "View application"}
-                    </Link>
-                </div>
-            )}
 
             {/* Loading State */}
             {fetchingDashboardData && (
@@ -497,68 +460,31 @@ const Dashboard = () => {
 
                     {/* Company Registration Section */}
                     <div className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <h5 className={styles.sectionTitle}>
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyStateIcon}>
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                                     <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
-                                Your Company Registration
-                            </h5>
+                            </div>
+                            <h6 className={styles.emptyStateTitle}>{isEmptyAnswers ? "No Company Registration" : isDraft ? "Company Registration In Progress" : isReturned ? "Company Registration Returned" : "Company Registration Submitted"}
+                            </h6>
+                            <p className={styles.emptyStateText}>
+                                {isEmptyAnswers ?
+                                    "You have not started your company registration yet. Start the process to become an approved contractor."
+                                    : v2Submission?.status === "draft" ? "Complete your company registration to become an approved contractor."
+                                        : v2Submission?.status === "returned" ? "Your company registration has been returned. Please update your information and resubmit."
+                                            : "Your Application is being reviewed."
+                                }
+                            </p>
+                            <Link href="/contractor/v2/application" className={styles.emptyStateButton}>
+                                {v2Submission?.status === "draft" || v2Submission?.status === "returned"
+                                    ? (v2Submission?.status === "returned" ? "Update Registration" : "Continue Company Registration")
+                                    : "View Application"}
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </Link>
                         </div>
-
-                        {dashboardData.companies.length > 0 ? (
-                            <div>
-                                {dashboardData.companies.map((company, index) => (
-                                    <div key={index} className={styles.companyCard}>
-                                        <div className={styles.companyInfo}>
-                                            <h6 className={styles.companyName}>{company.companyName}</h6>
-                                            <span className={styles.companyStatus}>
-                                                <span className={styles.statusDot}></span>
-                                                Status: {company.flags.stage}
-                                            </span>
-                                        </div>
-
-                                        <div className={styles.companyActions}>
-                                            {/* <Link href={`/contractor/application/view/${company.vendor}`} className={styles.actionLink}>
-                                                View
-                                            </Link> */}
-
-                                            <Link href={`/contractor/settings/${company._id}`} className={styles.actionLink}>
-                                                Settings
-                                            </Link>
-
-                                            {/* {(!company.flags.submitted || company.flags.stage === "returned" || company.flags.status === "returned") && (
-                                                <Link
-                                                    href={`/contractor/form/form/${company.vendor}`}
-                                                    className={`${styles.actionLink} ${styles.actionLinkPrimary}`}
-                                                >
-                                                    Continue & Submit
-                                                </Link>
-                                            )} */}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className={styles.emptyState}>
-                                <div className={styles.emptyStateIcon}>
-                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                                        <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </div>
-                                <h6 className={styles.emptyStateTitle}>No Company Registration</h6>
-                                <p className={styles.emptyStateText}>
-                                    You have not started your company registration yet. Start the process to become an approved contractor.
-                                </p>
-                                <Link href="/contractor/form/form" className={styles.emptyStateButton}>
-                                    Start Company Registration
-                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                        <path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </Link>
-                            </div>
-                        )}
                     </div>
 
                     {/* Rejected Certificates Section - shown only when non-empty */}

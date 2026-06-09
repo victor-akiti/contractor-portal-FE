@@ -10,12 +10,12 @@
 // they reach this page via the contractor dashboard and read/write their
 // SubmissionV2 through /api/v2/submissions/mine.
 
-import FormRenderer, { validateSchema } from "@/components/form/FormRenderer"
 import { FileFieldValue } from "@/components/form/FileFieldUploader"
+import FormRenderer, { validateSchema } from "@/components/form/FormRenderer"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { getProtected } from "@/requests/get"
-import { postProtected } from "@/requests/post"
 import { patchProtected } from "@/requests/patch"
+import { postProtected } from "@/requests/post"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles.module.css"
@@ -59,8 +59,8 @@ const visibleHere = (field: any, scope: Record<string, any>): boolean => {
         dep === undefined || dep === null
             ? ""
             : Array.isArray(dep)
-              ? dep.map(String).join(",")
-              : String(dep)
+                ? dep.map(String).join(",")
+                : String(dep)
     if (field.visibleIf.op === "eq") return depStr === String(field.visibleIf.value)
     if (field.visibleIf.op === "neq") return depStr !== String(field.visibleIf.value)
     return true
@@ -135,6 +135,8 @@ const V2ApplicationPage = () => {
     const [submitError, setSubmitError] = useState("")
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
+    console.log({ remarks })
+
     // Active page tab - contractor steps through the form one page at a time.
     const [activePageKey, setActivePageKey] = useState<string | null>(null)
     // Autosave: track whether unsynced edits exist + last save timestamp.
@@ -142,6 +144,12 @@ const V2ApplicationPage = () => {
     const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
     const [autoSaveError, setAutoSaveError] = useState("")
     const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    // Track which fields have been modified (only used for returned applications)
+    const [dirtyFields, setDirtyFields] = useState<Set<string>>(new Set())
+
+    // Toggle between hiding or just disabling non-flagged fields
+    const [hideNonFlaggedFields, setHideNonFlaggedFields] = useState(false)
 
     const fetchSubmission = async () => {
         try {
@@ -156,6 +164,9 @@ const V2ApplicationPage = () => {
                 setMigrationAvailable(result.data.migrationAvailable || null)
                 const a = sub.answers
                 setAnswers(a && typeof a === "object" ? (a as Record<string, any>) : {})
+                // Reset dirty tracking on fetch
+                setDirty(false)
+                setDirtyFields(new Set())
             } else {
                 setFetchError(result?.error?.message || "Could not load your application.")
             }
@@ -179,11 +190,47 @@ const V2ApplicationPage = () => {
     }, [formVersion, activePageKey])
 
     const handleChange = (changes: Record<string, any>) => {
+        // Track which fields are being changed - store the full path for nested fields
+        const newDirtyFields = new Set(dirtyFields)
+        Object.keys(changes).forEach(key => {
+            // For nested paths like "sectionKey[0].fieldKey", store the full path
+            // so we can send just that specific field update
+            newDirtyFields.add(key)
+        })
+        setDirtyFields(newDirtyFields)
+
         setAnswers((prev) => ({ ...prev, ...changes }))
         setSaveSuccess("")
         setSaveError("")
         setDirty(true)
         setAutoSaveStatus("idle")
+    }
+
+    // Helper to filter answers for returned applications (only send dirty fields)
+    const getAnswersToSend = (fullAnswers: Record<string, any>, isReturned: boolean): Record<string, any> => {
+        // For draft status, send everything
+        if (!isReturned) return fullAnswers
+
+        // For returned status, only send fields that were actually edited
+        const changesToSend: Record<string, any> = {}
+
+        dirtyFields.forEach(fieldPath => {
+            // For nested paths, send the entire parent object
+            if (fieldPath.includes('[') && fieldPath.includes(']')) {
+                // Extract the section key (e.g., "ncecCertificateS" from "ncecCertificateS[0].certificateTypeNumber")
+                const sectionKey = fieldPath.split('[')[0]
+                if (fullAnswers[sectionKey] !== undefined) {
+                    changesToSend[sectionKey] = fullAnswers[sectionKey]
+                }
+            } else {
+                // Flat field
+                if (fullAnswers[fieldPath] !== undefined) {
+                    changesToSend[fieldPath] = fullAnswers[fieldPath]
+                }
+            }
+        })
+
+        return changesToSend
     }
 
     // Debounced autosave. Fires 1.5s after the contractor stops typing,
@@ -196,14 +243,24 @@ const V2ApplicationPage = () => {
         autoSaveTimerRef.current = setTimeout(async () => {
             try {
                 setAutoSaveStatus("saving")
+                const isReturned = submission.status === "returned"
+                const answersToSend = getAnswersToSend(answers, isReturned)
+
+                // If returned and no dirty fields, skip autosave
+                if (isReturned && Object.keys(answersToSend).length === 0) {
+                    setAutoSaveStatus("idle")
+                    return
+                }
+
                 const result = await patchProtected(
                     "api/v2/submissions/mine/answers",
-                    { answers },
+                    { answers: answersToSend },
                     role,
                 )
                 if (result?.status === "OK") {
                     setSubmission(result.data.submission)
                     setDirty(false)
+                    setDirtyFields(new Set()) // Clear dirty fields after successful save
                     setAutoSaveStatus("saved")
                     setAutoSaveError("")
                 } else {
@@ -227,13 +284,24 @@ const V2ApplicationPage = () => {
             setSaving(true)
             setSaveError("")
             setSaveSuccess("")
+            const isReturned = submission.status === "returned"
+            const answersToSend = getAnswersToSend(answers, isReturned)
+
+            // If returned and no dirty fields, show message and return
+            if (isReturned && Object.keys(answersToSend).length === 0) {
+                setSaveSuccess("No changes to save.")
+                return
+            }
+
             const result = await patchProtected(
                 "api/v2/submissions/mine/answers",
-                { answers },
+                { answers: answersToSend },
                 role,
             )
             if (result?.status === "OK") {
                 setSubmission(result.data.submission)
+                setDirty(false)
+                setDirtyFields(new Set()) // Clear dirty fields
                 setSaveSuccess("Draft saved.")
             } else {
                 setSaveError(result?.error?.message || "Save failed.")
@@ -253,8 +321,7 @@ const V2ApplicationPage = () => {
         setValidationErrors(errs)
         if (Object.keys(errs).length > 0) {
             setSubmitError(
-                `Please fix ${Object.keys(errs).length} field${
-                    Object.keys(errs).length === 1 ? "" : "s"
+                `Please fix ${Object.keys(errs).length} field${Object.keys(errs).length === 1 ? "" : "s"
                 } before submitting.`,
             )
             const firstKey = Object.keys(errs)[0]
@@ -303,7 +370,13 @@ const V2ApplicationPage = () => {
             setSubmitting(true)
             setSubmitError("")
             // Save any pending edits first.
-            await patchProtected("api/v2/submissions/mine/answers", { answers }, role)
+            if (dirty) {
+                const isReturned = submission.status === "returned"
+                const answersToSend = getAnswersToSend(answers, isReturned)
+                if (Object.keys(answersToSend).length > 0) {
+                    await patchProtected("api/v2/submissions/mine/answers", { answers: answersToSend }, role)
+                }
+            }
             const result = await postProtected(
                 `api/v2/submissions/mine/${isResubmit ? "resubmit" : "submit"}`,
                 {},
@@ -355,6 +428,60 @@ const V2ApplicationPage = () => {
         return out
     }, [answers, formVersion])
 
+    const isFlaggedElement = (sectionKey: string, fieldKey?: string): boolean => {
+        return remarks.some(
+            (r) =>
+                r.status === "active" &&
+                (!r.cycleNumber || r.cycleNumber === submission?.cycleNumber) &&
+                (r.sectionKey === sectionKey && (!fieldKey || !r.fieldKey || r.fieldKey === fieldKey)),
+        )
+    }
+
+    // Determine if a field should be disabled (non-flagged fields when status is "returned")
+    const shouldDisableField = (sectionKey: string, fieldKey: string): boolean => {
+        // Only restrict editing when status is "returned"
+        if (submission?.status !== "returned") return false
+
+        // Field is disabled if it's NOT flagged
+        return !isFlaggedElement(sectionKey, fieldKey)
+    }
+
+    // Determine if a field should be hidden (based on the toggle)
+    const shouldHideField = (sectionKey: string, fieldKey: string): boolean => {
+        // Only hide when toggle is on AND status is "returned"
+        if (submission?.status !== "returned") return false
+
+        // Hide non-flagged fields when toggle is enabled
+        return hideNonFlaggedFields && !isFlaggedElement(sectionKey, fieldKey)
+    }
+
+    // Split active remarks for the current cycle into section-anchored
+    // and field-anchored buckets so the FormRenderer can show the right
+    // indicator. A remark with a fieldKey lights up that field; one
+    // without lights up the whole section header.
+    const remarksBySection: Record<string, Remark[]> = {}
+    const remarksByField: Record<string, Remark[]> = {}
+    remarks
+        .filter(
+            (r) =>
+                (!r.cycleNumber || r.cycleNumber === submission?.cycleNumber) &&
+                r.status === "active",
+        )
+        .forEach((r) => {
+            if ((r as any).fieldKey) {
+                const k = `${r.sectionKey || ""}::${(r as any).fieldKey}`
+                if (!remarksByField[k]) remarksByField[k] = []
+                remarksByField[k].push(r)
+            } else {
+                const k = r.sectionKey || ""
+                if (!remarksBySection[k]) remarksBySection[k] = []
+                remarksBySection[k].push(r)
+            }
+        })
+
+    const readOnly = ["pending", "park requested", "parked", "approved"].includes(submission?.status || "")
+    const isReturned = submission?.status === "returned"
+
     if (loading) {
         return (
             <div className={styles.page}>
@@ -378,32 +505,6 @@ const V2ApplicationPage = () => {
         )
     }
 
-    const readOnly = ["pending", "park requested", "parked", "approved"].includes(submission.status)
-    const isReturned = submission.status === "returned"
-    // Split active remarks for the current cycle into section-anchored
-    // and field-anchored buckets so the FormRenderer can show the right
-    // indicator. A remark with a fieldKey lights up that field; one
-    // without lights up the whole section header.
-    const remarksBySection: Record<string, Remark[]> = {}
-    const remarksByField: Record<string, Remark[]> = {}
-    remarks
-        .filter(
-            (r) =>
-                (!r.cycleNumber || r.cycleNumber === submission.cycleNumber) &&
-                r.status === "active",
-        )
-        .forEach((r) => {
-            if ((r as any).fieldKey) {
-                const k = `${r.sectionKey || ""}::${(r as any).fieldKey}`
-                if (!remarksByField[k]) remarksByField[k] = []
-                remarksByField[k].push(r)
-            } else {
-                const k = r.sectionKey || ""
-                if (!remarksBySection[k]) remarksBySection[k] = []
-                remarksBySection[k].push(r)
-            }
-        })
-
     return (
         <div className={styles.page}>
             {confirmDialog}
@@ -416,8 +517,18 @@ const V2ApplicationPage = () => {
                     </p>
                     {isReturned && (
                         <div className={styles.bannerReturned}>
-                            This application has been returned to you for fixes. Please address the
-                            reviewer notes below and resubmit.
+                            <div>This application has been returned to you for fixes. Please address the reviewer notes below and resubmit.</div>
+                            <div style={{ marginTop: '8px', fontSize: '0.9em' }}>
+                                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={hideNonFlaggedFields}
+                                        onChange={(e) => setHideNonFlaggedFields(e.target.checked)}
+                                        style={{ cursor: 'pointer' }}
+                                    />
+                                    <span>Hide non-flagged fields (only show fields that need attention)</span>
+                                </label>
+                            </div>
                         </div>
                     )}
                     {readOnly && !isReturned && (
@@ -491,6 +602,8 @@ const V2ApplicationPage = () => {
                     activeRemarksByField={remarksByField}
                     previousFilesByField={previousFilesByField}
                     errors={validationErrors}
+                    isFieldDisabled={shouldDisableField}
+                    isFieldHidden={shouldHideField}
                 />
 
                 {/* Previous / Next page navigation within the form. */}
@@ -532,7 +645,7 @@ const V2ApplicationPage = () => {
                             disabled={
                                 !activePageKey ||
                                 formVersion.schema.pages.findIndex((p: any) => p.key === activePageKey) ===
-                                    formVersion.schema.pages.length - 1
+                                formVersion.schema.pages.length - 1
                             }
                         >
                             Next page →
