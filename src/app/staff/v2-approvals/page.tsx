@@ -8,9 +8,15 @@ import Toast from "@/components/toast"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { BACKEND_BASE_URL } from "@/lib/config"
 import { auth } from "@/lib/firebase"
-import { getProtected } from "@/requests/get"
-import { postProtected } from "@/requests/post"
-import { putProtected } from "@/requests/put"
+import {
+    useGetV2InvitesQuery,
+    useGetV2SubmissionCountsQuery,
+    useGetV2SubmissionsQuery,
+    useLazyGetV2SubmissionCertificatesQuery,
+    useLazyGetV2SubmissionsQuery,
+    useSetV2PriorityMutation,
+    useV2SubmissionActionMutation,
+} from "@/redux/features/v2Slice"
 import { getIdToken } from "firebase/auth"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -19,6 +25,15 @@ import { useSelector } from "react-redux"
 import PriorityBadge from "../approvals/ui/PriorityBadge"
 import StageLegend from "./StageLegend"
 import styles from "./styles/styles.module.css"
+
+// Convert RTK Query mutation result {data?, error?} into the {status,
+// data, error} envelope the rest of the component understands. The
+// slice's transformErrorResponse already mirrors the FAILED envelope
+// onto the error branch, so this is a 1-liner.
+const envelopeOf = (r: any): any =>
+    r?.data ||
+    r?.error ||
+    { status: "FAILED", error: { message: "Request failed" } }
 
 // V2 Approvals queue. Layout mirrors legacy /staff/approvals so reviewers
 // see what they're used to.
@@ -163,25 +178,9 @@ const versionLabel = (v: VersionRef | string | null | undefined) => {
 }
 
 const STAGE_FILTERS = ["A", "B", "C", "D", "E", "F"]
-const CACHE_TTL_MS = 60_000 // 60s stale-while-revalidate window
-
-// Module-level cache so navigating away + back doesn't refetch. Keyed by
-// "<role>|<tabName>". The stage chip filters client-side now, so it is
-// not part of the cache key — one fetch per tab covers every chip.
-const listCache = new Map<string, { rows: SubmissionV2Row[]; fetchedAt: number }>()
-let countsCache: { counts: Counts; fetchedAt: number } | null = null
-
-const cacheKey = (role: string, tabName: string): string => `${role}|${tabName}`
-
-// AbortController registry for canceling in-flight requests when switching tabs
-let activeAbortController: AbortController | null = null
-
-const cancelCurrentRequest = () => {
-    if (activeAbortController) {
-        activeAbortController.abort()
-        activeAbortController = null
-    }
-}
+// RTK Query holds the list and counts caches; mutations invalidate the
+// V2SubsList / V2Counts / V2InviteList tags so the shared cache stays
+// in sync without the manual module-level Maps the page used before.
 
 const V2ApprovalsPage = () => {
     const user = useSelector((state: any) => state.user.user)
@@ -201,9 +200,7 @@ const V2ApprovalsPage = () => {
     // Per-row L3 certificate health (only populated when the L3 tab is
     // active). Map<submissionId, "healthy" | "expiring" | "expired">.
     const [l3Health, setL3Health] = useState<Record<string, "healthy" | "expiring" | "expired">>({})
-    const [counts, setCounts] = useState<Counts | null>(countsCache?.counts || null)
-    const [refreshing, setRefreshing] = useState(false)
-    const [initialLoadDone, setInitialLoadDone] = useState(false)
+    const [counts, setCounts] = useState<Counts | null>(null)
     const [error, setError] = useState("")
     const [togglingPriorityId, setTogglingPriorityId] = useState<string | null>(null)
     const [inlineActingId, setInlineActingId] = useState<string | null>(null)
@@ -224,6 +221,71 @@ const V2ApprovalsPage = () => {
     const isEndUser = user?.role === "End User"
     const isVrm = ["Admin", "HOD", "VRM"].includes(user?.role)
 
+    // tabDef is computed further down; recompute the query params here so
+    // the RTK Query hooks can react when the user switches tabs. Keeping
+    // the lookup inline avoids a hoist - tabDef itself is pure.
+    const _tabDef = TAB_DEFS.find((t) => t.name === activeTab) || TAB_DEFS[1]
+    const submissionsParams = useMemo(() => {
+        const p: Record<string, string> = {}
+        Object.entries(_tabDef.filter || {}).forEach(([k, v]) => {
+            p[k] = String(v)
+        })
+        return p
+    }, [_tabDef.filter])
+
+    // RTK Query hooks. The cache is keyed by the arg object so switching
+    // tabs swaps to a different cache slot - currentData is undefined
+    // while the new tab loads, which gives us a clean "no stale rows"
+    // transition. V2SubsList / V2Counts / V2InviteList tags fire
+    // invalidation from every mutation defined on the slice so the
+    // queue and counts always reflect the latest state without manual
+    // refetch wiring.
+    const submissionsQ = useGetV2SubmissionsQuery(submissionsParams, {
+        skip: !user?.role || _tabDef.isInvites,
+    })
+    const invitesQ = useGetV2InvitesQuery(
+        {},
+        { skip: !user?.role || !_tabDef.isInvites },
+    )
+    const countsQ = useGetV2SubmissionCountsQuery(undefined, {
+        skip: !user?.role,
+    })
+
+    // Refreshing toast = a re-validation pass while we already have data.
+    // initialLoadDone toggles once any successful response (or known
+    // empty payload) has landed for the current tab.
+    const activeQuery = _tabDef.isInvites ? invitesQ : submissionsQ
+    const refreshing = activeQuery.isFetching && !!activeQuery.currentData
+    const initialLoadDone =
+        activeQuery.isSuccess ||
+        activeQuery.isError ||
+        !!activeQuery.currentData
+
+    const [quickSearchTrigger] = useLazyGetV2SubmissionsQuery()
+    const [certsTrigger] = useLazyGetV2SubmissionCertificatesQuery()
+    const [submissionActionTrigger] = useV2SubmissionActionMutation()
+    const [setPriorityTrigger] = useSetV2PriorityMutation()
+
+    // Mirror RTK Query data into the existing local state so the rest of
+    // the page (sorting, search filter, optimistic mutation patches)
+    // keeps working unchanged.
+    useEffect(() => {
+        if (_tabDef.isInvites) return
+        const rows = submissionsQ.currentData?.data?.submissions
+        if (Array.isArray(rows)) setSubmissions(rows)
+    }, [submissionsQ.currentData, _tabDef.isInvites])
+
+    useEffect(() => {
+        if (!_tabDef.isInvites) return
+        const rows = invitesQ.currentData?.data?.invites
+        if (Array.isArray(rows)) setInvites(rows)
+    }, [invitesQ.currentData, _tabDef.isInvites])
+
+    useEffect(() => {
+        const c = countsQ.currentData?.data?.counts
+        if (c) setCounts(c)
+    }, [countsQ.currentData])
+
     // Search is debounced *locally* - no BE call. The filter runs against
     // whatever rows are currently in state.
     useEffect(() => {
@@ -231,24 +293,22 @@ const V2ApprovalsPage = () => {
         return () => clearTimeout(id)
     }, [search])
 
-    // Reset stage chip and clear data when switching tabs.
+    // Reset stage chip and clear local row state when switching tabs.
+    // RTK Query handles request cancellation natively - when the arg
+    // object changes, the prior query's result is dropped from the
+    // active subscription. We still wipe local row state so the UI
+    // doesn't flash the previous tab's rows before the new fetch lands.
     useEffect(() => {
-        // Cancel any in-flight request from the previous tab
-        cancelCurrentRequest()
-
-        // Clear previous tab's data to prevent showing stale data
         setSubmissions([])
         setInvites([])
         setL3Health({})
         setError("")
         setStageFilter("All")
-        setInitialLoadDone(false)
     }, [activeTab])
 
-    // Quick Search: V1 parity (debounce 300ms, min 2 chars). Calls the
-    // existing listSubmissions endpoint with a search regex + status
-    // scope so the results are scoped by the dropdown choice. L3 chooses
-    // approved=true rather than a status string.
+    // Quick Search: V1 parity (debounce 300ms, min 2 chars). Same params
+    // as the legacy listSubmissions call; preferCache=true means a
+    // repeated search resolves instantly from the RTK cache.
     useEffect(() => {
         const q = quickQuery.trim()
         if (q.length < 2) {
@@ -258,20 +318,16 @@ const V2ApprovalsPage = () => {
         const handle = setTimeout(async () => {
             setQuickLoading(true)
             try {
-                const params = new URLSearchParams()
-                params.set("search", q)
-                params.set("limit", "1000")
-                if (quickFilter === "l3") {
-                    params.set("approved", "true")
-                } else if (quickFilter !== "all") {
-                    params.set("status", quickFilter)
+                const params: Record<string, string> = {
+                    search: q,
+                    limit: "1000",
                 }
-                const r = await getProtected(
-                    `api/v2/submissions?${params.toString()}`,
-                    user?.role,
-                )
-                if (r?.status === "OK") {
-                    setQuickResults(r.data?.submissions || [])
+                if (quickFilter === "l3") params.approved = "true"
+                else if (quickFilter !== "all") params.status = quickFilter
+                const r = await quickSearchTrigger(params, true)
+                const env = r?.data
+                if (env?.status === "OK") {
+                    setQuickResults(env.data?.submissions || [])
                 } else {
                     setQuickResults([])
                 }
@@ -282,7 +338,7 @@ const V2ApprovalsPage = () => {
             }
         }, 300)
         return () => clearTimeout(handle)
-    }, [quickQuery, quickFilter, user?.role])
+    }, [quickQuery, quickFilter, user?.role, quickSearchTrigger])
 
     // Click-outside closes the result popup.
     useEffect(() => {
@@ -318,116 +374,43 @@ const V2ApprovalsPage = () => {
 
     const tabDef = TAB_DEFS.find((t) => t.name === activeTab) || TAB_DEFS[1]
 
-    // fetchList: stale-while-revalidate. Shows cached rows immediately,
-    // then fetches in the background if cache is missing or older than the
-    // TTL. force=true bypasses the TTL (used after mutations).
-    const fetchList = async (force = false) => {
-        if (!user?.role) return
+    // Surface query errors via the existing error banner so users see
+    // the BE message rather than a silent empty state.
+    useEffect(() => {
+        const fromList = _tabDef.isInvites
+            ? (invitesQ.error as any)?.error?.message
+            : (submissionsQ.error as any)?.error?.message
+        setError(fromList || "")
+    }, [submissionsQ.error, invitesQ.error, _tabDef.isInvites])
 
-        // Cancel any existing request before starting a new one
-        cancelCurrentRequest()
-
-        // Create new AbortController for this request
-        const abortController = new AbortController()
-        activeAbortController = abortController
-
-        // Invites tab uses /api/v2/invites and a different row shape.
-        if (tabDef.isInvites) {
-            try {
-                setRefreshing(true)
-                setError("")
-                const r = await getProtected("api/v2/invites", user.role, abortController.signal)
-                // Check if request was aborted
-                if (abortController.signal.aborted) return
-                if (r?.status === "OK") setInvites(r.data?.invites || [])
-                else setError(r?.error?.message || "Failed to load invites")
-            } catch (e: any) {
-                if (e?.name === 'AbortError' || e?.message?.includes('abort')) {
-                    // Request was cancelled, ignore error
-                    return
-                }
-                setError(e?.message || "Failed to load")
-            } finally {
-                if (!abortController.signal.aborted) {
-                    setRefreshing(false)
-                    setInitialLoadDone(true)
-                }
-                if (activeAbortController === abortController) {
-                    activeAbortController = null
-                }
-            }
-            return
-        }
-
-        const key = cacheKey(user.role, activeTab)
-        const cached = listCache.get(key)
-        const fresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS
-        if (cached && !force) {
-            setSubmissions(cached.rows)
-            setInitialLoadDone(true)
-        }
-        if (fresh && !force) return
-
-        try {
-            setRefreshing(true)
-            setError("")
-            const params = new URLSearchParams()
-            Object.entries(tabDef.filter).forEach(([k, v]) => params.set(k, v))
-            // V1 parity: fetch the entire pending-l2 set in one shot, then
-            // filter by stage chip client-side. Avoids one refetch per
-            // chip click and keeps row reference identity stable across
-            // chip changes (so column-header sorts persist).
-            const qs = params.toString() ? `?${params.toString()}` : ""
-            const list = await getProtected(`api/v2/submissions${qs}`, user.role, abortController.signal)
-            // Check if request was aborted
-            if (abortController.signal.aborted) return
-            if (list?.status === "OK") {
-                const rows = list.data?.submissions || []
-                listCache.set(key, { rows, fetchedAt: Date.now() })
-                setSubmissions(rows)
-                // For L3 rows, fan out certificate fetches in the background
-                // so we can colour each row by cert health (healthy /
-                // expiring / expired). Best-effort; the page renders
-                // immediately without waiting.
-                if (tabDef.l3FiltersEnabled) loadL3Health(rows)
-            } else {
-                setError(list?.error?.message || "Failed to load submissions")
-            }
-        } catch (e: any) {
-            if (e?.name === 'AbortError' || e?.message?.includes('abort')) {
-                // Request was cancelled, ignore error
-                return
-            }
-            setError(e?.message || "Failed to load")
-        } finally {
-            if (!abortController.signal.aborted) {
-                setRefreshing(false)
-                setInitialLoadDone(true)
-            }
-            if (activeAbortController === abortController) {
-                activeAbortController = null
-            }
-        }
+    // Mutation handlers used to call fetchList/fetchCounts to bust the
+    // cache. RTK Query tag invalidation handles both now; refetchList
+    // is the manual-retry entry point shown on the error banner.
+    const refetchList = () => {
+        if (_tabDef.isInvites) invitesQ.refetch()
+        else submissionsQ.refetch()
     }
 
-    // Per-row L3 cert health. Healthy = every cert has expiry > 30 days
-    // away (or no expiry tracked). Expiring = any cert expires within 30
-    // days. Expired = any cert past its expiry date. Cached at the row
-    // level so flipping the chip doesn't refetch.
-    const loadL3Health = async (rows: SubmissionV2Row[]) => {
+    // L3 cert health fan-out. Lazy hook lets us reuse the certificates
+    // query cache - subsequent visits to L3 hit the cache instead of
+    // re-fetching every row.
+    useEffect(() => {
+        if (!_tabDef.l3FiltersEnabled) return
+        const rows = submissionsQ.currentData?.data?.submissions || []
+        if (rows.length === 0) return
         const now = Date.now()
         const horizon = 30 * 24 * 60 * 60 * 1000
-        const updates: Record<string, "healthy" | "expiring" | "expired"> = {}
-        await Promise.all(
-            rows.map(async (r) => {
-                if (l3Health[r._id]) return
-                try {
-                    const cr = await getProtected(
-                        `api/v2/submissions/${r._id}/certificates`,
-                        user.role,
-                    )
-                    if (cr?.status === "OK") {
-                        const certs = (cr.data?.certificates || []).filter(
+        let cancelled = false
+        ;(async () => {
+            const updates: Record<string, "healthy" | "expiring" | "expired"> = {}
+            await Promise.all(
+                rows.map(async (r: SubmissionV2Row) => {
+                    if (l3Health[r._id]) return
+                    try {
+                        const res = await certsTrigger(r._id, true)
+                        const env = res?.data
+                        if (env?.status !== "OK") return
+                        const certs = (env.data?.certificates || []).filter(
                             (c: any) => c.trackingStatus !== "untracked - updated",
                         )
                         let worst: "healthy" | "expiring" | "expired" = "healthy"
@@ -441,44 +424,19 @@ const V2ApprovalsPage = () => {
                             if (exp - now < horizon) worst = "expiring"
                         }
                         updates[r._id] = worst
+                    } catch {
+                        // best effort
                     }
-                } catch {
-                    // best effort
-                }
-            }),
-        )
-        if (Object.keys(updates).length > 0) {
-            setL3Health((prev) => ({ ...prev, ...updates }))
-        }
-    }
-
-    const fetchCounts = async (force = false) => {
-        if (!user?.role) return
-        if (countsCache && !force && Date.now() - countsCache.fetchedAt < CACHE_TTL_MS) {
-            setCounts(countsCache.counts)
-            return
-        }
-        try {
-            const c = await getProtected("api/v2/submission-counts", user.role)
-            if (c?.status === "OK" && c.data?.counts) {
-                countsCache = { counts: c.data.counts, fetchedAt: Date.now() }
-                setCounts(c.data.counts)
+                }),
+            )
+            if (!cancelled && Object.keys(updates).length > 0) {
+                setL3Health((prev) => ({ ...prev, ...updates }))
             }
-        } catch {
-            // counts failure is non-fatal; the tabs just show without the chips
-        }
-    }
-
-    useEffect(() => {
-        fetchList()
-        fetchCounts()
-
-        // Cleanup: cancel any in-flight request when component unmounts
+        })()
         return () => {
-            cancelCurrentRequest()
+            cancelled = true
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, activeTab])
+    }, [submissionsQ.currentData, _tabDef.l3FiltersEnabled, certsTrigger])
 
     // Columns for the submissions table, built per-tab so the right
     // legacy V1 columns appear in the right tabs. The shared "search
@@ -1043,16 +1001,12 @@ const V2ApprovalsPage = () => {
         if (!ok) return
         setInlineActingId(row._id)
         try {
-            const r = await postProtected(
-                `api/v2/submissions/${row._id}/${action}`,
-                {},
-                user.role,
+            const r = envelopeOf(
+                await submissionActionTrigger({ id: row._id, action }),
             )
-            if (r?.status === "OK") {
-                listCache.clear()
-                countsCache = null
-                await Promise.all([fetchList(true), fetchCounts(true)])
-            } else {
+            // Tag invalidation auto-refetches V2SubsList / V2Counts -
+            // no manual refetch required on success.
+            if (r?.status !== "OK") {
                 setError(r?.error?.message || "Action failed")
             }
         } catch (e: any) {
@@ -1076,19 +1030,19 @@ const V2ApprovalsPage = () => {
         if (!ok) return
         try {
             setTogglingPriorityId(row._id)
-            const r = await putProtected(
-                `api/v2/submissions/${row._id}/priority`,
-                { isPriority: nextValue },
-                user.role,
+            const r = envelopeOf(
+                await setPriorityTrigger({
+                    id: row._id,
+                    isPriority: nextValue,
+                }),
             )
             if (r?.status === "OK") {
-                // Optimistic local patch + invalidate cache so a real refetch
-                // picks up the new ordering.
-                listCache.clear()
+                // Optimistic local patch so the pinned ordering reflects
+                // immediately; V2SubsList tag invalidation reconciles
+                // with the BE in the background.
                 setSubmissions((rows) =>
                     rows.map((x) => (x._id === row._id ? { ...x, isPriority: nextValue } : x)),
                 )
-                fetchList(true)
             } else {
                 setError(r?.error?.message || "Could not update priority")
             }
@@ -1315,7 +1269,7 @@ const V2ApprovalsPage = () => {
             {error && !showInitialLoading && (
                 <div className={styles.errorBanner}>
                     <ErrorText text={error} />
-                    <button className={styles.btnLink} onClick={() => fetchList(true)}>Retry</button>
+                    <button className={styles.btnLink} onClick={() => refetchList()}>Retry</button>
                 </div>
             )}
 
