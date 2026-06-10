@@ -5,10 +5,6 @@ import FormRenderer, { FieldEditRow } from "@/components/form/FormRenderer"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
-import { getProtected } from "@/requests/get"
-import { postProtected } from "@/requests/post"
-import { putProtected } from "@/requests/put"
-import { deleteProtected } from "@/requests/delete"
 import {
     useGetV2SubmissionCertificatesQuery,
     useGetV2SubmissionCommentsQuery,
@@ -17,13 +13,10 @@ import {
     useGetV2SubmissionQuery,
     useV2SubmissionActionMutation,
 } from "@/redux/features/v2Slice"
-
-// Same envelope helper used by the list pages. Keeps the {status, data,
-// error} shape every existing call site already consumes.
-const envelopeOf = (r: any): any =>
-    r?.data ||
-    r?.error ||
-    { status: "FAILED", error: { message: "Request failed" } }
+import { deleteProtected } from "@/requests/delete"
+import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
+import { putProtected } from "@/requests/put"
 import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
@@ -41,6 +34,13 @@ import RevertFromL3Modal from "./components/RevertFromL3Modal"
 import ServicesModal from "./components/ServicesModal"
 import StageRoleBriefingCard from "./components/StageRoleBriefingCard"
 import styles from "./styles.module.css"
+
+// Same envelope helper used by the list pages. Keeps the {status, data,
+// error} shape every existing call site already consumes.
+const envelopeOf = (r: any): any =>
+    r?.data ||
+    r?.error ||
+    { status: "FAILED", error: { message: "Request failed" } }
 
 interface Certificate {
     _id: string
@@ -3259,8 +3259,8 @@ const V2SubmissionDetailPage = () => {
                                             const meta =
                                                 (invite as any).recommendedByMeta ||
                                                 (invite.recommendedBy &&
-                                                typeof invite.recommendedBy === "object" &&
-                                                "name" in invite.recommendedBy
+                                                    typeof invite.recommendedBy === "object" &&
+                                                    "name" in invite.recommendedBy
                                                     ? invite.recommendedBy
                                                     : null)
                                             if (!meta?.name && !meta?.email) return null
@@ -3424,7 +3424,7 @@ const V2SubmissionDetailPage = () => {
                                 Cancel
                             </button>
                             <button
-                                className={styles.btnReject}
+                                className={styles.deactivateBtn}
                                 onClick={submitDeactivate}
                                 disabled={deactivating || !deactivateReason.trim()}
                             >
