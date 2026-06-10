@@ -3,7 +3,6 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
-import { staffApi } from "@/redux/apis/staffApi"
 import {
     useCreateV2InviteMutation,
     useGetStaffAllQuery,
@@ -11,6 +10,7 @@ import {
     useGetV2InvitesQuery,
     useLazyFindV2InviteByEmailQuery,
     useLazyFindV2SimilarCompaniesQuery,
+    usePrefetch,
     useResubmitV2InviteMutation,
     useV2InviteActionMutation,
 } from "@/redux/features/v2Slice"
@@ -255,7 +255,7 @@ const V2InvitesPage = () => {
     // Re-runs whenever the active tab's payload arrives (which also
     // happens after every mutation invalidates V2InviteList), so the
     // background tabs stay fresh in sync with the active one.
-    const prefetchInvites = staffApi.usePrefetch("getV2Invites")
+    const prefetchInvites = usePrefetch<"getV2Invites">("getV2Invites")
     useEffect(() => {
         if (!user?.role) return
         for (const t of STATUS_TABS) {
