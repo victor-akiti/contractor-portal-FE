@@ -89,6 +89,49 @@ export const v2Slice = staffApi.injectEndpoints({
             transformErrorResponse: failedEnvelope,
         }),
 
+        // Detail-page side data. Each tagged separately so a comment
+        // post / edit / delete only invalidates the comments query, not
+        // the entire submission detail.
+        getV2SubmissionComments: builder.query<any, string>({
+            query: (id) => ({
+                url: `api/v2/submissions/${id}/comments`,
+                method: "GET",
+            }),
+            providesTags: (_r, _e, id) => [{ type: "V2Comments", id }],
+            transformResponse: passThrough,
+            transformErrorResponse: failedEnvelope,
+        }),
+
+        getV2SubmissionEdits: builder.query<any, string>({
+            query: (id) => ({
+                url: `api/v2/submissions/${id}/edits`,
+                method: "GET",
+            }),
+            providesTags: (_r, _e, id) => [{ type: "V2Edits", id }],
+            transformResponse: passThrough,
+            transformErrorResponse: failedEnvelope,
+        }),
+
+        getV2SubmissionMigrationStatus: builder.query<any, string>({
+            query: (id) => ({
+                url: `api/v2/submissions/${id}/migration-status`,
+                method: "GET",
+            }),
+            providesTags: (_r, _e, id) => [{ type: "V2MigStatus", id }],
+            transformResponse: passThrough,
+            transformErrorResponse: failedEnvelope,
+        }),
+
+        getV2SubmissionRemarks: builder.query<any, string>({
+            query: (id) => ({
+                url: `api/v2/submissions/${id}/remarks`,
+                method: "GET",
+            }),
+            providesTags: (_r, _e, id) => [{ type: "V2Remarks", id }],
+            transformResponse: passThrough,
+            transformErrorResponse: failedEnvelope,
+        }),
+
         // ── Invites list / lookups ─────────────────────────────────────
         getV2Invites: builder.query<any, { status?: string }>({
             query: ({ status }) => ({
@@ -163,6 +206,10 @@ export const v2Slice = staffApi.injectEndpoints({
                           "V2Counts",
                           { type: "V2Submission", id: arg.id },
                           { type: "V2SubCerts", id: arg.id },
+                          { type: "V2Comments", id: arg.id },
+                          { type: "V2Edits", id: arg.id },
+                          { type: "V2Remarks", id: arg.id },
+                          { type: "V2MigStatus", id: arg.id },
                       ],
             transformResponse: passThrough,
             transformErrorResponse: failedEnvelope,
@@ -242,6 +289,10 @@ export const {
     useGetV2SubmissionQuery,
     useGetV2SubmissionCertificatesQuery,
     useLazyGetV2SubmissionCertificatesQuery,
+    useGetV2SubmissionCommentsQuery,
+    useGetV2SubmissionEditsQuery,
+    useGetV2SubmissionMigrationStatusQuery,
+    useGetV2SubmissionRemarksQuery,
     useGetV2InvitesQuery,
     useGetV2GroupsQuery,
     useFindV2InviteByEmailQuery,
