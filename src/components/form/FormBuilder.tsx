@@ -805,6 +805,11 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                                     EBA
                                                 </span>
                                             )}
+                                            {field.isContractorRegisteredName && (
+                                                <span className={`${styles.miniBadge} ${styles.miniBadgeRegName}`} title="This field drives the contractor's registered name (company name on the portal)">
+                                                    Registered name
+                                                </span>
+                                            )}
                                             {field.visibleIf && (
                                                 <span className={styles.miniBadge} title="Has visibility rule">
                                                     conditional

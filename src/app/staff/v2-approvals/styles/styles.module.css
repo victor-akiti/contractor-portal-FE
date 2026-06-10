@@ -103,6 +103,33 @@
   text-decoration: underline;
 }
 
+/* Outlined destructive button. Stronger than .btnLinkDanger because the
+   action it triggers (Deactivate contractor) is a heavier change than
+   deleting a comment - reviewers should see it as a button, not a link. */
+.deactivateBtn {
+  background: #fff;
+  border: 1px solid #c0392b;
+  color: #c0392b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.12s, color 0.12s;
+}
+.deactivateBtn:hover {
+  background: #c0392b;
+  color: #fff;
+}
+.deactivateBtn:active {
+  background: #962d22;
+  border-color: #962d22;
+}
+
 /* Quoted preview of the comment text inside the delete-confirmation
    modal - gives the user a last chance to verify they're deleting
    the right one. */

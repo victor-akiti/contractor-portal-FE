@@ -6,9 +6,10 @@ import FileUploader from "@/components/fileUploader"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { getProtected } from "@/requests/get"
+import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
 
@@ -136,6 +137,171 @@ const getCertSectionTitle = (certificate: Certificate): string | null => {
     return null
 }
 
+// ── V2 certificates panel ───────────────────────────────────────────────────
+// Mirrors the V1 cert tables but reads from the CertificateV2 collection.
+// One section per category; "Update certificate" opens the parent
+// dashboard's file-uploader + dates modal flow via onUpdate.
+interface V2Cert {
+    _id: string
+    fieldKey: string
+    updateCode: string
+    url: string
+    name?: string
+    label?: string
+    issueDate?: string
+    expiryDate?: string
+    certStatus: "pending" | "approved" | "rejected"
+    reviewRemarks?: string
+    trackingStatus: string
+    isReUpload?: boolean
+    createdAt?: string
+    updatedAt?: string
+}
+interface V2CategoryBuckets {
+    rejected: V2Cert[]
+    pending: V2Cert[]
+    expired: V2Cert[]
+    expiring: V2Cert[]
+}
+const V2CertificatesPanel = ({
+    loading,
+    categories,
+    onUpdate,
+}: {
+    loading: boolean
+    categories: V2CategoryBuckets
+    onUpdate: (c: V2Cert) => void
+}) => {
+    const total =
+        categories.rejected.length +
+        categories.pending.length +
+        categories.expired.length +
+        categories.expiring.length
+    if (loading) {
+        return (
+            <>
+                <hr className={styles.divider} />
+                <div className={styles.section}>
+                    <div className={styles.loadingContainer}>
+                        <ButtonLoadingIcon />
+                        <p>Loading certificates...</p>
+                    </div>
+                </div>
+            </>
+        )
+    }
+    if (total === 0) return null
+    const renderTable = (
+        title: string,
+        certs: V2Cert[],
+        opts: { titleClass?: string; showRemarks?: boolean; ctaLabel?: string; banner?: string },
+    ) => {
+        if (certs.length === 0) return null
+        return (
+            <>
+                <hr className={styles.divider} />
+                <div className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                        <h5 className={`${styles.sectionTitle} ${opts.titleClass || ""}`}>
+                            {title}
+                        </h5>
+                    </div>
+                    {opts.banner && (
+                        <div className={styles.actionRequiredBanner}>{opts.banner}</div>
+                    )}
+                    <div className={styles.tableContainer}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>Certificate</th>
+                                    <th>File</th>
+                                    <th>Issue Date</th>
+                                    <th>Expiry Date</th>
+                                    {opts.showRemarks && <th>Reason</th>}
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {certs.map((c) => (
+                                    <tr key={c._id}>
+                                        <td className={styles.certificateType}>
+                                            {c.label || c.fieldKey}
+                                        </td>
+                                        <td>
+                                            <Link
+                                                href={c.url}
+                                                target="_blank"
+                                                className={`${styles.tableButton} ${styles.tableButtonView}`}
+                                            >
+                                                View ↗
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            {c.issueDate
+                                                ? new Date(c.issueDate).toLocaleDateString("en-NG")
+                                                : "-"}
+                                        </td>
+                                        <td>
+                                            {c.expiryDate
+                                                ? new Date(c.expiryDate).toLocaleDateString("en-NG")
+                                                : "-"}
+                                        </td>
+                                        {opts.showRemarks && (
+                                            <td>
+                                                {c.reviewRemarks ? (
+                                                    <div className={styles.rejectionRemarksBox}>
+                                                        <p className={styles.rejectionRemarksText}>
+                                                            {c.reviewRemarks}
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    "-"
+                                                )}
+                                            </td>
+                                        )}
+                                        <td>
+                                            {c.certStatus === "pending" && c.isReUpload ? (
+                                                <CertStatusBadge status="pending" />
+                                            ) : (
+                                                <button
+                                                    className={`${styles.tableButton} ${styles.tableButtonUpdate}`}
+                                                    onClick={() => onUpdate(c)}
+                                                >
+                                                    {opts.ctaLabel || "Update certificate"}
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </>
+        )
+    }
+    return (
+        <>
+            {renderTable(
+                "Action Required - Rejected Certificates",
+                categories.rejected,
+                {
+                    titleClass: styles.rejectedSectionTitle,
+                    showRemarks: true,
+                    ctaLabel: "Re-upload",
+                    banner:
+                        "One or more of your re-uploaded certificates were rejected. Please re-upload the correct document.",
+                },
+            )}
+            {renderTable("Pending Review", categories.pending, {
+                titleClass: styles.pendingSectionTitle,
+            })}
+            {renderTable("Expired Certificates", categories.expired, {})}
+            {renderTable("Certificates Expiring Soon", categories.expiring, {})}
+        </>
+    )
+}
+
 /**
  * CONTRACTOR DASHBOARD (MODERNIZED)
  * - Company registration overview
@@ -164,6 +330,35 @@ const Dashboard = () => {
     // linked to a SubmissionV2 via the V2 invite/registration flow.
     const [v2Submission, setV2Submission] = useState<{ status: string; answers: Record<string, unknown>; cycleNumber?: number } | null>(null)
     const [v2Probed, setV2Probed] = useState(false)
+    // V2 certificates - parallel to dashboardData.expiring/expired/etc.
+    // Loaded from /api/v2/submissions/mine/certificates when a V2 submission
+    // is detected. When present, the V1 cert sections are suppressed so the
+    // dashboard reflects V2 as the source of truth.
+    interface V2Certificate {
+        _id: string
+        fieldKey: string
+        updateCode: string
+        url: string
+        name?: string
+        label?: string
+        issueDate?: string
+        expiryDate?: string
+        certStatus: "pending" | "approved" | "rejected"
+        reviewRemarks?: string
+        trackingStatus: string
+        isReUpload?: boolean
+        createdAt?: string
+        updatedAt?: string
+    }
+    const [v2Certs, setV2Certs] = useState<V2Certificate[]>([])
+    const [v2CertsLoading, setV2CertsLoading] = useState(false)
+    const [v2SelectedCert, setV2SelectedCert] = useState<V2Certificate | null>(null)
+    const [v2NewFile, setV2NewFile] = useState<{ url: string; name?: string; label?: string; updateCode?: string } | null>(null)
+    const [v2NewIssueDate, setV2NewIssueDate] = useState("")
+    const [v2NewExpiryDate, setV2NewExpiryDate] = useState("")
+    const [v2UpdatingCert, setV2UpdatingCert] = useState(false)
+    const [v2UpdateError, setV2UpdateError] = useState("")
+    const [v2UpdateSuccess, setV2UpdateSuccess] = useState("")
     const user = useSelector((state: any) => state.user.user)
 
     useEffect(() => {
@@ -180,11 +375,102 @@ const Dashboard = () => {
                     cycleNumber: r.data.submission.cycleNumber,
                     answers: r.data.submission.answers,
                 })
+                fetchV2Certificates()
             }
         } catch {
             // No V2 submission linked - that's fine, this contractor predates V2.
         } finally {
             setV2Probed(true)
+        }
+    }
+
+    const fetchV2Certificates = async () => {
+        try {
+            setV2CertsLoading(true)
+            const r = await getProtected("api/v2/submissions/mine/certificates", user?.role)
+            if (r?.status === "OK") {
+                setV2Certs(r.data?.certificates || [])
+            }
+        } catch (err) {
+            console.error("V2 cert fetch failed", err)
+        } finally {
+            setV2CertsLoading(false)
+        }
+    }
+
+    // Categorize tracked V2 certs the same way the V1 dashboard does:
+    // rejected > pending > expired > expiring > healthy. A cert that's
+    // already been re-uploaded (trackingStatus !== "tracked") is hidden -
+    // its replacement is what surfaces.
+    const v2CertCategories = useMemo(() => {
+        const now = Date.now()
+        const horizon = 30 * 24 * 60 * 60 * 1000
+        const rejected: V2Certificate[] = []
+        const pending: V2Certificate[] = []
+        const expired: V2Certificate[] = []
+        const expiring: V2Certificate[] = []
+        for (const c of v2Certs) {
+            if (c.trackingStatus !== "tracked") continue
+            if (c.certStatus === "rejected") { rejected.push(c); continue }
+            if (c.certStatus === "pending" && c.isReUpload) { pending.push(c); continue }
+            if (!c.expiryDate) continue
+            const exp = new Date(c.expiryDate).getTime()
+            if (Number.isNaN(exp)) continue
+            if (exp < now) expired.push(c)
+            else if (exp - now < horizon) expiring.push(c)
+        }
+        return { rejected, pending, expired, expiring }
+    }, [v2Certs])
+
+    const openV2CertUpdate = (cert: V2Certificate) => {
+        setV2SelectedCert(cert)
+        setV2NewFile(null)
+        setV2NewIssueDate("")
+        setV2NewExpiryDate("")
+        setV2UpdateError("")
+        setV2UpdateSuccess("")
+    }
+
+    const closeV2CertModal = () => {
+        const wasSuccess = !!v2UpdateSuccess
+        setV2SelectedCert(null)
+        setV2NewFile(null)
+        setV2NewIssueDate("")
+        setV2NewExpiryDate("")
+        setV2UpdateError("")
+        setV2UpdateSuccess("")
+        if (wasSuccess) fetchV2Certificates()
+    }
+
+    const submitV2CertReplacement = async () => {
+        if (!v2SelectedCert || !v2NewFile) return
+        if (!v2NewExpiryDate) {
+            setV2UpdateError("Please set an expiry date for this certificate.")
+            return
+        }
+        try {
+            setV2UpdatingCert(true)
+            setV2UpdateError("")
+            const r = await postProtected(
+                `api/v2/submissions/mine/certificates/${v2SelectedCert._id}/replace`,
+                {
+                    url: v2NewFile.url,
+                    name: v2NewFile.name,
+                    label: v2NewFile.label || v2SelectedCert.label,
+                    issueDate: v2NewIssueDate || undefined,
+                    expiryDate: v2NewExpiryDate,
+                },
+                user?.role,
+            )
+            if (r?.status === "OK") {
+                setV2UpdateSuccess("Certificate updated. Staff will review the new file.")
+            } else {
+                setV2UpdateError(r?.error?.message || "Failed to update certificate.")
+            }
+        } catch (err: any) {
+            setV2UpdateError(err?.message || "Unexpected error updating certificate.")
+        } finally {
+            setV2UpdatingCert(false)
         }
     }
 
@@ -487,8 +773,25 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Rejected Certificates Section - shown only when non-empty */}
-                    {(dashboardData.rejectedCertificates ?? []).length > 0 && (
+                    {/* ── V2 Certificates ─────────────────────────────────
+                        Shown whenever this contractor has a SubmissionV2.
+                        Reads from /api/v2/submissions/mine/certificates;
+                        renders the same expiring / expired / pending /
+                        rejected buckets the V1 dashboard uses. Update click
+                        opens the file uploader → dates modal → POST to
+                        /api/v2/submissions/mine/certificates/:id/replace.
+                    */}
+                    {v2Submission && (
+                        <V2CertificatesPanel
+                            loading={v2CertsLoading}
+                            categories={v2CertCategories}
+                            onUpdate={openV2CertUpdate}
+                        />
+                    )}
+
+                    {/* V1 certificate sections are suppressed when a V2
+                        submission exists - V2 is the source of truth. */}
+                    {!v2Submission && (dashboardData.rejectedCertificates ?? []).length > 0 && (
                         <>
                             <hr className={styles.divider} />
                             <div className={styles.section}>
@@ -601,7 +904,7 @@ const Dashboard = () => {
                     )}
 
                     {/* Pending Review Section - shown only when non-empty */}
-                    {(dashboardData.pendingCertificates ?? []).length > 0 && (
+                    {!v2Submission && (dashboardData.pendingCertificates ?? []).length > 0 && (
                         <>
                             <hr className={styles.divider} />
                             <div className={styles.section}>
@@ -655,10 +958,10 @@ const Dashboard = () => {
                         </>
                     )}
 
-                    <hr className={styles.divider} />
+                    {!v2Submission && <hr className={styles.divider} />}
 
                     {/* Expiring Certificates Section */}
-                    <div className={styles.section}>
+                    {!v2Submission && <div className={styles.section}>
                         <div className={styles.sectionHeader}>
                             <h5 className={styles.sectionTitle}>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -751,12 +1054,12 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         )}
-                    </div>
+                    </div>}
 
-                    <hr className={styles.divider} />
+                    {!v2Submission && <hr className={styles.divider} />}
 
                     {/* Expired Certificates Section */}
-                    <div className={styles.section}>
+                    {!v2Submission && <div className={styles.section}>
                         <div className={styles.sectionHeader}>
                             <h5 className={styles.sectionTitle}>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -848,7 +1151,110 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         )}
-                    </div>
+                    </div>}
+
+                    {/* ── V2 cert update modals ──────────────────────────
+                        File picker first; once a file is uploaded, swap
+                        to the dates form. submitV2CertReplacement posts
+                        to the BE replace endpoint and closeV2CertModal
+                        triggers a re-fetch on success. */}
+                    {v2SelectedCert && !v2NewFile && (
+                        <Modal>
+                            <FileUploader
+                                closeUploader={closeV2CertModal}
+                                label={v2SelectedCert.label || v2SelectedCert.fieldKey}
+                                maxFiles={1}
+                                updateCode={v2SelectedCert.updateCode}
+                                updateUploadedFiles={(newFiles: any[]) => setV2NewFile(newFiles?.[0] || null)}
+                                files={dashboardData.files}
+                                uploadPath="api/v2/upload"
+                            />
+                        </Modal>
+                    )}
+                    {v2SelectedCert && v2NewFile && (
+                        <Modal>
+                            <div className={styles.updateCertificateModal}>
+                                <div className={styles.modalHeader}>
+                                    <h3 className={styles.modalTitle}>Update Certificate</h3>
+                                    <p>{v2SelectedCert.label || v2SelectedCert.fieldKey}</p>
+                                </div>
+                                <div className={styles.modalContent}>
+                                    {v2UpdateSuccess ? (
+                                        <div className={styles.modalSuccess}>
+                                            <SuccessMessage message={v2UpdateSuccess} />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p>
+                                                New file:{" "}
+                                                <strong>
+                                                    {v2NewFile.name || v2NewFile.url.split("/").pop()}
+                                                </strong>
+                                            </p>
+                                            <table>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Issue Date</td>
+                                                        <td>
+                                                            <input
+                                                                type="date"
+                                                                value={v2NewIssueDate}
+                                                                onChange={(e) => setV2NewIssueDate(e.target.value)}
+                                                                disabled={v2UpdatingCert}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Expiry Date</td>
+                                                        <td>
+                                                            <input
+                                                                type="date"
+                                                                value={v2NewExpiryDate}
+                                                                onChange={(e) => setV2NewExpiryDate(e.target.value)}
+                                                                disabled={v2UpdatingCert}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            {v2UpdateError && (
+                                                <div className={styles.modalError}>
+                                                    <ErrorText text={v2UpdateError} />
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                                <div className={styles.modalActions}>
+                                    <button
+                                        onClick={closeV2CertModal}
+                                        className={`${styles.modalButton} ${styles.modalButtonCancel}`}
+                                    >
+                                        {v2UpdateSuccess ? "Close" : "Cancel"}
+                                    </button>
+                                    {!v2UpdateSuccess && (
+                                        <>
+                                            <button
+                                                onClick={() => setV2NewFile(null)}
+                                                disabled={v2UpdatingCert}
+                                                className={`${styles.modalButton} ${styles.modalButtonSecondary}`}
+                                            >
+                                                Back to File Selection
+                                            </button>
+                                            <button
+                                                onClick={submitV2CertReplacement}
+                                                disabled={v2UpdatingCert || !v2NewExpiryDate}
+                                                className={`${styles.modalButton} ${styles.modalButtonPrimary}`}
+                                            >
+                                                Update Certificate
+                                                {v2UpdatingCert && <ButtonLoadingIcon />}
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </Modal>
+                    )}
                 </>
             )}
         </div>

@@ -1672,7 +1672,7 @@ const V2SubmissionDetailPage = () => {
                             submission.isActive !== false && (
                                 <button
                                     type="button"
-                                    className={styles.btnLinkDanger}
+                                    className={styles.deactivateBtn}
                                     onClick={() => {
                                         setDeactivateReason("")
                                         setDeactivateError("")
@@ -1680,7 +1680,7 @@ const V2SubmissionDetailPage = () => {
                                     }}
                                     title="Soft-delete this contractor. The row drops out of every staff queue. Audit trail records who deactivated and why."
                                 >
-                                    Deactivate
+                                    Deactivate contractor
                                 </button>
                             )}
                     </div>

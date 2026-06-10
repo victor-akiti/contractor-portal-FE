@@ -104,10 +104,14 @@ type StaffMember = {
     uid: string
 }
 
+// The two-step Supervisor -> HOD approval was collapsed into one.
+// "pending_hod" is kept off the visible tab strip but stays in the
+// ApprovalStatus type so legacy invites that landed in that state before
+// the change still show up under the "All" tab and can be approved /
+// rejected by Supervisor or HOD.
 const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
-    { key: "pending_supervisor", label: "Pending Supervisor" },
+    { key: "pending_supervisor", label: "Pending review" },
     { key: "returned_to_originator", label: "Returned to originator" },
-    { key: "pending_hod", label: "Pending HOD" },
     { key: "approved", label: "Approved" },
     { key: "used", label: "Used" },
     { key: "rejected", label: "Rejected" },
@@ -119,7 +123,13 @@ const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
 const V2InvitesPage = () => {
     const user = useSelector((state: any) => state.user.user)
 
-    const [activeTab, setActiveTab] = useState<ApprovalStatus | "all">(user?.role === "HOD" ? "pending_hod" : user.role === "Supervisor" ? "pending_supervisor" : user.role === "Admin" ? "approved" : "all")
+    const [activeTab, setActiveTab] = useState<ApprovalStatus | "all">(
+        ["HOD", "Supervisor"].includes(user?.role)
+            ? "pending_supervisor"
+            : user.role === "Admin"
+                ? "approved"
+                : "all",
+    )
     // RTK Query: the invite list / groups / staff directory share one
     // staffApi cache so navigating away and back is instant. Tag-based
     // invalidation (V2InviteList) fires from every mutation below so
@@ -421,7 +431,7 @@ const V2InvitesPage = () => {
             payload.acknowledgeSimilar = true
             const result = envelopeOf(await createInviteTrigger(payload))
             if (result?.status === "OK") {
-                setCreateSuccess(`Invite created for ${cEmail.trim()} - waiting for HOD approval.`)
+                setCreateSuccess(`Invite created for ${cEmail.trim()} - waiting for Supervisor / HOD review.`)
                 // V2InviteList tag invalidation triggers an automatic
                 // refetch - no manual fetchInvites here.
                 setTimeout(() => setShowCreate(false), 900)
@@ -548,11 +558,17 @@ const V2InvitesPage = () => {
         }
     }
 
-    // Originator resubmit modal state - for the simplest case we let them
-    // change the category (groupId) inline. Other fields can be edited via a
-    // dedicated edit page later.
+    // Originator resubmit modal state. After a Supervisor return the
+    // originator can correct ANY field on the invite (name, email, phone,
+    // company, category) and resubmit for re-review. BE patches whichever
+    // fields land in the body; we send everything the modal exposes.
     const [resubmittingId, setResubmittingId] = useState<string | null>(null)
     const [resubmitGroupId, setResubmitGroupId] = useState("")
+    const [resubmitFname, setResubmitFname] = useState("")
+    const [resubmitLname, setResubmitLname] = useState("")
+    const [resubmitEmail, setResubmitEmail] = useState("")
+    const [resubmitPhone, setResubmitPhone] = useState("")
+    const [resubmitCompanyName, setResubmitCompanyName] = useState("")
     const openResubmit = (inv: InviteV2) => {
         setResubmittingId(inv._id)
         setResubmitGroupId(
@@ -560,6 +576,15 @@ const V2InvitesPage = () => {
                 ? inv.groupId
                 : (inv.groupId as Group)?._id || "",
         )
+        setResubmitFname(inv.fname || "")
+        setResubmitLname(inv.lname || "")
+        setResubmitEmail(inv.email || "")
+        setResubmitPhone(
+            typeof (inv as any).phone === "object"
+                ? (inv as any).phone?.number || ""
+                : (inv as any).phone || "",
+        )
+        setResubmitCompanyName(inv.companyName || "")
         setRowError(null)
     }
     const submitResubmit = async () => {
@@ -568,12 +593,27 @@ const V2InvitesPage = () => {
             setRowError({ id: resubmittingId, message: "Pick a category." })
             return
         }
+        if (!resubmitFname.trim() || !resubmitLname.trim() || !resubmitEmail.trim() || !resubmitCompanyName.trim()) {
+            setRowError({
+                id: resubmittingId,
+                message: "First name, last name, email and company name are required.",
+            })
+            return
+        }
         try {
             setActingId(resubmittingId)
+            const body: Record<string, any> = {
+                groupId: resubmitGroupId,
+                fname: resubmitFname.trim(),
+                lname: resubmitLname.trim(),
+                email: resubmitEmail.trim().toLowerCase(),
+                companyName: resubmitCompanyName.trim(),
+            }
+            if (resubmitPhone.trim()) body.phone = { number: resubmitPhone.trim() }
             const result = envelopeOf(
                 await resubmitInviteTrigger({
                     id: resubmittingId,
-                    body: { groupId: resubmitGroupId },
+                    body,
                 }),
             )
             if (result?.status === "OK") {
@@ -667,8 +707,9 @@ const V2InvitesPage = () => {
                     <h2 className={styles.pageTitle}>V2 Invites</h2>
                     <p className={styles.pageSubtitle}>
                         Parallel invite surface. Staff create invites against a contractor
-                        group; the HOD approves before the email goes out. The form attached
-                        to the invite is determined by the group's current published template.
+                        group; the Supervisor (or HOD) approves before the email goes out.
+                        The form attached to the invite is determined by the group's current
+                        published template.
                     </p>
                 </div>
                 {canCreate && (
@@ -708,8 +749,8 @@ const V2InvitesPage = () => {
                 <div className={styles.emptyState}>
                     <h4>No invites in this view</h4>
                     <p>
-                        {activeTab === "pending_hod"
-                            ? "No invites are currently awaiting HOD approval."
+                        {activeTab === "pending_supervisor"
+                            ? "No invites are currently awaiting review."
                             : `No invites here.`}
                     </p>
                 </div>
@@ -751,14 +792,16 @@ const V2InvitesPage = () => {
                                     </td>
                                     <td className={styles.actionCol}>
                                         <div className={styles.actionsRow}>
-                                            {inv.approvalStatus === "pending_supervisor" && canReview && (
+                                            {(inv.approvalStatus === "pending_supervisor" ||
+                                                inv.approvalStatus === "pending_hod") &&
+                                                canReview && (
                                                 <>
                                                     <button
                                                         className={styles.btnApprove}
                                                         disabled={actingId === inv._id}
                                                         onClick={() => supervisorApprove(inv._id)}
                                                     >
-                                                        Approve category
+                                                        Approve & send
                                                         {actingId === inv._id && <ButtonLoadingIcon />}
                                                     </button>
                                                     <button
@@ -797,25 +840,6 @@ const V2InvitesPage = () => {
                                                 </>
                                             )}
 
-                                            {inv.approvalStatus === "pending_hod" && canReview && (
-                                                <>
-                                                    <button
-                                                        className={styles.btnApprove}
-                                                        disabled={actingId === inv._id}
-                                                        onClick={() => approve(inv._id)}
-                                                    >
-                                                        Approve
-                                                        {actingId === inv._id && <ButtonLoadingIcon />}
-                                                    </button>
-                                                    <button
-                                                        className={styles.btnReject}
-                                                        disabled={actingId === inv._id}
-                                                        onClick={() => openReject(inv._id)}
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </>
-                                            )}
                                             {(inv.approvalStatus === "approved" || inv.approvalStatus === "used") && (
                                                 <>
                                                     <button
@@ -946,7 +970,7 @@ const V2InvitesPage = () => {
                                         )}
                                         <p className={styles.helpText}>
                                             The form attached to the invite is the group's current published template version,
-                                            stamped at the moment HOD approves.
+                                            stamped at the moment the Supervisor / HOD approves.
                                         </p>
                                     </div>
 
@@ -1269,9 +1293,50 @@ const V2InvitesPage = () => {
                         </div>
                         <div className={styles.modalBody}>
                             <p className={styles.helpText}>
-                                Pick the corrected category and resubmit for Supervisor
-                                review.
+                                Correct anything the reviewer flagged and resubmit
+                                for Supervisor / HOD review.
                             </p>
+                            <div className={styles.formRow}>
+                                <label>First name <span className={styles.required}>*</span></label>
+                                <input
+                                    value={resubmitFname}
+                                    onChange={(e) => setResubmitFname(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Last name <span className={styles.required}>*</span></label>
+                                <input
+                                    value={resubmitLname}
+                                    onChange={(e) => setResubmitLname(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Email <span className={styles.required}>*</span></label>
+                                <input
+                                    type="email"
+                                    value={resubmitEmail}
+                                    onChange={(e) => setResubmitEmail(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Phone</label>
+                                <input
+                                    value={resubmitPhone}
+                                    onChange={(e) => setResubmitPhone(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Company name <span className={styles.required}>*</span></label>
+                                <input
+                                    value={resubmitCompanyName}
+                                    onChange={(e) => setResubmitCompanyName(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
                             <div className={styles.formRow}>
                                 <label>Category <span className={styles.required}>*</span></label>
                                 {groups.length === 0 ? (

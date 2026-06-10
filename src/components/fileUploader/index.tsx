@@ -13,7 +13,11 @@ import ErrorText from "../errorText"
 import Tabs from "../tabs"
 import styles from "./styles/styles.module.css"
 
-const FileUploader = ({ updateUploadedFiles, updateCode, closeUploader, maxFiles, files, label, onlyNewFiles = false }) => {
+// uploadPath: override the BE upload endpoint. Defaults to the V1 route
+// so existing callers (V1 form pages) keep working. V2 callers pass
+// "api/v2/upload" so files land in the V2 file collection that backs the
+// new CertificateV2 reconcile path.
+const FileUploader = ({ updateUploadedFiles, updateCode, closeUploader, maxFiles, files, label, onlyNewFiles = false, uploadPath = "files/upload" }) => {
     const uploadFileTabs = [{
         name: "Upload new file",
         label: "Upload new file"
@@ -89,7 +93,7 @@ const FileUploader = ({ updateUploadedFiles, updateCode, closeUploader, maxFiles
         formData.append("updateCode", updateCode)
         setUploading(true)
 
-        const uploadFiles = await postProtectedMultipart("files/upload", formData, user.role)
+        const uploadFiles = await postProtectedMultipart(uploadPath, formData, user.role)
 
         setUploading(false)
 
