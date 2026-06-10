@@ -148,7 +148,7 @@ const V2InvitesPage = () => {
     const loadingStaff = staffQ.isLoading || (staffQ.isFetching && !staffQ.currentData)
     const fetchError =
         (invitesQ.error as any)?.error?.message ||
-        (typeof invitesQ.error === "string" ? invitesQ.error : "") ||
+        (typeof (invitesQ.error as any) === "string" ? (invitesQ.error as any) : "") ||
         (invitesQ.currentData?.status === "Failed"
             ? invitesQ.currentData?.error?.message
             : "")
