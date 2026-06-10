@@ -93,6 +93,7 @@ const FormGroupsPage = () => {
             setDeactivateError("")
             const r = await deleteProtected(
                 `api/v2/groups/${deactivatingGroup._id}`,
+                undefined,
                 user?.role,
             )
             if (r?.status === "OK") {
