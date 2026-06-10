@@ -3,6 +3,7 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
+import { staffApi } from "@/redux/apis/staffApi"
 import {
     useCreateV2InviteMutation,
     useGetStaffAllQuery,
@@ -228,6 +229,20 @@ const V2InvitesPage = () => {
     const [resubmitInviteTrigger] = useResubmitV2InviteMutation()
     const [triggerSimilar] = useLazyFindV2SimilarCompaniesQuery()
     const [triggerFindByEmail] = useLazyFindV2InviteByEmailQuery()
+
+    // V1-parity background prefetch: as soon as we have a role, warm
+    // every STATUS_TABS slot so a tab click is an instant cache hit.
+    // Re-runs whenever the active tab's payload arrives (which also
+    // happens after every mutation invalidates V2InviteList), so the
+    // background tabs stay fresh in sync with the active one.
+    const prefetchInvites = staffApi.usePrefetch("getV2Invites")
+    useEffect(() => {
+        if (!user?.role) return
+        for (const t of STATUS_TABS) {
+            const arg = t.key === "all" ? {} : { status: t.key as string }
+            prefetchInvites(arg, { force: false })
+        }
+    }, [user?.role, invitesQ.currentData, prefetchInvites])
 
     // Close the staff autocomplete when the user clicks anywhere outside it.
     useEffect(() => {
@@ -685,7 +700,7 @@ const V2InvitesPage = () => {
             {!loading && fetchError && (
                 <div className={styles.errorBanner}>
                     <ErrorText text={fetchError} />
-                    <button className={styles.btnLink} onClick={() => fetchInvites(activeTab)}>Retry</button>
+                    <button className={styles.btnLink} onClick={() => invitesQ.refetch()}>Retry</button>
                 </div>
             )}
 
