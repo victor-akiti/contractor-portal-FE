@@ -1482,8 +1482,7 @@ const V2SubmissionDetailPage = () => {
             // only HOD/Admin can. Their only "send away" option at Stage D
             // is Request Park with a mandatory reason.
             returnToVendor:
-                pending, //&&
-            //(submission.level !== 2),
+                pending && (submission.level !== 2),
             requestPark: pending && (submission.level !== 2 || canActAtStageD),
             approvePark: parkRequested && isHod,
             declinePark: parkRequested && isHod,

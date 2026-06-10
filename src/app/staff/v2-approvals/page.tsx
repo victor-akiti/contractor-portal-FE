@@ -8,13 +8,13 @@ import Toast from "@/components/toast"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { BACKEND_BASE_URL } from "@/lib/config"
 import { auth } from "@/lib/firebase"
-import { staffApi } from "@/redux/apis/staffApi"
 import {
     useGetV2InvitesQuery,
     useGetV2SubmissionCountsQuery,
     useGetV2SubmissionsQuery,
     useLazyGetV2SubmissionCertificatesQuery,
     useLazyGetV2SubmissionsQuery,
+    usePrefetch,
     useSetV2PriorityMutation,
     useV2SubmissionActionMutation,
 } from "@/redux/features/v2Slice"
@@ -296,8 +296,8 @@ const V2ApprovalsPage = () => {
     // tab clicks resolve instantly from the shared RTK Query cache.
     // The keepUnusedDataFor: 300 on getV2Submissions / getV2Invites
     // keeps these warm caches alive for 5 minutes after they go idle.
-    const prefetchSubmissions = staffApi.usePrefetch("getV2Submissions")
-    const prefetchInvitesPrefetch = staffApi.usePrefetch("getV2Invites")
+    const prefetchSubmissions = usePrefetch<"getV2Submissions">("getV2Submissions")
+    const prefetchInvitesPrefetch = usePrefetch<"getV2Invites">("getV2Invites")
     useEffect(() => {
         if (!user?.role || !countsQ.currentData) return
         for (const t of TAB_DEFS) {

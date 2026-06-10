@@ -1,9 +1,9 @@
 'use client'
 
+import { BACKEND_BASE_URL } from "@/lib/config"
+import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useSelector } from "react-redux"
-import { useRouter } from "next/navigation"
-import { BACKEND_BASE_URL } from "@/lib/config"
 import styles from "./styles/styles.module.css"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ const ErrorTrackerPage = () => {
   useEffect(() => {
     if (!user?.role) return
     if (!ALLOWED_ROLES.includes(user.role)) {
-      router.push("/staff/approvals")
+      router.push("/staff/v2-approvals")
     }
   }, [user?.role, router])
 
@@ -756,7 +756,7 @@ const ErrorTrackerPage = () => {
           <div className={styles.accessDeniedIcon}>⛔</div>
           <h2>Access Denied</h2>
           <p>You do not have permission to view this page.</p>
-          <button className={styles.applyBtn} onClick={() => router.push("/staff/approvals")}>
+          <button className={styles.applyBtn} onClick={() => router.push("/staff/v2-approvals")}>
             Go Back
           </button>
         </div>
