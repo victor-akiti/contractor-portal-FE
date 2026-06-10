@@ -1488,7 +1488,10 @@ const V2SubmissionDetailPage = () => {
                     const STAGE_ACTORS_TOGGLE: Record<number, string[]> = {
                         0: ["Admin", "HOD", "VRM"],
                         1: ["Admin", "HOD", "Supervisor"],
-                        2: ["Admin", "HOD", "End User"],
+                        // Stage D: any staff role can be picked as an end
+                        // user; the BE blocks unassigned users on this
+                        // submission.
+                        2: ["Admin", "HOD", "End User", "Amni Staff", "C and P Staff", "Insurance Officer"],
                         3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
                         4: ["Admin", "HOD"],
                         5: ["Admin", "Executive Approver"],
@@ -1658,7 +1661,10 @@ const V2SubmissionDetailPage = () => {
                 const STAGE_ACTORS_DETAIL: Record<number, string[]> = {
                     0: ["Admin", "HOD", "VRM"],
                     1: ["Admin", "HOD", "Supervisor"],
-                    2: ["Admin", "HOD", "End User"],
+                    // Stage D: any staff role can be picked as an end
+                    // user. Whether THIS user can act on THIS submission
+                    // is enforced server-side from the assigned list.
+                    2: ["Admin", "HOD", "End User", "Amni Staff", "C and P Staff", "Insurance Officer"],
                     3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
                     4: ["Admin", "HOD"],
                     5: ["Admin", "Executive Approver"],

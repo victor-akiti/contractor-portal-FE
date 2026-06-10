@@ -101,7 +101,10 @@ interface InviteRow {
 const STAGE_ACTORS: Record<number, string[]> = {
     0: ["Admin", "HOD", "VRM"],
     1: ["Admin", "HOD", "Supervisor"],
-    2: ["End User", "Admin"],
+    // Stage D - any staff role can be picked as an end user. Whether THIS
+    // user can act on a specific submission is enforced server-side via
+    // the assignedEndUsers list.
+    2: ["End User", "Admin", "HOD", "Amni Staff", "C and P Staff", "Insurance Officer"],
     3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
     4: ["Admin", "HOD"],
     5: ["Admin", "Executive Approver"],
