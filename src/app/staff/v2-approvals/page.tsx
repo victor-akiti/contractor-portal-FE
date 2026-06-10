@@ -964,7 +964,12 @@ const V2ApprovalsPage = () => {
     }
 
     const filteredSubmissions = useMemo(() => {
-        let rows = submissions?.sort((a, b) => needsAttention(a) && needsAttention(b) ? 0 : needsAttention(a) ? -1 : 1) || []
+        // Copy before sorting - RTK Query freezes its cache payloads,
+        // so an in-place .sort() on the mirrored array throws
+        // "Cannot assign to read only property" in dev.
+        let rows = (submissions ? [...submissions] : []).sort((a, b) =>
+            needsAttention(a) && needsAttention(b) ? 0 : needsAttention(a) ? -1 : 1,
+        )
         if (tabDef.l3FiltersEnabled && l3Filter !== "All") {
             const want = l3Filter.toLowerCase() as "healthy" | "expiring" | "expired"
             rows = rows.filter((s) => l3Health[s._id] === want)
