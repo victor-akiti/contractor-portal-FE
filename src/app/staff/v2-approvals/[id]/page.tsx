@@ -565,6 +565,13 @@ const V2SubmissionDetailPage = () => {
         preview: string
     } | null>(null)
     const [deletingComment, setDeletingComment] = useState(false)
+    // Deactivate-contractor modal (HOD/Admin only). Mandatory reason
+    // gates submit; success flips the submission inactive and the page
+    // refetches via the v2SubmissionAction tag invalidation.
+    const [showDeactivate, setShowDeactivate] = useState(false)
+    const [deactivateReason, setDeactivateReason] = useState("")
+    const [deactivating, setDeactivating] = useState(false)
+    const [deactivateError, setDeactivateError] = useState("")
 
     const role = user?.role
 
@@ -705,6 +712,43 @@ const V2SubmissionDetailPage = () => {
             return false
         } finally {
             setActionRunning(null)
+        }
+    }
+
+    const submitDeactivate = async () => {
+        if (!id) return
+        const reason = deactivateReason.trim()
+        if (!reason) {
+            setDeactivateError(
+                "A reason is required so the audit trail records why this contractor was deactivated.",
+            )
+            return
+        }
+        try {
+            setDeactivating(true)
+            setDeactivateError("")
+            const result = envelopeOf(
+                await submissionActionTrigger({
+                    id,
+                    action: "deactivate",
+                    body: { reason },
+                }),
+            )
+            if (result?.status === "OK") {
+                setShowDeactivate(false)
+                setDeactivateReason("")
+                // Send the reviewer back to the queue - the row is now
+                // hidden from every staff list and counts payload.
+                router.push("/staff/v2-approvals")
+            } else {
+                setDeactivateError(
+                    result?.error?.message || "Could not deactivate contractor",
+                )
+            }
+        } catch (e: any) {
+            setDeactivateError(e?.message || "Unexpected error")
+        } finally {
+            setDeactivating(false)
         }
     }
 
@@ -1623,6 +1667,21 @@ const V2SubmissionDetailPage = () => {
                                     title="Move this contractor to a different group. Same form template = reclassify; different form template = void + re-invite."
                                 >
                                     Change group
+                                </button>
+                            )}
+                        {["Admin", "HOD"].includes(role) &&
+                            submission.isActive !== false && (
+                                <button
+                                    type="button"
+                                    className={styles.btnLinkDanger}
+                                    onClick={() => {
+                                        setDeactivateReason("")
+                                        setDeactivateError("")
+                                        setShowDeactivate(true)
+                                    }}
+                                    title="Soft-delete this contractor. The row drops out of every staff queue. Audit trail records who deactivated and why."
+                                >
+                                    Deactivate
                                 </button>
                             )}
                     </div>
@@ -3322,6 +3381,57 @@ const V2SubmissionDetailPage = () => {
                                     Open invite page
                                 </Link>
                             )}
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {showDeactivate && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Deactivate contractor</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <p className={styles.helpText}>
+                                <strong>{submission?.companyName || "This contractor"}</strong> will be
+                                removed from every staff queue and counts payload. The
+                                submission record stays in the database with isActive=false
+                                so it can be restored from MongoDB if needed. The audit
+                                trail will record who deactivated and why.
+                            </p>
+                            <div className={styles.formRow}>
+                                <label>Reason <span className={styles.required}>*</span></label>
+                                <textarea
+                                    rows={4}
+                                    value={deactivateReason}
+                                    onChange={(e) => setDeactivateReason(e.target.value)}
+                                    placeholder="e.g. Duplicate of XYZ Ltd; contractor confirmed they registered under a different name."
+                                    disabled={deactivating}
+                                />
+                            </div>
+                            {deactivateError && (
+                                <div className={styles.modalError}>
+                                    <ErrorText text={deactivateError} />
+                                </div>
+                            )}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setShowDeactivate(false)}
+                                disabled={deactivating}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnReject}
+                                onClick={submitDeactivate}
+                                disabled={deactivating || !deactivateReason.trim()}
+                            >
+                                Deactivate contractor
+                                {deactivating && <ButtonLoadingIcon />}
+                            </button>
                         </div>
                     </div>
                 </Modal>
