@@ -8,13 +8,13 @@ import Toast from "@/components/toast"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { BACKEND_BASE_URL } from "@/lib/config"
 import { auth } from "@/lib/firebase"
-import { staffApi } from "@/redux/apis/staffApi"
 import {
     useGetV2InvitesQuery,
     useGetV2SubmissionCountsQuery,
     useGetV2SubmissionsQuery,
     useLazyGetV2SubmissionCertificatesQuery,
     useLazyGetV2SubmissionsQuery,
+    usePrefetch,
     useSetV2PriorityMutation,
     useV2SubmissionActionMutation,
 } from "@/redux/features/v2Slice"
@@ -273,8 +273,8 @@ const V2ApprovalsPage = () => {
     // tab clicks resolve instantly from the shared RTK Query cache.
     // The keepUnusedDataFor: 300 on getV2Submissions / getV2Invites
     // keeps these warm caches alive for 5 minutes after they go idle.
-    const prefetchSubmissions = staffApi.usePrefetch("getV2Submissions")
-    const prefetchInvitesPrefetch = staffApi.usePrefetch("getV2Invites")
+    const prefetchSubmissions = usePrefetch<"getV2Submissions">("getV2Submissions")
+    const prefetchInvitesPrefetch = usePrefetch<"getV2Invites">("getV2Invites")
     useEffect(() => {
         if (!user?.role || !countsQ.currentData) return
         for (const t of TAB_DEFS) {
@@ -431,38 +431,38 @@ const V2ApprovalsPage = () => {
         const now = Date.now()
         const horizon = 30 * 24 * 60 * 60 * 1000
         let cancelled = false
-        ;(async () => {
-            const updates: Record<string, "healthy" | "expiring" | "expired"> = {}
-            await Promise.all(
-                rows.map(async (r: SubmissionV2Row) => {
-                    if (l3Health[r._id]) return
-                    try {
-                        const res = await certsTrigger(r._id, true)
-                        const env = res?.data
-                        if (env?.status !== "OK") return
-                        const certs = (env.data?.certificates || []).filter(
-                            (c: any) => c.trackingStatus !== "untracked - updated",
-                        )
-                        let worst: "healthy" | "expiring" | "expired" = "healthy"
-                        for (const c of certs) {
-                            if (!c.expiryDate) continue
-                            const exp = new Date(c.expiryDate).getTime()
-                            if (exp < now) {
-                                worst = "expired"
-                                break
+            ; (async () => {
+                const updates: Record<string, "healthy" | "expiring" | "expired"> = {}
+                await Promise.all(
+                    rows.map(async (r: SubmissionV2Row) => {
+                        if (l3Health[r._id]) return
+                        try {
+                            const res = await certsTrigger(r._id, true)
+                            const env = res?.data
+                            if (env?.status !== "OK") return
+                            const certs = (env.data?.certificates || []).filter(
+                                (c: any) => c.trackingStatus !== "untracked - updated",
+                            )
+                            let worst: "healthy" | "expiring" | "expired" = "healthy"
+                            for (const c of certs) {
+                                if (!c.expiryDate) continue
+                                const exp = new Date(c.expiryDate).getTime()
+                                if (exp < now) {
+                                    worst = "expired"
+                                    break
+                                }
+                                if (exp - now < horizon) worst = "expiring"
                             }
-                            if (exp - now < horizon) worst = "expiring"
+                            updates[r._id] = worst
+                        } catch {
+                            // best effort
                         }
-                        updates[r._id] = worst
-                    } catch {
-                        // best effort
-                    }
-                }),
-            )
-            if (!cancelled && Object.keys(updates).length > 0) {
-                setL3Health((prev) => ({ ...prev, ...updates }))
-            }
-        })()
+                    }),
+                )
+                if (!cancelled && Object.keys(updates).length > 0) {
+                    setL3Health((prev) => ({ ...prev, ...updates }))
+                }
+            })()
         return () => {
             cancelled = true
         }

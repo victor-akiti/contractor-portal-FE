@@ -165,7 +165,7 @@ export const v2Slice = staffApi.injectEndpoints({
             }),
             // Email lookups are intent-driven (on blur) so a short cache
             // makes the experience snappier if the user blurs back into
-                // the same address.
+            // the same address.
             keepUnusedDataFor: 60,
             transformResponse: passThrough,
             transformErrorResponse: failedEnvelope,
@@ -210,15 +210,15 @@ export const v2Slice = staffApi.injectEndpoints({
                 error
                     ? []
                     : [
-                          "V2SubsList",
-                          "V2Counts",
-                          { type: "V2Submission", id: arg.id },
-                          { type: "V2SubCerts", id: arg.id },
-                          { type: "V2Comments", id: arg.id },
-                          { type: "V2Edits", id: arg.id },
-                          { type: "V2Remarks", id: arg.id },
-                          { type: "V2MigStatus", id: arg.id },
-                      ],
+                        "V2SubsList",
+                        "V2Counts",
+                        { type: "V2Submission", id: arg.id },
+                        { type: "V2SubCerts", id: arg.id },
+                        { type: "V2Comments", id: arg.id },
+                        { type: "V2Edits", id: arg.id },
+                        { type: "V2Remarks", id: arg.id },
+                        { type: "V2MigStatus", id: arg.id },
+                    ],
             transformResponse: passThrough,
             transformErrorResponse: failedEnvelope,
         }),
@@ -313,6 +313,7 @@ export const {
     useCreateV2InviteMutation,
     useV2InviteActionMutation,
     useResubmitV2InviteMutation,
+    usePrefetch,
 } = v2Slice
 
 export default v2Slice
