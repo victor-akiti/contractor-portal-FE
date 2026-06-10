@@ -9,6 +9,21 @@ import { getProtected } from "@/requests/get"
 import { postProtected } from "@/requests/post"
 import { putProtected } from "@/requests/put"
 import { deleteProtected } from "@/requests/delete"
+import {
+    useGetV2SubmissionCertificatesQuery,
+    useGetV2SubmissionCommentsQuery,
+    useGetV2SubmissionEditsQuery,
+    useGetV2SubmissionMigrationStatusQuery,
+    useGetV2SubmissionQuery,
+    useV2SubmissionActionMutation,
+} from "@/redux/features/v2Slice"
+
+// Same envelope helper used by the list pages. Keeps the {status, data,
+// error} shape every existing call site already consumes.
+const envelopeOf = (r: any): any =>
+    r?.data ||
+    r?.error ||
+    { status: "FAILED", error: { message: "Request failed" } }
 import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
@@ -553,48 +568,88 @@ const V2SubmissionDetailPage = () => {
 
     const role = user?.role
 
-    // fetchAll is reused by every mutation handler to refresh the page's
-    // data after a save. Pass background=true to keep the rendered tree
-    // visible while the network call runs - we only flip the full-page
-    // `loading` spinner during the initial mount. This is what fixes the
-    // "page goes blank after every POST" complaint.
+    // RTK Query: five parallel detail-page reads share the staffApi
+    // cache so a back-and-forth visit returns instantly. Tag
+    // invalidation from v2SubmissionAction (and the manual dispatch
+    // calls in the mutation handlers below for the non-action
+    // endpoints) refetches the relevant query without us needing a
+    // manual fetchAll() at every call site.
+    const submissionQ = useGetV2SubmissionQuery(id as string, { skip: !id })
+    const commentsQ = useGetV2SubmissionCommentsQuery(id as string, { skip: !id })
+    const certificatesQ = useGetV2SubmissionCertificatesQuery(id as string, {
+        skip: !id,
+    })
+    const editsQ = useGetV2SubmissionEditsQuery(id as string, { skip: !id })
+    const migQ = useGetV2SubmissionMigrationStatusQuery(id as string, {
+        skip: !id,
+    })
+
+    const [submissionActionTrigger] = useV2SubmissionActionMutation()
+
+    // Mirror RTK Query data into the existing local state so every other
+    // bit of page logic (which reads `submission`, `comments`, etc.)
+    // keeps working unchanged. Anything that mutates one of these via
+    // setX still wins until the next refetch lands.
+    useEffect(() => {
+        const env = submissionQ.currentData
+        if (env?.status === "OK") {
+            setSubmission(env.data?.submission || null)
+            setFormVersion(env.data?.formVersion || null)
+            setRemarks(env.data?.remarks || [])
+            setInvite(env.data?.invite || null)
+            setPortalAdmin(env.data?.portalAdmin || null)
+        } else if (env && env.status !== "OK") {
+            setError(env?.error?.message || "Failed to load submission")
+        }
+    }, [submissionQ.currentData])
+    useEffect(() => {
+        const env = commentsQ.currentData
+        if (env?.status === "OK") setComments(env.data?.comments || [])
+    }, [commentsQ.currentData])
+    useEffect(() => {
+        const env = certificatesQ.currentData
+        if (env?.status === "OK") setCertificates(env.data?.certificates || [])
+    }, [certificatesQ.currentData])
+    useEffect(() => {
+        const env = editsQ.currentData
+        if (env?.status === "OK") setFieldEdits(env.data?.edits || [])
+    }, [editsQ.currentData])
+    useEffect(() => {
+        const env = migQ.currentData
+        if (env?.status === "OK") setMigrationStatus(env.data || null)
+    }, [migQ.currentData])
+
+    // Initial mount: full-page spinner until the submission GET lands
+    // (the other four queries are non-blocking - the page renders as
+    // soon as the submission itself is in).
+    useEffect(() => {
+        if (!id) return
+        setLoading(!submissionQ.currentData && submissionQ.isLoading)
+    }, [id, submissionQ.currentData, submissionQ.isLoading])
+
+    // fetchAll preserves the legacy API used by ~15 mutation handlers
+    // below. It now refetches every query in parallel; tag invalidation
+    // from the submission-action mutation triggers the same refetches
+    // automatically on its own, so this is mainly used by the smaller
+    // mutations that still go through postProtected. background=true
+    // keeps the page visible while the refresh is in flight (no
+    // full-page spinner).
     const fetchAll = async (background = true) => {
         if (!id) return
+        if (!background) setLoading(true)
         try {
-            if (!background) setLoading(true)
-            setError("")
-            const [s, c, cert, ed, mig] = await Promise.all([
-                getProtected(`api/v2/submissions/${id}`, role),
-                getProtected(`api/v2/submissions/${id}/comments`, role),
-                getProtected(`api/v2/submissions/${id}/certificates`, role),
-                getProtected(`api/v2/submissions/${id}/edits`, role),
-                getProtected(`api/v2/submissions/${id}/migration-status`, role),
+            await Promise.all([
+                submissionQ.refetch(),
+                commentsQ.refetch(),
+                certificatesQ.refetch(),
+                editsQ.refetch(),
+                migQ.refetch(),
             ])
-            if (s?.status === "OK") {
-                setSubmission(s.data?.submission || null)
-                setFormVersion(s.data?.formVersion || null)
-                setRemarks(s.data?.remarks || [])
-                setInvite(s.data?.invite || null)
-                setPortalAdmin(s.data?.portalAdmin || null)
-            } else {
-                setError(s?.error?.message || "Failed to load submission")
-            }
-            if (c?.status === "OK") setComments(c.data?.comments || [])
-            if (cert?.status === "OK") setCertificates(cert.data?.certificates || [])
-            if (ed?.status === "OK") setFieldEdits(ed.data?.edits || [])
-            if (mig?.status === "OK") setMigrationStatus(mig.data || null)
-        } catch (e: any) {
-            setError(e?.message || "Failed to load")
         } finally {
             if (!background) setLoading(false)
         }
     }
 
-    useEffect(() => {
-        // Initial mount: full-page spinner.
-        if (id && role) fetchAll(false)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id, role])
 
     // Transitions that change ownership of the submission (advance,
     // approve, revert from L3, send to an earlier stage, do-not-add)
@@ -625,7 +680,9 @@ const V2SubmissionDetailPage = () => {
             setActionRunning(action)
             setActionError("")
             setActionSuccess("")
-            const result = await postProtected(`api/v2/submissions/${id}/${action}`, payload, role)
+            const result = envelopeOf(
+                await submissionActionTrigger({ id, action, body: payload }),
+            )
             if (result?.status === "OK") {
                 setActionSuccess(`Action "${action}" completed.`)
                 setTimeout(() => setActionSuccess(""), 3000)
@@ -635,7 +692,10 @@ const V2SubmissionDetailPage = () => {
                     router.push("/staff/v2-approvals")
                     return true
                 }
-                await fetchAll()
+                // v2SubmissionAction invalidates all detail-page tags
+                // (Submission, Comments, Certs, Edits, Remarks,
+                // MigStatus) so the mirrored local state refreshes on
+                // its own - no manual fetchAll() needed.
                 return true
             }
             setActionError(result?.error?.message || `Action "${action}" failed`)
