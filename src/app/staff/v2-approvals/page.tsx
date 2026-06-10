@@ -101,7 +101,10 @@ interface InviteRow {
 const STAGE_ACTORS: Record<number, string[]> = {
     0: ["Admin", "HOD", "VRM"],
     1: ["Admin", "HOD", "Supervisor"],
-    2: ["End User", "Admin", "Amni Staff"],
+    // Stage D - any staff role can be picked as an end user. Whether THIS
+    // user can act on a specific submission is enforced server-side via
+    // the assignedEndUsers list.
+    2: ["End User", "Admin", "HOD", "Amni Staff", "C and P Staff", "Insurance Officer"],
     3: ["Admin", "HOD", "VRM", "CO", "Supervisor"],
     4: ["Admin", "HOD"],
     5: ["Admin", "Executive Approver"],
@@ -1339,7 +1342,7 @@ const V2ApprovalsPage = () => {
             {/* Role-gate notice. Matches the V1 behaviour where roles
                 without permission to act at any of the relevant stages
                 see an explanatory line instead of an empty page. */}
-            {!showInitialLoading && user?.role && !["Admin", "HOD", "VRM", "Supervisor", "End User", "CO", "Executive Approver", "Amni Staff", "IT Admin"].includes(user.role) && (
+            {!showInitialLoading && user?.role && !["Admin", "HOD", "VRM", "Supervisor", "End User", "CO", "Executive Approver", "Amni Staff", "C and P Staff", "C&P Admin", "Insurance Officer", "DD Officer", "IT Admin"].includes(user.role) && (
                 <div className={styles.emptyState}>
                     <h4>No access</h4>
                     <p>
