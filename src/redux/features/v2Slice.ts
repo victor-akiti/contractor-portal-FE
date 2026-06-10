@@ -61,6 +61,11 @@ export const v2Slice = staffApi.injectEndpoints({
                 method: "GET",
             }),
             providesTags: ["V2SubsList"],
+            // Keep prefetched tab data warm for 5 min so a user landing
+            // on the page, then idling on it before clicking around,
+            // still gets instant tab swaps. Without this the default
+            // 60s eviction wipes the background-prefetched tabs.
+            keepUnusedDataFor: 300,
             transformResponse: passThrough,
             transformErrorResponse: failedEnvelope,
         }),
@@ -139,6 +144,9 @@ export const v2Slice = staffApi.injectEndpoints({
                 method: "GET",
             }),
             providesTags: ["V2InviteList"],
+            // Mirror the submissions list cache window so prefetched
+            // invite results survive the 60s default.
+            keepUnusedDataFor: 300,
             transformResponse: passThrough,
             transformErrorResponse: failedEnvelope,
         }),

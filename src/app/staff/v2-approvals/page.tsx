@@ -8,6 +8,7 @@ import Toast from "@/components/toast"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
 import { BACKEND_BASE_URL } from "@/lib/config"
 import { auth } from "@/lib/firebase"
+import { staffApi } from "@/redux/apis/staffApi"
 import {
     useGetV2InvitesQuery,
     useGetV2SubmissionCountsQuery,
@@ -266,9 +267,51 @@ const V2ApprovalsPage = () => {
     const [submissionActionTrigger] = useV2SubmissionActionMutation()
     const [setPriorityTrigger] = useSetV2PriorityMutation()
 
+    // V1-parity background prefetch. Once the counts payload lands
+    // (i.e. on initial mount and again after any mutation invalidates
+    // V2Counts), warm every queue tab in the background so subsequent
+    // tab clicks resolve instantly from the shared RTK Query cache.
+    // The keepUnusedDataFor: 300 on getV2Submissions / getV2Invites
+    // keeps these warm caches alive for 5 minutes after they go idle.
+    const prefetchSubmissions = staffApi.usePrefetch("getV2Submissions")
+    const prefetchInvitesPrefetch = staffApi.usePrefetch("getV2Invites")
+    useEffect(() => {
+        if (!user?.role || !countsQ.currentData) return
+        for (const t of TAB_DEFS) {
+            if (t.isInvites) {
+                prefetchInvitesPrefetch({}, { force: false })
+                continue
+            }
+            const p: Record<string, string> = {}
+            Object.entries(t.filter || {}).forEach(([k, v]) => {
+                p[k] = String(v)
+            })
+            prefetchSubmissions(p, { force: false })
+        }
+    }, [
+        user?.role,
+        countsQ.currentData,
+        prefetchSubmissions,
+        prefetchInvitesPrefetch,
+    ])
+
+    // Tab-switch reset MUST run before the mirror effects below so a
+    // cache-hit on the new tab wins the final state write. Without
+    // this, the mirror would set the prefetched rows and the clear
+    // would immediately wipe them.
+    useEffect(() => {
+        setSubmissions([])
+        setInvites([])
+        setL3Health({})
+        setError("")
+        setStageFilter("All")
+    }, [activeTab])
+
     // Mirror RTK Query data into the existing local state so the rest of
     // the page (sorting, search filter, optimistic mutation patches)
-    // keeps working unchanged.
+    // keeps working unchanged. With background prefetch above, the
+    // currentData on a tab switch can already be the prefetched rows
+    // for the new tab, giving an instant render.
     useEffect(() => {
         if (_tabDef.isInvites) return
         const rows = submissionsQ.currentData?.data?.submissions
@@ -292,19 +335,6 @@ const V2ApprovalsPage = () => {
         const id = setTimeout(() => setDebouncedSearch(search.trim().toLowerCase()), 200)
         return () => clearTimeout(id)
     }, [search])
-
-    // Reset stage chip and clear local row state when switching tabs.
-    // RTK Query handles request cancellation natively - when the arg
-    // object changes, the prior query's result is dropped from the
-    // active subscription. We still wipe local row state so the UI
-    // doesn't flash the previous tab's rows before the new fetch lands.
-    useEffect(() => {
-        setSubmissions([])
-        setInvites([])
-        setL3Health({})
-        setError("")
-        setStageFilter("All")
-    }, [activeTab])
 
     // Quick Search: V1 parity (debounce 300ms, min 2 chars). Same params
     // as the legacy listSubmissions call; preferCache=true means a
