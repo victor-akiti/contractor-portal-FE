@@ -70,6 +70,53 @@
   cursor: pointer;
 }
 
+.btnLinkDanger {
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnLinkDanger:hover {
+  text-decoration: underline;
+}
+
+/* Destructive primary action - used on the deactivation modal so the
+   confirm button reads as "yes, do the dangerous thing" instead of the
+   neutral orange-brand primary. */
+.btnDanger {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btnDanger:hover { background: #962d22; }
+.btnDanger:disabled { background: #d1a098; cursor: not-allowed; }
+
+/* Impact readout inside the deactivation modal - small bordered card
+   that frames the live-contractor counts so the actor can see the
+   damage at a glance. */
+.impactBox {
+  background: #fff8ef;
+  border: 1px solid #f3d8b2;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+.impactBox ul {
+  margin: 8px 0 8px 18px;
+  padding: 0;
+}
+.impactBox li {
+  margin: 4px 0;
+}
+
 .emptyState {
   background: white;
   border: 1px solid #ececec;
