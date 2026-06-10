@@ -75,6 +75,27 @@ interface SubmissionV2Row {
     }
     selectedEndUsers?: any[]
     reverts?: any
+    lastReminderSent?: number | null
+}
+
+// V1-parity check: drop the v1-no-email@unknown.local placeholders the
+// backfill left behind so the Remind buttons don't fire mail to a
+// dead address. Keep in sync with isUsableContractorEmail on the BE.
+const PLACEHOLDER_EMAIL_DOMAINS = new Set(["unknown.local"])
+const REMINDER_PLACEHOLDER_LOCALS = new Set([
+    "v1-no-email",
+    "no-email",
+    "unknown",
+])
+const isUsableContractorEmail = (e?: string | null): boolean => {
+    if (!e || typeof e !== "string") return false
+    const v = e.trim().toLowerCase()
+    if (!v) return false
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return false
+    const [local, domain] = v.split("@")
+    if (PLACEHOLDER_EMAIL_DOMAINS.has(domain)) return false
+    if (REMINDER_PLACEHOLDER_LOCALS.has(local)) return false
+    return true
 }
 
 interface InviteRow {
@@ -205,6 +226,8 @@ const V2ApprovalsPage = () => {
     const [error, setError] = useState("")
     const [togglingPriorityId, setTogglingPriorityId] = useState<string | null>(null)
     const [inlineActingId, setInlineActingId] = useState<string | null>(null)
+    const [remindingId, setRemindingId] = useState<string | null>(null)
+    const canRemind = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
     const [exporting, setExporting] = useState<"current" | "all" | null>(null)
     // Top-of-page Quick Search (V1 parity). Cross-tab search across
     // companyName + contractorEmail with a status-scope dropdown.
@@ -677,6 +700,35 @@ const V2ApprovalsPage = () => {
                             )}
                         </>
                     )}
+                    {/* Reminder buttons - Returned tab and In Progress
+                        (draft) tab. Disabled when the contractor email
+                        isn't usable (V1 backfill placeholder, invalid
+                        shape) so reviewers don't fire mail to a dead
+                        address; the tooltip explains why. */}
+                    {canRemind &&
+                        (s.status === "returned" || s.status === "draft") &&
+                        (() => {
+                            const usable = isUsableContractorEmail(s.contractorEmail)
+                            const kind: "returned" | "not-submitted" =
+                                s.status === "returned" ? "returned" : "not-submitted"
+                            return (
+                                <button
+                                    className={styles.btnInlineRemind}
+                                    disabled={remindingId === s._id || !usable}
+                                    onClick={() => sendReminder(s, kind)}
+                                    title={
+                                        usable
+                                            ? s.lastReminderSent
+                                                ? `Last reminded ${new Date(s.lastReminderSent).toLocaleDateString("en-NG")}`
+                                                : "Send a reminder email to this contractor"
+                                            : "No usable email on file (V1 placeholder or invalid shape). Update the contact email first."
+                                    }
+                                >
+                                    Remind
+                                    {remindingId === s._id && <ButtonLoadingIcon />}
+                                </button>
+                            )
+                        })()}
                     {/* Show PROCESS STAGE X only when the viewer's role
                         can actually act at that stage; everyone else
                         gets the VIEW button which opens read-only.
@@ -1048,6 +1100,51 @@ const V2ApprovalsPage = () => {
             setError(e?.message || "Unexpected error")
         } finally {
             setInlineActingId(null)
+        }
+    }
+
+    // Inline reminder. kind = "returned" (Returned tab) or
+    // "not-submitted" (In Progress tab). Disabled-button path on the
+    // row stops the user from firing this if the contractor email
+    // is unusable; the BE re-validates and rejects with 409 either way.
+    const sendReminder = async (
+        row: SubmissionV2Row,
+        kind: "returned" | "not-submitted",
+    ) => {
+        if (!canRemind) return
+        if (!isUsableContractorEmail(row.contractorEmail)) {
+            setError(
+                "This contractor has no usable email on file. Update the contact email before sending a reminder.",
+            )
+            return
+        }
+        const ok = await confirmDialog({
+            headerText: "Send reminder?",
+            bodyText:
+                kind === "returned"
+                    ? `Email ${row.contractorEmail} the standard returned-application reminder. The active remarks for the current cycle will be listed inline.`
+                    : `Email ${row.contractorEmail} a reminder that their registration form has not been submitted yet.`,
+            confirmText: "Send reminder",
+        })
+        if (!ok) return
+        try {
+            setRemindingId(row._id)
+            const r = envelopeOf(
+                await submissionActionTrigger({
+                    id: row._id,
+                    action:
+                        kind === "returned"
+                            ? "remind-returned"
+                            : "remind-not-submitted",
+                }),
+            )
+            if (r?.status !== "OK") {
+                setError(r?.error?.message || "Reminder failed")
+            }
+        } catch (e: any) {
+            setError(e?.message || "Unexpected error")
+        } finally {
+            setRemindingId(null)
         }
     }
 

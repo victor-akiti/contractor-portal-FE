@@ -1169,7 +1169,8 @@
    existing Action column buttons. */
 .btnInlineApprove,
 .btnInlineDecline,
-.btnInlineWithdraw {
+.btnInlineWithdraw,
+.btnInlineRemind {
   padding: 5px 12px;
   border-radius: 6px;
   font-size: 0.78rem;
@@ -1209,7 +1210,18 @@
 }
 .btnInlineApprove:disabled,
 .btnInlineDecline:disabled,
-.btnInlineWithdraw:disabled {
+.btnInlineWithdraw:disabled,
+.btnInlineRemind:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+/* Reminder button - neutral amber to distinguish from approve / decline. */
+.btnInlineRemind {
+  background: white;
+  color: #8a5a00;
+  border: 1.5px solid #f4d28a;
+}
+.btnInlineRemind:hover:not(:disabled) {
+  background: #fff5e0;
+  border-color: #c98a1a;
 }
