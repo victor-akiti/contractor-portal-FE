@@ -1243,6 +1243,8 @@ const V2SubmissionDetailPage = () => {
         if (!submission) return false
         if (submission.status !== "pending") return false
         if (![0, 1].includes(submission.level)) return false
+        // Amni Staff / C&P Staff are deliberately omitted: they get full
+        // view but no approval rights per the C&P access policy.
         return [
             "Admin",
             "HOD",
@@ -1250,7 +1252,6 @@ const V2SubmissionDetailPage = () => {
             "CO",
             "Supervisor",
             "End User",
-            "Amni Staff",
             "Executive Approver",
         ].includes(role)
     }, [submission, role])

@@ -174,12 +174,15 @@ const V2InvitesPage = () => {
     const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null)
     const [copied, setCopied] = useState<string | null>(null)
 
-    const canCreate = ["Admin", "HOD", "IT Admin", "VRM", "CO", "Supervisor"].includes(user?.role)
+    // Per the C&P / Amni access policy, only PRIMARY USERS
+    // (Admin > HOD > Supervisor > VRM) can create / resend / resubmit
+    // invites. C&P Staff and Amni Staff retain full view but no write.
+    const canCreate = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
     // Supervisor + HOD share invite-review responsibilities per the C&P ticket.
     const canReview = ["Admin", "HOD", "Supervisor"].includes(user?.role)
-    const canResend = ["Admin", "HOD", "IT Admin", "VRM", "Supervisor"].includes(user?.role)
+    const canResend = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
     const canVoid = ["Admin", "HOD", "Supervisor"].includes(user?.role)
-    const canResubmit = ["Admin", "HOD", "IT Admin", "VRM", "CO", "Supervisor"].includes(user?.role)
+    const canResubmit = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
 
     const fetchInvites = async (tab: ApprovalStatus | "all") => {
         try {
