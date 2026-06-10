@@ -220,15 +220,25 @@ const V2InvitesPage = () => {
     const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null)
     const [copied, setCopied] = useState<string | null>(null)
 
-    // Per the C&P / Amni access policy, only PRIMARY USERS
-    // (Admin > HOD > Supervisor > VRM) can create / resend / resubmit
-    // invites. C&P Staff and Amni Staff retain full view but no write.
-    const canCreate = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
-    // Supervisor + HOD share invite-review responsibilities per the C&P ticket.
+    // Invite-raising is open to the full C&P / Amni surface so any staff
+    // member fielding a new contractor request can raise an invite. The
+    // approval still belongs to Supervisor / HOD downstream.
+    const INVITE_AUTHORIZED_ROLES = [
+        "Admin",
+        "HOD",
+        "Supervisor",
+        "VRM",
+        "C and P Staff",
+        "C&P Admin",
+        "Amni Staff",
+        "Insurance Officer",
+    ]
+    const canCreate = INVITE_AUTHORIZED_ROLES.includes(user?.role)
+    // Supervisor + HOD gate the actual review (approve / return / reject).
     const canReview = ["Admin", "HOD", "Supervisor"].includes(user?.role)
-    const canResend = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
+    const canResend = INVITE_AUTHORIZED_ROLES.includes(user?.role)
     const canVoid = ["Admin", "HOD", "Supervisor"].includes(user?.role)
-    const canResubmit = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
+    const canResubmit = INVITE_AUTHORIZED_ROLES.includes(user?.role)
 
     // RTK Query mutations - the cache invalidation tags wired on the
     // slice (V2InviteList, V2Counts) refetch the queue automatically

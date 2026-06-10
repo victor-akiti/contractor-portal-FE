@@ -252,16 +252,22 @@ const RegisterV2 = () => {
                                 disabled={creatingAccount}
                             />
 
-                            <div className={styles.rememberMeContainer}>
+                            <div className={styles.acceptTermsDiv}>
                                 <label className={styles.checkboxLabel}>
                                     <input
                                         type="checkbox"
+                                        className={styles.acceptTermsCheckbox}
                                         checked={acceptedTerms}
                                         onChange={(e) => setAcceptedTerms(e.target.checked)}
                                         disabled={creatingAccount}
                                     />
-                                    <span className={styles.checkboxText}>Accept our <Link href="/">terms and conditions</Link></span>
-
+                                    <span className={styles.checkboxText}>
+                                        I acknowledge that I have read and accept Amni&apos;s
+                                        {" "}
+                                        <Link href="/ndpr" target="_blank">NDPR policy</Link>
+                                        {" "}and{" "}
+                                        <Link href="/terms" target="_blank">terms and conditions</Link>.
+                                    </span>
                                 </label>
                             </div>
 
