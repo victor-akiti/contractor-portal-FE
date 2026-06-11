@@ -704,6 +704,31 @@ const V2InvitesPage = () => {
         return g.name || "-"
     }
 
+    // Per-tab search. Each tab keeps its own search term so switching
+    // between Pending review and Approved doesn't drop a filter the user
+    // has in flight. "all" gets its own slot too.
+    const [searchByTab, setSearchByTab] = useState<Record<string, string>>({})
+    const currentSearch = searchByTab[activeTab] || ""
+    const setCurrentSearch = (v: string) =>
+        setSearchByTab((prev) => ({ ...prev, [activeTab]: v }))
+
+    const filteredInvites = useMemo(() => {
+        const q = currentSearch.trim().toLowerCase()
+        if (!q) return invites
+        return invites.filter((inv) => {
+            const fields = [
+                inv.name,
+                inv.companyName,
+                inv.email,
+                groupName(inv.groupId),
+                inv.fname,
+                inv.lname,
+            ]
+            return fields.some((f) => f && String(f).toLowerCase().includes(q))
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [invites, currentSearch, groups])
+
     const statusCounts = useMemo(() => {
         const counts: Record<string, number> = {}
         invites.forEach((i) => { counts[i.approvalStatus] = (counts[i.approvalStatus] || 0) + 1 })
@@ -755,6 +780,32 @@ const V2InvitesPage = () => {
                 </div>
             )}
 
+            {!loading && !fetchError && invites.length > 0 && (
+                <div className={styles.searchBar}>
+                    <input
+                        type="text"
+                        className={styles.searchInput}
+                        value={currentSearch}
+                        onChange={(e) => setCurrentSearch(e.target.value)}
+                        placeholder="Search by contractor, company, email or group…"
+                    />
+                    {currentSearch && (
+                        <button
+                            type="button"
+                            className={styles.btnLink}
+                            onClick={() => setCurrentSearch("")}
+                        >
+                            Clear
+                        </button>
+                    )}
+                    <span className={styles.searchCount}>
+                        {currentSearch
+                            ? `${filteredInvites.length} of ${invites.length}`
+                            : `${invites.length} invite${invites.length === 1 ? "" : "s"}`}
+                    </span>
+                </div>
+            )}
+
             {!loading && !fetchError && invites.length === 0 && (
                 <div className={styles.emptyState}>
                     <h4>No invites in this view</h4>
@@ -766,7 +817,25 @@ const V2InvitesPage = () => {
                 </div>
             )}
 
-            {!loading && !fetchError && invites.length > 0 && (
+            {!loading && !fetchError && invites.length > 0 && filteredInvites.length === 0 && (
+                <div className={styles.emptyState}>
+                    <h4>No matches</h4>
+                    <p>
+                        No invites in this tab match &ldquo;{currentSearch}&rdquo;. Try a
+                        different search or{" "}
+                        <button
+                            type="button"
+                            className={styles.btnLink}
+                            onClick={() => setCurrentSearch("")}
+                        >
+                            clear the filter
+                        </button>
+                        .
+                    </p>
+                </div>
+            )}
+
+            {!loading && !fetchError && filteredInvites.length > 0 && (
                 <div className={styles.tableWrap}>
                     <table className={styles.table}>
                         <thead>
@@ -780,7 +849,7 @@ const V2InvitesPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {invites.map((inv) => (
+                            {filteredInvites.map((inv) => (
                                 <tr key={inv._id}>
                                     <td>
                                         <div className={styles.nameCell}>
