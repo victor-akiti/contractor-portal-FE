@@ -39,18 +39,32 @@ const StageRoleBriefingCard = ({
     let title = ""
     let body = ""
     let cta: { label: string; onClick: () => void } | null = null
+    let secondaryCta: { label: string; onClick: () => void } | null = null
 
     if (lvl === 0 && ["Admin", "HOD", "VRM"].includes(role)) {
         title = "Stage B - Vendor Relationship Manager"
         body = "Review every section, leave remarks on anything wrong, then advance to the Supervisor at Stage C."
     } else if (lvl === 1 && ["Admin", "HOD", "Supervisor"].includes(role)) {
         const n = (submission.selectedEndUsers || []).length
+        const s = ((submission as any).selectedServices || []).length
         title = "Stage C - Supervisor"
-        body =
-            n > 0
-                ? `You have assigned ${n} End User${n === 1 ? "" : "s"}. You can change the selection before advancing to Stage D.`
-                : "Pick the End User(s) who should see this application at Stage D, then advance."
-        cta = { label: n > 0 ? "Edit End Users" : "Assign End Users", onClick: openEndUserPicker }
+        const partsDone: string[] = []
+        const partsTodo: string[] = []
+        if (n > 0) partsDone.push(`${n} End User${n === 1 ? "" : "s"} assigned`)
+        else partsTodo.push("pick the End User(s) for Stage D")
+        if (s > 0) partsDone.push(`${s} service${s === 1 ? "" : "s"} tagged`)
+        else partsTodo.push("tag the services this contractor will be evaluated for")
+        body = partsDone.length
+            ? `${partsDone.join(" · ")}. You can edit either selection before advancing to Stage D.`
+            : `Before advancing to Stage D, ${partsTodo.join(" and ")}.`
+        cta = {
+            label: n > 0 ? "Edit End Users" : "Assign End Users",
+            onClick: openEndUserPicker,
+        }
+        secondaryCta = {
+            label: s > 0 ? "Edit Services" : "Tag Services",
+            onClick: openServicesModal,
+        }
     } else if (lvl === 2) {
         if (isAssignedEndUser || ["Admin", "HOD"].includes(role)) {
             const n = ((submission as any).selectedServices || []).length
@@ -91,10 +105,19 @@ const StageRoleBriefingCard = ({
                 <h4>{title}</h4>
                 <p>{body}</p>
             </div>
-            {cta && !hideCta && (
-                <button className={styles.btnPrimary} onClick={cta.onClick}>
-                    {cta.label}
-                </button>
+            {!hideCta && (cta || secondaryCta) && (
+                <div className={styles.stageBriefingCtas}>
+                    {cta && (
+                        <button className={styles.btnPrimary} onClick={cta.onClick}>
+                            {cta.label}
+                        </button>
+                    )}
+                    {secondaryCta && (
+                        <button className={styles.btnSecondary} onClick={secondaryCta.onClick}>
+                            {secondaryCta.label}
+                        </button>
+                    )}
+                </div>
             )}
         </div>
     )
