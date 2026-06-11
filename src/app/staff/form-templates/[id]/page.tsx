@@ -342,14 +342,15 @@ const TemplateDetailPage = () => {
             {/* Schema editor - JSON paste for now; drag-and-drop UI is a follow-up. */}
             <section className={detailStyles.section}>
                 <div className={detailStyles.sectionHeader}>
-                    <h3 className={detailStyles.sectionTitle}>Form schema</h3>
+                    <h3 className={detailStyles.sectionTitle}>Form</h3>
                     <span className={styles.dim}>
-                        Edits go to the working draft. Publish to make them current.
+                        Edits go to a working copy. Publish to make them the live form
+                        for new invitations.
                     </span>
                 </div>
                 {!draftSchema ? (
                     <div className={detailStyles.placeholder}>
-                        <p>Loading draft schema…</p>
+                        <p>Loading form…</p>
                     </div>
                 ) : (
                     <div className={detailStyles.builderWrap}>

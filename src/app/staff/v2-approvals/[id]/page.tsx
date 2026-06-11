@@ -1548,7 +1548,7 @@ const V2SubmissionDetailPage = () => {
             <div className={styles.page}>
                 <div className={styles.errorBanner}>
                     <ErrorText text={error || "Submission not found"} />
-                    <Link href="/staff/v2-approvals" className={styles.btnLink}>Back to queue</Link>
+                    <Link href="/staff/v2-approvals" className={styles.btnLink}>Back to applications</Link>
                 </div>
             </div>
         )
@@ -1678,7 +1678,7 @@ const V2SubmissionDetailPage = () => {
                                         setDeactivateError("")
                                         setShowDeactivate(true)
                                     }}
-                                    title="Soft-delete this contractor. The row drops out of every staff queue. Audit trail records who deactivated and why."
+                                    title="Hide this contractor from every staff list and report. The record is kept and can be reinstated; the History tab shows who deactivated and why."
                                 >
                                     Deactivate contractor
                                 </button>
@@ -2939,8 +2939,8 @@ const V2SubmissionDetailPage = () => {
                                 {target && (
                                     <p className={styles.helpText}>
                                         {sameTemplate
-                                            ? "Same form template - contractor keeps their submission."
-                                            : "Different form template - current submission will be voided and a fresh invite will be issued to the same email."}
+                                            ? "Same form - the contractor keeps their application as it is."
+                                            : "Different form - the current application will be cancelled and a fresh invitation sent to the same email address."}
                                     </p>
                                 )}
                                 <label
@@ -3290,8 +3290,9 @@ const V2SubmissionDetailPage = () => {
                                     </dl>
                                 ) : (
                                     <p className={styles.dim}>
-                                        No V2 invite linked. This contractor was
-                                        backfilled from V1.
+                                        No invitation linked to this application. This
+                                        contractor was carried over from the legacy
+                                        system.
                                     </p>
                                 )}
                             </section>
@@ -3327,10 +3328,11 @@ const V2SubmissionDetailPage = () => {
                                 {["Admin", "HOD"].includes(role) && (
                                     <div className={styles.replaceAdminBlock}>
                                         <p className={styles.dim}>
-                                            Send an invite to a new Portal
-                                            Administrator. The current admin is
-                                            archived for audit; the new admin
-                                            takes over when they register.
+                                            Send an invitation to a new Portal
+                                            Administrator. The current administrator
+                                            is kept in the history of this contractor
+                                            for reference, and the new administrator
+                                            takes over the moment they sign up.
                                         </p>
                                         <div className={styles.replaceAdminRow}>
                                             <input
@@ -3393,11 +3395,11 @@ const V2SubmissionDetailPage = () => {
                         </div>
                         <div className={styles.modalBody}>
                             <p className={styles.helpText}>
-                                <strong>{submission?.companyName || "This contractor"}</strong> will be
-                                removed from every staff queue and counts payload. The
-                                submission record stays in the database with isActive=false
-                                so it can be restored from MongoDB if needed. The audit
-                                trail will record who deactivated and why.
+                                <strong>{submission?.companyName || "This contractor"}</strong> will
+                                be hidden from every staff list and report. Their record is kept
+                                privately so it can be reinstated if this turns out to be a
+                                mistake. The History tab will show who deactivated the contractor
+                                and the reason given.
                             </p>
                             <div className={styles.formRow}>
                                 <label>Reason <span className={styles.required}>*</span></label>

@@ -100,7 +100,7 @@ const FormGroupsPage = () => {
                 await fetchAll()
                 setDeactivatingGroup(null)
             } else {
-                setDeactivateError(r?.error?.message || "Deactivation failed")
+                setDeactivateError(r?.error?.message || "Couldn't deactivate the category. Please try again.")
             }
         } catch (e: any) {
             setDeactivateError(e?.message || "Unexpected error")
@@ -118,9 +118,9 @@ const FormGroupsPage = () => {
                 user?.role,
             )
             if (r?.status === "OK") await fetchAll()
-            else setFetchError(r?.error?.message || "Reactivation failed")
+            else setFetchError(r?.error?.message || "Couldn't reactivate the category. Please try again.")
         } catch (e: any) {
-            setFetchError(e?.message || "Reactivation failed")
+            setFetchError(e?.message || "Couldn't reactivate the category. Please try again.")
         } finally {
             setReactivatingId(null)
         }
@@ -293,7 +293,7 @@ const FormGroupsPage = () => {
                                                 <button
                                                     className={styles.btnLinkDanger}
                                                     onClick={() => openDeactivate(g)}
-                                                    title="Block new invites against this category. Existing contractors keep flowing."
+                                                    title="Stop new invites being created under this category. Contractors already in it carry on as normal."
                                                 >
                                                     Deactivate
                                                 </button>
@@ -324,27 +324,27 @@ const FormGroupsPage = () => {
                         </div>
                         <div className={styles.modalBody}>
                             <p>
-                                New invites and group-moves into this category will be
-                                blocked immediately. Existing contractors stay where they
-                                are and keep moving through the pipeline on the form
-                                version they were stamped with.
+                                Staff will no longer see this category when creating
+                                or reassigning an invite. Contractors already in this
+                                category carry on with their applications as normal,
+                                on the form they were originally invited to.
                             </p>
                             {impactLoading && (
-                                <p className={styles.helpText}>Counting affected contractors…</p>
+                                <p className={styles.helpText}>Checking who&apos;s currently in this category…</p>
                             )}
                             {impact && (
                                 <div className={styles.impactBox}>
                                     <p className={styles.helpText}>
-                                        Currently on this category:
+                                        Currently in this category:
                                     </p>
                                     <ul>
                                         <li>
-                                            <strong>{impact.pendingInvites}</strong> pending invite
-                                            {impact.pendingInvites === 1 ? "" : "s"} (awaiting review or unredeemed)
+                                            <strong>{impact.pendingInvites}</strong> invite
+                                            {impact.pendingInvites === 1 ? "" : "s"} awaiting review or not yet used
                                         </li>
                                         <li>
-                                            <strong>{impact.liveSubmissions}</strong> live submission
-                                            {impact.liveSubmissions === 1 ? "" : "s"} (still in the pipeline)
+                                            <strong>{impact.liveSubmissions}</strong> contractor
+                                            {impact.liveSubmissions === 1 ? "" : "s"} still working through the application
                                         </li>
                                         <li>
                                             <strong>{impact.approvedSubmissions}</strong> approved contractor
@@ -352,9 +352,9 @@ const FormGroupsPage = () => {
                                         </li>
                                     </ul>
                                     <p className={styles.helpText}>
-                                        None of these are touched by deactivation - the category
-                                        just disappears from the &ldquo;new invite&rdquo; picker.
-                                        You can reactivate any time.
+                                        Deactivating doesn&apos;t affect any of these. The
+                                        category simply stops appearing in the &ldquo;new invite&rdquo;
+                                        dropdown. You can reactivate it any time.
                                     </p>
                                 </div>
                             )}

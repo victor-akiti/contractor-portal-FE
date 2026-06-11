@@ -739,12 +739,12 @@ const V2InvitesPage = () => {
         <div className={styles.page}>
             <div className={styles.pageHeader}>
                 <div>
-                    <h2 className={styles.pageTitle}>V2 Invites</h2>
+                    <h2 className={styles.pageTitle}>Contractor Invitations</h2>
                     <p className={styles.pageSubtitle}>
-                        Parallel invite surface. Staff create invites against a contractor
-                        group; the Supervisor (or HOD) approves before the email goes out.
-                        The form attached to the invite is determined by the group's current
-                        published template.
+                        Invite a contractor to register on the portal. The Supervisor
+                        or HOD approves the invitation before the email is sent. The
+                        form the contractor sees is whichever one is currently set up
+                        for the category you choose.
                     </p>
                 </div>
                 {canCreate && (

@@ -513,7 +513,8 @@ const V2ApplicationPage = () => {
                     <h2 className={styles.title}>{submission.companyName || "Application form"}</h2>
                     <p className={styles.subtitle}>
                         Status: <strong>{submission.status}</strong>
-                        {submission.submitted && ` · cycle ${submission.cycleNumber}`}
+                        {submission.submitted && submission.cycleNumber > 1 &&
+                            ` · revision ${submission.cycleNumber}`}
                     </p>
                     {isReturned && (
                         <div className={styles.bannerReturned}>
@@ -526,7 +527,7 @@ const V2ApplicationPage = () => {
                                         onChange={(e) => setHideNonFlaggedFields(e.target.checked)}
                                         style={{ cursor: 'pointer' }}
                                     />
-                                    <span>Hide non-flagged fields (only show fields that need attention)</span>
+                                    <span>Only show the fields the reviewer asked me to change</span>
                                 </label>
                             </div>
                         </div>

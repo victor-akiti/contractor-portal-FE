@@ -465,7 +465,7 @@ const Dashboard = () => {
             if (r?.status === "OK") {
                 setV2UpdateSuccess("Certificate updated. Staff will review the new file.")
             } else {
-                setV2UpdateError(r?.error?.message || "Failed to update certificate.")
+                setV2UpdateError(r?.error?.message || "We couldn't update this certificate. Please try again.")
             }
         } catch (err: any) {
             setV2UpdateError(err?.message || "Unexpected error updating certificate.")
