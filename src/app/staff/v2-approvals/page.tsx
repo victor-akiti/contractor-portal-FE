@@ -774,19 +774,35 @@ const V2ApprovalsPage = () => {
         })
         cols.push({
             key: "updatedAt",
-            label: "Last Update",
-            sortValue: (s) => (s.updatedAt ? new Date(s.updatedAt) : 0),
-            render: (s) => (
-                <span className={styles.dateCell}>
-                    {s.updatedAt
-                        ? new Date(s.updatedAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                        })
-                        : "-"}
-                </span>
-            ),
+            label: "Last activity",
+            // updateTime is the explicit user-action timestamp (set by
+            // contractor saves and staff actions); updatedAt is the
+            // Mongoose-managed field that ALSO ticks on internal saves
+            // (certificate reconciles, soft deactivation, etc.) and so
+            // misreads activity. Prefer updateTime, fall back to
+            // updatedAt only when older rows don't have one.
+            sortValue: (s) => {
+                const t = s.updateTime || (s.updatedAt ? new Date(s.updatedAt).getTime() : 0)
+                return t || 0
+            },
+            render: (s) => {
+                const t = s.updateTime
+                    ? new Date(s.updateTime)
+                    : s.updatedAt
+                      ? new Date(s.updatedAt)
+                      : null
+                return (
+                    <span className={styles.dateCell}>
+                        {t
+                            ? t.toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                              })
+                            : "-"}
+                    </span>
+                )
+            },
         })
         return cols
         // needsAttention is a stable closure over user / submission shape;

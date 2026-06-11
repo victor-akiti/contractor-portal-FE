@@ -997,6 +997,13 @@
   color: #6b3d04;
   font-size: 0.95rem;
 }
+.stageBriefingCtas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    min-width: 180px;
+}
 .stageBriefing p {
   margin: 0;
   color: #523200;
@@ -1061,6 +1068,54 @@
 }
 .serviceRow:hover {
   background: #fff;
+}
+
+/* Hierarchical group when the picker shows Product Categories
+   (Main → Subs). The main row has a tick-all checkbox, a chevron and
+   a count badge; expanding it reveals the indented sub-services. */
+.serviceGroup {
+    border-radius: 6px;
+    margin: 2px 0;
+    background: transparent;
+}
+.serviceGroupHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #ececec;
+}
+.serviceGroupToggle {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #222;
+}
+.serviceGroupChevron {
+    color: #888;
+    width: 12px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+.serviceGroupName {
+    font-weight: 600;
+    flex: 1;
+}
+.serviceGroupBody {
+    padding: 4px 0 6px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 /* ── Bottom decision bar ──────────────────────────────────────────────
