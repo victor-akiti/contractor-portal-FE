@@ -149,7 +149,7 @@ const V2ApplicationPage = () => {
     const [dirtyFields, setDirtyFields] = useState<Set<string>>(new Set())
 
     // Toggle between hiding or just disabling non-flagged fields
-    const [hideNonFlaggedFields, setHideNonFlaggedFields] = useState(false)
+    const [hideNonFlaggedFields, setHideNonFlaggedFields] = useState(true)
 
     const fetchSubmission = async () => {
         try {

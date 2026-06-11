@@ -22,10 +22,38 @@ function unwrap<T>(res: ApiResponse<T>): T {
 }
 
 function periodQS(period: Period, dateRange?: DateRange): string {
-  if (period === 'custom' && dateRange) {
-    return `period=custom&s=${dateRange.start}&e=${dateRange.end}`;
-  }
-  return `period=${period}`;
+  const base =
+    period === 'custom' && dateRange
+      ? `period=custom&s=${dateRange.start}&e=${dateRange.end}`
+      : `period=${period}`;
+  const source = getInsightsSource();
+  // V1 is the current default - omit the param so existing requests stay
+  // bit-for-bit identical when source isn't being changed.
+  return source === 'v1' ? base : `${base}&source=${source}`;
+}
+
+// ── Source toggle ─────────────────────────────────────────────────────────────
+// Insights aggregate over either the V1 stack (Company / EventModel /
+// CertificateModel) or the V2 stack (SubmissionV2 / ApprovalEvent /
+// CertificateV2) or both. Storage lives in localStorage so the toggle
+// survives a refresh, with a fallback to "v1" for clean installs.
+
+export type InsightsSource = 'v1' | 'v2' | 'all';
+const SOURCE_KEY = 'insights.source';
+
+export function getInsightsSource(): InsightsSource {
+  if (typeof window === 'undefined') return 'v1';
+  const raw = window.localStorage.getItem(SOURCE_KEY) as InsightsSource | null;
+  return raw === 'v2' || raw === 'all' ? raw : 'v1';
+}
+
+export function setInsightsSource(source: InsightsSource): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(SOURCE_KEY, source);
+  // Toggling source invalidates every cached pillar - the response shape
+  // can shift counts even when period stays the same.
+  inflightCache.clear();
+  resultCache.clear();
 }
 
 // ── Request cache ─────────────────────────────────────────────────────────────

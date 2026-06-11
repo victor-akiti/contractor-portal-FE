@@ -99,6 +99,11 @@ interface Field {
     // a full audit trail and can flag / return.
     eba?: boolean
 
+    // At most one field per template may carry this flag. When set, the
+    // field's answer drives SubmissionV2.companyName: contractor saves
+    // and accepted EBA edits sync the name + leave an audit entry.
+    isContractorRegisteredName?: boolean
+
     // allowMultiple: vendor can add repeated instances of this field.
     allowMultiple?: boolean
     addFieldText?: string
@@ -216,6 +221,20 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
         const out: string[] = []
         pages.forEach((p) => p.sections.forEach((s) => s.fields.forEach((f) => out.push(f.key))))
         return out
+    }, [pages])
+
+    // Which field (if any) currently owns the "registered name" flag.
+    // At most one across the whole template. The inspector uses this to
+    // disable the toggle on every other field and surface the conflict.
+    const registeredNameOwnerKey = useMemo(() => {
+        for (const p of pages) {
+            for (const s of p.sections) {
+                for (const f of s.fields) {
+                    if (f.isContractorRegisteredName) return f.key
+                }
+            }
+        }
+        return null
     }, [pages])
 
     // ALL keys in the schema (pages + sections + fields). Section keys and
@@ -575,6 +594,7 @@ const FormBuilder = ({ value, onChange, disabled }: Props) => {
                                         ].key,
                                     )}
                                     sectionTitle={pages[selection.pageIdx].sections[selection.secIdx].title}
+                                    registeredNameOwnerKey={registeredNameOwnerKey}
                                     disabled={disabled}
                                     onUpdate={(patch) =>
                                         updateField(
@@ -783,6 +803,11 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                             {field.eba && (
                                                 <span className={`${styles.miniBadge} ${styles.miniBadgeEba}`} title="Editable by Amni (VRM at Stage B, Stage E)">
                                                     EBA
+                                                </span>
+                                            )}
+                                            {field.isContractorRegisteredName && (
+                                                <span className={`${styles.miniBadge} ${styles.miniBadgeRegName}`} title="This field drives the contractor's registered name (company name on the portal)">
+                                                    Registered name
                                                 </span>
                                             )}
                                             {field.visibleIf && (
@@ -1106,6 +1131,7 @@ interface FieldInspectorProps {
     allFieldKeys: string[]
     takenKeys: Set<string>
     sectionTitle: string
+    registeredNameOwnerKey?: string | null
     disabled?: boolean
     onUpdate: (patch: Partial<Field>) => void
     onDelete: () => void
@@ -1115,7 +1141,7 @@ interface FieldInspectorProps {
 
 const FieldInspector = ({
     field, fieldIdx, totalFields, allFieldKeys, takenKeys, sectionTitle,
-    disabled, onUpdate, onDelete, onMove, onUp,
+    registeredNameOwnerKey, disabled, onUpdate, onDelete, onMove, onUp,
 }: FieldInspectorProps) => {
     const [keyEdited, setKeyEdited] = useState(false)
     const keyInvalid = !!field.key && !KEY_RE.test(field.key)
@@ -1350,6 +1376,43 @@ const FieldInspector = ({
                         disabled={disabled}
                     />
                 </FieldBox>
+            )}
+
+            {field.type !== "textBlock" && (
+                <SubBlock
+                    title="Contractor's registered name"
+                    action={
+                        <label className={styles.toggleLabel}>
+                            <input
+                                type="checkbox"
+                                checked={!!field.isContractorRegisteredName}
+                                onChange={(e) =>
+                                    onUpdate({ isContractorRegisteredName: e.target.checked })
+                                }
+                                disabled={
+                                    disabled ||
+                                    (!!registeredNameOwnerKey &&
+                                        registeredNameOwnerKey !== field.key)
+                                }
+                            />
+                            <span>This field IS the registered name</span>
+                        </label>
+                    }
+                >
+                    <p className={styles.dim}>
+                        When set, this field&apos;s value drives the contractor&apos;s
+                        company name across the portal. Contractor saves and accepted
+                        EBA edits sync the name and leave an entry on the History tab.
+                        Only one field per template may carry this flag.
+                    </p>
+                    {!!registeredNameOwnerKey &&
+                        registeredNameOwnerKey !== field.key && (
+                            <p className={styles.dim}>
+                                Currently held by <code>{registeredNameOwnerKey}</code>.
+                                Uncheck it there to move the flag here.
+                            </p>
+                        )}
+                </SubBlock>
             )}
 
             {field.type !== "textBlock" && (

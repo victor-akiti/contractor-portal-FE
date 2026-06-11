@@ -3,7 +3,9 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
+import { deleteProtected } from "@/requests/delete"
 import { getProtected } from "@/requests/get"
+import { patchProtected } from "@/requests/patch"
 import { postProtected } from "@/requests/post"
 import { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
@@ -44,6 +46,85 @@ const FormGroupsPage = () => {
     const [createSuccess, setCreateSuccess] = useState("")
 
     const canCreate = ["Admin", "HOD"].includes(user?.role)
+    // Admin + HOD can also deactivate / reactivate a group.
+    const canManage = ["Admin", "HOD"].includes(user?.role)
+
+    // Deactivation modal state. The impact counts come from a one-shot
+    // call to /api/v2/groups/:id/impact so the actor sees how many live
+    // invites and submissions the dead category leaves stranded before
+    // they confirm. Deactivation is soft - those records keep flowing
+    // through the pipeline; only NEW invites and new group-moves into
+    // this group are blocked.
+    const [deactivatingGroup, setDeactivatingGroup] = useState<Group | null>(null)
+    const [impact, setImpact] = useState<{
+        pendingInvites: number
+        usedInvites: number
+        liveSubmissions: number
+        approvedSubmissions: number
+    } | null>(null)
+    const [impactLoading, setImpactLoading] = useState(false)
+    const [deactivating, setDeactivating] = useState(false)
+    const [deactivateError, setDeactivateError] = useState("")
+    const [reactivatingId, setReactivatingId] = useState<string | null>(null)
+
+    const openDeactivate = async (g: Group) => {
+        setDeactivatingGroup(g)
+        setImpact(null)
+        setDeactivateError("")
+        try {
+            setImpactLoading(true)
+            const r = await getProtected(`api/v2/groups/${g._id}/impact`, user?.role)
+            if (r?.status === "OK") {
+                setImpact(r.data?.impact || null)
+            } else {
+                setDeactivateError(r?.error?.message || "Could not load impact")
+            }
+        } catch (e: any) {
+            setDeactivateError(e?.message || "Could not load impact")
+        } finally {
+            setImpactLoading(false)
+        }
+    }
+
+    const submitDeactivate = async () => {
+        if (!deactivatingGroup) return
+        try {
+            setDeactivating(true)
+            setDeactivateError("")
+            const r = await deleteProtected(
+                `api/v2/groups/${deactivatingGroup._id}`,
+                undefined,
+                user?.role,
+            )
+            if (r?.status === "OK") {
+                await fetchAll()
+                setDeactivatingGroup(null)
+            } else {
+                setDeactivateError(r?.error?.message || "Deactivation failed")
+            }
+        } catch (e: any) {
+            setDeactivateError(e?.message || "Unexpected error")
+        } finally {
+            setDeactivating(false)
+        }
+    }
+
+    const reactivate = async (g: Group) => {
+        try {
+            setReactivatingId(g._id)
+            const r = await patchProtected(
+                `api/v2/groups/${g._id}`,
+                { isActive: true },
+                user?.role,
+            )
+            if (r?.status === "OK") await fetchAll()
+            else setFetchError(r?.error?.message || "Reactivation failed")
+        } catch (e: any) {
+            setFetchError(e?.message || "Reactivation failed")
+        } finally {
+            setReactivatingId(null)
+        }
+    }
 
     const fetchAll = async () => {
         try {
@@ -178,6 +259,7 @@ const FormGroupsPage = () => {
                                 <th>Form Template</th>
                                 <th>Status</th>
                                 <th>Created</th>
+                                {canManage && <th>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -205,11 +287,100 @@ const FormGroupsPage = () => {
                                             ? new Date(g.createdAt).toLocaleDateString("en-NG")
                                             : "-"}
                                     </td>
+                                    {canManage && (
+                                        <td>
+                                            {g.isActive ? (
+                                                <button
+                                                    className={styles.btnLinkDanger}
+                                                    onClick={() => openDeactivate(g)}
+                                                    title="Block new invites against this category. Existing contractors keep flowing."
+                                                >
+                                                    Deactivate
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className={styles.btnLink}
+                                                    onClick={() => reactivate(g)}
+                                                    disabled={reactivatingId === g._id}
+                                                >
+                                                    Reactivate
+                                                    {reactivatingId === g._id && <ButtonLoadingIcon />}
+                                                </button>
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+            )}
+
+            {deactivatingGroup && (
+                <Modal>
+                    <div className={styles.modalCard}>
+                        <div className={styles.modalHeader}>
+                            <h3>Deactivate &ldquo;{deactivatingGroup.name}&rdquo;?</h3>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <p>
+                                New invites and group-moves into this category will be
+                                blocked immediately. Existing contractors stay where they
+                                are and keep moving through the pipeline on the form
+                                version they were stamped with.
+                            </p>
+                            {impactLoading && (
+                                <p className={styles.helpText}>Counting affected contractors…</p>
+                            )}
+                            {impact && (
+                                <div className={styles.impactBox}>
+                                    <p className={styles.helpText}>
+                                        Currently on this category:
+                                    </p>
+                                    <ul>
+                                        <li>
+                                            <strong>{impact.pendingInvites}</strong> pending invite
+                                            {impact.pendingInvites === 1 ? "" : "s"} (awaiting review or unredeemed)
+                                        </li>
+                                        <li>
+                                            <strong>{impact.liveSubmissions}</strong> live submission
+                                            {impact.liveSubmissions === 1 ? "" : "s"} (still in the pipeline)
+                                        </li>
+                                        <li>
+                                            <strong>{impact.approvedSubmissions}</strong> approved contractor
+                                            {impact.approvedSubmissions === 1 ? "" : "s"}
+                                        </li>
+                                    </ul>
+                                    <p className={styles.helpText}>
+                                        None of these are touched by deactivation - the category
+                                        just disappears from the &ldquo;new invite&rdquo; picker.
+                                        You can reactivate any time.
+                                    </p>
+                                </div>
+                            )}
+                            {deactivateError && (
+                                <div className={styles.modalError}><ErrorText text={deactivateError} /></div>
+                            )}
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.btnSecondary}
+                                onClick={() => setDeactivatingGroup(null)}
+                                disabled={deactivating}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className={styles.btnDanger}
+                                onClick={submitDeactivate}
+                                disabled={deactivating || impactLoading}
+                            >
+                                Deactivate group
+                                {deactivating && <ButtonLoadingIcon />}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             )}
 
             {showCreate && (

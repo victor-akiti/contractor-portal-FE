@@ -4,7 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
 import type { Period, DateRange } from './types';
-import { prefetchAll } from './api';
+import { prefetchAll, getInsightsSource, setInsightsSource } from './api';
+import type { InsightsSource } from './api';
 
 // Lazy-load heavy tab components
 const OverviewTab     = dynamic(() => import('./components/OverviewTab'),     { ssr: false });
@@ -68,6 +69,16 @@ function InsightsPageInner() {
   });
   const [period, setPeriod]       = useState<Period>('30d');
   const [dateRange, setDateRange] = useState<DateRange>({ start: '', end: '' });
+  // Source toggle - V1 (Company/EventModel/CertificateModel),
+  // V2 (SubmissionV2/ApprovalEvent/CertificateV2), or Both. Persisted in
+  // localStorage via the api module so a refresh keeps the view.
+  const [source, setSource] = useState<InsightsSource>('v1');
+  useEffect(() => { setSource(getInsightsSource()); }, []);
+  const handleSourceClick = (s: InsightsSource) => {
+    setInsightsSource(s);
+    setSource(s);
+    prefetchAll(period, effectiveDateRange);
+  };
 
   const visibleTabs = useMemo(
     () => ALL_TABS.filter(t => !t.requiredRoles || t.requiredRoles.includes(role)),
@@ -187,6 +198,52 @@ function InsightsPageInner() {
             )}
           </span>
         )}
+      </div>
+
+      {/* ── Source toggle ──
+          V1 / V2 / Both. Pipeline, Certificates and the Overview KPIs
+          honour this; Performance, Trends and Export remain V1-only
+          for now. */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        flexWrap: 'wrap',
+        padding: '0.5rem 1rem',
+        background: '#f0f9ff',
+        border: '1px solid #bae6fd',
+        borderRadius: '0.5rem',
+        marginBottom: '1.25rem',
+      }}>
+        <span style={{ fontSize: '0.8rem', color: '#0369a1', fontWeight: 600, whiteSpace: 'nowrap' }}>
+          DATA SOURCE:
+        </span>
+        {(['v1', 'v2', 'all'] as InsightsSource[]).map(s => (
+          <button
+            key={s}
+            onClick={() => handleSourceClick(s)}
+            style={{
+              padding: '0.25rem 0.75rem',
+              border: `1px solid ${source === s ? '#0369a1' : '#d1d5db'}`,
+              borderRadius: '9999px',
+              background: source === s ? '#0369a1' : '#fff',
+              color: source === s ? '#fff' : '#374151',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              fontWeight: source === s ? 600 : 400,
+              transition: 'all 0.15s',
+            }}
+          >
+            {s === 'v1' ? 'Legacy (V1)' : s === 'v2' ? 'Form System (V2)' : 'Both'}
+          </button>
+        ))}
+        <span style={{ fontSize: '0.75rem', color: '#0369a1', marginLeft: '0.5rem' }}>
+          {source === 'v2'
+            ? 'Pipeline, Overview KPIs and Certificates from the V2 form system. Performance, Trends and Export are V1-only.'
+            : source === 'all'
+              ? 'Counts blended across both systems where it makes sense; dwell-time and bottleneck stay on V1.'
+              : 'Legacy V1 view - the original Company / Event Log / Certificate aggregates.'}
+        </span>
       </div>
 
       {/* ── Tab bar ── */}

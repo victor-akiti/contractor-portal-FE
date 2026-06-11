@@ -3,12 +3,29 @@ import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
 import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
-import { getProtected } from "@/requests/get"
-import { patchProtected } from "@/requests/patch"
-import { postProtected } from "@/requests/post"
+import {
+    useCreateV2InviteMutation,
+    useGetStaffAllQuery,
+    useGetV2GroupsQuery,
+    useGetV2InvitesQuery,
+    useLazyFindV2InviteByEmailQuery,
+    useLazyFindV2SimilarCompaniesQuery,
+    usePrefetch,
+    useResubmitV2InviteMutation,
+    useV2InviteActionMutation,
+} from "@/redux/features/v2Slice"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 import styles from "./styles/styles.module.css"
+
+// Convert an RTK Query mutation result {data?, error?} into the
+// {status, data, error} envelope the rest of the component already
+// understands. transformErrorResponse on the slice shapes the error
+// branch so this is a 1-liner.
+const envelopeOf = (r: any): any =>
+    r?.data ||
+    r?.error ||
+    { status: "FAILED", error: { message: "Request failed" } }
 
 // V2 Invites - parallel invite surface (InviteV2).
 //
@@ -78,10 +95,23 @@ const DEPARTMENTS = [
     "Operations",
 ]
 
+// Staff autocomplete row (used for the Recommended By field).
+type StaffMember = {
+    _id: string
+    name: string
+    email: string
+    department?: string
+    uid: string
+}
+
+// The two-step Supervisor -> HOD approval was collapsed into one.
+// "pending_hod" is kept off the visible tab strip but stays in the
+// ApprovalStatus type so legacy invites that landed in that state before
+// the change still show up under the "All" tab and can be approved /
+// rejected by Supervisor or HOD.
 const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
-    { key: "pending_supervisor", label: "Pending Supervisor" },
+    { key: "pending_supervisor", label: "Pending review" },
     { key: "returned_to_originator", label: "Returned to originator" },
-    { key: "pending_hod", label: "Pending HOD" },
     { key: "approved", label: "Approved" },
     { key: "used", label: "Used" },
     { key: "rejected", label: "Rejected" },
@@ -93,11 +123,35 @@ const STATUS_TABS: { key: ApprovalStatus | "all"; label: string }[] = [
 const V2InvitesPage = () => {
     const user = useSelector((state: any) => state.user.user)
 
-    const [activeTab, setActiveTab] = useState<ApprovalStatus | "all">(user?.role === "HOD" ? "pending_hod" : user.role === "Supervisor" ? "pending_supervisor" : user.role === "Admin" ? "approved" : "all")
-    const [invites, setInvites] = useState<InviteV2[]>([])
-    const [groups, setGroups] = useState<Group[]>([])
-    const [loading, setLoading] = useState(true)
-    const [fetchError, setFetchError] = useState("")
+    const [activeTab, setActiveTab] = useState<ApprovalStatus | "all">(
+        ["HOD", "Supervisor"].includes(user?.role)
+            ? "pending_supervisor"
+            : user.role === "Admin"
+                ? "approved"
+                : "all",
+    )
+    // RTK Query: the invite list / groups / staff directory share one
+    // staffApi cache so navigating away and back is instant. Tag-based
+    // invalidation (V2InviteList) fires from every mutation below so
+    // the queue always reflects the latest state without a manual
+    // refetch.
+    const invitesQ = useGetV2InvitesQuery(
+        { status: activeTab === "all" ? undefined : activeTab },
+        { skip: !user?.role },
+    )
+    const groupsQ = useGetV2GroupsQuery(undefined, { skip: !user?.role })
+    const staffQ = useGetStaffAllQuery(undefined, { skip: !user?.role })
+    const invites: InviteV2[] = invitesQ.currentData?.data?.invites || []
+    const groups: Group[] = groupsQ.currentData?.data?.groups || []
+    const allStaff: StaffMember[] = staffQ.currentData?.data || []
+    const loading = invitesQ.isLoading || (invitesQ.isFetching && !invitesQ.currentData)
+    const loadingStaff = staffQ.isLoading || (staffQ.isFetching && !staffQ.currentData)
+    const fetchError =
+        (invitesQ.error as any)?.error?.message ||
+        (typeof (invitesQ.error as any) === "string" ? (invitesQ.error as any) : "") ||
+        (invitesQ.currentData?.status === "Failed"
+            ? invitesQ.currentData?.error?.message
+            : "")
 
     // Create modal
     const [showCreate, setShowCreate] = useState(false)
@@ -135,18 +189,10 @@ const V2InvitesPage = () => {
     const [emailMatch, setEmailMatch] = useState<SimilarMatch | null>(null)
     const [emailChecking, setEmailChecking] = useState(false)
 
-    // Staff autocomplete for the Recommended By field (V1 parity).
-    type StaffMember = {
-        _id: string
-        name: string
-        email: string
-        department?: string
-        uid: string
-    }
-    const [allStaff, setAllStaff] = useState<StaffMember[]>([])
+    // allStaff is provided by useGetStaffAllQuery higher up; filteredStaff
+    // is the locally-narrowed list rendered in the autocomplete dropdown.
     const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([])
     const [showStaffDropdown, setShowStaffDropdown] = useState(false)
-    const [loadingStaff, setLoadingStaff] = useState(false)
     const staffDropdownRef = useRef<HTMLDivElement | null>(null)
 
     // An EXACT name match (case-insensitive, whitespace-collapsed) cannot
@@ -174,69 +220,49 @@ const V2InvitesPage = () => {
     const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null)
     const [copied, setCopied] = useState<string | null>(null)
 
-    // Per the C&P / Amni access policy, only PRIMARY USERS
-    // (Admin > HOD > Supervisor > VRM) can create / resend / resubmit
-    // invites. C&P Staff and Amni Staff retain full view but no write.
-    const canCreate = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
-    // Supervisor + HOD share invite-review responsibilities per the C&P ticket.
+    // Invite-raising is open to the full C&P / Amni surface so any staff
+    // member fielding a new contractor request can raise an invite. The
+    // approval still belongs to Supervisor / HOD downstream.
+    const INVITE_AUTHORIZED_ROLES = [
+        "Admin",
+        "HOD",
+        "Supervisor",
+        "VRM",
+        "C and P Staff",
+        "C&P Admin",
+        "Amni Staff",
+        "Insurance Officer",
+    ]
+    const canCreate = INVITE_AUTHORIZED_ROLES.includes(user?.role)
+    // Supervisor + HOD gate the actual review (approve / return / reject).
     const canReview = ["Admin", "HOD", "Supervisor"].includes(user?.role)
-    const canResend = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
+    const canResend = INVITE_AUTHORIZED_ROLES.includes(user?.role)
     const canVoid = ["Admin", "HOD", "Supervisor"].includes(user?.role)
-    const canResubmit = ["Admin", "HOD", "Supervisor", "VRM"].includes(user?.role)
+    const canResubmit = INVITE_AUTHORIZED_ROLES.includes(user?.role)
 
-    const fetchInvites = async (tab: ApprovalStatus | "all") => {
-        try {
-            setLoading(true)
-            setFetchError("")
-            const qs = tab === "all" ? "" : `?status=${tab}`
-            const result = await getProtected(`api/v2/invites${qs}`, user?.role)
-            if (result?.status === "OK") {
-                setInvites(result.data?.invites || [])
-            } else {
-                setFetchError(result?.error?.message || "Failed to load invites")
-            }
-        } catch (e: any) {
-            setFetchError(e?.message || "Failed to load")
-        } finally {
-            setLoading(false)
-        }
-    }
+    // RTK Query mutations - the cache invalidation tags wired on the
+    // slice (V2InviteList, V2Counts) refetch the queue automatically
+    // after every successful action, so no manual fetchInvites() is
+    // required at call sites.
+    const [createInviteTrigger] = useCreateV2InviteMutation()
+    const [inviteActionTrigger] = useV2InviteActionMutation()
+    const [resubmitInviteTrigger] = useResubmitV2InviteMutation()
+    const [triggerSimilar] = useLazyFindV2SimilarCompaniesQuery()
+    const [triggerFindByEmail] = useLazyFindV2InviteByEmailQuery()
 
-    const fetchGroups = async () => {
-        try {
-            const result = await getProtected("api/v2/groups", user?.role)
-            if (result?.status === "OK") setGroups(result.data?.groups || [])
-        } catch {
-            // non-fatal - create modal will surface the empty state
-        }
-    }
-
+    // V1-parity background prefetch: as soon as we have a role, warm
+    // every STATUS_TABS slot so a tab click is an instant cache hit.
+    // Re-runs whenever the active tab's payload arrives (which also
+    // happens after every mutation invalidates V2InviteList), so the
+    // background tabs stay fresh in sync with the active one.
+    const prefetchInvites = usePrefetch<"getV2Invites">("getV2Invites")
     useEffect(() => {
-        if (user?.role) {
-            fetchInvites(activeTab)
-            fetchGroups()
+        if (!user?.role) return
+        for (const t of STATUS_TABS) {
+            const arg = t.key === "all" ? {} : { status: t.key as string }
+            prefetchInvites(arg, { force: false })
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role, activeTab])
-
-    const fetchAllStaff = async () => {
-        try {
-            setLoadingStaff(true)
-            const result = await getProtected("users/staff/all", user?.role)
-            if (result?.status === "OK") {
-                setAllStaff(result.data || [])
-            }
-        } catch {
-            // non-fatal - field still works as a free-text name input
-        } finally {
-            setLoadingStaff(false)
-        }
-    }
-
-    useEffect(() => {
-        if (user?.role) fetchAllStaff()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.role])
+    }, [user?.role, invitesQ.currentData, prefetchInvites])
 
     // Close the staff autocomplete when the user clicks anywhere outside it.
     useEffect(() => {
@@ -323,12 +349,13 @@ const V2InvitesPage = () => {
         }
         setEmailChecking(true)
         try {
-            const result = await getProtected(
-                `api/v2/invites/find-by-email?email=${encodeURIComponent(e)}`,
-                user?.role,
-            )
-            if (result?.status === "OK") {
-                setEmailMatch(result.data?.match || null)
+            // triggerFindByEmail returns a promise that resolves to the
+            // RTK Query result; preferCacheValue=true means a still-warm
+            // cache hit returns instantly with no network round-trip.
+            const r = await triggerFindByEmail(e, true)
+            const env = r?.data
+            if (env?.status === "OK") {
+                setEmailMatch(env.data?.match || null)
             } else {
                 setEmailMatch(null)
             }
@@ -358,13 +385,14 @@ const V2InvitesPage = () => {
         const mySeq = ++similarSeq.current
         similarTimer.current = setTimeout(async () => {
             try {
-                const result = await getProtected(
-                    `api/v2/invites/find-similar?q=${encodeURIComponent(trimmed)}`,
-                    user?.role,
-                )
+                // Same shape as the legacy getProtected call - preferCache
+                // means a repeated lookup on the same trimmed query
+                // resolves instantly from the RTK cache.
+                const r = await triggerSimilar(trimmed, true)
                 if (mySeq !== similarSeq.current) return
-                if (result?.status === "OK") {
-                    setSimilarMatches(result.data?.matches || [])
+                const env = r?.data
+                if (env?.status === "OK") {
+                    setSimilarMatches(env.data?.matches || [])
                 } else {
                     setSimilarMatches([])
                 }
@@ -411,10 +439,11 @@ const V2InvitesPage = () => {
             // BE's similar-name gate. The BE also re-runs the check as a
             // safety net.
             payload.acknowledgeSimilar = true
-            const result = await postProtected("api/v2/invites", payload, user?.role)
+            const result = envelopeOf(await createInviteTrigger(payload))
             if (result?.status === "OK") {
-                setCreateSuccess(`Invite created for ${cEmail.trim()} - waiting for HOD approval.`)
-                await fetchInvites(activeTab)
+                setCreateSuccess(`Invite created for ${cEmail.trim()} - waiting for Supervisor / HOD review.`)
+                // V2InviteList tag invalidation triggers an automatic
+                // refetch - no manual fetchInvites here.
                 setTimeout(() => setShowCreate(false), 900)
             } else {
                 setCreateError(result?.error?.message || "Create failed")
@@ -430,10 +459,8 @@ const V2InvitesPage = () => {
         try {
             setActingId(id)
             setRowError(null)
-            const result = await postProtected(`api/v2/invites/${id}/approve`, {}, user?.role)
-            if (result?.status === "OK") {
-                await fetchInvites(activeTab)
-            } else {
+            const result = envelopeOf(await inviteActionTrigger({ id, action: "approve" }))
+            if (result?.status !== "OK") {
                 setRowError({ id, message: result?.error?.message || "Approve failed" })
             }
         } catch (e: any) {
@@ -447,14 +474,10 @@ const V2InvitesPage = () => {
         try {
             setActingId(id)
             setRowError(null)
-            const result = await postProtected(
-                `api/v2/invites/${id}/supervisor-approve`,
-                {},
-                user?.role,
+            const result = envelopeOf(
+                await inviteActionTrigger({ id, action: "supervisor-approve" }),
             )
-            if (result?.status === "OK") {
-                await fetchInvites(activeTab)
-            } else {
+            if (result?.status !== "OK") {
                 setRowError({ id, message: result?.error?.message || "Supervisor approve failed" })
             }
         } catch (e: any) {
@@ -486,15 +509,16 @@ const V2InvitesPage = () => {
         }
         try {
             setActingId(returningId)
-            const result = await postProtected(
-                `api/v2/invites/${returningId}/supervisor-return`,
-                { reason: returnReason.trim() },
-                user?.role,
+            const result = envelopeOf(
+                await inviteActionTrigger({
+                    id: returningId,
+                    action: "supervisor-return",
+                    body: { reason: returnReason.trim() },
+                }),
             )
             if (result?.status === "OK") {
                 setReturningId(null)
                 setReturnReason("")
-                await fetchInvites(activeTab)
             } else {
                 setRowError({
                     id: returningId,
@@ -524,15 +548,16 @@ const V2InvitesPage = () => {
         }
         try {
             setActingId(voidingId)
-            const result = await postProtected(
-                `api/v2/invites/${voidingId}/void`,
-                { reason: voidReason.trim() },
-                user?.role,
+            const result = envelopeOf(
+                await inviteActionTrigger({
+                    id: voidingId,
+                    action: "void",
+                    body: { reason: voidReason.trim() },
+                }),
             )
             if (result?.status === "OK") {
                 setVoidingId(null)
                 setVoidReason("")
-                await fetchInvites(activeTab)
             } else {
                 setRowError({ id: voidingId, message: result?.error?.message || "Void failed" })
             }
@@ -543,11 +568,17 @@ const V2InvitesPage = () => {
         }
     }
 
-    // Originator resubmit modal state - for the simplest case we let them
-    // change the category (groupId) inline. Other fields can be edited via a
-    // dedicated edit page later.
+    // Originator resubmit modal state. After a Supervisor return the
+    // originator can correct ANY field on the invite (name, email, phone,
+    // company, category) and resubmit for re-review. BE patches whichever
+    // fields land in the body; we send everything the modal exposes.
     const [resubmittingId, setResubmittingId] = useState<string | null>(null)
     const [resubmitGroupId, setResubmitGroupId] = useState("")
+    const [resubmitFname, setResubmitFname] = useState("")
+    const [resubmitLname, setResubmitLname] = useState("")
+    const [resubmitEmail, setResubmitEmail] = useState("")
+    const [resubmitPhone, setResubmitPhone] = useState("")
+    const [resubmitCompanyName, setResubmitCompanyName] = useState("")
     const openResubmit = (inv: InviteV2) => {
         setResubmittingId(inv._id)
         setResubmitGroupId(
@@ -555,6 +586,15 @@ const V2InvitesPage = () => {
                 ? inv.groupId
                 : (inv.groupId as Group)?._id || "",
         )
+        setResubmitFname(inv.fname || "")
+        setResubmitLname(inv.lname || "")
+        setResubmitEmail(inv.email || "")
+        setResubmitPhone(
+            typeof (inv as any).phone === "object"
+                ? (inv as any).phone?.number || ""
+                : (inv as any).phone || "",
+        )
+        setResubmitCompanyName(inv.companyName || "")
         setRowError(null)
     }
     const submitResubmit = async () => {
@@ -563,16 +603,31 @@ const V2InvitesPage = () => {
             setRowError({ id: resubmittingId, message: "Pick a category." })
             return
         }
+        if (!resubmitFname.trim() || !resubmitLname.trim() || !resubmitEmail.trim() || !resubmitCompanyName.trim()) {
+            setRowError({
+                id: resubmittingId,
+                message: "First name, last name, email and company name are required.",
+            })
+            return
+        }
         try {
             setActingId(resubmittingId)
-            const result = await patchProtected(
-                `api/v2/invites/${resubmittingId}/resubmit`,
-                { groupId: resubmitGroupId },
-                user?.role,
+            const body: Record<string, any> = {
+                groupId: resubmitGroupId,
+                fname: resubmitFname.trim(),
+                lname: resubmitLname.trim(),
+                email: resubmitEmail.trim().toLowerCase(),
+                companyName: resubmitCompanyName.trim(),
+            }
+            if (resubmitPhone.trim()) body.phone = { number: resubmitPhone.trim() }
+            const result = envelopeOf(
+                await resubmitInviteTrigger({
+                    id: resubmittingId,
+                    body,
+                }),
             )
             if (result?.status === "OK") {
                 setResubmittingId(null)
-                await fetchInvites(activeTab)
             } else {
                 setRowError({
                     id: resubmittingId,
@@ -594,15 +649,16 @@ const V2InvitesPage = () => {
         }
         try {
             setActingId(rejectingId)
-            const result = await postProtected(
-                `api/v2/invites/${rejectingId}/reject`,
-                { reason: rejectReason.trim() },
-                user?.role,
+            const result = envelopeOf(
+                await inviteActionTrigger({
+                    id: rejectingId,
+                    action: "reject",
+                    body: { reason: rejectReason.trim() },
+                }),
             )
             if (result?.status === "OK") {
                 setRejectingId(null)
                 setRejectReason("")
-                await fetchInvites(activeTab)
             } else {
                 setRowError({ id: rejectingId, message: result?.error?.message || "Reject failed" })
             }
@@ -617,7 +673,9 @@ const V2InvitesPage = () => {
         try {
             setActingId(id)
             setRowError(null)
-            const result = await postProtected(`api/v2/invites/${id}/resend`, {}, user?.role)
+            const result = envelopeOf(
+                await inviteActionTrigger({ id, action: "resend" }),
+            )
             if (result?.status !== "OK") {
                 setRowError({ id, message: result?.error?.message || "Resend failed" })
             }
@@ -659,8 +717,9 @@ const V2InvitesPage = () => {
                     <h2 className={styles.pageTitle}>V2 Invites</h2>
                     <p className={styles.pageSubtitle}>
                         Parallel invite surface. Staff create invites against a contractor
-                        group; the HOD approves before the email goes out. The form attached
-                        to the invite is determined by the group's current published template.
+                        group; the Supervisor (or HOD) approves before the email goes out.
+                        The form attached to the invite is determined by the group's current
+                        published template.
                     </p>
                 </div>
                 {canCreate && (
@@ -692,7 +751,7 @@ const V2InvitesPage = () => {
             {!loading && fetchError && (
                 <div className={styles.errorBanner}>
                     <ErrorText text={fetchError} />
-                    <button className={styles.btnLink} onClick={() => fetchInvites(activeTab)}>Retry</button>
+                    <button className={styles.btnLink} onClick={() => invitesQ.refetch()}>Retry</button>
                 </div>
             )}
 
@@ -700,8 +759,8 @@ const V2InvitesPage = () => {
                 <div className={styles.emptyState}>
                     <h4>No invites in this view</h4>
                     <p>
-                        {activeTab === "pending_hod"
-                            ? "No invites are currently awaiting HOD approval."
+                        {activeTab === "pending_supervisor"
+                            ? "No invites are currently awaiting review."
                             : `No invites here.`}
                     </p>
                 </div>
@@ -743,14 +802,16 @@ const V2InvitesPage = () => {
                                     </td>
                                     <td className={styles.actionCol}>
                                         <div className={styles.actionsRow}>
-                                            {inv.approvalStatus === "pending_supervisor" && canReview && (
+                                            {(inv.approvalStatus === "pending_supervisor" ||
+                                                inv.approvalStatus === "pending_hod") &&
+                                                canReview && (
                                                 <>
                                                     <button
                                                         className={styles.btnApprove}
                                                         disabled={actingId === inv._id}
                                                         onClick={() => supervisorApprove(inv._id)}
                                                     >
-                                                        Approve category
+                                                        Approve & send
                                                         {actingId === inv._id && <ButtonLoadingIcon />}
                                                     </button>
                                                     <button
@@ -789,25 +850,6 @@ const V2InvitesPage = () => {
                                                 </>
                                             )}
 
-                                            {inv.approvalStatus === "pending_hod" && canReview && (
-                                                <>
-                                                    <button
-                                                        className={styles.btnApprove}
-                                                        disabled={actingId === inv._id}
-                                                        onClick={() => approve(inv._id)}
-                                                    >
-                                                        Approve
-                                                        {actingId === inv._id && <ButtonLoadingIcon />}
-                                                    </button>
-                                                    <button
-                                                        className={styles.btnReject}
-                                                        disabled={actingId === inv._id}
-                                                        onClick={() => openReject(inv._id)}
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </>
-                                            )}
                                             {(inv.approvalStatus === "approved" || inv.approvalStatus === "used") && (
                                                 <>
                                                     <button
@@ -938,7 +980,7 @@ const V2InvitesPage = () => {
                                         )}
                                         <p className={styles.helpText}>
                                             The form attached to the invite is the group's current published template version,
-                                            stamped at the moment HOD approves.
+                                            stamped at the moment the Supervisor / HOD approves.
                                         </p>
                                     </div>
 
@@ -1261,9 +1303,50 @@ const V2InvitesPage = () => {
                         </div>
                         <div className={styles.modalBody}>
                             <p className={styles.helpText}>
-                                Pick the corrected category and resubmit for Supervisor
-                                review.
+                                Correct anything the reviewer flagged and resubmit
+                                for Supervisor / HOD review.
                             </p>
+                            <div className={styles.formRow}>
+                                <label>First name <span className={styles.required}>*</span></label>
+                                <input
+                                    value={resubmitFname}
+                                    onChange={(e) => setResubmitFname(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Last name <span className={styles.required}>*</span></label>
+                                <input
+                                    value={resubmitLname}
+                                    onChange={(e) => setResubmitLname(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Email <span className={styles.required}>*</span></label>
+                                <input
+                                    type="email"
+                                    value={resubmitEmail}
+                                    onChange={(e) => setResubmitEmail(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Phone</label>
+                                <input
+                                    value={resubmitPhone}
+                                    onChange={(e) => setResubmitPhone(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
+                            <div className={styles.formRow}>
+                                <label>Company name <span className={styles.required}>*</span></label>
+                                <input
+                                    value={resubmitCompanyName}
+                                    onChange={(e) => setResubmitCompanyName(e.target.value)}
+                                    disabled={actingId === resubmittingId}
+                                />
+                            </div>
                             <div className={styles.formRow}>
                                 <label>Category <span className={styles.required}>*</span></label>
                                 {groups.length === 0 ? (
