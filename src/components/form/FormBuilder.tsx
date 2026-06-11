@@ -806,7 +806,7 @@ const PageCanvas = ({ page, pageIdx, selection, onSelect, onAddSection, onAddFie
                                                 </span>
                                             )}
                                             {field.isContractorRegisteredName && (
-                                                <span className={`${styles.miniBadge} ${styles.miniBadgeRegName}`} title="This field drives the contractor's registered name (company name on the portal)">
+                                                <span className={`${styles.miniBadge} ${styles.miniBadgeRegName}`} title="The value typed into this field becomes the contractor's official company name on the portal.">
                                                     Registered name
                                                 </span>
                                             )}
@@ -1395,21 +1395,23 @@ const FieldInspector = ({
                                         registeredNameOwnerKey !== field.key)
                                 }
                             />
-                            <span>This field IS the registered name</span>
+                            <span>Use this field as the registered name</span>
                         </label>
                     }
                 >
                     <p className={styles.dim}>
-                        When set, this field&apos;s value drives the contractor&apos;s
-                        company name across the portal. Contractor saves and accepted
-                        EBA edits sync the name and leave an entry on the History tab.
-                        Only one field per template may carry this flag.
+                        When this is on, whatever the contractor types into this
+                        field becomes their official company name across the
+                        portal. The name is also updated automatically when an
+                        approved Editable-by-Amni edit changes it, and every
+                        change is logged on the History tab. Only one field on
+                        the form can be the registered name.
                     </p>
                     {!!registeredNameOwnerKey &&
                         registeredNameOwnerKey !== field.key && (
                             <p className={styles.dim}>
-                                Currently held by <code>{registeredNameOwnerKey}</code>.
-                                Uncheck it there to move the flag here.
+                                Currently set on <code>{registeredNameOwnerKey}</code>.
+                                Switch it off there first to move it here.
                             </p>
                         )}
                 </SubBlock>
