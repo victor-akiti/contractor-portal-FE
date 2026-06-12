@@ -15,9 +15,9 @@
 // Props are kept narrow on purpose. The host page (v2-approvals/[id]) owns
 // the data + the modals; this component only renders and emits events.
 
-import { useMemo, useState } from "react"
-import { FieldEditRow } from "@/components/form/FormRenderer"
 import { FileFieldValue } from "@/components/form/FileFieldUploader"
+import { FieldEditRow } from "@/components/form/FormRenderer"
+import { useMemo, useState } from "react"
 import styles from "./ApprovalReviewView.module.css"
 
 interface SchemaField {
@@ -230,7 +230,7 @@ const ApprovalReviewView = ({
         const out: Record<string, ReviewRemark[]> = {}
         for (const r of remarks) {
             const k = r.fieldKey ? `${r.sectionKey}::${r.fieldKey}` : `${r.sectionKey}::*`
-            ;(out[k] = out[k] || []).push(r)
+                ; (out[k] = out[k] || []).push(r)
         }
         return out
     }, [remarks])
@@ -241,7 +241,7 @@ const ApprovalReviewView = ({
             const sec = c.anchor?.sectionKey || "*"
             const fk = c.anchor?.fieldKey
             const k = fk ? `${sec}::${fk}` : `${sec}::*`
-            ;(out[k] = out[k] || []).push(c)
+                ; (out[k] = out[k] || []).push(c)
         }
         return out
     }, [comments])
@@ -275,15 +275,14 @@ const ApprovalReviewView = ({
         const disabled = !canApproveSections || !onToggleSectionApproved
         return (
             <label
-                className={`${styles.sectionCheck} ${checked ? styles.sectionCheckOn : ""} ${
-                    disabled ? styles.sectionCheckDisabled : ""
-                }`}
+                className={`${styles.sectionCheck} ${checked ? styles.sectionCheckOn : ""} ${disabled ? styles.sectionCheckDisabled : ""
+                    }`}
                 title={
                     disabled
                         ? "Read-only - you can't tick sections at this stage"
                         : checked
-                          ? "Untick to mark this section as not yet reviewed"
-                          : "Tick once you've reviewed this section"
+                            ? "Untick to mark this section as not yet reviewed"
+                            : "Tick once you've reviewed this section"
                 }
             >
                 <input
@@ -372,16 +371,14 @@ const ApprovalReviewView = ({
                     <div className={styles.fieldActions}>
                         {edit && isFocusStage && (
                             <span
-                                className={`${styles.editBadge} ${
-                                    edit.status === "flagged"
+                                className={`${styles.editBadge} ${edit.status === "flagged"
                                         ? styles.editBadgeFlagged
                                         : edit.status === "accepted"
-                                          ? styles.editBadgeAccepted
-                                          : styles.editBadgeActive
-                                }`}
-                                title={`Edited at Stage ${edit.editedAtStage} by ${
-                                    edit.editedBy?.name || "staff"
-                                }`}
+                                            ? styles.editBadgeAccepted
+                                            : styles.editBadgeActive
+                                    }`}
+                                title={`Edited at Stage ${edit.editedAtStage} by ${edit.editedBy?.name || "staff"
+                                    }`}
                             >
                                 EBA {edit.status}
                             </span>
@@ -413,7 +410,7 @@ const ApprovalReviewView = ({
                     </div>
                 </div>
 
-                {isOpen && isFocusStage && (
+                {isOpen && (
                     <div className={styles.notesPanel}>
                         <div className={styles.notesCol}>
                             <div className={styles.notesColHead}>
@@ -587,9 +584,9 @@ const ApprovalReviewView = ({
                                                     <div className={styles.sectionInstanceHead}>
                                                         {section.addedSectionLabel
                                                             ? section.addedSectionLabel.replace(
-                                                                  "{n}",
-                                                                  String(idx + 1),
-                                                              )
+                                                                "{n}",
+                                                                String(idx + 1),
+                                                            )
                                                             : `${section.title} #${idx + 1}`}
                                                     </div>
                                                     {renderSectionBody(
