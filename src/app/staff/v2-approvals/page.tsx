@@ -69,6 +69,10 @@ interface SubmissionV2Row {
     returnTime?: number
     createdAt?: string
     updatedAt?: string
+    // Server-computed: the most recent real activity timestamp, after
+    // filtering out system-driven syncs like the registered-name
+    // publish migration that touch every submission at once.
+    lastActivityAt?: number | null
     hold?: {
         reason?: string
         requestedBy?: { name?: string; email?: string; date?: string }
@@ -775,22 +779,22 @@ const V2ApprovalsPage = () => {
         cols.push({
             key: "updatedAt",
             label: "Last activity",
-            // updateTime is the explicit user-action timestamp (set by
-            // contractor saves and staff actions); updatedAt is the
-            // Mongoose-managed field that ALSO ticks on internal saves
-            // (certificate reconciles, soft deactivation, etc.) and so
-            // misreads activity. Prefer updateTime, fall back to
-            // updatedAt only when older rows don't have one.
+            // Prefer lastActivityAt (computed server-side from
+            // approvalHistory, with system-driven syncs filtered out),
+            // then updateTime, then updatedAt as the legacy fallback.
             sortValue: (s) => {
-                const t = s.updateTime || (s.updatedAt ? new Date(s.updatedAt).getTime() : 0)
+                const t =
+                    s.lastActivityAt ||
+                    s.updateTime ||
+                    (s.updatedAt ? new Date(s.updatedAt).getTime() : 0)
                 return t || 0
             },
             render: (s) => {
-                const t = s.updateTime
-                    ? new Date(s.updateTime)
-                    : s.updatedAt
-                      ? new Date(s.updatedAt)
-                      : null
+                const raw =
+                    s.lastActivityAt ||
+                    s.updateTime ||
+                    (s.updatedAt ? new Date(s.updatedAt).getTime() : null)
+                const t = raw ? new Date(raw) : null
                 return (
                     <span className={styles.dateCell}>
                         {t
