@@ -178,6 +178,38 @@
   margin-bottom: 16px;
 }
 
+/* Search bar above the invites table. Keeps the input, a Clear button
+   and the result count on one row so the user sees both the filter and
+   what it produced at a glance. */
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  background: white;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+}
+.searchInput {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  background: #fafafa;
+}
+.searchInput:focus {
+  outline: none;
+  border-color: #f47c20;
+  background: white;
+}
+.searchCount {
+  font-size: 0.85rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
 .tableWrap {
   background: white;
   border: 1px solid #ececec;

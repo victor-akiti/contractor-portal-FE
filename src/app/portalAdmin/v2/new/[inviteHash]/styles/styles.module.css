@@ -34,40 +34,52 @@
 
 /* ============================================
    ACCEPT-TERMS CHECKBOX
-   ============================================ */
+   ============================================
+   The blanket `.register > div input` rule below forces every input in
+   the form to display: block + width: 100%. That works for the text
+   fields but makes the consent checkbox render as a full-width square
+   stacked above its label - so the checkbox overrides below need to
+   beat that rule on specificity AND use !important on the dimensional
+   properties. */
 
 .acceptTermsDiv {
   display: flex;
   align-items: flex-start;
   margin: 1.25rem 0 0.5rem;
+  width: 100%;
 }
 
 .checkboxLabel {
   display: flex;
   align-items: flex-start;
   cursor: pointer;
-  gap: var(--spacing-sm);
+  gap: 10px;
   user-select: none;
+  width: 100%;
 }
 
+.register > div input.acceptTermsCheckbox,
 .acceptTermsCheckbox {
-  width: 18px;
-  height: 18px;
+  width: 18px !important;
+  height: 18px !important;
   cursor: pointer;
-  accent-color: var(--color-primary);
-  margin: 2px 0 0 0;
+  accent-color: #e67509;
+  margin: 3px 0 0 0 !important;
+  padding: 0 !important;
   flex-shrink: 0;
+  display: inline-block !important;
 }
 
 .checkboxText {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  flex: 1;
+  font-size: 0.9rem;
+  color: #64676b;
   font-weight: 500;
   line-height: 1.5;
 }
 
 .checkboxText a {
-  color: var(--color-primary);
+  color: #e67509;
   text-decoration: underline;
 }
 

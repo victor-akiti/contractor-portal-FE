@@ -4,7 +4,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
 import type { Period, DateRange } from './types';
-import { prefetchAll, getInsightsSource, setInsightsSource } from './api';
+import {
+  prefetchAll,
+  getInsightsSource,
+  setInsightsSource,
+  setCurrentInsightsRole,
+  canChooseInsightsSource,
+} from './api';
 import type { InsightsSource } from './api';
 
 // Lazy-load heavy tab components
@@ -70,11 +76,17 @@ function InsightsPageInner() {
   const [period, setPeriod]       = useState<Period>('30d');
   const [dateRange, setDateRange] = useState<DateRange>({ start: '', end: '' });
   // Source toggle - V1 (Company/EventModel/CertificateModel),
-  // V2 (SubmissionV2/ApprovalEvent/CertificateV2), or Both. Persisted in
-  // localStorage via the api module so a refresh keeps the view.
-  const [source, setSource] = useState<InsightsSource>('v1');
-  useEffect(() => { setSource(getInsightsSource()); }, []);
+  // V2 (SubmissionV2/ApprovalEvent/CertificateV2), or Both. Only Admin
+  // sees the toggle; every other role is locked to V2 so their view
+  // reflects the live form system. Choice persists in localStorage.
+  const canToggleSource = canChooseInsightsSource(role);
+  const [source, setSource] = useState<InsightsSource>('v2');
+  useEffect(() => {
+    setCurrentInsightsRole(role);
+    setSource(getInsightsSource());
+  }, [role]);
   const handleSourceClick = (s: InsightsSource) => {
+    if (!canToggleSource) return;
     setInsightsSource(s);
     setSource(s);
     prefetchAll(period, effectiveDateRange);
@@ -201,10 +213,9 @@ function InsightsPageInner() {
       </div>
 
       {/* ── Source toggle ──
-          V1 / V2 / Both. Pipeline, Certificates and the Overview KPIs
-          honour this; Performance, Trends and Export remain V1-only
-          for now. */}
-      <div style={{
+          Admin only. Every other role sees V2 data by design (the
+          api layer pins source to "v2" when the role isn't Admin). */}
+      {canToggleSource && <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: '0.5rem',
@@ -239,12 +250,12 @@ function InsightsPageInner() {
         ))}
         <span style={{ fontSize: '0.75rem', color: '#0369a1', marginLeft: '0.5rem' }}>
           {source === 'v2'
-            ? 'Pipeline, Overview KPIs and Certificates from the V2 form system. Performance, Trends and Export are V1-only.'
+            ? 'All pillars pulled from the V2 form system (SubmissionV2 / ApprovalEvent / CertificateV2).'
             : source === 'all'
-              ? 'Counts blended across both systems where it makes sense; dwell-time and bottleneck stay on V1.'
+              ? 'V1 and V2 counts blended where it makes sense; per-stage dwell-time and bottleneck stay on V1.'
               : 'Legacy V1 view - the original Company / Event Log / Certificate aggregates.'}
         </span>
-      </div>
+      </div>}
 
       {/* ── Tab bar ── */}
       <div style={{

@@ -35,16 +35,44 @@ function periodQS(period: Period, dateRange?: DateRange): string {
 // ── Source toggle ─────────────────────────────────────────────────────────────
 // Insights aggregate over either the V1 stack (Company / EventModel /
 // CertificateModel) or the V2 stack (SubmissionV2 / ApprovalEvent /
-// CertificateV2) or both. Storage lives in localStorage so the toggle
-// survives a refresh, with a fallback to "v1" for clean installs.
+// CertificateV2) or both. Only Admin sees the toggle - every other role
+// is locked to V2 so their dashboards reflect the live form-system
+// pipeline, not the legacy V1 view.
+//
+// Storage lives in localStorage so an Admin's choice survives a refresh.
+// setRoleForInsights is called once on page load with the current role;
+// when the role isn't Admin the source is forced to V2 and the toggle
+// is hidden on the FE.
 
 export type InsightsSource = 'v1' | 'v2' | 'all';
 const SOURCE_KEY = 'insights.source';
+const ROLE_KEY = 'insights.role';
+
+export function getCurrentInsightsRole(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(ROLE_KEY);
+}
+
+export function setCurrentInsightsRole(role: string | undefined | null): void {
+  if (typeof window === 'undefined') return;
+  if (role) window.localStorage.setItem(ROLE_KEY, role);
+  else window.localStorage.removeItem(ROLE_KEY);
+}
+
+export function canChooseInsightsSource(role: string | undefined | null): boolean {
+  return role === 'Admin';
+}
 
 export function getInsightsSource(): InsightsSource {
-  if (typeof window === 'undefined') return 'v1';
+  if (typeof window === 'undefined') return 'v2';
+  // Non-Admin roles are pinned to V2 regardless of what's in
+  // localStorage - the toggle isn't rendered for them and we don't
+  // want a stale "v1" / "all" from an Admin session to leak into the
+  // next user's view if they share a machine.
+  const role = getCurrentInsightsRole();
+  if (!canChooseInsightsSource(role)) return 'v2';
   const raw = window.localStorage.getItem(SOURCE_KEY) as InsightsSource | null;
-  return raw === 'v2' || raw === 'all' ? raw : 'v1';
+  return raw === 'v2' || raw === 'all' || raw === 'v1' ? raw : 'v2';
 }
 
 export function setInsightsSource(source: InsightsSource): void {
