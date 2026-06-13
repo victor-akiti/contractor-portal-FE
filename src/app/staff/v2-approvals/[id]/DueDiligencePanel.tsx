@@ -19,19 +19,19 @@
  * subdoc as [{url, name}] arrays.
  */
 
-import { useState } from "react"
 import ButtonLoadingIcon from "@/components/buttonLoadingIcon"
 import ErrorText from "@/components/errorText"
+import Modal from "@/components/modal"
 import SuccessMessage from "@/components/successMessage"
 import { useConfirmDialog } from "@/hooks/useConfirmDialog"
-import Modal from "@/components/modal"
-import DueDiligenceCheckCard from "./DueDiligenceCheckCard"
-import { postProtected } from "@/requests/post"
-import { putProtected } from "@/requests/put"
-import { deleteProtected } from "@/requests/delete"
 import { BACKEND_BASE_URL } from "@/lib/config"
 import { auth } from "@/lib/firebase"
+import { deleteProtected } from "@/requests/delete"
+import { postProtected } from "@/requests/post"
+import { putProtected } from "@/requests/put"
 import { getIdToken } from "firebase/auth"
+import { useState } from "react"
+import DueDiligenceCheckCard from "./DueDiligenceCheckCard"
 import styles from "./styles.module.css"
 
 type FileRef = { url: string; name: string }
@@ -394,9 +394,9 @@ const DueDiligencePanel = ({
                                         <strong className={styles.exposedRowName}>
                                             {p.entityType === "corporate"
                                                 ? p.companyName
-                                                : [p.title, p.firstName, p.lastName, p.otherName]
-                                                      .filter(Boolean)
-                                                      .join(" ")}
+                                                : [p.title, p.firstName, p.otherName, p.lastName]
+                                                    .filter(Boolean)
+                                                    .join(" ")}
                                         </strong>
                                         {p.role && (
                                             <span className={styles.exposedRole}>{p.role}</span>
@@ -432,13 +432,12 @@ const DueDiligencePanel = ({
                                             className={styles.btnEdit}
                                             onClick={() => setEditingPerson({ ...p })}
                                             title="Edit this entry"
-                                            aria-label={`Edit entry for ${
-                                                p.entityType === "corporate"
-                                                    ? p.companyName
-                                                    : [p.firstName, p.lastName]
-                                                          .filter(Boolean)
-                                                          .join(" ")
-                                            }`}
+                                            aria-label={`Edit entry for ${p.entityType === "corporate"
+                                                ? p.companyName
+                                                : [p.firstName, p.lastName]
+                                                    .filter(Boolean)
+                                                    .join(" ")
+                                                }`}
                                         >
                                             <span aria-hidden>✎</span> Edit
                                         </button>
@@ -447,13 +446,12 @@ const DueDiligencePanel = ({
                                             className={styles.btnRemove}
                                             onClick={() => removePerson(String(p._id))}
                                             title="Remove this entry"
-                                            aria-label={`Remove entry for ${
-                                                p.entityType === "corporate"
-                                                    ? p.companyName
-                                                    : [p.firstName, p.lastName]
-                                                          .filter(Boolean)
-                                                          .join(" ")
-                                            }`}
+                                            aria-label={`Remove entry for ${p.entityType === "corporate"
+                                                ? p.companyName
+                                                : [p.firstName, p.lastName]
+                                                    .filter(Boolean)
+                                                    .join(" ")
+                                                }`}
                                         >
                                             <span aria-hidden>🗑</span> Remove
                                         </button>
@@ -466,9 +464,8 @@ const DueDiligencePanel = ({
                 {canEdit && (
                     <button
                         type="button"
-                        className={`${styles.ddCompleteBtn} ${
-                            reviewed ? styles.ddCompleteBtnOn : ""
-                        }`}
+                        className={`${styles.ddCompleteBtn} ${reviewed ? styles.ddCompleteBtnOn : ""
+                            }`}
                         onClick={() => markExposedReviewed(!reviewed)}
                         disabled={savingKey === "exposedPersonsReviewed"}
                         title={
